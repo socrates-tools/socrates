@@ -1,0 +1,59 @@
+# Each verdict has its own exit code, and a run that is still working has its own.
+
+[!exec:git] skip
+[!exec:sh] skip
+
+cd repo
+exec git -c init.defaultBranch=main init --quiet .
+exec git add -A
+exec git commit --quiet -m 'the first commit'
+
+# A clean review exits zero, and so do the commands that report on it.
+cp $WORK/added.go added.go
+exec sh -c 'scrat review --wait; echo exit=$?'
+stdout 'exit=0'
+stdout 'state: clean'
+exec sh -c 'scrat status; echo exit=$?'
+stdout 'exit=0'
+exec sh -c 'scrat findings; echo exit=$?'
+stdout 'exit=0'
+
+# A review that finds something blocking exits one.
+env CLAUDESIM_SCENARIO=$WORK/escalating.yaml
+exec sleep 1
+cp $WORK/other.go other.go
+exec sh -c 'scrat review --wait; echo exit=$?'
+stdout 'exit=1'
+exec sh -c 'scrat status; echo exit=$?'
+stdout 'exit=1'
+exec sh -c 'scrat findings; echo exit=$?'
+stdout 'exit=1'
+stdout 'needs a person'
+
+# A review that never completed exits two, and says so rather than reporting findings.
+env CLAUDESIM_SCENARIO=$WORK/broken.yaml
+exec sleep 1
+cp $WORK/third.go third.go
+exec sh -c 'scrat review --wait; echo exit=$?'
+stdout 'exit=2'
+exec sh -c 'scrat findings; echo exit=$?'
+stdout 'exit=2'
+stdout 'no review completed'
+
+-- repo/README.md --
+socrates
+-- added.go --
+package repo
+-- other.go --
+package repo
+-- third.go --
+package repo
+-- clean.yaml --
+default:
+  structured: '{"findings":[],"risk_level":"low","risk_rationale":"a small and self-contained change"}'
+-- escalating.yaml --
+default:
+  structured: '{"findings":[{"id":"f1","severity":"error","file":"other.go","line":1,"description":"The added file answers wrongly for an empty input."}],"risk_level":"high","risk_rationale":"one changed path answers wrongly without erroring"}'
+-- broken.yaml --
+default:
+  behaviour: no-result

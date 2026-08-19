@@ -1,0 +1,39 @@
+name: fidelity
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  fidelity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Install the Claude CLI
+        run: npm install --global @anthropic-ai/claude-code
+
+      - name: Record what the real CLI answers
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: make fixtures
+
+      - name: Compare the simulator against the recordings
+        run: make fixtures-diff
+
+      - name: Run one real review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: make live-smoke
+
+      - name: Keep what was recorded
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recordings
+          path: internal/fidelity/testdata/recordings

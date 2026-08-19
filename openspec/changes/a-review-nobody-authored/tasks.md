@@ -79,28 +79,28 @@
 
 ## 9. The event log
 
-- [ ] 9.1 Add the JSONL event log and its writer. Covers `Events are one JSON object per line`, `A started run is on disk immediately`, `Round output is under the round`
-- [ ] 9.2 Add the byte ceiling and in-place truncating rotation. Covers `A chatty reviewer does not fill the disk`, `The writer keeps writing across a rotation`
-- [ ] 9.3 Add the retention sweep on run start. Covers `An old run is swept`, `A live run is never swept`
+- [x] 9.1 Add the JSONL event log and its writer. Covers `Events are one JSON object per line`, `A started run is on disk immediately`, `Round output is under the round`
+- [x] 9.2 Add the byte ceiling and in-place truncating rotation. Covers `A chatty reviewer does not fill the disk`, `The writer keeps writing across a rotation`
+- [x] 9.3 Add the retention sweep on run start. Covers `An old run is swept`, `A live run is never swept`
 
 ## 10. End to end
 
-- [ ] 10.1 Build the harness: real binary, real temporary repository, real git, real spawning, the simulator on `PATH`, `synctest` for time. Nothing else substituted
-- [ ] 10.2 Drive the clean journey: implement, review, verdict `clean`, exit `0`, repository byte-identical
-- [ ] 10.3 Drive the escalated journey: findings returned, verdict `escalated`, exit `1`, findings readable and classified
-- [ ] 10.4 Drive each failure journey the simulator can produce, and assert that none of them reports `clean`
-- [ ] 10.5 Drive the writing-reviewer journey and assert the run fails and the worktree is kept
-- [ ] 10.6 Drive the recursive journey: a review started from inside a review is refused
-- [ ] 10.7 Drive the concurrent-editing journey: the person edits while the reviewer reads, and the findings still anchor to the snapshot
-- [ ] 10.8 Add the CLI behaviour tests as `testscript` txtar scripts, covering the exit codes, the run selection default and the refusals
+- [x] 10.1 Build the harness: real binary, real temporary repository, real git, real spawning, the simulator on `PATH`, `synctest` for time. Nothing else substituted
+- [x] 10.2 Drive the clean journey: implement, review, verdict `clean`, exit `0`, repository byte-identical
+- [x] 10.3 Drive the escalated journey: findings returned, verdict `escalated`, exit `1`, findings readable and classified
+- [x] 10.4 Drive each failure journey the simulator can produce, and assert that none of them reports `clean`
+- [x] 10.5 Drive the writing-reviewer journey and assert the run fails and the worktree is kept
+- [x] 10.6 Drive the recursive journey: a review started from inside a review is refused
+- [x] 10.7 Drive the concurrent-editing journey: the person edits while the reviewer reads, and the findings still anchor to the snapshot
+- [x] 10.8 Add the CLI behaviour tests as `testscript` txtar scripts, covering the exit codes, the run selection default and the refusals
 
 ## 11. Fidelity to the real tool
 
-- [ ] 11.1 Add the recording, behind a build tag, of responses from the real `claude` CLI, and `make fixtures` to run it
-- [ ] 11.2 Add the drift check comparing the simulator's shapes against the recordings, and `make fixtures-diff`. Covers `Drift is visible`
-- [ ] 11.3 Add the live smoke check that runs one real review against the real binary and asserts the arguments are accepted and the schema honoured, behind its own tag, and `make live-smoke`
-- [ ] 11.4 Add the test that the ordinary suite compiles none of it. Covers `The ordinary suite reaches no network`
-- [ ] 11.5 Add the scheduled workflow that runs the drift and live checks weekly rather than per commit, because a failure means the CLI changed rather than that this change broke something
+- [x] 11.1 Add the recording, behind a build tag, of responses from the real `claude` CLI, and `make fixtures` to run it
+- [x] 11.2 Add the drift check comparing the simulator's shapes against the recordings, and `make fixtures-diff`. Covers `Drift is visible`
+- [x] 11.3 Add the live smoke check that runs one real review against the real binary and asserts the arguments are accepted and the schema honoured, behind its own tag, and `make live-smoke`
+- [x] 11.4 Add the test that the ordinary suite compiles none of it. Covers `The ordinary suite reaches no network`
+- [x] 11.5 Add the scheduled workflow that runs the drift and live checks weekly rather than per commit, because a failure means the CLI changed rather than that this change broke something
 
 ## 12. Coverage and documentation
 

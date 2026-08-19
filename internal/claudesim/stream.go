@@ -103,7 +103,7 @@ func writeStream(out io.Writer, response Response, invocation Invocation) error 
 		NumTurns:     response.Events,
 		TotalCostUSD: 0.01,
 	}
-	if response.Structured != "" {
+	if response.Structured != "" && invocation.Schema != "" {
 		result.StructuredOutput = json.RawMessage(response.Structured)
 	}
 	return writeEvent(out, result)
