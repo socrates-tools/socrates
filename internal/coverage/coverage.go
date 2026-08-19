@@ -22,6 +22,7 @@ const (
 	tasksFile        = "tasks.md"
 	doneTask         = "- [x]"
 	changesDirectory = "changes"
+	archiveDirectory = "archive"
 )
 
 var specificationDirectories = []string{
@@ -51,7 +52,13 @@ func Scenarios(root string) ([]Scenario, error) {
 			if err != nil {
 				return err
 			}
-			if entry.IsDir() || filepath.Base(path) != specFile {
+			if entry.IsDir() {
+				if entry.Name() == archiveDirectory {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+			if filepath.Base(path) != specFile {
 				return nil
 			}
 

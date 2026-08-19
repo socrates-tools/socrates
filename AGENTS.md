@@ -32,7 +32,7 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 - `internal/config` - the one optional configuration file under the user's configuration directory.
 - `internal/runlog` - the JSONL event log, its byte ceiling and its in-place rotation.
 - `internal/convention` - the repository's own conventions as executable checks: no commentary, the test-quality rule, the message registry.
-- `internal/coverage` - scenario coverage: what the specifications promise against what the tests name.
+- `internal/coverage` - scenario coverage: what `openspec/specs` and the changes under way promise against what the tests name. An archived change is skipped, because its specification was promoted.
 - `internal/fidelity` - the recorded shapes of the real CLI, the drift check, and the live smoke check. Everything that reaches the network is behind a build tag.
 - `internal/e2e` - the end-to-end suite: the real binary, a real repository, real git, real processes, the simulator on `PATH`.
 - `internal/testing` - the harness, the temporary repository, the simulator installer, and source helpers. Test support only.

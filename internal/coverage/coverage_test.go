@@ -136,6 +136,24 @@ func TestSomething(t *testing.T) {}
 	}
 }
 
+func TestAnArchivedChangeIsNotCountedTwice(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, filepath.Join("openspec", "specs", "thing", "spec.md"), "#### Scenario: The thing happens\n")
+	writeFile(t, root, filepath.Join("openspec", "changes", "archive", "2026-01-01-thing", "tasks.md"), "- [x] 1.1 Did the thing\n")
+	writeFile(t, root, filepath.Join("openspec", "changes", "archive", "2026-01-01-thing", "specs", "thing", "spec.md"), "#### Scenario: The thing happens\n")
+
+	scenarios, err := coverage.Scenarios(root)
+	if err != nil {
+		t.Fatalf("reading the specifications: %v", err)
+	}
+	if len(scenarios) != 1 {
+		t.Errorf("%d scenarios were found, and an archived change's promoted specification is the same promise once", len(scenarios))
+	}
+	if len(scenarios) > 0 && scenarios[0].Spec != filepath.Join("openspec", "specs", "thing", "spec.md") {
+		t.Errorf("the scenario is reported at %s, want the promoted specification", scenarios[0].Spec)
+	}
+}
+
 func TestNormalisingIgnoresEverythingButLettersAndDigits(t *testing.T) {
 	if coverage.Normalise("A run's state: `clean`, not failed!") != coverage.Normalise("A runs state clean not failed") {
 		t.Error("two spellings of one scenario normalise differently")
