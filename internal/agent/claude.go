@@ -69,7 +69,7 @@ func NewClaude(options Options) (Agent, error) {
 func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error) {
 	routing, known := a.routing[request.Role]
 	if !known {
-		return Response{}, fmt.Errorf("%q is not a role socrates has", request.Role)
+		return Response{}, fmt.Errorf(notARoleAtTheCall, request.Role)
 	}
 
 	bounded, release := context.WithTimeout(ctx, a.deadline)
@@ -88,11 +88,11 @@ func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error
 
 	out, err := command.StdoutPipe()
 	if err != nil {
-		return Response{}, fmt.Errorf("reading what %s writes: %w", a.binary, err)
+		return Response{}, fmt.Errorf(readingWhatItWrites, a.binary, err)
 	}
 
 	if err := command.Start(); err != nil {
-		return Response{}, a.failed(request, routing, fmt.Errorf("starting %s: %w", a.binary, err))
+		return Response{}, a.failed(request, routing, fmt.Errorf(startingTheAgent, a.binary, err))
 	}
 	defer func() {
 		_ = process.KillGroup(command.Process.Pid)
@@ -125,7 +125,7 @@ func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error
 		return Response{}, a.failed(request, routing, parseErr)
 	}
 	if waitErr != nil {
-		return Response{}, a.failed(request, routing, fmt.Errorf("%s exited: %w: %s", a.binary, waitErr, failures.String()))
+		return Response{}, a.failed(request, routing, fmt.Errorf(theAgentExited, a.binary, waitErr, failures.String()))
 	}
 
 	answer := Response{
@@ -137,25 +137,25 @@ func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error
 	}
 
 	if read.result == nil {
-		return Response{}, a.failed(request, routing, fmt.Errorf("%s wrote a complete stream carrying no result event, so no review completed", a.binary))
+		return Response{}, a.failed(request, routing, fmt.Errorf(noResultEvent, a.binary))
 	}
 	if read.result.IsError || read.result.Subtype != "success" {
-		return Response{}, a.failed(request, routing, fmt.Errorf("%s reported the result %q, so no review completed", a.binary, read.result.Subtype))
+		return Response{}, a.failed(request, routing, fmt.Errorf(theResultReported, a.binary, read.result.Subtype))
 	}
 
 	if len(request.Schema) > 0 {
 		if len(read.result.StructuredOutput) == 0 {
-			return Response{}, a.failed(request, routing, fmt.Errorf("a schema was required and %s returned no structured output, and its text is not a substitute", a.binary))
+			return Response{}, a.failed(request, routing, fmt.Errorf(noStructuredOutput, a.binary))
 		}
 		if !json.Valid(read.result.StructuredOutput) {
-			return Response{}, a.failed(request, routing, fmt.Errorf("%s returned structured output that is not JSON", a.binary))
+			return Response{}, a.failed(request, routing, fmt.Errorf(structuredOutputIsNotJSON, a.binary))
 		}
 	}
 	answer.Structured = read.result.StructuredOutput
 
 	if request.Honours != nil && len(answer.Structured) > 0 {
 		if err := request.Honours(answer.Structured); err != nil {
-			return answer, a.failed(request, routing, fmt.Errorf("the structured output does not satisfy the schema: %w", err))
+			return answer, a.failed(request, routing, fmt.Errorf(schemaNotSatisfied, err))
 		}
 	}
 
@@ -201,9 +201,9 @@ func (a *claudeAgent) deadlineReached(bounded, parent context.Context) error {
 		return nil
 	}
 	if errors.Is(parent.Err(), context.DeadlineExceeded) {
-		return fmt.Errorf("the review was given a deadline and it passed")
+		return errors.New(theDeadlinePassed)
 	}
-	return fmt.Errorf("%s answered nothing within %s, so its process group was killed", a.binary, a.deadline)
+	return fmt.Errorf(silenceUntilTheDeadline, a.binary, a.deadline)
 }
 
 func (a *claudeAgent) failed(request Request, routing Routing, reason error) error {

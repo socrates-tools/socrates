@@ -1,12 +1,20 @@
 package runstore
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
+	"strconv"
+	"strings"
+
+	"github.com/rui-ktei/socrates/internal/findings"
 )
 
 const (
+	roundPrefix  = "r"
 	promptFile   = "prompt.txt"
 	streamFile   = "stream.jsonl"
 	findingsFile = "findings.json"
@@ -20,16 +28,55 @@ type Round struct {
 func (s Store) Round(name string, number int) Round {
 	return Round{
 		Number:    number,
-		Directory: filepath.Join(s.Path(name), fmt.Sprintf("r%d", number)),
+		Directory: filepath.Join(s.Path(name), roundPrefix+strconv.Itoa(number)),
 	}
 }
 
 func (s Store) CreateRound(name string, number int) (Round, error) {
 	round := s.Round(name, number)
 	if err := os.MkdirAll(round.Directory, 0o755); err != nil {
-		return Round{}, fmt.Errorf("creating %s: %w", round.Directory, err)
+		return Round{}, fmt.Errorf(creating, round.Directory, err)
 	}
 	return round, nil
+}
+
+func (s Store) Rounds(name string) ([]int, error) {
+	directory := s.Path(name)
+
+	entries, err := os.ReadDir(directory)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf(reading, directory, err)
+	}
+
+	var numbers []int
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		digits, prefixed := strings.CutPrefix(entry.Name(), roundPrefix)
+		if !prefixed {
+			continue
+		}
+		number, err := strconv.Atoi(digits)
+		if err != nil {
+			continue
+		}
+		numbers = append(numbers, number)
+	}
+
+	slices.Sort(numbers)
+	return numbers, nil
+}
+
+func (s Store) LatestRound(name string) (Round, bool, error) {
+	numbers, err := s.Rounds(name)
+	if err != nil || len(numbers) == 0 {
+		return Round{}, false, err
+	}
+	return s.Round(name, numbers[len(numbers)-1]), true, nil
 }
 
 func (r Round) PromptPath() string {
@@ -46,7 +93,23 @@ func (r Round) FindingsPath() string {
 
 func (r Round) Write(path, content string) error {
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
-		return fmt.Errorf("writing %s: %w", path, err)
+		return fmt.Errorf(writing, path, err)
 	}
 	return nil
+}
+
+func (r Round) Findings() (findings.Document, bool, error) {
+	content, err := os.ReadFile(r.FindingsPath())
+	if errors.Is(err, fs.ErrNotExist) {
+		return findings.Document{}, false, nil
+	}
+	if err != nil {
+		return findings.Document{}, false, fmt.Errorf(reading, r.FindingsPath(), err)
+	}
+
+	document, err := findings.Parse(content)
+	if err != nil {
+		return findings.Document{}, false, fmt.Errorf(parsing, r.FindingsPath(), err)
+	}
+	return document, true, nil
 }

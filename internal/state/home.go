@@ -22,7 +22,7 @@ func Home() (string, error) {
 
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "", fmt.Errorf("socrates keeps its runs under your home directory, and it could not find one: %w", err)
+		return "", fmt.Errorf(noHomeDirectory, err)
 	}
 	return filepath.Join(home, ".local", "state", "socrates"), nil
 }

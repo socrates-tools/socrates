@@ -17,7 +17,7 @@ const (
 func RepositoryKey(repositoryRoot string) (string, error) {
 	absolute, err := filepath.Abs(repositoryRoot)
 	if err != nil {
-		return "", fmt.Errorf("resolving %s: %w", repositoryRoot, err)
+		return "", fmt.Errorf(resolving, repositoryRoot, err)
 	}
 
 	sum := sha256.Sum256([]byte(filepath.Clean(absolute)))

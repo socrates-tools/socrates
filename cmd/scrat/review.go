@@ -1,24 +1,39 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
 
+	"github.com/rui-ktei/socrates/internal/config"
+	"github.com/rui-ktei/socrates/internal/refusal"
+	"github.com/rui-ktei/socrates/internal/report"
 	"github.com/rui-ktei/socrates/internal/reviewer"
 	"github.com/rui-ktei/socrates/internal/runstore"
 	"github.com/rui-ktei/socrates/internal/state"
 	"github.com/spf13/cobra"
 )
 
-func newReviewCommand() *cobra.Command {
+const verdictPoll = 50 * time.Millisecond
+
+func newReviewCommand(code *int) *cobra.Command {
 	var intent string
+	var wait bool
 
 	command := &cobra.Command{
 		Use:   "review",
-		Short: "Freeze this working tree and have somebody who did not write it review it",
-		Args:  cobra.NoArgs,
-		RunE: func(command *cobra.Command, _ []string) error {
+		Short: reviewShort,
+		Args:  cobra.ArbitraryArgs,
+		RunE: func(command *cobra.Command, arguments []string) error {
+			if len(arguments) > 0 {
+				return refusal.New(reviewTakesNoArguments, arguments[0])
+			}
+
+			settings, err := config.Load()
+			if err != nil {
+				return err
+			}
 			store, err := openStore()
 			if err != nil {
 				return err
@@ -26,12 +41,11 @@ func newReviewCommand() *cobra.Command {
 
 			directory, err := os.Getwd()
 			if err != nil {
-				return fmt.Errorf("locating the working directory: %w", err)
+				return fmt.Errorf(locatingHere, err)
 			}
-
 			binary, err := os.Executable()
 			if err != nil {
-				return fmt.Errorf("locating scrat itself: %w", err)
+				return fmt.Errorf(locatingScrat, err)
 			}
 
 			run, err := reviewer.Begin(command.Context(), reviewer.Beginning{
@@ -40,18 +54,53 @@ func newReviewCommand() *cobra.Command {
 				Store:     store,
 				Binary:    binary,
 				StartedAt: time.Now(),
+				Retention: settings.RunRetention,
 			})
 			if err != nil {
 				return err
 			}
 
-			fmt.Fprintln(command.OutOrStdout(), run.Name)
+			out := command.OutOrStdout()
+			fmt.Fprintln(out, run.Name)
+
+			if !wait {
+				fmt.Fprintf(out, followIt+"\n", run.Name)
+				return nil
+			}
+
+			status, err := awaitVerdict(command.Context(), store, run.Name)
+			if err != nil {
+				return err
+			}
+			for _, line := range status.Lines() {
+				fmt.Fprintln(out, line)
+			}
+			*code = status.Code()
 			return nil
 		},
 	}
 
-	command.Flags().StringVar(&intent, "intent", "", "what the person asked for, in their words")
+	command.Flags().StringVar(&intent, "intent", "", intentUsage)
+	command.Flags().BoolVar(&wait, "wait", false, waitUsage)
 	return command
+}
+
+func awaitVerdict(ctx context.Context, store runstore.Store, name string) (report.Status, error) {
+	for {
+		status, err := report.StatusOf(store, name)
+		if err != nil {
+			return report.Status{}, err
+		}
+		if status.State.Terminal() {
+			return status, nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return report.Status{}, ctx.Err()
+		case <-time.After(verdictPoll):
+		}
+	}
 }
 
 func openStore() (runstore.Store, error) {

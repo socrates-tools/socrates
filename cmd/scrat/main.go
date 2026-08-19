@@ -4,38 +4,52 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/rui-ktei/socrates/internal/exit"
 	"github.com/rui-ktei/socrates/internal/refusal"
 	"github.com/spf13/cobra"
 )
 
-const (
-	exitClean   = 0
-	exitFailed  = 2
-	exitUsage   = 3
-	exitWorking = 4
-)
-
 func main() {
-	if err := newRootCommand().Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, "scrat: "+err.Error())
+	code := exit.Clean
+
+	if err := newRootCommand(&code).Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, failurePrefix+err.Error())
 		os.Exit(exitFor(err))
 	}
+	os.Exit(code)
 }
 
-func newRootCommand() *cobra.Command {
+func newRootCommand(code *int) *cobra.Command {
 	root := &cobra.Command{
 		Use:           "scrat",
-		Short:         "An independent reviewer for unreviewed local changes",
+		Short:         rootShort,
+		Args:          cobra.ArbitraryArgs,
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		RunE: func(command *cobra.Command, arguments []string) error {
+			if len(arguments) > 0 {
+				return refusal.New(notACommand, arguments[0])
+			}
+			return command.Help()
+		},
 	}
-	root.AddCommand(newReviewCommand(), newSuperviseCommand())
+	root.CompletionOptions.DisableDefaultCmd = true
+	root.SetFlagErrorFunc(func(_ *cobra.Command, err error) error {
+		return refusal.New(unusableFlag, err)
+	})
+	root.AddCommand(
+		newReviewCommand(code),
+		newStatusCommand(code),
+		newFindingsCommand(code),
+		newCancelCommand(),
+		newSuperviseCommand(),
+	)
 	return root
 }
 
 func exitFor(err error) int {
 	if refusal.Is(err) {
-		return exitUsage
+		return exit.Usage
 	}
-	return exitFailed
+	return exit.Failed
 }

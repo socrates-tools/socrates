@@ -23,7 +23,7 @@ func KillGroup(pid int) error {
 		return nil
 	}
 	if err := syscall.Kill(-pid, syscall.SIGKILL); err != nil && err != syscall.ESRCH {
-		return fmt.Errorf("killing the process group %d: %w", pid, err)
+		return fmt.Errorf(killingAGroup, pid, err)
 	}
 	return nil
 }
@@ -33,7 +33,7 @@ func Kill(pid int) error {
 		return nil
 	}
 	if err := syscall.Kill(pid, syscall.SIGKILL); err != nil && err != syscall.ESRCH {
-		return fmt.Errorf("killing the process %d: %w", pid, err)
+		return fmt.Errorf(killingAProcess, pid, err)
 	}
 	return nil
 }

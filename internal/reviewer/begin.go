@@ -10,6 +10,7 @@ import (
 
 	"github.com/rui-ktei/socrates/internal/process"
 	"github.com/rui-ktei/socrates/internal/refusal"
+	"github.com/rui-ktei/socrates/internal/runlog"
 	"github.com/rui-ktei/socrates/internal/runstate"
 	"github.com/rui-ktei/socrates/internal/runstore"
 	"github.com/rui-ktei/socrates/internal/snapshot"
@@ -21,12 +22,18 @@ const (
 	supervisorLogName = "supervisor.log"
 )
 
+const (
+	EventRunStarted = "run-started"
+	EventRunEnded   = "run-ended"
+)
+
 type Beginning struct {
 	Directory string
 	Intent    string
 	Store     runstore.Store
 	Binary    string
 	StartedAt time.Time
+	Retention time.Duration
 }
 
 func OuterRun() string {
@@ -35,11 +42,15 @@ func OuterRun() string {
 
 func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 	if outer := OuterRun(); outer != "" {
-		return nil, refusal.New("this process is already the reviewer for run %s, and a review inside a review spawns without end", outer)
+		return nil, refusal.New(aReviewInsideAReview, outer)
 	}
 
 	taken, err := snapshot.Take(ctx, beginning.Directory)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := beginning.Store.Sweep(beginning.StartedAt, beginning.Retention); err != nil {
 		return nil, err
 	}
 
@@ -54,6 +65,19 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 		return nil, err
 	}
 
+	directory := beginning.Store.Path(run.Name)
+	if err := beginning.record(run, runlog.Event{
+		Kind:    EventRunStarted,
+		Subject: run.Name,
+		Fields: map[string]any{
+			"repository": run.Repository,
+			"base":       run.Base,
+			"snapshot":   run.Snapshot,
+		},
+	}); err != nil {
+		return nil, err
+	}
+
 	if taken.NothingToReview() {
 		if err := run.End(runstate.Clean, snapshot.NothingToReviewReason); err != nil {
 			return nil, err
@@ -61,14 +85,16 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 		if err := beginning.Store.Save(run); err != nil {
 			return nil, err
 		}
-		return run, nil
+		return run, beginning.recordEnd(run)
 	}
 
-	directory := beginning.Store.Path(run.Name)
+	if _, err := beginning.Store.CreateRound(run.Name, firstRound); err != nil {
+		return run, beginning.fail(run, err)
+	}
 
 	worktree, err := taken.Checkout(ctx, snapshot.WorktreePath(directory))
 	if err != nil {
-		return run, beginning.fail(run, fmt.Errorf("checking out the snapshot: %w", err))
+		return run, beginning.fail(run, fmt.Errorf(checkingOutTheSnapshot, err))
 	}
 	run.Worktree = worktree.Path
 	if err := beginning.Store.Save(run); err != nil {
@@ -89,13 +115,33 @@ func (b Beginning) fail(run *runstore.Run, reason error) error {
 	if err := b.Store.Save(run); err != nil {
 		return err
 	}
+	if err := b.recordEnd(run); err != nil {
+		return err
+	}
 	return reason
+}
+
+func (b Beginning) recordEnd(run *runstore.Run) error {
+	return b.record(run, runlog.Event{
+		Kind:    EventRunEnded,
+		Subject: run.Name,
+		Fields:  map[string]any{"state": string(run.State), "reason": run.Verdict.Reason},
+	})
+}
+
+func (b Beginning) record(run *runstore.Run, event runlog.Event) error {
+	events, err := runlog.Open(filepath.Join(b.Store.Path(run.Name), runlog.FileName), 0)
+	if err != nil {
+		return err
+	}
+	defer events.Close()
+	return events.Record(event)
 }
 
 func spawnSupervisor(binary, directory, name string) error {
 	log, err := os.Create(filepath.Join(directory, supervisorLogName))
 	if err != nil {
-		return fmt.Errorf("opening the supervisor's own log: %w", err)
+		return fmt.Errorf(openingTheSupervisorLog, err)
 	}
 	defer log.Close()
 
@@ -108,7 +154,7 @@ func spawnSupervisor(binary, directory, name string) error {
 	process.Detach(command)
 
 	if err := command.Start(); err != nil {
-		return fmt.Errorf("starting the reviewer: %w", err)
+		return fmt.Errorf(startingTheReviewer, err)
 	}
 	return nil
 }

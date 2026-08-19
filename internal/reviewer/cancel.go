@@ -9,8 +9,6 @@ import (
 	"github.com/rui-ktei/socrates/internal/snapshot"
 )
 
-const cancelledReason = "the person stopped it"
-
 func Cancel(ctx context.Context, store runstore.Store, name string) (*runstore.Run, error) {
 	run, err := store.Load(name)
 	if err != nil {

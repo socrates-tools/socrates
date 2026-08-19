@@ -1,0 +1,26 @@
+package runstore
+
+const (
+	terminalIsNotAStep       = "%s is terminal, so it is a verdict rather than a step"
+	notTerminalIsNotAVerdict = "%s is not terminal, so it is not a verdict"
+	aFailureStatesWhy        = "a failed run states why, so that nothing reads it as a review that found nothing"
+	notARunState             = "%q is not a run state"
+	alreadyEnded             = "run %s already ended as %s, so it cannot become %s"
+	alreadyEndedOnDisk       = "run %s already ended as %s, so it cannot be written as %s"
+	alreadyExists            = "run %s already exists, so a second review of %s in the same second cannot start: wait a moment and run it again"
+	noSuchRun                = "there is no run named %s under %s: run scrat status without an identifier to report on this repository's most recent run"
+	noRunForThisRepository   = "%s has never been reviewed, so there is no run to report on: run scrat review first"
+	reviewerWentAway         = "the reviewer went away before it reported anything, so nothing has been reviewed"
+	noDirectory              = "run %s has no directory under %s: %w"
+	reading                  = "reading %s: %w"
+	parsing                  = "parsing %s: %w"
+	creating                 = "creating %s: %w"
+	writing                  = "writing %s: %w"
+	flushing                 = "flushing %s: %w"
+	closing                  = "closing %s: %w"
+	renaming                 = "renaming onto %s: %w"
+	encoding                 = "encoding run %s: %w"
+	creatingATemporaryFile   = "creating a temporary file in %s: %w"
+	resolving                = "resolving %s: %w"
+	removing                 = "removing %s: %w"
+)

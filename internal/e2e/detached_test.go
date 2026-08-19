@@ -25,7 +25,7 @@ func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {
 	}
 	returned := time.Since(started)
 
-	name := strings.TrimSpace(out)
+	name, _, _ := strings.Cut(strings.TrimSpace(out), "\n")
 	if name == "" {
 		t.Fatal("scrat review printed no run identifier")
 	}

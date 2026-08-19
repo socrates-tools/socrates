@@ -63,7 +63,7 @@ func Take(ctx context.Context, directory string) (Snapshot, error) {
 
 	indexDirectory, err := os.MkdirTemp("", "socrates-index-")
 	if err != nil {
-		return Snapshot{}, fmt.Errorf("creating a directory for the snapshot's own index: %w", err)
+		return Snapshot{}, fmt.Errorf(creatingAnIndexDirectory, err)
 	}
 	defer os.RemoveAll(indexDirectory)
 
@@ -113,7 +113,7 @@ func Diff(ctx context.Context, repositoryRoot, base, commit string) (string, err
 
 func (s Snapshot) Checkout(ctx context.Context, path string) (Worktree, error) {
 	if s.NothingToReview() {
-		return Worktree{}, errors.New("there is nothing to review, so there is no snapshot to check out")
+		return Worktree{}, errors.New(nothingToCheckOut)
 	}
 
 	_, statErr := os.Stat(path)
@@ -122,7 +122,7 @@ func (s Snapshot) Checkout(ctx context.Context, path string) (Worktree, error) {
 	if _, err := git(ctx, s.RepositoryRoot, nil, "worktree", "add", "--detach", path, s.Commit); err != nil {
 		if !presentAlready {
 			if removeErr := os.RemoveAll(path); removeErr != nil {
-				return Worktree{}, errors.Join(err, fmt.Errorf("removing %s: %w", path, removeErr))
+				return Worktree{}, errors.Join(err, fmt.Errorf(removing, path, removeErr))
 			}
 		}
 		if _, pruneErr := git(ctx, s.RepositoryRoot, nil, "worktree", "prune"); pruneErr != nil {
@@ -152,7 +152,7 @@ func (w Worktree) Differences(ctx context.Context) ([]string, error) {
 
 func (w Worktree) Remove(ctx context.Context) error {
 	if err := os.RemoveAll(w.Path); err != nil {
-		return fmt.Errorf("removing %s: %w", w.Path, err)
+		return fmt.Errorf(removing, w.Path, err)
 	}
 	if _, err := git(ctx, w.RepositoryRoot, nil, "worktree", "prune"); err != nil {
 		return err
@@ -160,23 +160,31 @@ func (w Worktree) Remove(ctx context.Context) error {
 	return nil
 }
 
+func Root(ctx context.Context, directory string) (string, error) {
+	root, err := git(ctx, directory, nil, "rev-parse", "--show-toplevel")
+	if err != nil || root == "" {
+		return "", refusal.New(notAWorkingTree, directory)
+	}
+	return root, nil
+}
+
 func resolve(ctx context.Context, directory string) (string, string, error) {
 	bare, err := git(ctx, directory, nil, "rev-parse", "--is-bare-repository")
 	if err != nil {
-		return "", "", refusal.New("%s is not inside a git working tree, so there is nothing to review: run scrat review from inside a repository", directory)
+		return "", "", refusal.New(notAWorkingTree, directory)
 	}
 	if bare == "true" {
-		return "", "", refusal.New("the repository at %s is bare, so it has no working tree to review", directory)
+		return "", "", refusal.New(bareRepository, directory)
 	}
 
-	root, err := git(ctx, directory, nil, "rev-parse", "--show-toplevel")
-	if err != nil || root == "" {
-		return "", "", refusal.New("%s is not inside a git working tree, so there is nothing to review: run scrat review from inside a repository", directory)
+	root, err := Root(ctx, directory)
+	if err != nil {
+		return "", "", err
 	}
 
 	base, err := git(ctx, root, nil, "rev-parse", "--verify", "HEAD^{commit}")
 	if err != nil {
-		return "", "", refusal.New("the repository at %s has no commit for HEAD to resolve to, so there is no base to review against: commit something first", root)
+		return "", "", refusal.New(noBaseCommit, root)
 	}
 
 	return root, base, nil
@@ -206,7 +214,7 @@ func gitOutput(ctx context.Context, directory string, environment []string, args
 		if reported == "" {
 			reported = err.Error()
 		}
-		return "", fmt.Errorf("git %s in %s: %s", strings.Join(args, " "), directory, reported)
+		return "", fmt.Errorf(gitFailed, strings.Join(args, " "), directory, reported)
 	}
 
 	return stdout.String(), nil

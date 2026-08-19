@@ -127,11 +127,11 @@ func (d Document) Verdict() runstate.State {
 func Parse(document []byte) (Document, error) {
 	var stated map[string]json.RawMessage
 	if err := json.Unmarshal(document, &stated); err != nil {
-		return Document{}, fmt.Errorf("reading the findings document: %w", err)
+		return Document{}, fmt.Errorf(readingTheDocument, err)
 	}
 	for _, required := range []string{"findings", "risk_level", "risk_rationale"} {
 		if _, present := stated[required]; !present {
-			return Document{}, fmt.Errorf("the findings document states no %q, so it does not say what the review found", required)
+			return Document{}, fmt.Errorf(statesNothingFor, required)
 		}
 	}
 
@@ -139,10 +139,10 @@ func Parse(document []byte) (Document, error) {
 	decoder := json.NewDecoder(bytes.NewReader(document))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&parsed); err != nil {
-		return Document{}, fmt.Errorf("reading the findings document: %w", err)
+		return Document{}, fmt.Errorf(readingTheDocument, err)
 	}
 	if decoder.More() {
-		return Document{}, errors.New("the findings document is followed by more content than one document")
+		return Document{}, errors.New(moreThanOneDocument)
 	}
 
 	if err := Validate(parsed); err != nil {
@@ -153,35 +153,35 @@ func Parse(document []byte) (Document, error) {
 
 func Validate(document Document) error {
 	if !slices.Contains(risks, document.RiskLevel) {
-		return fmt.Errorf("the findings document states the risk level %q, which is not one of %v", document.RiskLevel, risks)
+		return fmt.Errorf(unknownRiskLevel, document.RiskLevel, risks)
 	}
 
 	seen := map[string]bool{}
 	for position, finding := range document.Findings {
-		named := fmt.Sprintf("finding %d", position+1)
+		named := fmt.Sprintf(findingAt, position+1)
 		if finding.ID != "" {
-			named = fmt.Sprintf("finding %q", finding.ID)
+			named = fmt.Sprintf(findingNamed, finding.ID)
 		}
 
 		if finding.ID == "" {
-			return fmt.Errorf("%s carries no identifier, so a response could not be attached to it", named)
+			return fmt.Errorf(noIdentifier, named)
 		}
 		if seen[finding.ID] {
-			return fmt.Errorf("two findings carry the identifier %q, so a response attached to it would be ambiguous", finding.ID)
+			return fmt.Errorf(repeatedIdentifier, finding.ID)
 		}
 		seen[finding.ID] = true
 
 		if !slices.Contains(severities, finding.Severity) {
-			return fmt.Errorf("%s states the severity %q, which is not one of %v", named, finding.Severity, severities)
+			return fmt.Errorf(unknownSeverity, named, finding.Severity, severities)
 		}
 		if err := validatePath(finding.File); err != nil {
-			return fmt.Errorf("%s names the file %q: %w", named, finding.File, err)
+			return fmt.Errorf(namesTheFile, named, finding.File, err)
 		}
 		if finding.Line < 1 {
-			return fmt.Errorf("%s names line %d, and lines are counted from one", named, finding.Line)
+			return fmt.Errorf(linesAreCountedFromOne, named, finding.Line)
 		}
 		if strings.TrimSpace(finding.Description) == "" {
-			return fmt.Errorf("%s describes nothing", named)
+			return fmt.Errorf(describesNothing, named)
 		}
 	}
 
@@ -190,16 +190,16 @@ func Validate(document Document) error {
 
 func validatePath(file string) error {
 	if file == "" {
-		return errors.New("a finding names the file it is about")
+		return errors.New(aFindingNamesItsFile)
 	}
 	if path.IsAbs(file) || strings.HasPrefix(file, "\\") || strings.Contains(file, ":\\") {
-		return errors.New("a file is named relative to the repository root")
+		return errors.New(relativeToTheRoot)
 	}
 	if file != path.Clean(file) {
-		return errors.New("a file is named as the repository spells it")
+		return errors.New(asTheRepositorySpellsIt)
 	}
 	if file == ".." || strings.HasPrefix(file, "../") {
-		return errors.New("a file inside the repository is what a review is about")
+		return errors.New(insideTheRepository)
 	}
 	return nil
 }

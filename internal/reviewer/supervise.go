@@ -33,7 +33,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		return err
 	}
 	if run.State.Terminal() {
-		return fmt.Errorf("run %s already ended as %s", run.Name, run.State)
+		return fmt.Errorf(alreadyEnded, run.Name, run.State)
 	}
 
 	run.Reviewer = supervision.Process
@@ -74,7 +74,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 
 	stream, err := os.Create(round.StreamPath())
 	if err != nil {
-		return fmt.Errorf("opening %s: %w", round.StreamPath(), err)
+		return fmt.Errorf(openingTheStream, round.StreamPath(), err)
 	}
 
 	noting := &noteAgentProcess{inner: supervision.Recorder, store: supervision.Store, run: run}
@@ -93,7 +93,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		Transcript: stream,
 	})
 	if err := stream.Close(); err != nil {
-		return fmt.Errorf("closing %s: %w", round.StreamPath(), err)
+		return fmt.Errorf(closingTheStream, round.StreamPath(), err)
 	}
 
 	if len(answer.Structured) > 0 {
@@ -105,14 +105,13 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 	worktree := snapshot.Worktree{RepositoryRoot: run.Repository, Path: run.Worktree, Commit: run.Snapshot}
 	written, compareErr := worktree.Differences(ctx)
 	if compareErr != nil {
-		return supervision.end(run, runstate.Failed, fmt.Sprintf("socrates could not check whether the reviewer wrote to the worktree: %s", compareErr))
+		return supervision.end(run, runstate.Failed, fmt.Sprintf(couldNotCompare, compareErr))
 	}
 
 	if len(written) > 0 {
-		reason := fmt.Sprintf("the reviewer wrote to the snapshot worktree, which it may not do: %s. The worktree is kept at %s",
-			strings.Join(written, ", "), run.Worktree)
+		reason := fmt.Sprintf(theReviewerWrote, strings.Join(written, ", "), run.Worktree)
 		if agentErr != nil {
-			reason += fmt.Sprintf(". The review also failed: %s", agentErr)
+			reason += fmt.Sprintf(andTheReviewFailed, agentErr)
 		}
 		return supervision.end(run, runstate.Failed, reason)
 	}
@@ -120,7 +119,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 	if agentErr != nil {
 		reason := agentErr.Error()
 		if len(answer.Structured) > 0 {
-			reason += fmt.Sprintf(". What the reviewer returned is kept at %s", round.FindingsPath())
+			reason += fmt.Sprintf(whatItReturnedIsKept, round.FindingsPath())
 		}
 		if err := supervision.end(run, runstate.Failed, reason); err != nil {
 			return err
@@ -130,7 +129,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 
 	document, err := findings.Parse(answer.Structured)
 	if err != nil {
-		if endErr := supervision.end(run, runstate.Failed, fmt.Sprintf("the findings document does not satisfy the schema: %s. It is kept at %s", err, round.FindingsPath())); endErr != nil {
+		if endErr := supervision.end(run, runstate.Failed, fmt.Sprintf(schemaNotSatisfied, err, round.FindingsPath())); endErr != nil {
 			return endErr
 		}
 		return removeWorktree(ctx, worktree)
@@ -146,16 +145,25 @@ func (s Supervision) end(run *runstore.Run, outcome runstate.State, reason strin
 	if err := run.End(outcome, reason); err != nil {
 		return err
 	}
-	return s.Store.Save(run)
+	if err := s.Store.Save(run); err != nil {
+		return err
+	}
+	if s.Recorder == nil {
+		return nil
+	}
+	return s.Recorder.Record(runlog.Event{
+		Kind:    EventRunEnded,
+		Subject: run.Name,
+		Fields:  map[string]any{"state": string(outcome), "reason": reason},
+	})
 }
 
 func verdictReason(document findings.Document) string {
 	classified := findings.Classify(document)
 	if len(document.Findings) == 0 {
-		return "a reviewer read the change and found nothing to report"
+		return nothingToReport
 	}
-	return fmt.Sprintf("a reviewer reported %d findings, %d of them for the person, and rated the change %s risk",
-		len(document.Findings), len(classified.NeedingAPerson), document.RiskLevel)
+	return fmt.Sprintf(whatAReviewerFound, len(document.Findings), len(classified.NeedingAPerson), document.RiskLevel)
 }
 
 func honoursTheSchema(structured json.RawMessage) error {
@@ -171,12 +179,12 @@ type change struct {
 func changeIn(ctx context.Context, run *runstore.Run) (change, error) {
 	paths, err := snapshot.Changed(ctx, run.Repository, run.Base, run.Snapshot)
 	if err != nil {
-		return change{}, fmt.Errorf("socrates could not list what the change touches, so no reviewer was told what to review: %w", err)
+		return change{}, fmt.Errorf(noChangeList, err)
 	}
 
 	diff, err := snapshot.Diff(ctx, run.Repository, run.Base, run.Snapshot)
 	if err != nil {
-		return change{}, fmt.Errorf("socrates could not read the diff of the change, so no reviewer was told what to review: %w", err)
+		return change{}, fmt.Errorf(noDiff, err)
 	}
 
 	return change{paths: paths, diff: diff}, nil

@@ -12,6 +12,7 @@ import (
 
 	"github.com/rui-ktei/socrates/internal/process"
 	"github.com/rui-ktei/socrates/internal/prompt"
+	"github.com/rui-ktei/socrates/internal/refusal"
 	"github.com/rui-ktei/socrates/internal/runstate"
 )
 
@@ -39,27 +40,27 @@ type Run struct {
 
 func (r *Run) Advance(state runstate.State) error {
 	if state.Terminal() {
-		return fmt.Errorf("%s is terminal, so it is a verdict rather than a step", state)
+		return fmt.Errorf(terminalIsNotAStep, state)
 	}
 	return r.transition(state, nil)
 }
 
 func (r *Run) End(outcome runstate.State, reason string) error {
 	if !outcome.Terminal() {
-		return fmt.Errorf("%s is not terminal, so it is not a verdict", outcome)
+		return fmt.Errorf(notTerminalIsNotAVerdict, outcome)
 	}
 	if outcome == runstate.Failed && strings.TrimSpace(reason) == "" {
-		return errors.New("a failed run states why, so that nothing reads it as a review that found nothing")
+		return errors.New(aFailureStatesWhy)
 	}
 	return r.transition(outcome, &Verdict{Outcome: outcome, Reason: reason})
 }
 
 func (r *Run) transition(state runstate.State, verdict *Verdict) error {
 	if !state.Valid() {
-		return fmt.Errorf("%q is not a run state", state)
+		return fmt.Errorf(notARunState, state)
 	}
 	if r.State.Terminal() {
-		return fmt.Errorf("run %s already ended as %s, so it cannot become %s", r.Name, r.State, state)
+		return fmt.Errorf(alreadyEnded, r.Name, r.State, state)
 	}
 
 	r.State = state
@@ -97,7 +98,7 @@ func (s Store) Names() ([]string, error) {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("reading %s: %w", s.root, err)
+		return nil, fmt.Errorf(reading, s.root, err)
 	}
 
 	var names []string
@@ -109,6 +110,54 @@ func (s Store) Names() ([]string, error) {
 	return names, nil
 }
 
+const DefaultRetention = 14 * 24 * time.Hour
+
+func (s Store) Sweep(now time.Time, retention time.Duration) error {
+	if retention <= 0 {
+		retention = DefaultRetention
+	}
+
+	names, err := s.Names()
+	if err != nil {
+		return err
+	}
+
+	for _, name := range names {
+		run, err := s.recorded(name)
+		if err != nil {
+			continue
+		}
+		if !run.State.Terminal() || now.Sub(run.StartedAt) < retention {
+			continue
+		}
+		if err := os.RemoveAll(s.Path(name)); err != nil {
+			return fmt.Errorf(removing, s.Path(name), err)
+		}
+	}
+	return nil
+}
+
+func (s Store) Select(identifier, repositoryRoot string) (string, error) {
+	if identifier != "" {
+		return identifier, nil
+	}
+
+	key, err := RepositoryKey(repositoryRoot)
+	if err != nil {
+		return "", err
+	}
+	names, err := s.Names()
+	if err != nil {
+		return "", err
+	}
+
+	latest, found := Latest(names, key)
+	if !found {
+		return "", refusal.New(noRunForThisRepository, repositoryRoot)
+	}
+	return latest, nil
+}
+
 func (s Store) Create(start Start) (*Run, error) {
 	key, err := RepositoryKey(start.RepositoryRoot)
 	if err != nil {
@@ -116,7 +165,7 @@ func (s Store) Create(start Start) (*Run, error) {
 	}
 	absolute, err := filepath.Abs(start.RepositoryRoot)
 	if err != nil {
-		return nil, fmt.Errorf("resolving %s: %w", start.RepositoryRoot, err)
+		return nil, fmt.Errorf(resolving, start.RepositoryRoot, err)
 	}
 
 	run := &Run{
@@ -130,15 +179,15 @@ func (s Store) Create(start Start) (*Run, error) {
 	}
 
 	if err := os.MkdirAll(s.root, 0o755); err != nil {
-		return nil, fmt.Errorf("creating %s: %w", s.root, err)
+		return nil, fmt.Errorf(creating, s.root, err)
 	}
 
 	directory := s.Path(run.Name)
 	if err := os.Mkdir(directory, 0o755); err != nil {
 		if errors.Is(err, fs.ErrExist) {
-			return nil, fmt.Errorf("run %s already exists, so a second review of %s in the same second cannot start: wait a moment and run it again", run.Name, run.Repository)
+			return nil, fmt.Errorf(alreadyExists, run.Name, run.Repository)
 		}
-		return nil, fmt.Errorf("creating %s: %w", directory, err)
+		return nil, fmt.Errorf(creating, directory, err)
 	}
 
 	if err := write(directory, run); err != nil {
@@ -160,13 +209,16 @@ func (s Store) recorded(name string) (*Run, error) {
 	path := filepath.Join(s.Path(name), recordName)
 
 	content, err := os.ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, refusal.Wrapping(err, noSuchRun, name, s.root)
+	}
 	if err != nil {
-		return nil, fmt.Errorf("reading %s: %w", path, err)
+		return nil, fmt.Errorf(reading, path, err)
 	}
 
 	var run Run
 	if err := json.Unmarshal(content, &run); err != nil {
-		return nil, fmt.Errorf("parsing %s: %w", path, err)
+		return nil, fmt.Errorf(parsing, path, err)
 	}
 	return &run, nil
 }
@@ -179,21 +231,21 @@ func observe(run *Run) {
 	run.State = runstate.Failed
 	run.Verdict = &Verdict{
 		Outcome: runstate.Failed,
-		Reason:  "the reviewer went away before it reported anything, so nothing has been reviewed",
+		Reason:  reviewerWentAway,
 	}
 }
 
 func (s Store) Save(run *Run) error {
 	directory := s.Path(run.Name)
 	if _, err := os.Stat(directory); err != nil {
-		return fmt.Errorf("run %s has no directory under %s: %w", run.Name, s.root, err)
+		return fmt.Errorf(noDirectory, run.Name, s.root, err)
 	}
 
 	stored, err := s.recorded(run.Name)
 	switch {
 	case err == nil:
 		if stored.State.Terminal() && !sameOutcome(stored, run) {
-			return fmt.Errorf("run %s already ended as %s, so it cannot be written as %s", run.Name, stored.State, run.State)
+			return fmt.Errorf(alreadyEndedOnDisk, run.Name, stored.State, run.State)
 		}
 	case !errors.Is(err, fs.ErrNotExist):
 		return err
@@ -218,31 +270,31 @@ func sameOutcome(stored, incoming *Run) bool {
 func write(directory string, run *Run) error {
 	encoded, err := json.MarshalIndent(run, "", "  ")
 	if err != nil {
-		return fmt.Errorf("encoding run %s: %w", run.Name, err)
+		return fmt.Errorf(encoding, run.Name, err)
 	}
 	encoded = append(encoded, '\n')
 
 	temporary, err := os.CreateTemp(directory, recordName+".")
 	if err != nil {
-		return fmt.Errorf("creating a temporary file in %s: %w", directory, err)
+		return fmt.Errorf(creatingATemporaryFile, directory, err)
 	}
 	defer os.Remove(temporary.Name())
 
 	if _, err := temporary.Write(encoded); err != nil {
 		temporary.Close()
-		return fmt.Errorf("writing %s: %w", temporary.Name(), err)
+		return fmt.Errorf(writing, temporary.Name(), err)
 	}
 	if err := temporary.Sync(); err != nil {
 		temporary.Close()
-		return fmt.Errorf("flushing %s: %w", temporary.Name(), err)
+		return fmt.Errorf(flushing, temporary.Name(), err)
 	}
 	if err := temporary.Close(); err != nil {
-		return fmt.Errorf("closing %s: %w", temporary.Name(), err)
+		return fmt.Errorf(closing, temporary.Name(), err)
 	}
 
 	target := filepath.Join(directory, recordName)
 	if err := os.Rename(temporary.Name(), target); err != nil {
-		return fmt.Errorf("renaming onto %s: %w", target, err)
+		return fmt.Errorf(renaming, target, err)
 	}
 	return nil
 }

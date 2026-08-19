@@ -70,7 +70,7 @@ type Agent interface {
 func resolveRouting(configured Configuration) (map[Role]Routing, error) {
 	for role := range configured {
 		if !role.Known() {
-			return nil, fmt.Errorf("%q is not a role socrates has, and its roles are %v", role, roles)
+			return nil, fmt.Errorf(notARole, role, roles)
 		}
 	}
 

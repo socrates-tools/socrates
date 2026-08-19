@@ -67,15 +67,15 @@
 
 ## 8. The command surface
 
-- [ ] 8.1 Add `scrat review`, `--wait`, and the stated intent. Covers `The default does not block`, `Waiting returns the verdict`, `Starting is not a verdict`
-- [ ] 8.2 Add `scrat status` and `--json`. Covers `A running review is a few lines`, `A terminal run reports its verdict`, `Machine-readable on request`
-- [ ] 8.3 Add `scrat findings` and `--json`, printing the effective action rather than the raw field. Covers `Findings are readable`, `The effective action is resolved for the reader`, `A clean run has findings to read too`, `A failed run has no findings to give`
-- [ ] 8.4 Add the run selection default. Covers `The bare command finds this repository's run`, `A repository with no runs`, `An identifier wins over the default`
-- [ ] 8.5 Add the exit codes as a table one function owns. Covers `Each verdict has its own code`, `A usage error is not a verdict`, `Failure is not escalation`
-- [ ] 8.6 Add `scrat cancel`. Covers `Cancelling stops everything`, `Cancelling a terminal run changes nothing`
-- [ ] 8.7 Add the configuration file and its refusal. Covers `No configuration file`, `The repository is never written to`, `An unreadable configuration file is a refusal`
-- [ ] 8.8 Add the command surface test. Covers `The command surface is what it says`
-- [ ] 8.9 Move every user-facing string into one registry per package and add the scan. Covers `A refusal names the next action`, `No em dash reaches a person`
+- [x] 8.1 Add `scrat review`, `--wait`, and the stated intent. Covers `The default does not block`, `Waiting returns the verdict`, `Starting is not a verdict`
+- [x] 8.2 Add `scrat status` and `--json`. Covers `A running review is a few lines`, `A terminal run reports its verdict`, `Machine-readable on request`
+- [x] 8.3 Add `scrat findings` and `--json`, printing the effective action rather than the raw field. Covers `Findings are readable`, `The effective action is resolved for the reader`, `A clean run has findings to read too`, `A failed run has no findings to give`
+- [x] 8.4 Add the run selection default. Covers `The bare command finds this repository's run`, `A repository with no runs`, `An identifier wins over the default`
+- [x] 8.5 Add the exit codes as a table one function owns. Covers `Each verdict has its own code`, `A usage error is not a verdict`, `Failure is not escalation`
+- [x] 8.6 Add `scrat cancel`. Covers `Cancelling stops everything`, `Cancelling a terminal run changes nothing`
+- [x] 8.7 Add the configuration file and its refusal. Covers `No configuration file`, `The repository is never written to`, `An unreadable configuration file is a refusal`
+- [x] 8.8 Add the command surface test. Covers `The command surface is what it says`
+- [x] 8.9 Move every user-facing string into one registry per package and add the scan. Covers `A refusal names the next action`, `No em dash reaches a person`
 
 ## 9. The event log
 

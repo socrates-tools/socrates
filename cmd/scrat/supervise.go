@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/rui-ktei/socrates/internal/agent"
+	"github.com/rui-ktei/socrates/internal/config"
 	"github.com/rui-ktei/socrates/internal/reviewer"
 	"github.com/rui-ktei/socrates/internal/runlog"
 	"github.com/spf13/cobra"
@@ -13,17 +14,21 @@ import (
 func newSuperviseCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:    reviewer.SuperviseCommand + " <run>",
-		Short:  "Conduct a review that scrat review started",
+		Short:  superviseShort,
 		Args:   cobra.ExactArgs(1),
 		Hidden: true,
 		RunE: func(command *cobra.Command, arguments []string) error {
+			settings, err := config.Load()
+			if err != nil {
+				return err
+			}
 			store, err := openStore()
 			if err != nil {
 				return err
 			}
 
 			name := arguments[0]
-			events, err := runlog.Open(filepath.Join(store.Path(name), runlog.FileName))
+			events, err := runlog.Open(filepath.Join(store.Path(name), runlog.FileName), settings.LogCeiling)
 			if err != nil {
 				return err
 			}
@@ -33,9 +38,14 @@ func newSuperviseCommand() *cobra.Command {
 				Store:    store,
 				Name:     name,
 				Process:  os.Getpid(),
+				Ceiling:  settings.DiffCeiling,
 				Recorder: events,
 				NewAgent: func(recorder runlog.Recorder) (agent.Agent, error) {
-					return agent.NewClaude(agent.Options{Recorder: recorder})
+					return agent.NewClaude(agent.Options{
+						Recorder: recorder,
+						Routing:  settings.Roles,
+						Deadline: settings.AgentDeadline,
+					})
 				},
 			})
 		},

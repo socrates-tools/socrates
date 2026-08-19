@@ -104,7 +104,7 @@ func (s *Session) Review(arguments ...string) string {
 		s.t.Fatalf("scrat review exited %d: %s", code, failures)
 	}
 
-	name := strings.TrimSpace(out)
+	name, _, _ := strings.Cut(strings.TrimSpace(out), "\n")
 	if name == "" {
 		s.t.Fatal("scrat review printed no run identifier")
 	}

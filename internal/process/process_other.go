@@ -8,7 +8,7 @@ import (
 	"os/exec"
 )
 
-var unsupported = errors.New("socrates reaps by process group, which this platform does not have")
+var unsupported = errors.New(noProcessGroups)
 
 func OwnGroup(command *exec.Cmd) {
 }

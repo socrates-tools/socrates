@@ -3,6 +3,7 @@ package agent
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -86,7 +87,7 @@ func parseStream(input io.Reader) (streamed, error) {
 		case "assistant":
 			var message wireMessage
 			if err := json.Unmarshal(event.Message, &message); err != nil {
-				return streamed{}, fmt.Errorf("an assistant event carries no message: %w", err)
+				return streamed{}, fmt.Errorf(noMessageInAnAssistantEvent, err)
 			}
 			if message.Model != "" {
 				read.model = message.Model
@@ -108,7 +109,7 @@ func parseStream(input io.Reader) (streamed, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return streamed{}, fmt.Errorf("reading the agent's output stream: %w", err)
+		return streamed{}, fmt.Errorf(readingTheStream, err)
 	}
 	if malformed != "" {
 		if watched.truncated() {
@@ -125,13 +126,13 @@ func parseStream(input io.Reader) (streamed, error) {
 
 func truncatedStream(line string) error {
 	if line == "" {
-		return fmt.Errorf("the agent's output stream is truncated part-way through a line")
+		return errors.New(truncatedMidLine)
 	}
-	return fmt.Errorf("the agent's output stream is truncated part-way through a line: %s", elide(line))
+	return fmt.Errorf(truncatedMidLineAt, elide(line))
 }
 
 func notAnEvent(line string) error {
-	return fmt.Errorf("a line of the agent's output stream is not an event: %s", elide(line))
+	return fmt.Errorf(notAnEventLine, elide(line))
 }
 
 func (u *Usage) add(reported wireUsage) {

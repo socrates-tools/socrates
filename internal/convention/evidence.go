@@ -17,6 +17,7 @@ var ContractsTestsRead = map[string]string{
 	filepath.Join("internal", "claudesim", "failure_test.go"):   "the file the simulator wrote into a temporary directory, which is the observable side effect that scenario asks for",
 	filepath.Join("internal", "convention", "comments_test.go"): "this repository's no-commentary convention, where the source is the subject of the check and not a proxy for anything else",
 	filepath.Join("internal", "convention", "evidence_test.go"): "this convention itself, which is a property of the test suite",
+	filepath.Join("internal", "convention", "wording_test.go"):  "the wording convention itself, where the source is the subject of the check and not a proxy for anything else",
 	filepath.Join("internal", "findings", "classify_test.go"):   "the rule that one function decides a finding's effective action, which is a structural invariant of this module",
 	filepath.Join("internal", "findings", "verdict_test.go"):    "the direction the findings package may import in, which is a structural invariant of this module",
 }
