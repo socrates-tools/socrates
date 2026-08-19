@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rui-ktei/socrates/internal/process"
 	"github.com/rui-ktei/socrates/internal/runlog"
 )
 
@@ -78,8 +79,8 @@ func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error
 	command := exec.CommandContext(bounded, a.binary, arguments...)
 	command.Dir = request.Dir
 	command.Stdin = strings.NewReader(request.Prompt)
-	ownProcessGroup(command)
-	command.Cancel = func() error { return killProcessGroup(command.Process.Pid) }
+	process.OwnGroup(command)
+	command.Cancel = func() error { return process.KillGroup(command.Process.Pid) }
 	command.WaitDelay = waitDelay
 
 	failures := &head{limit: failureTailBytes}
@@ -93,6 +94,9 @@ func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error
 	if err := command.Start(); err != nil {
 		return Response{}, a.failed(request, routing, fmt.Errorf("starting %s: %w", a.binary, err))
 	}
+	defer func() {
+		_ = process.KillGroup(command.Process.Pid)
+	}()
 	a.record(runlog.Event{
 		Kind:    EventStarted,
 		Subject: string(request.Role),

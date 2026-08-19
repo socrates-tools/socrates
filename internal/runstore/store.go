@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rui-ktei/socrates/internal/process"
 	"github.com/rui-ktei/socrates/internal/runstate"
 )
 
@@ -25,10 +26,13 @@ type Run struct {
 	Repository string         `json:"repository"`
 	Base       string         `json:"base"`
 	Snapshot   string         `json:"snapshot"`
+	Worktree   string         `json:"worktree,omitempty"`
 	Intent     string         `json:"intent,omitempty"`
 	StartedAt  time.Time      `json:"started_at"`
 	State      runstate.State `json:"state"`
 	Verdict    *Verdict       `json:"verdict,omitempty"`
+	Reviewer   int            `json:"reviewer,omitempty"`
+	Agent      int            `json:"agent,omitempty"`
 }
 
 func (r *Run) Advance(state runstate.State) error {
@@ -142,6 +146,15 @@ func (s Store) Create(start Start) (*Run, error) {
 }
 
 func (s Store) Load(name string) (*Run, error) {
+	run, err := s.recorded(name)
+	if err != nil {
+		return nil, err
+	}
+	observe(run)
+	return run, nil
+}
+
+func (s Store) recorded(name string) (*Run, error) {
 	path := filepath.Join(s.Path(name), recordName)
 
 	content, err := os.ReadFile(path)
@@ -156,13 +169,25 @@ func (s Store) Load(name string) (*Run, error) {
 	return &run, nil
 }
 
+func observe(run *Run) {
+	if run.State.Terminal() || run.Reviewer == 0 || process.Alive(run.Reviewer) {
+		return
+	}
+
+	run.State = runstate.Failed
+	run.Verdict = &Verdict{
+		Outcome: runstate.Failed,
+		Reason:  "the reviewer went away before it reported anything, so nothing has been reviewed",
+	}
+}
+
 func (s Store) Save(run *Run) error {
 	directory := s.Path(run.Name)
 	if _, err := os.Stat(directory); err != nil {
 		return fmt.Errorf("run %s has no directory under %s: %w", run.Name, s.root, err)
 	}
 
-	stored, err := s.Load(run.Name)
+	stored, err := s.recorded(run.Name)
 	switch {
 	case err == nil:
 		if stored.State.Terminal() && !sameOutcome(stored, run) {

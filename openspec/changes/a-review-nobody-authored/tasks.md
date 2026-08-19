@@ -48,13 +48,13 @@
 
 ## 6. The reviewer run
 
-- [ ] 6.1 Add the detached spawn, the recorded process identity, and the released standard streams. Covers `The command returns while the review runs`, `The reviewer survives its caller`
-- [ ] 6.2 Add the process group and reap it on every exit path. Covers `A child that outlives the agent is killed`, `Reaping happens on error too`, `Reaping happens on cancellation`, `The worktree can be removed after the round`. Write the clean-exit test first: reaping only on cancellation is the version that looks correct and is not
-- [ ] 6.3 Add the re-entrancy marker and the refusal. Covers `The reviewer's environment is marked`, `A review inside a review is refused`
-- [ ] 6.4 Add the worktree comparison after the round and the failure it causes. Covers `A reviewer that wrote fails the round`, `A reviewer that created a file fails the round`, `A clean reviewer passes the check`, `A dirtied worktree is kept`
-- [ ] 6.5 Add the positive-evidence rule. Covers `A missing findings document is a failure`, `A dead reviewer is a failure`, `An empty findings array with evidence is clean`, `An unparseable findings document is a failure`
-- [ ] 6.6 Stream the reviewer's output to disk as it arrives. Covers `Output is visible while the review is running`, `A failed round keeps what it got`
-- [ ] 6.7 Add the dead-reviewer answer on read. Covers `A killed reviewer stops the run`, `A live reviewer is still working`
+- [x] 6.1 Add the detached spawn, the recorded process identity, and the released standard streams. Covers `The command returns while the review runs`, `The reviewer survives its caller`
+- [x] 6.2 Add the process group and reap it on every exit path. Covers `A child that outlives the agent is killed`, `Reaping happens on error too`, `Reaping happens on cancellation`, `The worktree can be removed after the round`. Write the clean-exit test first: reaping only on cancellation is the version that looks correct and is not
+- [x] 6.3 Add the re-entrancy marker and the refusal. Covers `The reviewer's environment is marked`, `A review inside a review is refused`
+- [x] 6.4 Add the worktree comparison after the round and the failure it causes. Covers `A reviewer that wrote fails the round`, `A reviewer that created a file fails the round`, `A clean reviewer passes the check`, `A dirtied worktree is kept`
+- [x] 6.5 Add the positive-evidence rule. Covers `A missing findings document is a failure`, `A dead reviewer is a failure`, `An empty findings array with evidence is clean`, `An unparseable findings document is a failure`
+- [x] 6.6 Stream the reviewer's output to disk as it arrives. Covers `Output is visible while the review is running`, `A failed round keeps what it got`
+- [x] 6.7 Add the dead-reviewer answer on read. Covers `A killed reviewer stops the run`, `A live reviewer is still working`
 
 ## 7. The prompt
 

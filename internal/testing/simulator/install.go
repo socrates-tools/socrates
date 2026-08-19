@@ -1,9 +1,7 @@
 package simulator
 
 import (
-	"bytes"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -25,17 +23,10 @@ type Simulator struct {
 func Install(t *testing.T) *Simulator {
 	t.Helper()
 
-	root := source.Root(t)
 	directory := t.TempDir()
 	binary := filepath.Join(directory, "claudesim")
 
-	build := exec.Command("go", "build", "-o", binary, "./cmd/claudesim")
-	build.Dir = root
-	var failures bytes.Buffer
-	build.Stderr = &failures
-	if err := build.Run(); err != nil {
-		t.Fatalf("building the simulator: %v: %s", err, failures.String())
-	}
+	source.Build(t, "./cmd/claudesim", binary)
 
 	link := filepath.Join(directory, invokedAs)
 	if err := os.Symlink(binary, link); err != nil {

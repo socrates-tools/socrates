@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/rui-ktei/socrates/internal/refusal"
 )
 
 const commitMessage = "socrates snapshot"
@@ -26,15 +28,6 @@ var commitIdentity = []string{
 	"GIT_AUTHOR_EMAIL=socrates@localhost",
 	"GIT_COMMITTER_NAME=socrates",
 	"GIT_COMMITTER_EMAIL=socrates@localhost",
-}
-
-type Refusal struct {
-	Directory string
-	Reason    string
-}
-
-func (r *Refusal) Error() string {
-	return r.Reason
 }
 
 type Snapshot struct {
@@ -104,6 +97,14 @@ func Take(ctx context.Context, directory string) (Snapshot, error) {
 	return taken, nil
 }
 
+func Changed(ctx context.Context, repositoryRoot, base, commit string) ([]string, error) {
+	changed, err := git(ctx, repositoryRoot, nil, "diff-tree", "-r", "--name-only", "--no-commit-id", base, commit)
+	if err != nil {
+		return nil, err
+	}
+	return lines(changed), nil
+}
+
 func (s Snapshot) Checkout(ctx context.Context, path string) (Worktree, error) {
 	if s.NothingToReview() {
 		return Worktree{}, errors.New("there is nothing to review, so there is no snapshot to check out")
@@ -127,6 +128,22 @@ func (s Snapshot) Checkout(ctx context.Context, path string) (Worktree, error) {
 	return Worktree{RepositoryRoot: s.RepositoryRoot, Path: path, Commit: s.Commit}, nil
 }
 
+func (w Worktree) Differences(ctx context.Context) ([]string, error) {
+	reported, err := git(ctx, w.Path, nil, "status", "--porcelain=v1", "--untracked-files=all")
+	if err != nil {
+		return nil, err
+	}
+
+	var differing []string
+	for _, line := range lines(reported) {
+		if len(line) < 4 {
+			continue
+		}
+		differing = append(differing, strings.TrimSpace(line[3:]))
+	}
+	return differing, nil
+}
+
 func (w Worktree) Remove(ctx context.Context) error {
 	if err := os.RemoveAll(w.Path); err != nil {
 		return fmt.Errorf("removing %s: %w", w.Path, err)
@@ -140,32 +157,20 @@ func (w Worktree) Remove(ctx context.Context) error {
 func resolve(ctx context.Context, directory string) (string, string, error) {
 	bare, err := git(ctx, directory, nil, "rev-parse", "--is-bare-repository")
 	if err != nil {
-		return "", "", &Refusal{
-			Directory: directory,
-			Reason:    fmt.Sprintf("%s is not inside a git working tree, so there is nothing to review: run scrat review from inside a repository", directory),
-		}
+		return "", "", refusal.New("%s is not inside a git working tree, so there is nothing to review: run scrat review from inside a repository", directory)
 	}
 	if bare == "true" {
-		return "", "", &Refusal{
-			Directory: directory,
-			Reason:    fmt.Sprintf("the repository at %s is bare, so it has no working tree to review", directory),
-		}
+		return "", "", refusal.New("the repository at %s is bare, so it has no working tree to review", directory)
 	}
 
 	root, err := git(ctx, directory, nil, "rev-parse", "--show-toplevel")
 	if err != nil || root == "" {
-		return "", "", &Refusal{
-			Directory: directory,
-			Reason:    fmt.Sprintf("%s is not inside a git working tree, so there is nothing to review: run scrat review from inside a repository", directory),
-		}
+		return "", "", refusal.New("%s is not inside a git working tree, so there is nothing to review: run scrat review from inside a repository", directory)
 	}
 
 	base, err := git(ctx, root, nil, "rev-parse", "--verify", "HEAD^{commit}")
 	if err != nil {
-		return "", "", &Refusal{
-			Directory: directory,
-			Reason:    fmt.Sprintf("the repository at %s has no commit for HEAD to resolve to, so there is no base to review against: commit something first", root),
-		}
+		return "", "", refusal.New("the repository at %s has no commit for HEAD to resolve to, so there is no base to review against: commit something first", root)
 	}
 
 	return root, base, nil
@@ -190,7 +195,7 @@ func git(ctx context.Context, directory string, environment []string, args ...st
 		return "", fmt.Errorf("git %s in %s: %s", strings.Join(args, " "), directory, reported)
 	}
 
-	return strings.TrimSpace(stdout.String()), nil
+	return strings.TrimRight(stdout.String(), " \t\r\n"), nil
 }
 
 func lines(output string) []string {
