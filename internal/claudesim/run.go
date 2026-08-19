@@ -34,6 +34,7 @@ func Run(arguments []string, input io.Reader, out, failures io.Writer, environme
 	}
 
 	invocation := Invocation{
+		Process:        os.Getpid(),
 		Arguments:      arguments,
 		Prompt:         string(prompt),
 		Directory:      directory,
@@ -43,6 +44,8 @@ func Run(arguments []string, input io.Reader, out, failures io.Writer, environme
 		Schema:         parsed.schema,
 		SettingSources: parsed.settingSources,
 		Tools:          parsed.tools,
+		MCPServers:     parsed.mcpServers,
+		StrictMCP:      parsed.strictMCP,
 	}
 
 	scenario, err := LoadScenario(os.Getenv(ScenarioVariable))
@@ -66,6 +69,11 @@ func Run(arguments []string, input io.Reader, out, failures io.Writer, environme
 
 	if err := Append(os.Getenv(LogVariable), invocation); err != nil {
 		fmt.Fprintf(failures, "error: %s\n", err)
+		return exitUsage
+	}
+
+	if response.Behaviour == RefuseStrictness && parsed.strictMCP {
+		fmt.Fprintln(failures, strictnessRefused)
 		return exitUsage
 	}
 

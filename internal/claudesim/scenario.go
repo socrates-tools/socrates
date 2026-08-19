@@ -13,16 +13,18 @@ import (
 type Behaviour string
 
 const (
-	ReportFindings  Behaviour = "findings"
-	TruncateStream  Behaviour = "truncated-stream"
-	OmitResult      Behaviour = "no-result"
-	OmitStructured  Behaviour = "no-structured-output"
-	ViolateSchema   Behaviour = "schema-violation"
-	ExitNonZero     Behaviour = "non-zero-exit"
-	SayNothingAtAll Behaviour = "silence"
+	ReportFindings   Behaviour = "findings"
+	TruncateStream   Behaviour = "truncated-stream"
+	OmitResult       Behaviour = "no-result"
+	OmitStructured   Behaviour = "no-structured-output"
+	ViolateSchema    Behaviour = "schema-violation"
+	ExitNonZero      Behaviour = "non-zero-exit"
+	SayNothingAtAll  Behaviour = "silence"
+	RefuseStrictness Behaviour = "strict-tool-servers-refused"
 )
 
 const (
+	strictnessRefused       = "You cannot use --strict-mcp-config when an enterprise MCP config is present"
 	defaultText             = "I read the change against the base."
 	defaultModel            = "claude-sim-1"
 	defaultSession          = "00000000-0000-4000-8000-000000000000"
@@ -34,6 +36,7 @@ const (
 
 var behaviours = []Behaviour{
 	ReportFindings,
+	RefuseStrictness,
 	TruncateStream,
 	OmitResult,
 	OmitStructured,

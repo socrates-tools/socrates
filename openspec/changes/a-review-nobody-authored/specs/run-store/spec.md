@@ -83,7 +83,7 @@ A rotation SHALL record that it happened, so that a reader knows the log is not 
 - **WHEN** the log rotates while the reviewer is still emitting
 - **THEN** subsequent events appear in the same file, and no event is written to a file no reader will open
 
-### Requirement: A run holds one of six states and three of them are terminal
+### Requirement: A run holds one of six states and four of them are terminal
 
 A run SHALL be in exactly one of `starting`, `reviewing`, `clean`, `escalated`, `failed`, `cancelled`.
 `clean`, `escalated`, `failed` and `cancelled` SHALL be terminal.

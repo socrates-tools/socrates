@@ -201,14 +201,12 @@ type noteAgentProcess struct {
 	inner runlog.Recorder
 	store runstore.Store
 	run   *runstore.Run
-	noted bool
 }
 
 func (n *noteAgentProcess) Record(event runlog.Event) error {
-	if !n.noted && event.Kind == agent.EventStarted {
-		if pid, stated := event.Fields["process"].(int); stated {
+	if event.Kind == agent.EventStarted {
+		if pid, stated := event.Fields["process"].(int); stated && pid != n.run.Agent {
 			n.run.Agent = pid
-			n.noted = true
 			if err := n.store.Save(n.run); err != nil {
 				return err
 			}

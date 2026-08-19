@@ -114,7 +114,7 @@ It is the defect this requirement exists to make unrepresentable, and it is invi
 #### Scenario: A document mixing every case
 
 - **WHEN** a document carries findings actioned `auto-fix`, `ask-user`, `no-op`, an unknown value, an empty value and no value at all
-- **THEN** the classification places three of them with the person, one as patchable and one as a no-op, and nothing is lost
+- **THEN** the classification places four of them with the person, one as patchable and one as a no-op, and nothing is lost
 
 ### Requirement: The verdict follows from the findings by one rule
 

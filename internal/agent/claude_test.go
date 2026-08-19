@@ -3,6 +3,7 @@ package agent_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -61,6 +62,67 @@ func TestProjectSettingsAreNotLoaded(t *testing.T) {
 	}
 	if invocation.Directory != repository.Root {
 		t.Errorf("the reviewer ran in %q, want %q", invocation.Directory, repository.Root)
+	}
+}
+
+func TestNoToolServerIsLoaded(t *testing.T) {
+	simulated := simulator.Install(t)
+	claude := build(t, agent.Options{})
+
+	if _, err := claude.Run(context.Background(), request()); err != nil {
+		t.Fatalf("running the reviewer: %v", err)
+	}
+
+	invocation := simulated.OnlyInvocation()
+	if !invocation.StrictMCP {
+		t.Error("the invocation does not restrict the reviewer to the tool servers socrates named")
+	}
+
+	named, found := invocation.ValueOf("--mcp-config")
+	if !found {
+		t.Fatal("the invocation names no tool server configuration, so the person's own servers are loaded")
+	}
+
+	var configured struct {
+		Servers map[string]any `json:"mcpServers"`
+	}
+	if err := json.Unmarshal([]byte(named), &configured); err != nil {
+		t.Fatalf("the tool server configuration is not JSON: %v: %s", err, named)
+	}
+	if len(configured.Servers) != 0 {
+		t.Errorf("the invocation loads the tool servers %v", configured.Servers)
+	}
+	if invocation.MCPServers != named {
+		t.Error("the configuration the simulator read is not the one socrates passed")
+	}
+}
+
+func TestAToolServerConfigurationTheCLIWillNotIgnoreIsNotFatal(t *testing.T) {
+	// scenario: A machine that will not let them be ignored
+	simulated := simulator.Install(t)
+	simulated.Scenario("default:\n  behaviour: strict-tool-servers-refused\n")
+
+	recorded := &collector{}
+	if _, err := build(t, agent.Options{Recorder: recorded}).Run(context.Background(), request()); err != nil {
+		t.Fatalf("a CLI that refuses to ignore the machine's tool servers ended the review: %v", err)
+	}
+
+	if loaded := recorded.events(agent.EventToolServersLoaded); len(loaded) != 1 {
+		t.Errorf("%d events record that the machine's tool servers were loaded, want one", len(loaded))
+	}
+
+	invocations := simulated.Invocations()
+	if len(invocations) != 2 {
+		t.Fatalf("the reviewer was invoked %d times, want the refused one and the one that ran", len(invocations))
+	}
+	if !invocations[0].StrictMCP {
+		t.Error("the first invocation did not ask for the machine's tool servers to be ignored")
+	}
+	if invocations[1].StrictMCP {
+		t.Error("the second invocation asked again for what the CLI had just refused")
+	}
+	if invocations[1].Tools != invocations[0].Tools {
+		t.Errorf("the second invocation restricts tools to %q, and the first to %q", invocations[1].Tools, invocations[0].Tools)
 	}
 }
 

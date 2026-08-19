@@ -104,14 +104,15 @@
 
 ## 12. Coverage and documentation
 
-- [ ] 12.1 Add `scripts/scenario-coverage`: list every scenario in `openspec/specs/` and `openspec/changes/` that no test names, exiting non-zero on a gap
-- [ ] 12.2 Run it and close every gap this change introduced. A scenario with no test is a promise socrates has not made
-- [ ] 12.3 Write `AGENTS.md` with the layout, the verification sequence and the load-bearing invariants, and symlink `CLAUDE.md` to it
-- [ ] 12.4 Write `README.md`: what socrates is, what it deliberately is not, and the first run
-- [ ] 12.5 Start `docs/gotchas.md` with what this change had to re-derive: the `git stash create` untracked-file trap, `GIT_INDEX_FILE` needing a path that does not exist, and the `synctest` bubble rules
+- [x] 12.1 Add `scripts/scenario-coverage`: list every scenario in `openspec/specs/` and `openspec/changes/` that no test names, exiting non-zero on a gap
+- [x] 12.2 Run it and close every gap this change introduced. A scenario with no test is a promise socrates has not made
+- [x] 12.3 Write `AGENTS.md` with the layout, the verification sequence and the load-bearing invariants, and symlink `CLAUDE.md` to it
+- [x] 12.4 Write `README.md`: what socrates is, what it deliberately is not, and the first run
+- [x] 12.5 Start `docs/gotchas.md` with what this change had to re-derive: the `git stash create` untracked-file trap, `GIT_INDEX_FILE` needing a path that does not exist, and the `synctest` bubble rules
 
 ## 13. Verification
 
-- [ ] 13.1 `make fmt && make lint test` clean
-- [ ] 13.2 `make scenario-coverage` naming no scenario this change adds
-- [ ] 13.3 A live run: review a real change in a real repository with the real `claude` CLI, and record what it found in this change's `retrospective.md`. A live run against a real agent routinely finds defects a green suite against a simulator cannot see, and the ratio is the signal for how novel the surface was
+- [x] 13.1 `make fmt && make lint test` clean
+- [x] 13.2 `make scenario-coverage` naming no scenario this change adds
+- [x] 13.3 A live run: review a real change in a real repository with the real `claude` CLI, and record what it found in this change's `retrospective.md`. A live run against a real agent routinely finds defects a green suite against a simulator cannot see, and the ratio is the signal for how novel the surface was
+- [x] 13.4 Fix what the live run found: the reviewer loads no external tool server, because the person's own servers wrote a directory into the snapshot worktree and the round failed for a write the reviewer never asked to make. Covers `No tool server is loaded`

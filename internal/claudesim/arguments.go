@@ -24,6 +24,8 @@ var knownFlags = []flag{
 	{names: []string{"--effort"}, takesValue: true},
 	{names: []string{"--setting-sources"}, takesValue: true},
 	{names: []string{"--tools"}, takesValue: true},
+	{names: []string{"--mcp-config"}, takesValue: true},
+	{names: []string{"--strict-mcp-config"}},
 	{names: []string{"--allowedTools", "--allowed-tools"}, takesValue: true},
 	{names: []string{"--disallowedTools", "--disallowed-tools"}, takesValue: true},
 	{names: []string{"--permission-mode"}, takesValue: true},
@@ -50,6 +52,8 @@ type request struct {
 	effort         string
 	settingSources string
 	tools          string
+	mcpServers     string
+	strictMCP      bool
 }
 
 func parseArguments(arguments []string) (request, error) {
@@ -96,6 +100,8 @@ func parseArguments(arguments []string) (request, error) {
 	parsed.effort = values["--effort"]
 	parsed.settingSources = values["--setting-sources"]
 	parsed.tools = values["--tools"]
+	parsed.mcpServers = values["--mcp-config"]
+	_, parsed.strictMCP = values["--strict-mcp-config"]
 
 	if err := validate(parsed); err != nil {
 		return request{}, err

@@ -18,17 +18,28 @@ const (
 	DefaultBinary   = "claude"
 	DefaultDeadline = 30 * time.Minute
 
-	readingTools     = "Read,Grep,Glob"
-	settingSources   = "user"
-	streamFormat     = "stream-json"
-	waitDelay        = 5 * time.Second
-	failureTailBytes = 8 * 1024
+	readingTools      = "Read,Grep,Glob"
+	noToolServers     = `{"mcpServers":{}}`
+	strictToolServers = "strict-mcp-config"
+	strictnessRefused = "cannot use --" + strictToolServers
+	settingSources    = "user"
+	streamFormat      = "stream-json"
+	waitDelay         = 5 * time.Second
+	failureTailBytes  = 8 * 1024
 )
 
 const (
-	EventStarted   = "agent-started"
-	EventCompleted = "agent-completed"
-	EventFailed    = "agent-failed"
+	EventStarted           = "agent-started"
+	EventCompleted         = "agent-completed"
+	EventFailed            = "agent-failed"
+	EventToolServersLoaded = "agent-tool-servers-loaded"
+)
+
+type toolServers int
+
+const (
+	ownToolServersOnly toolServers = iota
+	whateverIsConfigured
 )
 
 type Options struct {
@@ -75,7 +86,29 @@ func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error
 	bounded, release := context.WithTimeout(ctx, a.deadline)
 	defer release()
 
-	arguments := a.arguments(routing, request)
+	answer, err := a.attempt(bounded, ctx, request, routing, ownToolServersOnly)
+	if !refusesToIgnoreToolServers(answer, err) {
+		return answer, err
+	}
+
+	a.record(runlog.Event{
+		Kind:    EventToolServersLoaded,
+		Subject: string(request.Role),
+		Fields:  map[string]any{"reason": err.Error()},
+	})
+	return a.attempt(bounded, ctx, request, routing, whateverIsConfigured)
+}
+
+func refusesToIgnoreToolServers(answer Response, err error) bool {
+	if err == nil || !strings.Contains(err.Error(), strictnessRefused) {
+		return false
+	}
+	return len(answer.Structured) == 0 && answer.Text == ""
+}
+
+func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, routing Routing, servers toolServers) (Response, error) {
+
+	arguments := a.arguments(routing, request, servers)
 	command := exec.CommandContext(bounded, a.binary, arguments...)
 	command.Dir = request.Dir
 	command.Stdin = strings.NewReader(request.Prompt)
@@ -118,7 +151,7 @@ func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error
 	}
 	waitErr := command.Wait()
 
-	if deadlineErr := a.deadlineReached(bounded, ctx); deadlineErr != nil {
+	if deadlineErr := a.deadlineReached(bounded, parent); deadlineErr != nil {
 		return Response{}, a.failed(request, routing, deadlineErr)
 	}
 	if parseErr != nil {
@@ -175,7 +208,7 @@ func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error
 	return answer, nil
 }
 
-func (a *claudeAgent) arguments(routing Routing, request Request) []string {
+func (a *claudeAgent) arguments(routing Routing, request Request, servers toolServers) []string {
 	arguments := []string{
 		"-p",
 		"--verbose",
@@ -183,6 +216,9 @@ func (a *claudeAgent) arguments(routing Routing, request Request) []string {
 		"--setting-sources", settingSources,
 		"--tools", readingTools,
 		"--dangerously-skip-permissions",
+	}
+	if servers == ownToolServersOnly {
+		arguments = append(arguments, "--mcp-config", noToolServers, "--"+strictToolServers)
 	}
 	if routing.Model != "" {
 		arguments = append(arguments, "--model", routing.Model)

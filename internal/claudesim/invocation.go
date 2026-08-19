@@ -27,7 +27,10 @@ type Invocation struct {
 	Schema         string            `json:"schema,omitempty"`
 	SettingSources string            `json:"setting_sources,omitempty"`
 	Tools          string            `json:"tools,omitempty"`
+	MCPServers     string            `json:"mcp_servers,omitempty"`
+	StrictMCP      bool              `json:"strict_mcp,omitempty"`
 	Child          int               `json:"child,omitempty"`
+	Process        int               `json:"process"`
 }
 
 func (i Invocation) Has(argument string) bool {
