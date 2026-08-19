@@ -6,45 +6,45 @@
 
 ## 1. The module and the shape of a run
 
-- [ ] 1.1 Create the Go module, `cmd/scrat` with cobra and nothing in it, and the `Makefile` targets `build`, `test`, `lint`, `fmt`. `lint` fails on anything `gofmt` would rewrite, so formatting is never a separate thing to remember
-- [ ] 1.2 Add the commentary check: a test that reads every source file in the trees this repository writes in and fails on any comment that is not a directive a tool parses or a `// scenario:` marker. It holds no comments of its own, which is the only honest way to state it
-- [ ] 1.3 Add the run identity: the directory name, the repository key derived from the absolute repository root, and the sort. Covers `Runs sort by when they started`, `Two repositories do not collide`, `The same path always gets the same key`
-- [ ] 1.4 Add `run.json`, written by temporary file and rename. Covers `A reader never sees half a state`, `A crash mid-write leaves the previous state`
-- [ ] 1.5 Add the six states and the terminality answer. Covers `A terminal run does not move`, `A failed run reports no findings as its verdict`
+- [x] 1.1 Create the Go module, `cmd/scrat` with cobra and nothing in it, and the `Makefile` targets `build`, `test`, `lint`, `fmt`. `lint` fails on anything `gofmt` would rewrite, so formatting is never a separate thing to remember
+- [x] 1.2 Add the commentary check: a test that reads every source file in the trees this repository writes in and fails on any comment that is not a directive a tool parses or a `// scenario:` marker. It holds no comments of its own, which is the only honest way to state it
+- [x] 1.3 Add the run identity: the directory name, the repository key derived from the absolute repository root, and the sort. Covers `Runs sort by when they started`, `Two repositories do not collide`, `The same path always gets the same key`
+- [x] 1.4 Add `run.json`, written by temporary file and rename. Covers `A reader never sees half a state`, `A crash mid-write leaves the previous state`
+- [x] 1.5 Add the six states and the terminality answer. Covers `A terminal run does not move`, `A failed run reports no findings as its verdict`
 
 ## 2. The snapshot
 
-- [ ] 2.1 Add the snapshot: temporary index from `HEAD`, `add -A`, `write-tree`, `commit-tree`. Covers `An untracked file is in the snapshot`, `A modified tracked file is in the snapshot`, `A staged change and an unstaged change are both in the snapshot`, `A deleted file is deleted in the snapshot`, `An ignored file is not in the snapshot`
-- [ ] 2.2 Add the untouched-repository test before anything else in this group is trusted. Covers `Git status is unchanged`, `The index is unchanged`, `No ref names the snapshot`, `The snapshot's parent is the current head`. This is the test that fails if the temporary index leaks, and a leak is silent otherwise
-- [ ] 2.3 Add the detached worktree, its placement under the run directory, and its removal. Covers `The worktree is the snapshot`, `Editing while the reviewer reads`, `The worktree is cleaned up`
-- [ ] 2.4 Add the refusals. Covers `Not a repository`, `A repository with no commits`, `A bare repository`
-- [ ] 2.5 Add the cleanup on failure. Covers `Worktree creation fails`, `The temporary index never joins the repository`, `A snapshot in progress leaves nothing behind when it fails`
-- [ ] 2.6 Add the nothing-to-review path. Covers `A change with nothing to review`
+- [x] 2.1 Add the snapshot: temporary index from `HEAD`, `add -A`, `write-tree`, `commit-tree`. Covers `An untracked file is in the snapshot`, `A modified tracked file is in the snapshot`, `A staged change and an unstaged change are both in the snapshot`, `A deleted file is deleted in the snapshot`, `An ignored file is not in the snapshot`
+- [x] 2.2 Add the untouched-repository test before anything else in this group is trusted. Covers `Git status is unchanged`, `The index is unchanged`, `No ref names the snapshot`, `The snapshot's parent is the current head`. This is the test that fails if the temporary index leaks, and a leak is silent otherwise
+- [x] 2.3 Add the detached worktree, its placement under the run directory, and its removal. Covers `The worktree is the snapshot`, `Editing while the reviewer reads`, `The worktree is cleaned up`
+- [x] 2.4 Add the refusals. Covers `Not a repository`, `A repository with no commits`, `A bare repository`
+- [x] 2.5 Add the cleanup on failure. Covers `Worktree creation fails`, `The temporary index never joins the repository`, `A snapshot in progress leaves nothing behind when it fails`
+- [x] 2.6 Add the nothing-to-review path. Covers `A change with nothing to review`
 
 ## 3. The findings contract, as a pure core
 
-- [ ] 3.1 Add the findings types and the schema document handed to the agent. Covers `The reviewer is given the schema`, `A finding names a file and a line`, `Identifiers are unique within a run`
-- [ ] 3.2 Add the single classification helper and test it against the whole input space, not a sample. Covers `A missing action defaults to needing a person`, `An empty action defaults to needing a person`, `An unrecognised action defaults to needing a person`, `Every finding is in exactly one bucket`, `A document mixing every case`
-- [ ] 3.3 Add the test that only one function decides a finding's effective action and both consumers call it. Covers `The two consumers agree by construction`. It is the requirement that cannot be re-derived from behaviour once the second copy exists
-- [ ] 3.4 Add the verdict rule as a pure function, and the test that its package imports nothing outward. Covers `No findings at all`, `Only no-ops and informational findings`, `Anything blocking`, `The rule reaches nothing outward`
-- [ ] 3.5 Add severity and action orthogonality. Covers `An informational finding does not block`, `A warning blocks`, `Action does not change whether a run blocks`, `An informational finding can still be actionable`
-- [ ] 3.6 Add the risk level as recorded and not deciding. Covers `A high risk level with no blocking findings`, `The rationale is one sentence and is kept`
+- [x] 3.1 Add the findings types and the schema document handed to the agent. Covers `The reviewer is given the schema`, `A finding names a file and a line`, `Identifiers are unique within a run`
+- [x] 3.2 Add the single classification helper and test it against the whole input space, not a sample. Covers `A missing action defaults to needing a person`, `An empty action defaults to needing a person`, `An unrecognised action defaults to needing a person`, `Every finding is in exactly one bucket`, `A document mixing every case`
+- [x] 3.3 Add the test that only one function decides a finding's effective action and both consumers call it. Covers `The two consumers agree by construction`. It is the requirement that cannot be re-derived from behaviour once the second copy exists
+- [x] 3.4 Add the verdict rule as a pure function, and the test that its package imports nothing outward. Covers `No findings at all`, `Only no-ops and informational findings`, `Anything blocking`, `The rule reaches nothing outward`
+- [x] 3.5 Add severity and action orthogonality. Covers `An informational finding does not block`, `A warning blocks`, `Action does not change whether a run blocks`, `An informational finding can still be actionable`
+- [x] 3.6 Add the risk level as recorded and not deciding. Covers `A high risk level with no blocking findings`, `The rationale is one sentence and is kept`
 
 ## 4. The simulator, before the agent that needs it
 
-- [ ] 4.1 Build `cmd/claudesim`: argument acceptance, the streaming JSON event format, the terminal result event, and the exit code, matching the real CLI's contract
-- [ ] 4.2 Add the scenario file it is driven by, and the invocation log it appends to. Covers `A test asserts what was asked`
-- [ ] 4.3 Add every failure the specification names as a scenario the simulator can produce on demand. Covers `The simulator produces a failure on demand`
-- [ ] 4.4 Add the PATH substitution the end-to-end harness uses: a temporary directory holding the simulator symlinked under the name socrates invokes, prepended to `PATH`
+- [x] 4.1 Build `cmd/claudesim`: argument acceptance, the streaming JSON event format, the terminal result event, and the exit code, matching the real CLI's contract
+- [x] 4.2 Add the scenario file it is driven by, and the invocation log it appends to. Covers `A test asserts what was asked`
+- [x] 4.3 Add every failure the specification names as a scenario the simulator can produce on demand. Covers `The simulator produces a failure on demand`
+- [x] 4.4 Add the PATH substitution the end-to-end harness uses: a temporary directory holding the simulator symlinked under the name socrates invokes, prepended to `PATH`
 
 ## 5. The agent seam
 
-- [ ] 5.1 Add the interface, the role type, and the per-role model and effort resolution. Covers `The reviewer's model is configurable on its own`, `An empty configuration still runs`
-- [ ] 5.2 Add the boundary test that exactly one package constructs a model process. Covers `One place starts the process`
-- [ ] 5.3 Add the Claude implementation: print mode, streaming JSON, the schema on the command line, user-level settings only, and non-writing tools. Covers `The invocation carries the schema`, `Project settings are not loaded`
-- [ ] 5.4 Add the stream parser and its failures. Covers `A stream that ends mid-event`, `A stream with no result event`, `Structured output that violates the schema`, `A non-zero exit after a complete stream`, `A schema is honoured or the call fails`
-- [ ] 5.5 Add the deadline and the process-group kill on expiry, tested with `testing/synctest`. Covers `A silent agent is killed`, `A slow but live agent is not killed early`
-- [ ] 5.6 Record the model and the token counts in the event log. Covers `What the agent cost is recorded`
+- [x] 5.1 Add the interface, the role type, and the per-role model and effort resolution. Covers `The reviewer's model is configurable on its own`, `An empty configuration still runs`
+- [x] 5.2 Add the boundary test that exactly one package constructs a model process. Covers `One place starts the process`
+- [x] 5.3 Add the Claude implementation: print mode, streaming JSON, the schema on the command line, user-level settings only, and non-writing tools. Covers `The invocation carries the schema`, `Project settings are not loaded`
+- [x] 5.4 Add the stream parser and its failures. Covers `A stream that ends mid-event`, `A stream with no result event`, `Structured output that violates the schema`, `A non-zero exit after a complete stream`, `A schema is honoured or the call fails`
+- [x] 5.5 Add the deadline and the process-group kill on expiry, tested with `testing/synctest`. Covers `A silent agent is killed`, `A slow but live agent is not killed early`
+- [x] 5.6 Record the model and the token counts in the event log. Covers `What the agent cost is recorded`
 
 ## 6. The reviewer run
 

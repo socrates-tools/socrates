@@ -1,0 +1,105 @@
+package simulator
+
+import (
+	"bytes"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"testing"
+
+	"github.com/rui-ktei/socrates/internal/claudesim"
+	"github.com/rui-ktei/socrates/internal/testing/source"
+)
+
+const invokedAs = "claude"
+
+type Simulator struct {
+	t            *testing.T
+	Directory    string
+	Binary       string
+	Link         string
+	LogPath      string
+	ScenarioPath string
+}
+
+func Install(t *testing.T) *Simulator {
+	t.Helper()
+
+	root := source.Root(t)
+	directory := t.TempDir()
+	binary := filepath.Join(directory, "claudesim")
+
+	build := exec.Command("go", "build", "-o", binary, "./cmd/claudesim")
+	build.Dir = root
+	var failures bytes.Buffer
+	build.Stderr = &failures
+	if err := build.Run(); err != nil {
+		t.Fatalf("building the simulator: %v: %s", err, failures.String())
+	}
+
+	link := filepath.Join(directory, invokedAs)
+	if err := os.Symlink(binary, link); err != nil {
+		t.Fatalf("linking the simulator as %s: %v", invokedAs, err)
+	}
+
+	t.Setenv("PATH", directory+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	log := filepath.Join(t.TempDir(), "invocations.jsonl")
+	t.Setenv(claudesim.LogVariable, log)
+
+	return &Simulator{
+		t:         t,
+		Directory: directory,
+		Binary:    binary,
+		Link:      link,
+		LogPath:   log,
+	}
+}
+
+func (s *Simulator) Scenario(scenario string) {
+	s.t.Helper()
+
+	path := filepath.Join(s.Directory, "scenario.yaml")
+	if err := os.WriteFile(path, []byte(scenario), 0o644); err != nil {
+		s.t.Fatalf("writing the scenario: %v", err)
+	}
+	s.t.Setenv(claudesim.ScenarioVariable, path)
+	s.ScenarioPath = path
+}
+
+func (s *Simulator) Record(names ...string) {
+	s.t.Helper()
+
+	joined := ""
+	for position, name := range names {
+		if position > 0 {
+			joined += ","
+		}
+		joined += name
+	}
+	s.t.Setenv(claudesim.RecordEnvVariable, joined)
+}
+
+func (s *Simulator) Invocations() []claudesim.Invocation {
+	s.t.Helper()
+
+	if _, err := os.Stat(s.LogPath); os.IsNotExist(err) {
+		return nil
+	}
+
+	invocations, err := claudesim.ReadLog(s.LogPath)
+	if err != nil {
+		s.t.Fatalf("reading the invocation log: %v", err)
+	}
+	return invocations
+}
+
+func (s *Simulator) OnlyInvocation() claudesim.Invocation {
+	s.t.Helper()
+
+	invocations := s.Invocations()
+	if len(invocations) != 1 {
+		s.t.Fatalf("the simulator was invoked %d times, want once", len(invocations))
+	}
+	return invocations[0]
+}
