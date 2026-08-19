@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/rui-ktei/socrates/internal/process"
+	"github.com/rui-ktei/socrates/internal/prompt"
 	"github.com/rui-ktei/socrates/internal/runstate"
 )
 
@@ -22,17 +23,18 @@ type Verdict struct {
 }
 
 type Run struct {
-	Name       string         `json:"name"`
-	Repository string         `json:"repository"`
-	Base       string         `json:"base"`
-	Snapshot   string         `json:"snapshot"`
-	Worktree   string         `json:"worktree,omitempty"`
-	Intent     string         `json:"intent,omitempty"`
-	StartedAt  time.Time      `json:"started_at"`
-	State      runstate.State `json:"state"`
-	Verdict    *Verdict       `json:"verdict,omitempty"`
-	Reviewer   int            `json:"reviewer,omitempty"`
-	Agent      int            `json:"agent,omitempty"`
+	Name       string          `json:"name"`
+	Repository string          `json:"repository"`
+	Base       string          `json:"base"`
+	Snapshot   string          `json:"snapshot"`
+	Worktree   string          `json:"worktree,omitempty"`
+	Intent     string          `json:"intent,omitempty"`
+	Diff       prompt.Delivery `json:"diff,omitempty"`
+	StartedAt  time.Time       `json:"started_at"`
+	State      runstate.State  `json:"state"`
+	Verdict    *Verdict        `json:"verdict,omitempty"`
+	Reviewer   int             `json:"reviewer,omitempty"`
+	Agent      int             `json:"agent,omitempty"`
 }
 
 func (r *Run) Advance(state runstate.State) error {

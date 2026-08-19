@@ -22,6 +22,7 @@ type Supervision struct {
 	Store    runstore.Store
 	Name     string
 	Process  int
+	Ceiling  int
 	Recorder runlog.Recorder
 	NewAgent func(runlog.Recorder) (agent.Agent, error)
 }
@@ -43,9 +44,9 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		return err
 	}
 
-	round, err := supervision.Store.CreateRound(run.Name, firstRound)
+	reviewed, err := changeIn(ctx, run)
 	if err != nil {
-		return err
+		return supervision.end(run, runstate.Failed, err.Error())
 	}
 
 	asked := prompt.Build(prompt.Request{
@@ -53,9 +54,21 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		Repository: run.Repository,
 		Base:       run.Base,
 		Snapshot:   run.Snapshot,
-		Changed:    changedIn(ctx, run),
+		Changed:    reviewed.paths,
+		Diff:       reviewed.diff,
+		Ceiling:    supervision.Ceiling,
 	})
-	if err := round.Write(round.PromptPath(), asked); err != nil {
+
+	run.Diff = asked.Diff
+	if err := supervision.Store.Save(run); err != nil {
+		return err
+	}
+
+	round, err := supervision.Store.CreateRound(run.Name, firstRound)
+	if err != nil {
+		return err
+	}
+	if err := round.Write(round.PromptPath(), asked.Text); err != nil {
 		return err
 	}
 
@@ -73,7 +86,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 
 	answer, agentErr := reviewing.Run(ctx, agent.Request{
 		Role:       agent.Reviewer,
-		Prompt:     asked,
+		Prompt:     asked.Text,
 		Dir:        run.Worktree,
 		Schema:     json.RawMessage(findings.Schema),
 		Honours:    honoursTheSchema,
@@ -150,12 +163,23 @@ func honoursTheSchema(structured json.RawMessage) error {
 	return err
 }
 
-func changedIn(ctx context.Context, run *runstore.Run) []string {
-	changed, err := snapshot.Changed(ctx, run.Repository, run.Base, run.Snapshot)
+type change struct {
+	paths []string
+	diff  string
+}
+
+func changeIn(ctx context.Context, run *runstore.Run) (change, error) {
+	paths, err := snapshot.Changed(ctx, run.Repository, run.Base, run.Snapshot)
 	if err != nil {
-		return nil
+		return change{}, fmt.Errorf("socrates could not list what the change touches, so no reviewer was told what to review: %w", err)
 	}
-	return changed
+
+	diff, err := snapshot.Diff(ctx, run.Repository, run.Base, run.Snapshot)
+	if err != nil {
+		return change{}, fmt.Errorf("socrates could not read the diff of the change, so no reviewer was told what to review: %w", err)
+	}
+
+	return change{paths: paths, diff: diff}, nil
 }
 
 func removeWorktree(ctx context.Context, worktree snapshot.Worktree) error {

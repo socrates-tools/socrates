@@ -26,8 +26,10 @@ func WorktreePath(runDirectory string) string {
 var commitIdentity = []string{
 	"GIT_AUTHOR_NAME=socrates",
 	"GIT_AUTHOR_EMAIL=socrates@localhost",
+	"GIT_AUTHOR_DATE=@0 +0000",
 	"GIT_COMMITTER_NAME=socrates",
 	"GIT_COMMITTER_EMAIL=socrates@localhost",
+	"GIT_COMMITTER_DATE=@0 +0000",
 }
 
 type Snapshot struct {
@@ -105,6 +107,10 @@ func Changed(ctx context.Context, repositoryRoot, base, commit string) ([]string
 	return lines(changed), nil
 }
 
+func Diff(ctx context.Context, repositoryRoot, base, commit string) (string, error) {
+	return gitOutput(ctx, repositoryRoot, nil, "diff", "--no-color", "--no-ext-diff", "--find-renames", base, commit)
+}
+
 func (s Snapshot) Checkout(ctx context.Context, path string) (Worktree, error) {
 	if s.NothingToReview() {
 		return Worktree{}, errors.New("there is nothing to review, so there is no snapshot to check out")
@@ -177,6 +183,14 @@ func resolve(ctx context.Context, directory string) (string, string, error) {
 }
 
 func git(ctx context.Context, directory string, environment []string, args ...string) (string, error) {
+	produced, err := gitOutput(ctx, directory, environment, args...)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimRight(produced, " \t\r\n"), nil
+}
+
+func gitOutput(ctx context.Context, directory string, environment []string, args ...string) (string, error) {
 	command := exec.CommandContext(ctx, "git", args...)
 	command.Dir = directory
 	if len(environment) > 0 {
@@ -195,7 +209,7 @@ func git(ctx context.Context, directory string, environment []string, args ...st
 		return "", fmt.Errorf("git %s in %s: %s", strings.Join(args, " "), directory, reported)
 	}
 
-	return strings.TrimRight(stdout.String(), " \t\r\n"), nil
+	return stdout.String(), nil
 }
 
 func lines(output string) []string {

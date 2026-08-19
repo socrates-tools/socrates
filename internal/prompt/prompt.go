@@ -3,6 +3,31 @@ package prompt
 import (
 	"fmt"
 	"strings"
+
+	"github.com/rui-ktei/socrates/internal/findings"
+	"github.com/rui-ktei/socrates/internal/testquality"
+)
+
+const DefaultCeiling = 128 << 10
+
+const headingMarker = "## "
+
+type Delivery string
+
+const (
+	Inlined Delivery = "inlined"
+	Read    Delivery = "read"
+)
+
+const (
+	TaskHeading        = "Your task"
+	ContextHeading     = "What you are looking at"
+	IntentHeading      = "What the author says they were doing"
+	ChangedHeading     = "The files this change touches"
+	ChangeHeading      = "The change itself"
+	ReviewingHeading   = "How to review"
+	TestQualityHeading = "Test quality"
+	ReportingHeading   = "What to report"
 )
 
 type Request struct {
@@ -11,33 +36,246 @@ type Request struct {
 	Base       string
 	Snapshot   string
 	Changed    []string
+	Diff       string
+	Ceiling    int
 }
 
-func Build(request Request) string {
+type Delivered struct {
+	Text string
+	Diff Delivery
+}
+
+type Section struct {
+	Heading string
+	Body    string
+}
+
+func Build(request Request) Delivered {
+	delivery := request.delivery()
+
+	return Delivered{
+		Text: assemble([]Section{
+			{Heading: TaskHeading, Body: task},
+			{Heading: ContextHeading, Body: request.context()},
+			{Heading: IntentHeading, Body: request.statedIntent()},
+			{Heading: ChangedHeading, Body: request.changedFiles()},
+			{Heading: ChangeHeading, Body: request.change(delivery)},
+			{Heading: ReviewingHeading, Body: reviewingRules},
+			{Heading: TestQualityHeading, Body: testquality.Rule},
+			{Heading: ReportingHeading, Body: reporting()},
+		}),
+		Diff: delivery,
+	}
+}
+
+func assemble(sections []Section) string {
 	var built strings.Builder
 
-	built.WriteString("You are reviewing a change you did not write.\n\n")
-	built.WriteString("Your working directory is a worktree of a commit that cannot move under you.\n")
-	fmt.Fprintf(&built, "It holds the repository %s as it stands now, and its parent %s is what the change is measured against.\n\n", request.Repository, short(request.Base))
-
-	if request.Intent != "" {
-		built.WriteString("What the person asked for:\n")
-		built.WriteString(request.Intent)
-		built.WriteString("\n\n")
+	for _, part := range sections {
+		body := strings.TrimSpace(part.Body)
+		if body == "" {
+			continue
+		}
+		if built.Len() > 0 {
+			built.WriteString("\n")
+		}
+		fmt.Fprintf(&built, "%s%s\n\n%s\n", headingMarker, part.Heading, body)
 	}
-
-	built.WriteString("The files this change touches:\n")
-	for _, path := range request.Changed {
-		fmt.Fprintf(&built, "- %s\n", path)
-	}
-	built.WriteString("\nReport what you find as the schema requires, and nothing else.\n")
 
 	return built.String()
 }
 
-func short(commit string) string {
-	if len(commit) > 12 {
-		return commit[:12]
+func Sections(delivered string) []Section {
+	var parsed []Section
+	var heading string
+	var body []string
+
+	closing := func() {
+		if heading == "" {
+			return
+		}
+		parsed = append(parsed, Section{Heading: heading, Body: strings.TrimSpace(strings.Join(body, "\n"))})
 	}
-	return commit
+
+	for line := range strings.SplitSeq(delivered, "\n") {
+		if named, marked := strings.CutPrefix(line, headingMarker); marked {
+			closing()
+			heading = named
+			body = nil
+			continue
+		}
+		body = append(body, line)
+	}
+	closing()
+
+	return parsed
+}
+
+func Headings(sections []Section) []string {
+	named := make([]string, 0, len(sections))
+	for _, part := range sections {
+		named = append(named, part.Heading)
+	}
+	return named
+}
+
+func BodyOf(sections []Section, heading string) (string, bool) {
+	for _, part := range sections {
+		if part.Heading == heading {
+			return part.Body, true
+		}
+	}
+	return "", false
+}
+
+func (r Request) ceiling() int {
+	if r.Ceiling > 0 {
+		return r.Ceiling
+	}
+	return DefaultCeiling
+}
+
+func (r Request) delivery() Delivery {
+	if r.Diff != "" && len(r.Diff) <= r.ceiling() {
+		return Inlined
+	}
+	return Read
+}
+
+const task = `You are reviewing a change you did not write.
+
+Nobody has told you it is correct, and nothing you are shown is a claim you have to accept. The account the author's own session would give of this change is deliberately absent, because that account is the thing an independent reviewer exists to not take on trust.
+
+Report what you find as the schema requires, and nothing else.`
+
+func (r Request) context() string {
+	return fmt.Sprintf(`- repository: %s
+- base commit: %s
+- snapshot commit: %s
+
+Your working directory is a worktree of the snapshot commit, so nothing moves under you while you read, and you may open any file in the repository to understand a call site the change does not show.
+Everything this change did is between the base commit and the snapshot commit.`,
+		r.Repository, r.Base, r.Snapshot)
+}
+
+func (r Request) statedIntent() string {
+	stated := strings.TrimSpace(r.Intent)
+	if stated == "" {
+		return ""
+	}
+
+	return fmt.Sprintf(`The person who started this review stated this intent:
+
+%s
+
+That is what they say they wanted. It is not a statement of what the change does, and nobody has checked one against the other.
+Where the code and the stated intent disagree, that disagreement is itself something to report.`, stated)
+}
+
+func (r Request) changedFiles() string {
+	var built strings.Builder
+	for _, path := range r.Changed {
+		fmt.Fprintf(&built, "- %s\n", path)
+	}
+	return built.String()
+}
+
+func (r Request) change(delivery Delivery) string {
+	if delivery == Inlined {
+		return fmt.Sprintf("The whole diff between %s and %s follows.\n\n```diff\n%s\n```",
+			r.Base, r.Snapshot, strings.Trim(r.Diff, "\n"))
+	}
+
+	return fmt.Sprintf(`The diff between %s and %s is %d bytes, which is over the %d byte ceiling for carrying it here, so it is not supplied.
+Read it yourself: the files listed above are in your working directory, and you have the base commit and the snapshot commit named for you.`,
+		r.Base, r.Snapshot, len(r.Diff), r.ceiling())
+}
+
+const reviewingRules = `Trace a counterexample. For any new or changed logic, construct at least one concrete input or state and trace it through the code, looking for a case that produces a wrong result without erroring. A silent wrong answer is what this review exists to catch, and it is not what a linter or a type checker would have caught.
+
+Do a full pass. Review all of the changed code before you return, and do not stop at the first valid finding.
+
+Require a concrete path. Do not infer a systemic flaw from code shape, duplication or architectural preference alone. Report a design problem only where you can name a concrete reachable path, a violated invariant, or an immediately competing owner of the same meaning.
+
+Stay in lane. Do not run tests. Do not report styling, formatting, linting, compilation or type-checking issues. Deterministic tools own those, and every token spent on them is wasted.
+
+Anchor every finding to a file and a one-indexed line, so that a person can go straight to it.
+
+Where the change is clean, return an empty findings array. That is a complete answer, not a failure to find something.`
+
+type severityDefinition struct {
+	Value   findings.Severity
+	Meaning string
+}
+
+type actionDefinition struct {
+	Value   findings.Action
+	Meaning string
+}
+
+type riskDefinition struct {
+	Value   findings.Risk
+	Meaning string
+}
+
+var severityDefinitions = []severityDefinition{
+	{Value: findings.Error, Meaning: "a defect that must not be merged as it stands"},
+	{Value: findings.Warning, Meaning: "a defect worth addressing that can honestly be taken as a follow-up"},
+	{Value: findings.Info, Meaning: "something a person should know about, asking for nothing"},
+}
+
+var actionDefinitions = []actionDefinition{
+	{
+		Value:   findings.AskUser,
+		Meaning: "the finding touches functional requirements, product behaviour, or anything the author decided on purpose. Even where it looks plainly wrong, a person decides. Examples: this feature is not needed, this hardcoded value belongs in configuration, this deletion looks wrong",
+	},
+	{
+		Value:   findings.AutoFix,
+		Meaning: "the finding is a defect that is not functional and not user-visible (correctness, error handling, security, performance, mechanical quality) and can be fixed without discussing what the author intended",
+	},
+	{
+		Value:   findings.NoOp,
+		Meaning: "the finding is informational and asks for nothing: a pattern worth naming, a tradeoff worth acknowledging",
+	},
+}
+
+var riskDefinitions = []riskDefinition{
+	{Value: findings.LowRisk, Meaning: "well bounded, mostly mechanical, or straightforward with little ambiguity"},
+	{Value: findings.MediumRisk, Meaning: "room to improve, but safe to merge first with the concerns taken as follow-ups"},
+	{Value: findings.HighRisk, Meaning: "should not be merged without a person approving it: fundamental, risky, ambiguous, or carrying strong negative signals"},
+}
+
+func reporting() string {
+	var built strings.Builder
+
+	built.WriteString("Give every finding a severity, one of:\n")
+	for _, defined := range severityDefinitions {
+		fmt.Fprintf(&built, "- %q: %s. %s\n", defined.Value, defined.Meaning, blocking(defined.Value))
+	}
+
+	built.WriteString("\nGive every finding an action, one of:\n")
+	for _, defined := range actionDefinitions {
+		fmt.Fprintf(&built, "- %q: %s\n", defined.Value, defined.Meaning)
+	}
+	fmt.Fprintf(&built, "\nWhen in doubt the action is %q, and anything socrates does not recognise it reads as %q as well. Severity and action are independent: an %q finding can still ask a person.\n",
+		unstated(), unstated(), findings.Error)
+
+	built.WriteString("\nRate the change as a whole with risk_level, one of:\n")
+	for _, defined := range riskDefinitions {
+		fmt.Fprintf(&built, "- %q: %s\n", defined.Value, defined.Meaning)
+	}
+	built.WriteString("\nGive one sentence of risk_rationale saying why that level and not another.")
+
+	return built.String()
+}
+
+func blocking(severity findings.Severity) string {
+	if severity.Blocks() {
+		return "A finding at this severity holds the change."
+	}
+	return "A finding at this severity holds nothing."
+}
+
+func unstated() findings.Action {
+	return findings.Finding{}.EffectiveAction()
 }

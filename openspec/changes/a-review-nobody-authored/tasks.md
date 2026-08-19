@@ -58,12 +58,12 @@
 
 ## 7. The prompt
 
-- [ ] 7.1 Add the named sections and the fixed assembly order, with an absent section rather than an empty one. Covers `Order is stable`, `An empty section is absent`
-- [ ] 7.2 Record the delivered prompt in the round directory and make it what tests read. Covers `The prompt is on disk`, `Assertions are made on the delivered prompt`
-- [ ] 7.3 Add the context section, the intent section, and the absence of any channel for the author's rationale. Covers `Intent reaches the reviewer`, `No intent is stated`, `The author's rationale has no channel`
-- [ ] 7.4 Add the diff section and the ceiling. Covers `A small change carries its diff`, `A large change is read`, `The ceiling is one setting`
-- [ ] 7.5 Add the reviewer rules and the action definitions. Covers `Every rule reaches the reviewer`, `The action definitions are the ones the classifier implements`
-- [ ] 7.6 Add the test-quality rule as one named block, and the test that socrates' own suite obeys it. Covers `One block, many roles`, `socrates holds itself to it`
+- [x] 7.1 Add the named sections and the fixed assembly order, with an absent section rather than an empty one. Covers `Order is stable`, `An empty section is absent`
+- [x] 7.2 Record the delivered prompt in the round directory and make it what tests read. Covers `The prompt is on disk`, `Assertions are made on the delivered prompt`
+- [x] 7.3 Add the context section, the intent section, and the absence of any channel for the author's rationale. Covers `Intent reaches the reviewer`, `No intent is stated`, `The author's rationale has no channel`
+- [x] 7.4 Add the diff section and the ceiling. Covers `A small change carries its diff`, `A large change is read`, `The ceiling is one setting`
+- [x] 7.5 Add the reviewer rules and the action definitions. Covers `Every rule reaches the reviewer`, `The action definitions are the ones the classifier implements`
+- [x] 7.6 Add the test-quality rule as one named block, and the test that socrates' own suite obeys it. Covers `One block, many roles`, `socrates holds itself to it`
 
 ## 8. The command surface
 
