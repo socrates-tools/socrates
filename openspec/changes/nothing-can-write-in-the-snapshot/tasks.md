@@ -20,4 +20,4 @@
 ## 3. Verification
 
 - [x] 3.1 `make fmt && make lint test` clean, and `make scenario-coverage` naming no scenario this change adds
-- [ ] 3.2 A live run on the machine whose enterprise configuration loads a tool server that writes: the review completes, the worktree is byte-identical to the snapshot commit afterwards, and the person's repository is untouched. Record what it found in this change's `retrospective.md`
+- [x] 3.2 A live run on the machine whose enterprise configuration loads a tool server that writes: the review completes, the worktree is byte-identical to the snapshot commit afterwards, and the person's repository is untouched. Record what it found in this change's `retrospective.md`

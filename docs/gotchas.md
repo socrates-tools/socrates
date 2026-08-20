@@ -77,7 +77,9 @@ Sealing a worktree by walking it would reach outside the worktree through any sy
 
 **Clearing the write bit means `mode &^ 0o222`, not `0o444`.**
 Assigning a flat mode makes a `0o600` file world-readable and takes the executable bit off a script.
-Clearing only the write bits round-trips: `0o755` seals to `0o555` and lifts back to `0o755`.
+Clearing the write bits keeps everything else: `0o755` seals to `0o555`, and lifting restores the owner's write bit, which is what deleting and inspecting the worktree need.
+Lifting is not the inverse of sealing: a `0o664` file lifts to `0o644` and a `0o444` file lifts to `0o644`.
+Nothing depends on the modes a lifted worktree carries, because a worktree is thrown away or handed to a person to read.
 
 **A sealed directory cannot be removed.**
 `os.RemoveAll` unlinks entries, which needs write permission on the directory that holds them, so every path that removes a worktree or a run directory lifts the seal first.

@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/rui-ktei/socrates/internal/exit"
+	"github.com/rui-ktei/socrates/internal/process"
+	"github.com/rui-ktei/socrates/internal/runstate"
 	"github.com/rui-ktei/socrates/internal/state"
 	"github.com/rui-ktei/socrates/internal/testing/harness"
 )
@@ -54,6 +56,38 @@ func TestASealThatDoesNotHoldIsARefusal(t *testing.T) {
 	}
 	if dirty := session.Repository.Git("status", "--porcelain=v1", "--untracked-files=all"); dirty != "?? internal/added.go" {
 		t.Errorf("the person's repository reads:\n%s", dirty)
+	}
+}
+
+func TestCancellingARunWhoseReviewerWentAwayLiftsTheSeal(t *testing.T) {
+	// scenario: The seal is lifted when the round ends
+	session := harness.Start(t)
+	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 5m\n")
+	session.Repository.Write("internal/added.go", "package internal\n")
+
+	name := session.Review()
+	started := session.WaitFor(name, runstate.Reviewing)
+
+	if err := process.Kill(started.Reviewer); err != nil {
+		t.Fatalf("killing the supervisor before it could lift the seal: %v", err)
+	}
+	if session.Recorded(name).State != runstate.Reviewing {
+		t.Fatal("the run reads as ended on disk, so nothing here is the abandoned case")
+	}
+
+	if _, failures, code := session.Scrat("cancel", name); code != 0 {
+		t.Fatalf("scrat cancel exited %d: %s", code, failures)
+	}
+
+	if recorded := session.Recorded(name).State; recorded != runstate.Failed {
+		t.Errorf("the run reads as %s on disk after being cancelled, so the retention sweep will never reclaim it", recorded)
+	}
+
+	worktree := started.Worktree
+	if _, err := os.Stat(worktree); err == nil {
+		if err := os.RemoveAll(worktree); err != nil {
+			t.Errorf("a person cannot delete the worktree of an abandoned run at %s: %v", worktree, err)
+		}
 	}
 }
 

@@ -63,6 +63,11 @@ This also answers the platform question without a platform check.
 Wherever the bits work, socrates runs.
 Wherever they do not, socrates says so in one sentence and does nothing.
 
+The probe catches root along with an unenforcing filesystem, because root ignores permission bits by design, and socrates refuses there too.
+That is deliberate: as root the seal is not a mechanism, and a review that cannot promise the reviewer only read is a review whose verdict socrates cannot stand behind.
+The refusal therefore names both conditions and the next action for each, because pointing `SOCRATES_STATE_HOME` somewhere else cannot help a process that is root.
+A branch on the effective user identity would be a branch no test on this machine can enter, so there is one message rather than two.
+
 ### The comparison stays, and the simulator learns to defeat the seal
 
 The comparison after the round is what catches a write the seal could not stop: a process running as another user, a filesystem that started enforcing nothing after the probe, a future mechanism nobody has thought of.

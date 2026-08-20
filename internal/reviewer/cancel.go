@@ -15,7 +15,10 @@ func Cancel(ctx context.Context, store runstore.Store, name string) (*runstore.R
 		return nil, err
 	}
 	if run.State.Terminal() {
-		return run, nil
+		if err := store.Save(run); err != nil {
+			return nil, err
+		}
+		return run, liftTheSeal(run)
 	}
 
 	if err := process.KillGroup(run.Agent); err != nil {

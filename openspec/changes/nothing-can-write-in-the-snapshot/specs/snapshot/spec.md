@@ -3,14 +3,19 @@
 ### Requirement: The snapshot worktree cannot be written to
 
 socrates SHALL seal the snapshot worktree after checking it out: every directory and every file in it SHALL be left without write permission for as long as the round runs.
-A reviewer, a tool server, a hook, and anything else a vendor's session starts SHALL therefore be refused by the filesystem rather than trusted, restricted by a flag, or caught afterwards.
+A write attempted by a reviewer, a tool server, a hook, or anything else a vendor's session starts SHALL therefore be refused by the filesystem rather than trusted, restricted by a flag, or caught afterwards.
+
+The seal is not a sandbox and SHALL NOT be described as one.
+The session runs as the owner of those files, so something that sets out to defeat the seal can clear the bit back and write, which is what the comparison after the round is for.
+What the seal removes is every write nothing went out of its way to make, which is the whole of what has actually written in a snapshot worktree so far.
 
 The seal SHALL cover the worktree and nothing else, because the run directory around it is where the prompt, the reviewer's stream and its findings are written while the round runs.
 
 socrates SHALL prove the seal before a reviewer is spawned, by attempting one write inside the sealed worktree.
 A `chmod` that returned no error is not evidence: a filesystem can ignore permission bits entirely.
 
-Where that write succeeds, socrates SHALL remove what it wrote and refuse the review, naming the worktree and that its filesystem does not enforce the seal.
+Where that write succeeds, socrates SHALL remove what it wrote and refuse the review, naming the worktree and both ways the seal fails to hold: a filesystem that does not enforce permissions, and a process that is root and ignores them.
+The refusal SHALL name the next action for each, because the remedy for one is not the remedy for the other.
 A refusal is the only honest answer there, because socrates cannot otherwise promise that the change reviewed is the change that was frozen, and every verdict it produced would be a claim it could not support.
 
 #### Scenario: A reviewer cannot create a file
@@ -30,8 +35,8 @@ A refusal is the only honest answer there, because socrates cannot otherwise pro
 
 #### Scenario: A seal that does not hold is a refusal
 
-- **WHEN** the worktree's filesystem allows a write into the sealed worktree
-- **THEN** `scrat review` refuses, naming the worktree and the filesystem, exits with the usage code, spawns no reviewer, and leaves nothing behind
+- **WHEN** a write into the sealed worktree succeeds, whether because the filesystem enforces nothing or because the process is root
+- **THEN** `scrat review` refuses, naming the worktree and both conditions, exits with the usage code, spawns no reviewer, and leaves nothing behind
 
 #### Scenario: The seal is lifted when the round ends
 
