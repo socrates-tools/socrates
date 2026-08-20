@@ -4,14 +4,31 @@ import "strings"
 
 var conflictMarkers = []string{"<<<<<<<", "=======", ">>>>>>>", "|||||||"}
 
+const headingMarker = "#"
+
 func Neutralise(field string) string {
 	var lines []string
 
 	for line := range strings.SplitSeq(withoutCarriageReturns(field), "\n") {
-		lines = append(lines, strings.Join(strings.Fields(withoutConflictMarkers(line)), " "))
+		lines = append(lines, withoutHeadingMarker(collapsed(withoutConflictMarkers(line))))
 	}
 
 	return strings.TrimSpace(strings.Join(lines, "\n"))
+}
+
+func collapsed(line string) string {
+	return strings.Join(strings.Fields(line), " ")
+}
+
+func withoutHeadingMarker(line string) string {
+	named := strings.TrimLeft(line, headingMarker)
+	if len(named) == len(line) {
+		return line
+	}
+	if named != "" && !strings.HasPrefix(named, " ") {
+		return line
+	}
+	return strings.TrimSpace(named)
 }
 
 func withoutCarriageReturns(field string) string {

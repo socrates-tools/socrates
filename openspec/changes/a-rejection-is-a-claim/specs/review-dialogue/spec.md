@@ -4,10 +4,13 @@
 
 The state a run reaches after a completed round SHALL be a pure function of the classified findings and the round number:
 
-- nothing blocking and nothing patchable: `clean`
 - any finding whose effective action is `ask-user`: `escalated`
+- nothing blocking: `clean`
 - the round number equals the cap: `escalated`
 - otherwise: `awaiting-response`
+
+Whether a document blocks SHALL have one owner, which is the classification's verdict.
+A round parks only where something blocks, because a round that parks with nothing for the author to answer asks a question nobody can close and then escalates at the cap for findings whose own action asked for nothing.
 
 The rule SHALL be testable against its whole input space rather than sampled, and its package SHALL reach no filesystem, no clock and no process.
 
@@ -23,6 +26,11 @@ A set holding one question about intent and five mechanical defects goes to the 
 
 - **WHEN** a round completes with one `ask-user` finding and several `auto-fix` findings
 - **THEN** the run is `escalated`, all the findings are handed to the person, and none of them is offered for a response
+
+#### Scenario: An informational round finishes the run
+
+- **WHEN** a round completes with patchable findings that none of them block
+- **THEN** the run is `clean` rather than parked, because nothing is being asked of the author
 
 #### Scenario: Mechanical findings park for the author
 
@@ -113,6 +121,11 @@ A round that advanced on it would present an unpatched, unargued finding to the 
 
 - **WHEN** every blocking finding has a response
 - **THEN** `scrat continue` takes a fresh snapshot and starts the next round
+
+#### Scenario: Nothing left to review ends the run
+
+- **WHEN** the author answers every finding by reverting the change, so the working tree holds nothing the run's base does not
+- **THEN** the run ends `clean` for the same reason a first round would, rather than `failed`
 
 #### Scenario: Non-blocking findings need no response
 

@@ -165,6 +165,8 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 }
 
 func (s Supervision) park(run *runstore.Run, round int, classified findings.Classification) error {
+	run.Reviewer = 0
+	run.Agent = 0
 	if err := run.Advance(runstate.AwaitingResponse); err != nil {
 		return err
 	}

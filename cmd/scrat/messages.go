@@ -26,9 +26,11 @@ const (
 	reviewTakesNoArguments = "scrat review takes no arguments, and %q is one: pass what the person asked for with --intent"
 	oneRunAtATime          = "%s names a second run, and a command reports on one: name one run or none at all"
 
-	nameTheFinding       = "scrat respond answers one finding, and none was named: pass --finding with an identifier scrat findings printed"
-	oneAnswerAtATime     = "scrat respond records one answer, and it is either a fix or a rejection: pass --fixed or --rejected, and not both"
-	readingStandardInput = "reading the reason from standard input: %w"
+	nameTheFinding            = "scrat respond answers one finding, and none was named: pass --finding with an identifier scrat findings printed"
+	oneAnswerAtATime          = "scrat respond records one answer, and it is either a fix or a rejection: pass --fixed or --rejected, and not both"
+	reasonBelongsToARejection = "--reason says why a finding is wrong, and this answer records a fix: pass --note to say what was done about it"
+	noteBelongsToAFix         = "--note says what was done about a finding, and this answer rejects one: pass --reason to say why it is wrong"
+	readingStandardInput      = "reading the reason from standard input: %w"
 
 	recordedIt           = "finding %s is recorded as %s against round %d"
 	replacedIt           = "an earlier response to %s was replaced, and both are kept"

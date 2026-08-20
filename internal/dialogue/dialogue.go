@@ -13,7 +13,7 @@ func After(classified findings.Classification, round int) runstate.State {
 	if len(classified.NeedingAPerson) > 0 {
 		return runstate.Escalated
 	}
-	if classified.Verdict() == runstate.Clean && len(classified.Patchable) == 0 {
+	if classified.Verdict() == runstate.Clean {
 		return runstate.Clean
 	}
 	if round >= Cap {

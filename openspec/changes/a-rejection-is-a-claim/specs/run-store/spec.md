@@ -53,6 +53,14 @@ Applying the liveness rule to it would report every parked run as failed the mom
 
 A run that has been parked longer than the retention age SHALL still be swept only under the rule that never removes a run which is not terminal, so a parked run is not removed while it waits.
 
+A parked run SHALL record no process identifiers, because none of its processes is alive and a run can wait indefinitely.
+Cancelling signals what the run records, and a number that outlived its process names whatever the machine gave it next.
+
+#### Scenario: A parked run holds no process identifiers
+
+- **WHEN** a run parks on the author
+- **THEN** its record holds no reviewer and no agent process identifier
+
 #### Scenario: A parked run with no processes is still parked
 
 - **WHEN** a run is `awaiting-response` and no process from it is running

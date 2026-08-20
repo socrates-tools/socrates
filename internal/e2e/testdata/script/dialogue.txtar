@@ -42,6 +42,20 @@ exec sh -c 'scrat respond --fixed; echo exit=$?'
 stdout 'exit=3'
 stderr '--finding'
 
+# A flag belonging to the other answer is refused rather than dropped.
+exec sh -c 'scrat respond --finding f1 --fixed --reason "I moved the guard above the loop"; echo exit=$?'
+stdout 'exit=3'
+stderr '--note'
+exec sh -c 'scrat respond --finding f1 --rejected --note "the deadline bounds it"; echo exit=$?'
+stdout 'exit=3'
+stderr '--reason'
+
+# A rejection with no reason is refused even where something is on standard input.
+stdin $WORK/reason.txt
+exec sh -c 'scrat respond --finding f1 --rejected; echo exit=$?'
+stdout 'exit=3'
+stderr 'a rejection is a claim'
+
 # An answer is a fix or a rejection, and never both or neither.
 exec sh -c 'scrat respond --finding f1 --fixed --rejected; echo exit=$?'
 stdout 'exit=3'

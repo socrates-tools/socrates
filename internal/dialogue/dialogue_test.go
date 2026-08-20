@@ -41,6 +41,13 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 		}
 	})
 
+	t.Run("An informational round finishes the run", func(t *testing.T) {
+		classified := classify(finding("f1", findings.Info, findings.AutoFix), finding("f2", findings.Info, findings.NoOp))
+		if got := dialogue.After(classified, 1); got != runstate.Clean {
+			t.Errorf("a round whose patchable findings all block nothing is %q, want %q: there is nothing the author is being asked to answer", got, runstate.Clean)
+		}
+	})
+
 	t.Run("Mechanical findings park for the author", func(t *testing.T) {
 		classified := classify(finding("f1", findings.Error, findings.AutoFix), finding("f2", findings.Warning, findings.AutoFix))
 		if got := dialogue.After(classified, 1); got != runstate.AwaitingResponse {
@@ -74,9 +81,9 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 					if got != runstate.Escalated {
 						t.Fatalf("round %d of %v holds a question about intent and is %q, want %q", asked, describe(held), got, runstate.Escalated)
 					}
-				case !blocks(held) && !patchable(held):
+				case !blocks(held):
 					if got != runstate.Clean {
-						t.Fatalf("round %d of %v blocks nothing and patches nothing and is %q, want %q", asked, describe(held), got, runstate.Clean)
+						t.Fatalf("round %d of %v blocks nothing and is %q, want %q", asked, describe(held), got, runstate.Clean)
 					}
 				case asked >= dialogue.Cap:
 					if got != runstate.Escalated {
@@ -192,15 +199,6 @@ func asksAPerson(held []findings.Finding) bool {
 func blocks(held []findings.Finding) bool {
 	for _, one := range held {
 		if one.Severity.Blocks() {
-			return true
-		}
-	}
-	return false
-}
-
-func patchable(held []findings.Finding) bool {
-	for _, one := range held {
-		if one.EffectiveAction() == findings.AutoFix {
 			return true
 		}
 	}

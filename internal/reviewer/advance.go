@@ -2,7 +2,6 @@ package reviewer
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -20,6 +19,10 @@ type Continuation struct {
 }
 
 func Continue(ctx context.Context, continuation Continuation) (*runstore.Run, int, error) {
+	if outer := OuterRun(); outer != "" {
+		return nil, 0, refusal.New(aReviewInsideAReview, outer)
+	}
+
 	store := continuation.Store
 
 	run, round, document, err := parked(store, continuation.Name)
@@ -42,7 +45,7 @@ func Continue(ctx context.Context, continuation Continuation) (*runstore.Run, in
 		return run, next, fail(store, run, err)
 	}
 	if taken.NothingToReview() {
-		return run, next, fail(store, run, errors.New(snapshot.NothingToReviewReason))
+		return run, next, conclude(store, run, runstate.Clean, snapshot.NothingToReviewReason)
 	}
 
 	if _, err := store.CreateRound(run.Name, next); err != nil {

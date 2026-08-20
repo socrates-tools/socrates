@@ -18,7 +18,7 @@ const commitMessage = "socrates snapshot"
 
 const worktreeDirectory = "worktree"
 
-const NothingToReviewReason = "the working tree was identical to HEAD, so there was nothing to review"
+const NothingToReviewReason = "the working tree held nothing the base commit does not, so there was nothing to review"
 
 func WorktreePath(runDirectory string) string {
 	return filepath.Join(runDirectory, worktreeDirectory)

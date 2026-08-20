@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/rui-ktei/socrates/internal/dialogue"
@@ -33,6 +32,12 @@ func newRespondCommand(code *int) *cobra.Command {
 			if fixed == rejected {
 				return refusal.New(oneAnswerAtATime)
 			}
+			if fixed && reason != "" {
+				return refusal.New(reasonBelongsToARejection)
+			}
+			if rejected && note != "" {
+				return refusal.New(noteBelongsToAFix)
+			}
 
 			response := dialogue.Response{Finding: strings.TrimSpace(finding), Resolution: dialogue.Fixed, Reason: note}
 			if rejected {
@@ -40,11 +45,13 @@ func newRespondCommand(code *int) *cobra.Command {
 				response.Reason = reason
 			}
 
-			read, err := reasonFor(command, response)
-			if err != nil {
-				return err
+			if response.Reason == fromStandardInput {
+				read, err := readStandardInput(command)
+				if err != nil {
+					return err
+				}
+				response.Reason = read
 			}
-			response.Reason = read
 
 			store, name, err := chosenRun(command.Context(), arguments)
 			if err != nil {
@@ -84,31 +91,10 @@ func newRespondCommand(code *int) *cobra.Command {
 	return command
 }
 
-func reasonFor(command *cobra.Command, response dialogue.Response) (string, error) {
-	if response.Reason == fromStandardInput {
-		return readStandardInput(command)
-	}
-	if response.Reason != "" {
-		return response.Reason, nil
-	}
-	if response.Resolution == dialogue.Rejected && standardInputIsPiped() {
-		return readStandardInput(command)
-	}
-	return response.Reason, nil
-}
-
 func readStandardInput(command *cobra.Command) (string, error) {
 	read, err := io.ReadAll(command.InOrStdin())
 	if err != nil {
 		return "", fmt.Errorf(readingStandardInput, err)
 	}
 	return string(read), nil
-}
-
-func standardInputIsPiped() bool {
-	stated, err := os.Stdin.Stat()
-	if err != nil {
-		return false
-	}
-	return stated.Mode()&os.ModeCharDevice == 0
 }

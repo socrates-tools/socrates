@@ -72,6 +72,13 @@ func TestTheDialogueJourney(t *testing.T) {
 		}
 	})
 
+	t.Run("A parked run holds no process identifiers", func(t *testing.T) {
+		recorded := session.Recorded(name)
+		if recorded.Reviewer != 0 || recorded.Agent != 0 {
+			t.Errorf("a parked run records reviewer %d and agent %d, and both processes have exited: cancelling it later would signal whatever holds those numbers by then", recorded.Reviewer, recorded.Agent)
+		}
+	})
+
 	t.Run("The rules arrive with the findings", func(t *testing.T) {
 		printed, _, _ := session.Scrat("findings", name)
 		for _, rule := range report.ResponseRules() {
@@ -403,6 +410,31 @@ func TestARoundWithNothingPatchedStillSnapshots(t *testing.T) {
 	}
 }
 
+func TestNothingLeftToReviewEndsTheRun(t *testing.T) {
+	session := harness.Start(t)
+	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
+
+	respond(t, session, name, "--finding", "f1", "--fixed", "--note", "I took the function out")
+	respond(t, session, name, "--finding", "f2", "--fixed", "--note", "it went with the function")
+	session.Repository.Delete("internal/added.go")
+
+	printed, failures, code := session.Scrat("continue", name, "--wait")
+	if code != 0 {
+		t.Fatalf("continuing with the change reverted exited %d, want 0: %s\n%s", code, failures, printed)
+	}
+
+	run := session.Run(name)
+	if run.State != runstate.Clean {
+		t.Errorf("continuing with the change reverted ended the run %s: %s", run.State, reason(run))
+	}
+	if strings.Contains(reason(run), "HEAD") {
+		t.Errorf("the recorded reason names HEAD, and what was compared is the run's base: %q", reason(run))
+	}
+	if invocations := session.Simulator.Invocations(); len(invocations) != 1 {
+		t.Errorf("a second reviewer was invoked for a tree holding nothing to review: %d invocations", len(invocations))
+	}
+}
+
 func TestTheBaseStillExistsWhenThePersonHasMovedOn(t *testing.T) {
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
@@ -610,6 +642,41 @@ func TestRespondRefusesWhatItCannotRecord(t *testing.T) {
 			if _, err := os.Stat(session.Round(name, 1).ResponsesPath()); !os.IsNotExist(err) {
 				t.Error("a rejection with no reason stored something")
 			}
+		}
+	})
+
+	t.Run("A flag that does not apply to the answer", func(t *testing.T) {
+		for _, attempt := range []struct {
+			named     string
+			arguments []string
+			names     string
+		}{
+			{named: "a fix reasoned", arguments: []string{"--fixed", "--reason", "I moved the guard above the loop"}, names: "--note"},
+			{named: "a rejection noted", arguments: []string{"--rejected", "--note", "the loop is bounded by the caller's deadline"}, names: "--reason"},
+		} {
+			_, failures, code := session.Scrat(append([]string{"respond", name, "--finding", "f1"}, attempt.arguments...)...)
+			if code != 3 {
+				t.Errorf("%s exited %d, want 3: what the author said would have been dropped without a word", attempt.named, code)
+			}
+			if !strings.Contains(failures, attempt.names) {
+				t.Errorf("the refusal of %s does not name %s: %s", attempt.named, attempt.names, failures)
+			}
+			if _, err := os.Stat(session.Round(name, 1).ResponsesPath()); !os.IsNotExist(err) {
+				t.Errorf("%s stored something", attempt.named)
+			}
+		}
+	})
+
+	t.Run("A reason is read only where it is asked for", func(t *testing.T) {
+		_, failures, code := session.ScratReading("bytes nobody meant as a reason", "respond", name, "--finding", "f1", "--rejected")
+		if code != 3 {
+			t.Fatalf("a rejection with no reason and a pipe on standard input exited %d, want 3: %s", code, failures)
+		}
+		if !strings.Contains(failures, "claim") {
+			t.Errorf("the refusal does not say a rejection is a claim: %s", failures)
+		}
+		if _, err := os.Stat(session.Round(name, 1).ResponsesPath()); !os.IsNotExist(err) {
+			t.Error("a rejection with no reason stored what was on standard input as the author's claim")
 		}
 	})
 

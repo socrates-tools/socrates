@@ -83,13 +83,7 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 	}
 
 	if taken.NothingToReview() {
-		if err := run.End(runstate.Clean, snapshot.NothingToReviewReason); err != nil {
-			return nil, err
-		}
-		if err := beginning.Store.Save(run); err != nil {
-			return nil, err
-		}
-		return run, beginning.recordEnd(run)
+		return run, conclude(beginning.Store, run, runstate.Clean, snapshot.NothingToReviewReason)
 	}
 
 	if _, err := beginning.Store.CreateRound(run.Name, firstRound); err != nil {
@@ -121,23 +115,23 @@ func (b Beginning) fail(run *runstore.Run, reason error) error {
 }
 
 func fail(store runstore.Store, run *runstore.Run, reason error) error {
-	if err := run.End(runstate.Failed, reason.Error()); err != nil {
+	if err := conclude(store, run, runstate.Failed, reason.Error()); err != nil {
+		return errors.Join(reason, err)
+	}
+	return reason
+}
+
+func conclude(store runstore.Store, run *runstore.Run, state runstate.State, reason string) error {
+	if err := run.End(state, reason); err != nil {
 		return err
 	}
 	if err := store.Save(run); err != nil {
 		return err
 	}
 	if err := liftTheSeal(run); err != nil {
-		return errors.Join(reason, err)
-	}
-	if err := recordEnd(store, run); err != nil {
 		return err
 	}
-	return reason
-}
-
-func (b Beginning) recordEnd(run *runstore.Run) error {
-	return recordEnd(b.Store, run)
+	return recordEnd(store, run)
 }
 
 func recordEnd(store runstore.Store, run *runstore.Run) error {

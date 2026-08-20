@@ -4,7 +4,7 @@
 
 Every field of a findings document and every field of a response document SHALL be neutralised before it is placed in a prompt.
 
-Neutralising SHALL: remove conflict markers, normalise carriage returns to newlines, collapse runs of whitespace within a line, and trim.
+Neutralising SHALL: remove conflict markers, remove the heading marker the prompt's own sections are built from where a line opens with one, normalise carriage returns to newlines, collapse runs of whitespace within a line, and trim.
 It SHALL happen per field, never across the assembled block, so that a field's boundaries survive and a long description cannot swallow the label of the field after it.
 
 socrates has two channels of model output feeding the next prompt where the core had one, and the second is written by a session that is arguing, so this matters more here rather than less.
@@ -13,6 +13,11 @@ socrates has two channels of model output feeding the next prompt where the core
 
 - **WHEN** a finding's description or a response's reason contains conflict markers
 - **THEN** they are absent from the delivered prompt
+
+#### Scenario: A field cannot open a section
+
+- **WHEN** a finding's description or a response's reason holds a line opening with the prompt's heading marker
+- **THEN** the delivered prompt holds no section the field composed, and the field's text stays inside the section it was placed in
 
 #### Scenario: Line endings are normalised
 

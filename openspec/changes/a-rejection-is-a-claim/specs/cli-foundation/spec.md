@@ -44,6 +44,10 @@ One finding per invocation is deliberate.
 A batch interface invites a session to answer six findings in one call with one reason that covers none of them well, and the reason is the entire value of a rejection.
 
 The reason SHALL be accepted as an argument or on standard input, so that a long one does not have to survive a shell.
+Standard input SHALL be read only where the invocation asked for it, because a command that reads it on its own hangs where nothing is written and stores whatever is where a reason should be.
+
+What the author said SHALL never be dropped without a word.
+A flag belonging to the other resolution SHALL be refused, naming the one that applies, rather than ignored: the author's claim is the whole value of a response, and one silently discarded reaches the next reviewer as an author who said nothing.
 
 #### Scenario: One finding per invocation
 
@@ -54,6 +58,16 @@ The reason SHALL be accepted as an argument or on standard input, so that a long
 
 - **WHEN** a rejection reason is supplied on standard input
 - **THEN** it is stored verbatim, including its line breaks
+
+#### Scenario: A flag that does not apply to the answer
+
+- **WHEN** a fix is recorded with a rejection's reason, or a rejection with a fix's note
+- **THEN** it is refused, naming the flag that applies to the chosen answer, and nothing is stored
+
+#### Scenario: A reason is read only where it is asked for
+
+- **WHEN** a rejection names no reason and standard input holds something nobody meant as one
+- **THEN** it is refused for having no reason, and what was on standard input is not stored as the author's claim
 
 #### Scenario: Responding to a run that is not awaiting responses
 
