@@ -1,6 +1,6 @@
 BINARY := bin/scrat
 
-.PHONY: build test lint fmt scenario-coverage fixtures fixtures-diff live-smoke
+.PHONY: build test lint fmt scenario-coverage scenario-drop fixtures fixtures-diff live-smoke
 
 build:
 	go build -o $(BINARY) ./cmd/scrat
@@ -20,6 +20,9 @@ fmt:
 
 scenario-coverage:
 	./scripts/scenario-coverage
+
+scenario-drop:
+	./scripts/scenario-drop
 
 fixtures:
 	go test -tags record -count=1 -v ./internal/fidelity/

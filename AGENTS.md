@@ -19,6 +19,7 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 - `cmd/scrat` - the one binary a person runs: `review`, `status`, `findings`, `respond`, `continue`, `cancel`, and the hidden `supervise` that a review spawns.
 - `cmd/claudesim` - the simulator, which speaks the vendor CLI's wire contract and is symlinked as `claude` onto `PATH` by the test harness.
 - `cmd/scenario-coverage` - the coverage gate behind `scripts/scenario-coverage`.
+- `cmd/scenario-drop` - the promotion gate behind `scripts/scenario-drop`.
 - `internal/snapshot` - the freeze: a temporary index from `HEAD`, `add -A`, `write-tree`, `commit-tree`, a detached worktree of the result, and the seal that makes that worktree unwritable.
 - `internal/runstore` - run directories, `run.json` written by rename, run selection, rounds, and the retention sweep.
 - `internal/runstate` - the run states and which of them are terminal.
@@ -35,6 +36,7 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 - `internal/runlog` - the JSONL event log, its byte ceiling and its in-place rotation.
 - `internal/convention` - the repository's own conventions as executable checks: no commentary, the test-quality rule, the message registry.
 - `internal/coverage` - scenario coverage: what `openspec/specs` and the changes under way promise against what the tests name. An archived change is skipped, because its specification was promoted.
+- `internal/promotion` - what archiving a change would do to the promoted specifications: a `MODIFIED` requirement that carries fewer scenarios than the one it substitutes, one that substitutes nothing, and one added beside a requirement that already exists.
 - `internal/fidelity` - the recorded shapes of the real CLI, the drift check, and the live smoke check. Everything that reaches the network is behind a build tag.
 - `internal/e2e` - the end-to-end suite: the real binary, a real repository, real git, real processes, the simulator on `PATH`.
 - `internal/testing` - the harness, the temporary repository, the simulator installer, and source helpers. Test support only.
@@ -48,11 +50,14 @@ make fmt
 make lint
 make test
 make scenario-coverage
+make scenario-drop
 ```
 
 `make lint` fails on anything `gofmt` would rewrite, so formatting is never a separate thing to remember.
 `make scenario-coverage` fails when a scenario belonging to a change somebody has started is named by no test, and prints where each gap is.
-`make test` holds the same gate, so a scenario nobody tests fails the ordinary suite as well.
+`make scenario-drop` fails when archiving a change would take a scenario out of the promoted specifications, which a `MODIFIED` delta does by substituting a requirement and carrying fewer scenarios than it holds.
+`make test` holds both gates, so a scenario nobody tests and a delta that would drop one fail the ordinary suite as well.
+Neither gate reads prose: a delta that rewrites a requirement's sentences from a stale copy is still something only a reader catches.
 
 These reach the network and are not part of the ordinary sequence:
 

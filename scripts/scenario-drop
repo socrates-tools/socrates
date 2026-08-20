@@ -1,0 +1,5 @@
+#!/bin/sh
+# Fails when archiving a change would take a scenario out of the promoted specifications.
+set -e
+cd "$(dirname "$0")/.."
+exec go run ./cmd/scenario-drop

@@ -1,0 +1,22 @@
+package promotion_test
+
+import (
+	"testing"
+
+	"github.com/rui-ktei/socrates/internal/promotion"
+	"github.com/rui-ktei/socrates/internal/testing/source"
+)
+
+func TestArchivingAChangeWouldDropNoScenario(t *testing.T) {
+	checked, err := promotion.Check(source.Root(t))
+	if err != nil {
+		t.Fatalf("checking what archiving would drop: %v", err)
+	}
+	if checked.Substituted == 0 && checked.Added == 0 {
+		t.Fatal("no change under openspec proposes a requirement, so this test proves nothing")
+	}
+
+	for _, drop := range checked.Drops {
+		t.Errorf("%s substitutes %q and %s: %v", drop.Spec, drop.Requirement, drop.Condition, drop.Scenarios)
+	}
+}
