@@ -65,4 +65,4 @@
 - [x] 9.1 `make fmt && make lint test` clean
 - [x] 9.2 `make scenario-coverage` naming no scenario this change adds
 - [x] 9.3 `make scenario-drop` before archiving. Three requirements here are `MODIFIED` deltas that substitute a requirement wholesale, and a scenario a delta does not carry leaves the specification the moment the change is archived, with the suite still green
-- [ ] 9.4 A live run: drive a real dialogue with the real agent on a real change, including one rejection the author genuinely believes in, and record in `retrospective.md` whether the second reviewer accepted it and whether it should have
+- [ ] 9.4 A live run: drive a real dialogue with the real agent on a real change, including one rejection the author genuinely believes in, and record in `retrospective.md` whether the second reviewer accepted it and whether it should have. Attempted four times on four real subjects and not reached: every live round returned at least one `ask-user` finding and escalated at round one. The runs, what they found and what that says about how often the dialogue happens at all are in `retrospective.md`; the rejection is still owed

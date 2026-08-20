@@ -1,97 +1,143 @@
 # Retrospective: a-rejection-is-a-claim
 
-## The first live run, which never reached the dialogue
+## The live runs, and the dialogue that never happened
 
-Task 9.4 asks for a real dialogue with a real reviewer, including one rejection the author genuinely believes in.
-The first live run did not produce one, and the reason is the change's own rule.
+Task 9.4 asks for a real dialogue with a real reviewer, including one rejection the author genuinely believes in, and for this document to record whether the second reviewer accepted it and whether it should have.
 
-The subject was this change as a working tree against `origin/main`: 40 files, about 2900 insertions, snapshotted at `4445282` against base `a9a3207`.
-The reviewer ran at `opus` and `high` with the machine's tool servers loaded, and returned seven findings at `medium` risk.
-Five of them carried `ask-user`.
+There is no such record, because in four live runs no round ever parked.
 
-`dialogue.After` escalated the run at round one, exactly as specified: a question about intent dominates, and all seven findings went to the person with none of them offered for a response.
-So the first thing one live run established is that on a change of this size the dialogue path is not the common one.
-A reviewer given a whole feature finds things that touch what the author decided on purpose, and the moment it finds one the loop stops.
-That is the design working, and it is also a warning about how much of this change's machinery a real run exercises: on this subject, none of it.
+| run | subject | findings | for the person | outcome |
+| --- | --- | --- | --- | --- |
+| `20260820T091048Z-6616db11` | the whole change, 40 files | 7 | 5 | escalated at round one |
+| `20260820T093222Z-ea4284ba` | the whole change after the first round of fixes, 45 files | 7 | 4 | escalated at round one |
+| `20260820T095643Z-43015b70` | one fix commit, 18 files | 8 | 1 | escalated at round one |
+| `20260820T100854Z-80725392` | one fix commit, 12 files | 6 | 4 | escalated at round one |
 
-## What one live review found that a green suite did not
+Every run reached the reviewer, every reviewer returned a parseable document, and every one of them found at least one finding it actioned `ask-user`.
+`ask-user` dominates the routing rule, so the run escalated to the person at round one and nothing was offered for a response.
 
-`make fmt`, `make lint`, `make test` and `make scenario-coverage` were clean before the run, and 201 scenarios were named by tests.
-The review still found seven defects, and all seven were real.
+That is the design working exactly as specified, and it is the most useful thing four live runs established: **on real work, the parked path is the exception rather than the rule.**
+A reviewer reading real code finds things that touch what the author decided on purpose, and the moment it finds one the dialogue does not start.
+The dialogue machinery in this change is driven end to end by the simulator suite, in four journeys, and by a real reviewer it has never been driven at all.
 
-### A round could park with nothing to answer
+Two consequences worth stating rather than discovering later:
 
-`dialogue.After` parked whenever the round was not clean and not at the cap, and it read "clean" as nothing blocking and nothing patchable.
-A finding of `{severity: info, action: auto-fix}` is accepted by `findings.Validate` and the prompt says severity and action are independent, so the reviewer can emit one.
-Such a round blocks nothing, so `Unanswered` returns nothing, so `scrat status` says `unanswered: 0` and "ready to continue" with nothing for the author to do.
-Continue, get the same informational finding back, and `After` hits the cap and escalates, with a verdict reason saying what is left is for the person about a finding whose own action asked for nothing.
+- The cost of this change is carried mostly by runs that never use it.
+- Whatever tuning eventually makes the dialogue common lives in the prompt's action definitions, not in the routing rule. The reviewer is instructed to prefer `ask-user` when in doubt, and it does.
 
-The rule now reads: `ask-user` escalates, nothing blocking is clean, the cap escalates, otherwise park.
-`After` no longer looks at patchability at all, so whether a document holds the change has one owner again, which is `Classification.Verdict`.
+The rejection in 9.4 therefore remains unwritten, and the task stays open.
+Manufacturing a defect to provoke a park, or writing a rejection I do not believe, would have produced a document that says the mechanism works when nothing had tested it.
 
-The specification said the same wrong thing, in the same words, which is why the code matched it.
-The exhaustive property test also said it: it asserted `!blocks && !patchable` implies clean over the whole input space, so it passed over 512 subsets without ever disagreeing with the code.
-A test written from the same sentence as the implementation proves the sentence was implemented, and nothing else.
+## What four live reviews found that a green suite did not
 
-### A rejection reason could open a section of the prompt
+Before the first run, `make fmt`, `make lint`, `make test` and `make scenario-coverage` were clean and 201 scenarios were named by tests.
+The four reviews returned 28 findings between them.
+Twenty-seven were real, and three of those were regressions introduced by the fix for a previous one.
 
-This is the finding that attacked what the change exists for.
+The count is the point of this section.
+A green suite, a coverage gate, an exhaustive property test and a convention checker did not catch any of what follows.
+
+### The routing rule was wrong three times
+
+It shipped as: nothing blocking **and nothing patchable** is clean, otherwise park until the cap.
+
+The first review traced `{severity: info, action: auto-fix}`, which `findings.Validate` accepts and the prompt's own reporting section invites, since it says severity and action are independent.
+Such a round blocks nothing, so `Unanswered` waits on nothing, so `scrat status` says `unanswered: 0` and "ready to continue" with nothing for the author to do; continue, get the same finding back, and the cap escalates a run whose findings all asked for nothing.
+
+The specification said the same wrong thing in the same words, which is why the code matched it.
+So did the exhaustive property test: it asserted `!blocks && !patchable` implies clean across all 512 subsets and passed, because it was written from the sentence the implementation was written from.
+**A test derived from the same sentence as the code proves the sentence was implemented and nothing else.**
+
+The fix made it "nothing blocking is clean", which the second review then showed was still incoherent: a `{warning, no-op}` finding holds the change while its action asks for nothing, so the run parked and demanded a response to a finding `scrat findings` labelled informational.
+The fix for that was to park only on findings a response could address.
+
+The fourth review then showed that fix had opened a hole: with `[{warning, no-op}, {error, auto-fix}]` the round parked on the patchable one, nothing ever waited on the other, and because `scrat findings` reports the latest round only, a blocking finding disappeared from the run entirely.
+The rule now escalates on anything blocking that a response cannot address, whatever else is in the set, for the same reason `ask-user` does.
+
+Three reviews, three corrections, one rule of five clauses.
+It is four lines of code and it was wrong in a different way each time.
+
+### A rejection reason could compose the prompt that judged it
+
 `hygiene.Neutralise` removed conflict markers and collapsed whitespace, and left a line beginning `## ` alone.
-`prompt.Sections` parses exactly that marker, so a rejection reason of `## What to report` closed the labelled block and opened a section peer to socrates' own.
+`prompt.Sections` parses exactly that marker.
 
-Removing the heading strip again and rerunning the new test prints the attack:
+Removing the fix and rerunning the test that now guards it prints the attack:
 
 ```
-got:  [... Where the code you are re-reviewing came from | What earlier rounds found | What to report | Your task | How to review | Test quality | What to report]
-want: [... Where the code you are re-reviewing came from | What earlier rounds found | How to review | Test quality | What to report]
+got:  [... What earlier rounds found | What to report | Your task | How to review | Test quality | What to report]
+want: [... What earlier rounds found | How to review | Test quality | What to report]
 ```
 
-Two sections composed by the session under review, one of them a second `Your task`, both placed ahead of socrates' own instructions.
-The requirement that nothing about a claim's placement gives it the standing of an instruction did not hold, and the test that was supposed to hold it used an instruction-shaped reason with no heading marker in it.
+Two sections composed by the session under review, one of them a second `Your task`, both ahead of socrates' own instructions.
+The requirement that nothing about a claim's placement gives it the standing of an instruction did not hold, and the test that was meant to hold it used an instruction-shaped reason with no heading marker in it.
 
-The prompt-level test now compares the sequence of section headings against the same prompt built without the injected fields.
-That is the property, and it does not depend on guessing which heading an attacker would pick.
+The guard is now the sequence of section headings compared against the same prompt built without the injected fields, which does not depend on guessing which heading an attacker picks.
 
-### A parked run kept the process identifiers of dead processes
+### A completed review could be made unreachable, twice
 
-`park` left `run.Reviewer` and `run.Agent` holding pids of processes that had just exited, and a parked run waits indefinitely by design.
-`Cancel` kills what the run records with no liveness check, and `process.KillGroup` on a stale pid signals whatever the machine gave that number next.
-`Continue` already zeroed both fields; `park` was the one path that persisted them.
+A parked run kept the process identifiers of processes that had already exited, and `Cancel` kills what the run records with no liveness check, so a parked run cancelled hours later would signal whatever held those numbers by then.
 
-### The same condition ended the run two different ways
+The teardown of the round's worktree ran after the parked state was published, and the next round checks out that exact path, so `scrat continue` raced a `chmod` walk and an `os.RemoveAll` over the whole tree and failed the run on a git error.
+Reordering it fixed the race and introduced a worse failure: a teardown error now returned before the run was ever published, leaving `run.json` reading `reviewing` with the findings on disk, `--wait` polling forever, and `scrat cancel` as the only way out of a review that had succeeded.
+The round now parks regardless, records the teardown failure against itself, and the next round clears whatever stands where its worktree goes, so the failure is recoverable rather than deferred.
 
-An author who answers a round by reverting the change leaves a tree holding nothing the base does not.
-`Begin` treats that as `clean`; `Continue` treated it as `failed`.
-Same tree, opposite verdict, decided by which command was reached.
-Both now go through one `conclude`, and the reason no longer says "identical to HEAD", which was false on the `Continue` path where the comparison is against the run's own base.
+That last path is the one thing in this change with no test.
+Forcing a teardown failure needs a filesystem the harness cannot produce, and the recovery half is tested by leaving a directory where the next round's worktree goes, which is what the failure would leave behind.
 
-### What the author said could be dropped without a word
+### The author's claim could be dropped, silently, three ways
 
-`scrat respond --fixed --reason "..."` built the response from `--note`, never looked at `--reason`, and recorded a fix with no note.
-The next reviewer was then told the author claims to have fixed this and says nothing about how.
-`--note` on a rejection was discarded the same way.
-Both are now refused, naming the flag that applies, because the author's claim is the whole value of a response.
-
-### Standard input was read where nobody asked for it
+`scrat respond --fixed --reason "..."` built the response from `--note`, never looked at `--reason`, and recorded a fix with no note, after which the next reviewer was told the author claims to have fixed this and says nothing about how.
+`--note` on a rejection went the same way.
+Both are now refused, naming the flag that applies.
 
 A rejection with no reason read standard input whenever it was not a character device.
-In the test suite standard input is `/dev/null`, which is a character device, so the intended refusal was what the tests saw.
-From a script or an agent harness, where standard input is a pipe, `io.ReadAll` blocks until the writer closes, or stores whatever unrelated bytes were in the pipe as the author's claim and sends them to the next reviewer.
-Standard input is now read only where `-` asked for it.
+In the test suite standard input is `/dev/null`, a character device, so the tests saw the intended refusal; from a script or an agent harness it blocks until the writer closes, or stores whatever unrelated bytes were in the pipe as the author's claim.
 
-### A reviewer could seat a reviewer of its own
+Recording a response was a read, an append in memory and a rewrite of the whole file, with no exclusion.
+Two `scrat respond` invocations at once, which is the ordinary case for a session encouraged to run independent commands in parallel, lost whichever claim was written first.
 
-`Begin` refuses when `SOCRATES_RUN` is set; `Continue` never checked.
-A reviewer session that ran `scrat continue` on a parked run would start round two from inside a review.
-The invariant is stated against the reviewer's environment rather than against one command, and it now holds that way: the guard is on starting a reviewer, and the specification for it was modified to say so.
+The first attempt at that last one was a lock file with a liveness check on the holder, and the test written for it failed immediately: the stale-takeover path removes a lock file it does not own, so two processes could both hold it.
+The document was already append-only with last-wins semantics, so the file is now append-only too, one JSON response per line, and there is no lock to get wrong.
+
+### The rest
+
+The verdict of a clean second round named the round cap, telling the author something was left for them when nothing was.
+`Continue` treated a tree holding nothing the base does not as `failed` where `Begin` treats the identical condition as `clean`, and the reason it recorded said "identical to HEAD" on the one path where HEAD is not what was compared.
+`Continue` spawned a reviewer without the review-inside-a-review guard, so a reviewer session could seat a reviewer of its own; the invariant is stated against the reviewer's environment rather than against one command, and now holds that way.
+This change's own `cli-foundation` delta declared `watch` and `logs`, which belong to a change nobody has started, and would have entered the promoted specification as satisfied.
+
+### The test-quality findings, which are the ones worth reading twice
+
+The reviewer found the vacuous tests I wrote while fixing the reviewer's earlier findings.
+
+The concurrency test recorded eight responses in parallel and asserted only that responses which succeeded were present, skipping the ones that failed and never asserting a count, so a run where all eight failed was a pass.
+
+The replacement assertions built a `Responses` literal holding two answers to one finding and then asserted that it held two answers to one finding.
+
+And the new oracle in the exhaustive routing test restated `dialogue.Answerable` line for line, which is the exact flaw this document had already named two sections above.
+The oracle is now written from literal severities and actions rather than from the helpers under test.
+
+Socrates found, in socrates' own tests, the failure mode socrates' test-quality rule exists to name, in code written by the author who had just finished writing that the failure mode was what let the first defect through.
 
 ## What the design got right
 
-`ask-user` dominating is the rule that fired, and it fired on the first real change it ever saw.
-Five findings in this change's own review touched what the author decided on purpose.
-A tool that had tried to route those through a machine dialogue would have argued with intent seven times before a person saw any of it.
+`ask-user` dominating is the rule that fired, and it fired on every real change it saw.
+Fourteen of the twenty-eight findings across four runs were actioned `ask-user`.
+A tool that routed those through a machine dialogue would have argued with intent fourteen times before a person saw any of it.
 
-Keeping every round's artifacts and the per-round snapshot record cost nothing here and made the run legible after the fact.
-`reviews: [{round: 1, base: a9a3207, snapshot: 4445282}]` in `run.json` is what let the reconstruction above be exact.
+Keeping every round's artifacts and recording each round's snapshot in `run.json` cost nothing and made all four runs reconstructable afterwards, exactly, from `reviews`, `events.jsonl` and the round directories.
 
-The seal held again, with the machine's enterprise tool servers loaded and `agent-tool-servers-loaded` recorded, and the reviewed clone was byte-identical afterwards.
+The seal held on every run, with the machine's enterprise tool servers loaded and `agent-tool-servers-loaded` recorded each time, and each reviewed clone was byte-identical afterwards.
+
+## What this says about reviewing with socrates
+
+The loop converged, but not quickly, and never by agreement.
+Round one of run three reviewed the fixes from run two and found eight new things.
+Run four reviewed the fixes from run three and found six, four of them about decisions the previous fixes had made.
+
+Three of those were regressions: the reorder that fixed a race created a dead end, the park condition that fixed a contradiction dropped a finding, and the append that fixed a lost update turned a stored claim into a reported failure.
+Every one of them was found by the next reviewer, and none of them by the suite.
+
+The honest summary is that a fresh reviewer per round on real work is worth its cost, and that the thing it is best at is finding what the previous fix broke.
+That is an argument for the round cap being about context rather than confidence: two rounds is not enough for a change of this size to converge, and the point of stopping is that a person decides, not that socrates has finished.
