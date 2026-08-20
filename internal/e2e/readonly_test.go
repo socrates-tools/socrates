@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -11,7 +12,7 @@ import (
 
 func TestAReviewerThatWroteFailsTheRound(t *testing.T) {
 	session := harness.Start(t)
-	session.Simulator.Scenario("default:\n  writes:\n    - path: README.md\n      content: \"the reviewer helped itself\\n\"\n")
+	session.Simulator.Scenario("default:\n  writes:\n    - path: README.md\n      content: \"the reviewer helped itself\\n\"\n      defeats_the_seal: true\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	name := session.Review()
@@ -39,11 +40,23 @@ func TestAReviewerThatWroteFailsTheRound(t *testing.T) {
 			t.Errorf("git worktree list no longer names %s:\n%s", worktree, listed)
 		}
 	})
+
+	t.Run("The seal is lifted when the round ends", func(t *testing.T) {
+		worktree := session.Recorded(name).Worktree
+
+		inspected := filepath.Join(worktree, "internal", "added.go")
+		if err := os.WriteFile(inspected, []byte("package internal\n\nfunc Answer() int { return 1 }\n"), 0o644); err != nil {
+			t.Errorf("a person cannot edit %s in the worktree the run kept: %v", inspected, err)
+		}
+		if err := os.RemoveAll(worktree); err != nil {
+			t.Errorf("a person cannot delete the worktree the run kept at %s: %v", worktree, err)
+		}
+	})
 }
 
 func TestAReviewerThatCreatedAFileFailsTheRound(t *testing.T) {
 	session := harness.Start(t)
-	session.Simulator.Scenario("default:\n  writes:\n    - path: internal/reviewer-notes.md\n      content: \"some thoughts\\n\"\n")
+	session.Simulator.Scenario("default:\n  writes:\n    - path: internal/reviewer-notes.md\n      content: \"some thoughts\\n\"\n      defeats_the_seal: true\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	name := session.Review()
@@ -73,5 +86,46 @@ default:
 	}
 	if strings.Contains(reason(run), "wrote to the snapshot worktree") {
 		t.Errorf("a reviewer that wrote nothing was reported as having written: %q", reason(run))
+	}
+}
+
+func TestAWriteTheSealRefusedIsNotAFindingAgainstTheReviewer(t *testing.T) {
+	session := harness.Start(t)
+	session.Simulator.Scenario(`
+default:
+  structured: '{"findings":[{"id":"f1","severity":"warning","file":"internal/added.go","line":1,"description":"this package has no name anybody would guess","action":"ask-user"}],"risk_level":"medium","risk_rationale":"one small file"}'
+  writes:
+    - path: .serena/project.yml
+      content: "a tool server writing its own bookkeeping\n"
+    - path: internal/added.go
+      content: "package internal // and a fix nobody asked for\n"
+`)
+	session.Repository.Write("internal/added.go", "package internal\n")
+
+	name := session.Review()
+	run := session.WaitForTerminal(name)
+
+	if run.State != runstate.Escalated {
+		t.Fatalf("the run ended as %s, want the verdict the findings imply: %s", run.State, reason(run))
+	}
+	if strings.Contains(reason(run), ".serena") || strings.Contains(reason(run), "wrote to the snapshot worktree") {
+		t.Errorf("a write the seal refused was reported against the reviewer: %q", reason(run))
+	}
+
+	refused := session.Simulator.OnlyInvocation().WritesRefused
+	if len(refused) != 2 {
+		t.Fatalf("the reviewer's session recorded %v, and this test proves nothing unless both writes were attempted and refused", refused)
+	}
+	for _, attempt := range refused {
+		if !strings.Contains(attempt, "permission denied") {
+			t.Errorf("a write into the sealed worktree failed for another reason: %s", attempt)
+		}
+	}
+
+	if _, err := os.Stat(run.Worktree); run.Worktree != "" && !os.IsNotExist(err) {
+		t.Errorf("the worktree at %s was kept, so something the seal refused was still counted as a difference", run.Worktree)
+	}
+	if content := session.Repository.Read("internal/added.go"); content != "package internal\n" {
+		t.Errorf("the person's own file reads %q after a reviewer tried to fix it", content)
 	}
 }

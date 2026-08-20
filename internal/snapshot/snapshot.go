@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -131,7 +132,23 @@ func (s Snapshot) Checkout(ctx context.Context, path string) (Worktree, error) {
 		return Worktree{}, err
 	}
 
-	return Worktree{RepositoryRoot: s.RepositoryRoot, Path: path, Commit: s.Commit}, nil
+	worktree := Worktree{RepositoryRoot: s.RepositoryRoot, Path: path, Commit: s.Commit}
+
+	if err := worktree.Seal(); err != nil {
+		return Worktree{}, worktree.discard(ctx, fmt.Errorf(sealingTheWorktree, path, err))
+	}
+	if err := worktree.ProveTheSeal(); err != nil {
+		return Worktree{}, worktree.discard(ctx, err)
+	}
+
+	return worktree, nil
+}
+
+func (w Worktree) discard(ctx context.Context, reason error) error {
+	if err := w.Remove(ctx); err != nil {
+		return errors.Join(reason, err)
+	}
+	return reason
 }
 
 func (w Worktree) Differences(ctx context.Context) ([]string, error) {
@@ -151,6 +168,9 @@ func (w Worktree) Differences(ctx context.Context) ([]string, error) {
 }
 
 func (w Worktree) Remove(ctx context.Context) error {
+	if err := w.Unseal(); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
 	if err := os.RemoveAll(w.Path); err != nil {
 		return fmt.Errorf(removing, w.Path, err)
 	}

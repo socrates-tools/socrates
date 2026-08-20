@@ -61,9 +61,40 @@ socrates now asks for `--mcp-config {"mcpServers":{}} --strict-mcp-config`.
 `You cannot use --strict-mcp-config when an enterprise MCP config is present`, and the exit status is 1.
 An enterprise configuration lives outside the person's control, at `/etc/claude-code/managed-mcp.json` on Linux, so there is nothing socrates can do about it from inside the invocation.
 socrates asks for strictness, and on that refusal runs the review again without it and records `agent-tool-servers-loaded` in the run's event log.
-Where a server named there writes into the working directory, every review on that machine fails the worktree comparison, and the remedy is to take the server out of that configuration rather than to weaken the comparison.
+Where a server named there writes into the working directory, nothing in the invocation stops it, which is why the snapshot worktree is sealed against writing instead.
+
+**A sealed worktree is fully usable by the vendor's CLI.**
+Clearing every write bit in the worktree does not disturb a reviewer: `git status`, `git grep` and every read work, because a worktree's index and administrative state live under the main repository's `.git/worktrees/<name>/` rather than in the worktree.
+A tool server that writes at startup has its write refused and the session carries on, verified against the real CLI with an enterprise configuration loaded.
+
+**`chmod` returning no error is not evidence that permissions are enforced.**
+A filesystem can accept the call and ignore the bits, and `root` ignores them by design.
+socrates attempts one write in the sealed worktree before spawning a reviewer, and refuses the review where that write succeeds.
+
+**`os.Chmod` follows symlinks.**
+Sealing a worktree by walking it would reach outside the worktree through any symlink in the change under review, which is a write in somebody else's tree.
+`filepath.WalkDir` does not follow them, and the walk skips anything that is not a directory or a regular file.
+
+**Clearing the write bit means `mode &^ 0o222`, not `0o444`.**
+Assigning a flat mode makes a `0o600` file world-readable and takes the executable bit off a script.
+Clearing only the write bits round-trips: `0o755` seals to `0o555` and lifts back to `0o755`.
+
+**A sealed directory cannot be removed.**
+`os.RemoveAll` unlinks entries, which needs write permission on the directory that holds them, so every path that removes a worktree or a run directory lifts the seal first.
+One abandoned run with a sealed worktree would otherwise make the retention sweep fail, and the sweep runs at the start of every review.
 
 ## Testing
+
+**One journey needs a filesystem that ignores permission bits, and skips without one.**
+`TestASealThatDoesNotHoldIsARefusal` in `internal/e2e` is the only test of what `scrat review` does where the seal cannot be enforced, and no test can manufacture such a filesystem.
+Name one and it runs:
+
+```sh
+SOCRATES_TEST_UNENFORCING_DIRECTORY=~/winhost/temp go test ./internal/e2e/ -run TestASealThatDoesNotHoldIsARefusal
+```
+
+A Windows drive mounted into WSL2 is one: `chmod` there returns no error and changes nothing.
+The test refuses to run where the directory named does enforce permissions, rather than passing while asserting nothing.
 
 **Never revert a mutation with `git checkout <file>` while the file is new.**
 A file that is tracked at an older content reverts to that content, not to what you had a minute ago.

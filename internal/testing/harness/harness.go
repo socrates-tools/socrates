@@ -15,6 +15,7 @@ import (
 	"github.com/rui-ktei/socrates/internal/runlog"
 	"github.com/rui-ktei/socrates/internal/runstate"
 	"github.com/rui-ktei/socrates/internal/runstore"
+	"github.com/rui-ktei/socrates/internal/snapshot"
 	"github.com/rui-ktei/socrates/internal/state"
 	"github.com/rui-ktei/socrates/internal/testing/gitrepo"
 	"github.com/rui-ktei/socrates/internal/testing/simulator"
@@ -49,6 +50,7 @@ func Start(t *testing.T) *Session {
 		StateHome:  home,
 		Store:      runstore.New(filepath.Join(home, "runs")),
 	}
+	t.Cleanup(session.liftEverySeal)
 	t.Cleanup(session.stopEveryReviewer)
 	return session
 }
@@ -215,6 +217,10 @@ func (s *Session) Names() []string {
 		s.t.Fatalf("listing the runs: %v", err)
 	}
 	return names
+}
+
+func (s *Session) liftEverySeal() {
+	_ = snapshot.Unseal(s.StateHome)
 }
 
 func (s *Session) stopEveryReviewer() {

@@ -2,6 +2,7 @@ package reviewer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -94,6 +95,9 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 
 	worktree, err := taken.Checkout(ctx, snapshot.WorktreePath(directory))
 	if err != nil {
+		if snapshot.SealNotEnforced(err) {
+			return nil, errors.Join(err, beginning.Store.Discard(run.Name))
+		}
 		return run, beginning.fail(run, fmt.Errorf(checkingOutTheSnapshot, err))
 	}
 	run.Worktree = worktree.Path
@@ -114,6 +118,9 @@ func (b Beginning) fail(run *runstore.Run, reason error) error {
 	}
 	if err := b.Store.Save(run); err != nil {
 		return err
+	}
+	if err := liftTheSeal(run); err != nil {
+		return errors.Join(reason, err)
 	}
 	if err := b.recordEnd(run); err != nil {
 		return err

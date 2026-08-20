@@ -3,7 +3,9 @@ package reviewer
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"strings"
 
@@ -148,14 +150,26 @@ func (s Supervision) end(run *runstore.Run, outcome runstate.State, reason strin
 	if err := s.Store.Save(run); err != nil {
 		return err
 	}
+
+	lifted := liftTheSeal(run)
 	if s.Recorder == nil {
-		return nil
+		return lifted
 	}
-	return s.Recorder.Record(runlog.Event{
+	return errors.Join(lifted, s.Recorder.Record(runlog.Event{
 		Kind:    EventRunEnded,
 		Subject: run.Name,
 		Fields:  map[string]any{"state": string(outcome), "reason": reason},
-	})
+	}))
+}
+
+func liftTheSeal(run *runstore.Run) error {
+	if run.Worktree == "" {
+		return nil
+	}
+	if err := snapshot.Unseal(run.Worktree); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	return nil
 }
 
 func verdictReason(document findings.Document) string {

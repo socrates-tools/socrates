@@ -8,4 +8,10 @@ const (
 	creatingAnIndexDirectory = "creating a directory for the snapshot's own index: %w"
 	removing                 = "removing %s: %w"
 	gitFailed                = "git %s in %s: %s"
+
+	aFilesystemThatEnforcesNothing = "the filesystem holding the snapshot worktree does not enforce write permissions"
+	theSealDoesNotHold             = "the snapshot worktree at %s can still be written to after every write permission in it was cleared, so its filesystem enforces none of them and socrates cannot promise that the change a reviewer read is the change that was frozen: set SOCRATES_STATE_HOME to a directory on a filesystem that enforces permissions, then run scrat review again"
+	probingTheSeal                 = "attempting a write at %s to prove the snapshot worktree is sealed: %w"
+	changingThePermissionsOf       = "changing the permissions of %s: %w"
+	sealingTheWorktree             = "sealing the snapshot worktree at %s: %w"
 )

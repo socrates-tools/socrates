@@ -14,6 +14,7 @@ import (
 	"github.com/rui-ktei/socrates/internal/prompt"
 	"github.com/rui-ktei/socrates/internal/refusal"
 	"github.com/rui-ktei/socrates/internal/runstate"
+	"github.com/rui-ktei/socrates/internal/snapshot"
 )
 
 const recordName = "run.json"
@@ -130,9 +131,21 @@ func (s Store) Sweep(now time.Time, retention time.Duration) error {
 		if !run.State.Terminal() || now.Sub(run.StartedAt) < retention {
 			continue
 		}
-		if err := os.RemoveAll(s.Path(name)); err != nil {
-			return fmt.Errorf(removing, s.Path(name), err)
+		if err := s.Discard(name); err != nil {
+			return err
 		}
+	}
+	return nil
+}
+
+func (s Store) Discard(name string) error {
+	directory := s.Path(name)
+
+	if err := snapshot.Unseal(directory); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	if err := os.RemoveAll(directory); err != nil {
+		return fmt.Errorf(removing, directory, err)
 	}
 	return nil
 }

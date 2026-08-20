@@ -77,6 +77,41 @@ func TestTheReviewIsRunAgainWithoutWhatTheCLIRefused(t *testing.T) {
 	}
 }
 
+func TestAToolServerThatWritesCannotReachTheChangeUnderReview(t *testing.T) {
+	session := harness.Start(t)
+	session.Simulator.Scenario("default:\n  behaviour: strict-tool-servers-refused\n  writes:\n    - path: .serena/project.yml\n      content: \"a tool server writing its own bookkeeping as it starts\\n\"\n")
+	session.Repository.Write("internal/added.go", "package internal\n")
+
+	name := session.Review()
+	run := session.WaitForTerminal(name)
+	if run.State != runstate.Clean {
+		t.Fatalf("a reviewer whose session wrote as it started ended the run as %s: %s", run.State, reason(run))
+	}
+	if run.Verdict == nil || run.Verdict.Outcome != runstate.Clean {
+		t.Errorf("the verdict is %+v, want the one the findings imply", run.Verdict)
+	}
+
+	invocations := session.Simulator.Invocations()
+	if len(invocations) != 2 {
+		t.Fatalf("the reviewer was invoked %d times, want the refused one and the one that ran with the machine's servers", len(invocations))
+	}
+	if invocations[1].StrictMCP {
+		t.Error("the review that completed still asked the CLI to ignore the machine's tool servers")
+	}
+	for position, invocation := range invocations {
+		if len(invocation.WritesRefused) != 1 {
+			t.Fatalf("invocation %d recorded %v, and this test proves nothing unless the write was attempted and refused", position, invocation.WritesRefused)
+		}
+	}
+
+	if _, err := os.Stat(run.Worktree); run.Worktree != "" && !os.IsNotExist(err) {
+		t.Errorf("the worktree at %s was kept, so a tool server's write reached the change under review", run.Worktree)
+	}
+	if listed := session.Repository.Git("status", "--porcelain=v1", "--untracked-files=all"); listed != "?? internal/added.go" {
+		t.Errorf("the person's own repository reads:\n%s", listed)
+	}
+}
+
 func waitForTheSecondInvocation(t *testing.T, session *harness.Session) claudesim.Invocation {
 	t.Helper()
 

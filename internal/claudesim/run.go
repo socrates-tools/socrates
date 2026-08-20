@@ -1,11 +1,14 @@
 package claudesim
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -55,10 +58,7 @@ func Run(arguments []string, input io.Reader, out, failures io.Writer, environme
 	}
 	response := scenario.Match(invocation.Prompt)
 
-	if err := applyWrites(directory, response); err != nil {
-		fmt.Fprintf(failures, "error: %s\n", err)
-		return exitUsage
-	}
+	invocation.WritesRefused = attemptWrites(directory, response)
 
 	child, err := startChild(response)
 	if err != nil {
@@ -95,15 +95,52 @@ func Run(arguments []string, input io.Reader, out, failures io.Writer, environme
 	return exitSuccess
 }
 
-func applyWrites(directory string, response Response) error {
+func attemptWrites(directory string, response Response) []string {
+	var refused []string
 	for _, write := range response.Writes {
-		path := filepath.Join(directory, write.Path)
-		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-			return fmt.Errorf("creating the directory for %s: %w", write.Path, err)
+		if err := attemptWrite(directory, write); err != nil {
+			refused = append(refused, fmt.Sprintf("%s: %s", write.Path, err))
 		}
-		if err := os.WriteFile(path, []byte(write.Content), 0o644); err != nil {
-			return fmt.Errorf("writing %s: %w", write.Path, err)
+	}
+	return refused
+}
+
+func attemptWrite(directory string, write Write) error {
+	path := filepath.Join(directory, write.Path)
+
+	if write.DefeatsTheSeal {
+		if err := clearTheWayTo(directory, path); err != nil {
+			return err
 		}
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("creating the directory for %s: %w", write.Path, err)
+	}
+	if err := os.WriteFile(path, []byte(write.Content), 0o644); err != nil {
+		return fmt.Errorf("writing %s: %w", write.Path, err)
+	}
+	return nil
+}
+
+func clearTheWayTo(directory, path string) error {
+	for at := filepath.Dir(path); strings.HasPrefix(at, directory); at = filepath.Dir(at) {
+		if err := makeWritable(at); err != nil {
+			return err
+		}
+	}
+	return makeWritable(path)
+}
+
+func makeWritable(path string) error {
+	known, err := os.Stat(path)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	if err := os.Chmod(path, known.Mode().Perm()|0o200); err != nil {
+		return fmt.Errorf("clearing the way to %s: %w", path, err)
 	}
 	return nil
 }

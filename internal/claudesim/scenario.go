@@ -46,8 +46,9 @@ var behaviours = []Behaviour{
 }
 
 type Write struct {
-	Path    string `yaml:"path"`
-	Content string `yaml:"content"`
+	Path           string `yaml:"path"`
+	Content        string `yaml:"content"`
+	DefeatsTheSeal bool   `yaml:"defeats_the_seal"`
 }
 
 type Response struct {
