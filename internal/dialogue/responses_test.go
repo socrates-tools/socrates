@@ -11,9 +11,9 @@ import (
 
 func TestAResponseIsAFixOrARejection(t *testing.T) {
 	t.Run("Recording a fix", func(t *testing.T) {
-		var recorded dialogue.Responses
-		if replaced := recorded.Record(dialogue.Response{Finding: "f1", Resolution: dialogue.Fixed, Reason: "I moved the guard above the loop."}); replaced {
-			t.Error("the first response to a finding read as a replacement")
+		recorded := held(dialogue.Response{Finding: "f1", Resolution: dialogue.Fixed, Reason: "I moved the guard above the loop."})
+		if answers := recorded.Answers("f1"); answers != 1 {
+			t.Errorf("one response to a finding reads as %d", answers)
 		}
 
 		answer, answered := recorded.For("f1")
@@ -28,8 +28,7 @@ func TestAResponseIsAFixOrARejection(t *testing.T) {
 	t.Run("Recording a rejection", func(t *testing.T) {
 		const reason = "  The loop runs at most twice, and the caller's deadline bounds it.\nNothing retries forever.  "
 
-		var recorded dialogue.Responses
-		recorded.Record(dialogue.Response{Finding: "f2", Resolution: dialogue.Rejected, Reason: reason})
+		recorded := held(dialogue.Response{Finding: "f2", Resolution: dialogue.Rejected, Reason: reason})
 
 		answer, _ := recorded.For("f2")
 		if answer.Reason != reason {
@@ -67,12 +66,13 @@ func TestAResponseIsAFixOrARejection(t *testing.T) {
 	t.Run("Changing a response", func(t *testing.T) {
 		document := document(finding("f1", findings.Error, findings.AutoFix))
 
-		var recorded dialogue.Responses
-		recorded.Record(dialogue.Response{Finding: "f1", Resolution: dialogue.Rejected, Reason: "the reviewer misread the guard"})
-		replaced := recorded.Record(dialogue.Response{Finding: "f1", Resolution: dialogue.Fixed, Reason: "on reflection it was right"})
+		recorded := held(
+			dialogue.Response{Finding: "f1", Resolution: dialogue.Rejected, Reason: "the reviewer misread the guard"},
+			dialogue.Response{Finding: "f1", Resolution: dialogue.Fixed, Reason: "on reflection it was right"},
+		)
 
-		if !replaced {
-			t.Error("responding again to the same finding did not read as a replacement")
+		if answers := recorded.Answers("f1"); answers != 2 {
+			t.Errorf("two responses to one finding read as %d, so a replacement is not visible", answers)
 		}
 		if diff := cmp.Diff([]dialogue.Response{{Finding: "f1", Resolution: dialogue.Fixed, Reason: "on reflection it was right"}}, recorded.Latest()); diff != "" {
 			t.Errorf("the next reviewer would receive (-want +got):\n%s", diff)
@@ -93,12 +93,11 @@ func TestOnlyBlockingFindingsWaitForAResponse(t *testing.T) {
 		finding("informational", findings.Info, findings.NoOp),
 	)
 
-	var recorded dialogue.Responses
-	if diff := cmp.Diff([]string{"blocking"}, recorded.Unanswered(document)); diff != "" {
+	if diff := cmp.Diff([]string{"blocking"}, dialogue.Responses{}.Unanswered(document)); diff != "" {
 		t.Errorf("the findings waiting for a response differ (-want +got):\n%s", diff)
 	}
 
-	recorded.Record(dialogue.Response{Finding: "blocking", Resolution: dialogue.Fixed})
+	recorded := held(dialogue.Response{Finding: "blocking", Resolution: dialogue.Fixed})
 	if waiting := recorded.Unanswered(document); waiting != nil {
 		t.Errorf("an informational finding with no response is still waited on: %v", waiting)
 	}
@@ -121,4 +120,8 @@ func document(held ...findings.Finding) findings.Document {
 		RiskLevel:     findings.LowRisk,
 		RiskRationale: "nothing much",
 	}
+}
+
+func held(responses ...dialogue.Response) dialogue.Responses {
+	return dialogue.Responses{Recorded: responses}
 }

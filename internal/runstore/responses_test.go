@@ -13,10 +13,12 @@ import (
 func TestTwoAnswersDoNotOverwriteEachOther(t *testing.T) {
 	round := roundFor(t)
 
-	var waiting sync.WaitGroup
-	recorded := make([]bool, 8)
+	const answers = 8
 
-	for position := range recorded {
+	var waiting sync.WaitGroup
+	failures := make([]error, answers)
+
+	for position := range failures {
 		waiting.Add(1)
 		go func() {
 			defer waiting.Done()
@@ -25,7 +27,7 @@ func TestTwoAnswersDoNotOverwriteEachOther(t *testing.T) {
 				Resolution: dialogue.Rejected,
 				Reason:     "the claim of f" + strconv.Itoa(position),
 			})
-			recorded[position] = err == nil
+			failures[position] = err
 		}()
 	}
 	waiting.Wait()
@@ -34,12 +36,16 @@ func TestTwoAnswersDoNotOverwriteEachOther(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading the responses back: %v", err)
 	}
+	if len(stored.Recorded) != answers {
+		t.Errorf("%d of %d answers are stored: %+v", len(stored.Recorded), answers, stored.Recorded)
+	}
 
-	for position, succeeded := range recorded {
-		if !succeeded {
+	for position, failure := range failures {
+		identifier := "f" + strconv.Itoa(position)
+		if failure != nil {
+			t.Errorf("recording %s alongside the others failed: %v", identifier, failure)
 			continue
 		}
-		identifier := "f" + strconv.Itoa(position)
 		if _, present := stored.For(identifier); !present {
 			t.Errorf("%s was recorded and is not in the document: %+v", identifier, stored.Recorded)
 		}

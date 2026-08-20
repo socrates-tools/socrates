@@ -86,7 +86,7 @@ exec sh -c 'cat $WORK/state/runs/*/r1/responses.jsonl'
 stdout 'the first line of the reason'
 stdout 'on reflection the reviewer was right'
 
-# With every blocking finding answered the run says it is ready, and the informational one was never waited on.
+# With every answerable finding answered the run says it is ready, and the informational one was never waited on.
 exec sh -c 'scrat respond --finding f2 --rejected --reason "the loop is bounded by the caller deadline"; echo exit=$?'
 stdout 'exit=4'
 exec sh -c 'scrat status; echo exit=$?'

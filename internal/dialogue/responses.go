@@ -67,10 +67,14 @@ func (r Responses) Latest() []Response {
 	return latest
 }
 
-func (r *Responses) Record(response Response) bool {
-	_, replaced := r.For(response.Finding)
-	r.Recorded = append(r.Recorded, response)
-	return replaced
+func (r Responses) Answers(finding string) int {
+	answers := 0
+	for _, recorded := range r.Recorded {
+		if recorded.Finding == finding {
+			answers++
+		}
+	}
+	return answers
 }
 
 func (r Responses) Unanswered(document findings.Document) []string {

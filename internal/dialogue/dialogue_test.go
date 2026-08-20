@@ -203,7 +203,7 @@ func describe(held []findings.Finding) []string {
 
 func asksAPerson(held []findings.Finding) bool {
 	for _, one := range held {
-		if one.EffectiveAction() == findings.AskUser {
+		if string(one.Action) == "ask-user" {
 			return true
 		}
 	}
@@ -212,7 +212,7 @@ func asksAPerson(held []findings.Finding) bool {
 
 func blocks(held []findings.Finding) bool {
 	for _, one := range held {
-		if one.Severity.Blocks() {
+		if slices.Contains([]string{"error", "warning"}, string(one.Severity)) {
 			return true
 		}
 	}
@@ -221,7 +221,7 @@ func blocks(held []findings.Finding) bool {
 
 func answerable(held []findings.Finding) bool {
 	for _, one := range held {
-		if one.Severity.Blocks() && one.EffectiveAction() == findings.AutoFix {
+		if slices.Contains([]string{"error", "warning"}, string(one.Severity)) && string(one.Action) == "auto-fix" {
 			return true
 		}
 	}

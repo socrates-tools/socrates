@@ -152,10 +152,8 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 	outcome := dialogue.After(classified, round.Number)
 
 	if outcome == runstate.AwaitingResponse {
-		if err := removeWorktree(ctx, worktree); err != nil {
-			return err
-		}
-		return supervision.park(run, round.Number, classified)
+		removed := removeWorktree(ctx, worktree)
+		return errors.Join(removed, supervision.park(run, round.Number, classified, removed))
 	}
 
 	if err := supervision.end(run, outcome, verdictReason(document, classified, round.Number)); err != nil {
@@ -164,7 +162,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 	return removeWorktree(ctx, worktree)
 }
 
-func (s Supervision) park(run *runstore.Run, round int, classified findings.Classification) error {
+func (s Supervision) park(run *runstore.Run, round int, classified findings.Classification, teardown error) error {
 	run.Reviewer = 0
 	run.Agent = 0
 	if err := run.Advance(runstate.AwaitingResponse); err != nil {
@@ -178,10 +176,15 @@ func (s Supervision) park(run *runstore.Run, round int, classified findings.Clas
 	if s.Recorder == nil {
 		return lifted
 	}
+
+	fields := map[string]any{"round": round, "patchable": len(classified.Patchable)}
+	if teardown != nil {
+		fields["worktree"] = teardown.Error()
+	}
 	return errors.Join(lifted, s.Recorder.Record(runlog.Event{
 		Kind:    EventRoundParked,
 		Subject: run.Name,
-		Fields:  map[string]any{"round": round, "patchable": len(classified.Patchable)},
+		Fields:  fields,
 	}))
 }
 

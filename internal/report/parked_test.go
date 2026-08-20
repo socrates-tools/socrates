@@ -58,7 +58,7 @@ func TestTheCountReachesZero(t *testing.T) {
 		t.Fatalf("reading the status of %s: %v", name, err)
 	}
 	if status.Unanswered == nil || *status.Unanswered != 0 {
-		t.Fatalf("every blocking finding is answered and the status reports %v unanswered", status.Unanswered)
+		t.Fatalf("every answerable finding is answered and the status reports %v unanswered", status.Unanswered)
 	}
 
 	printed := strings.Join(status.Lines(), "\n")
@@ -118,14 +118,7 @@ func TestTheResponseRulesArriveWithTheFindings(t *testing.T) {
 func answer(t *testing.T, store runstore.Store, name string, response dialogue.Response) {
 	t.Helper()
 
-	round := store.Round(name, 1)
-	recorded, err := round.Responses()
-	if err != nil {
-		t.Fatalf("reading the responses of %s: %v", name, err)
-	}
-
-	recorded.Record(response)
-	if err := round.SaveResponses(recorded); err != nil {
-		t.Fatalf("saving the responses of %s: %v", name, err)
+	if _, _, err := store.Round(name, 1).RecordResponse(response); err != nil {
+		t.Fatalf("recording a response to %s: %v", name, err)
 	}
 }

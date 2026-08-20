@@ -98,7 +98,7 @@ func TestTheDialogueJourney(t *testing.T) {
 	respond(t, session, name, "--finding", "f1", "--fixed", "--note", "an empty document now answers minus one")
 	printed := respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all")
 
-	if !strings.Contains(printed, "every blocking finding") {
+	if !strings.Contains(printed, "a response can address") {
 		t.Errorf("scrat respond does not say the round is answered:\n%s", printed)
 	}
 

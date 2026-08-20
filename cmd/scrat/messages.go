@@ -34,7 +34,7 @@ const (
 
 	recordedIt           = "finding %s is recorded as %s against round %d"
 	replacedIt           = "an earlier response to %s was replaced, and both are kept"
-	everythingIsAnswered = "every blocking finding of this round now has a response"
+	everythingIsAnswered = "every finding of this round that a response can address now has one"
 	stillToAnswer        = "%d findings still have none: %s"
 	roundStarted         = "round %d is under way"
 

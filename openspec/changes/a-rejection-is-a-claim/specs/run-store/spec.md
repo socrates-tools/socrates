@@ -59,6 +59,9 @@ Cancelling signals what the run records, and a number that outlived its process 
 A round's worktree SHALL be torn down before the run is published as parked.
 The next round checks out the same path, so a run that reads parked while its worktree is still being removed hands the author a command that fails on the state socrates itself left behind.
 
+A failure to tear it down SHALL NOT stop the run being published as parked, and SHALL be recorded against the round.
+A review that completed and cannot be reached by any command is worse than a directory left behind: the findings are on disk, `--wait` would poll a run that never leaves `reviewing`, and `scrat cancel` would be the only way out of a review that succeeded.
+
 #### Scenario: A parked run has nothing left to tear down
 
 - **WHEN** a run first reads `awaiting-response`

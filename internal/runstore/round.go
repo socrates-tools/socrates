@@ -120,21 +120,7 @@ func (r Round) Responses() (dialogue.Responses, error) {
 	return recorded, nil
 }
 
-func (r Round) SaveResponses(recorded dialogue.Responses) error {
-	encoded, err := recorded.Encode()
-	if err != nil {
-		return err
-	}
-	return replaceFile(r.ResponsesPath(), encoded)
-}
-
 func (r Round) RecordResponse(response dialogue.Response) (dialogue.Responses, bool, error) {
-	recorded, err := r.Responses()
-	if err != nil {
-		return dialogue.Responses{}, false, err
-	}
-	replaced := recorded.Record(response)
-
 	line, err := dialogue.Line(response)
 	if err != nil {
 		return dialogue.Responses{}, false, err
@@ -142,7 +128,12 @@ func (r Round) RecordResponse(response dialogue.Response) (dialogue.Responses, b
 	if err := r.appendResponse(line); err != nil {
 		return dialogue.Responses{}, false, err
 	}
-	return recorded, replaced, nil
+
+	recorded, err := r.Responses()
+	if err != nil {
+		return dialogue.Responses{}, false, err
+	}
+	return recorded, recorded.Answers(response.Finding) > 1, nil
 }
 
 func (r Round) appendResponse(line []byte) error {

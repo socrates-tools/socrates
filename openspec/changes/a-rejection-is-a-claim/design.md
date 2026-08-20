@@ -51,7 +51,8 @@ A set holding one intent question and five mechanical defects goes to the person
 Both go to the next reviewer.
 A `fixed` response is a claim too: the reviewer verifies it against the current code rather than believing it, which is the provenance clause's whole job.
 
-`scrat continue` refuses while any blocking finding has no response.
+`scrat continue` refuses while any finding that holds the change and can be patched has no response.
+A finding that holds the change while its own action asks for nothing is not something a response addresses, so it escalates at the round it appeared in rather than being waited on.
 Silence is not a rejection and it is not a fix, and a round that advanced on silence would present an unpatched, unargued finding to the next reviewer as though it had been dealt with.
 
 ### What socrates tells the author, and why socrates says it at all
@@ -95,7 +96,8 @@ Reviewing round two against round one's snapshot shows only the patches, which r
 Findings were model output re-embedded in a prompt in the core.
 Responses are model output re-embedded in a prompt too, and they are written by a session that is arguing.
 
-For every field before it is re-embedded: neutralise conflict markers, normalise line endings, collapse whitespace runs, trim.
+For every field before it is re-embedded: neutralise conflict markers, remove the heading marker the prompt's own sections are built from, normalise line endings, collapse whitespace runs, trim.
+The heading marker is not cosmetic: a field that opens a section is the session under review composing a peer of socrates' own instructions.
 Per field rather than across the assembled block, so that a field's boundaries survive and a long description cannot swallow the label of the field after it.
 
 ## Risks / Trade-offs
