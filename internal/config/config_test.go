@@ -123,6 +123,20 @@ func TestANegativeMeasureIsARefusal(t *testing.T) {
 	}
 }
 
+func TestNoSettingChangesIt(t *testing.T) {
+	for _, stated := range []string{"round_cap: 3\n", "rounds: 3\n", "cap: 3\n", "max_rounds: 3\n"} {
+		named, _, _ := strings.Cut(stated, ":")
+
+		_, err := config.LoadFrom(write(t, stated))
+		if !refusal.Is(err) {
+			t.Fatalf("a configuration file stating %s gave %v, want a refusal", named, err)
+		}
+		if !strings.Contains(err.Error(), named) {
+			t.Errorf("the refusal does not name the setting: %s", err)
+		}
+	}
+}
+
 func write(t *testing.T, content string) string {
 	t.Helper()
 

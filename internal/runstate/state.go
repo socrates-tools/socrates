@@ -5,15 +5,16 @@ import "slices"
 type State string
 
 const (
-	Starting  State = "starting"
-	Reviewing State = "reviewing"
-	Clean     State = "clean"
-	Escalated State = "escalated"
-	Failed    State = "failed"
-	Cancelled State = "cancelled"
+	Starting         State = "starting"
+	Reviewing        State = "reviewing"
+	AwaitingResponse State = "awaiting-response"
+	Clean            State = "clean"
+	Escalated        State = "escalated"
+	Failed           State = "failed"
+	Cancelled        State = "cancelled"
 )
 
-var states = []State{Starting, Reviewing, Clean, Escalated, Failed, Cancelled}
+var states = []State{Starting, Reviewing, AwaitingResponse, Clean, Escalated, Failed, Cancelled}
 
 var terminalStates = []State{Clean, Escalated, Failed, Cancelled}
 

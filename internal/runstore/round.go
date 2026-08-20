@@ -10,14 +10,16 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/rui-ktei/socrates/internal/dialogue"
 	"github.com/rui-ktei/socrates/internal/findings"
 )
 
 const (
-	roundPrefix  = "r"
-	promptFile   = "prompt.txt"
-	streamFile   = "stream.jsonl"
-	findingsFile = "findings.json"
+	roundPrefix   = "r"
+	promptFile    = "prompt.txt"
+	streamFile    = "stream.jsonl"
+	findingsFile  = "findings.json"
+	responsesFile = "responses.json"
 )
 
 type Round struct {
@@ -94,6 +96,37 @@ func (r Round) FindingsPath() string {
 func (r Round) Write(path, content string) error {
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		return fmt.Errorf(writing, path, err)
+	}
+	return nil
+}
+
+func (r Round) ResponsesPath() string {
+	return filepath.Join(r.Directory, responsesFile)
+}
+
+func (r Round) Responses() (dialogue.Responses, error) {
+	content, err := os.ReadFile(r.ResponsesPath())
+	if errors.Is(err, fs.ErrNotExist) {
+		return dialogue.Responses{}, nil
+	}
+	if err != nil {
+		return dialogue.Responses{}, fmt.Errorf(reading, r.ResponsesPath(), err)
+	}
+
+	recorded, err := dialogue.Parse(content)
+	if err != nil {
+		return dialogue.Responses{}, fmt.Errorf(parsing, r.ResponsesPath(), err)
+	}
+	return recorded, nil
+}
+
+func (r Round) SaveResponses(recorded dialogue.Responses) error {
+	encoded, err := recorded.Encode()
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(r.ResponsesPath(), encoded, 0o644); err != nil {
+		return fmt.Errorf(writing, r.ResponsesPath(), err)
 	}
 	return nil
 }

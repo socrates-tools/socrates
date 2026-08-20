@@ -65,6 +65,30 @@ func TestALiveRunIsNeverSwept(t *testing.T) {
 	}
 }
 
+func TestAParkedRunSurvivesTheSweep(t *testing.T) {
+	store := runstore.New(t.TempDir())
+	now := time.Date(2026, 8, 19, 12, 0, 0, 0, time.UTC)
+
+	parked := start(t, store, t.TempDir(), now.Add(-20*24*time.Hour))
+	if err := parked.Advance(runstate.Reviewing); err != nil {
+		t.Fatalf("advancing the old run: %v", err)
+	}
+	if err := parked.Advance(runstate.AwaitingResponse); err != nil {
+		t.Fatalf("parking the old run: %v", err)
+	}
+	if err := store.Save(parked); err != nil {
+		t.Fatalf("saving the parked run: %v", err)
+	}
+
+	if err := store.Sweep(now, 14*24*time.Hour); err != nil {
+		t.Fatalf("sweeping: %v", err)
+	}
+
+	if _, err := os.Stat(store.Path(parked.Name)); err != nil {
+		t.Errorf("a run parked for longer than the retention age was swept while it waited: %v", err)
+	}
+}
+
 func TestARunWhoseWorktreeIsStillSealedIsSwept(t *testing.T) {
 	store := runstore.New(t.TempDir())
 	now := time.Date(2026, 8, 19, 12, 0, 0, 0, time.UTC)

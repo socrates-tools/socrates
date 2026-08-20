@@ -24,6 +24,12 @@ type Verdict struct {
 	Reason  string         `json:"reason,omitempty"`
 }
 
+type Reviewed struct {
+	Round    int    `json:"round"`
+	Base     string `json:"base"`
+	Snapshot string `json:"snapshot"`
+}
+
 type Run struct {
 	Name       string          `json:"name"`
 	Repository string          `json:"repository"`
@@ -37,6 +43,28 @@ type Run struct {
 	Verdict    *Verdict        `json:"verdict,omitempty"`
 	Reviewer   int             `json:"reviewer,omitempty"`
 	Agent      int             `json:"agent,omitempty"`
+	Reviews    []Reviewed      `json:"reviews,omitempty"`
+}
+
+func (r *Run) Snapshotted(round int, base, snapshot string) {
+	reviewed := Reviewed{Round: round, Base: base, Snapshot: snapshot}
+
+	for position, already := range r.Reviews {
+		if already.Round == round {
+			r.Reviews[position] = reviewed
+			return
+		}
+	}
+	r.Reviews = append(r.Reviews, reviewed)
+}
+
+func (r *Run) Reviewed(round int) (Reviewed, bool) {
+	for _, already := range r.Reviews {
+		if already.Round == round {
+			return already, true
+		}
+	}
+	return Reviewed{}, false
 }
 
 func (r *Run) Advance(state runstate.State) error {
@@ -237,7 +265,7 @@ func (s Store) recorded(name string) (*Run, error) {
 }
 
 func observe(run *Run) {
-	if run.State.Terminal() || run.Reviewer == 0 || process.Alive(run.Reviewer) {
+	if run.State.Terminal() || run.State == runstate.AwaitingResponse || run.Reviewer == 0 || process.Alive(run.Reviewer) {
 		return
 	}
 

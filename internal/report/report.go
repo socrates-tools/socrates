@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/rui-ktei/socrates/internal/dialogue"
 	"github.com/rui-ktei/socrates/internal/exit"
 	"github.com/rui-ktei/socrates/internal/findings"
 	"github.com/rui-ktei/socrates/internal/runstate"
@@ -18,11 +19,12 @@ type Counts struct {
 }
 
 type Status struct {
-	Run      string         `json:"run"`
-	State    runstate.State `json:"state"`
-	Round    int            `json:"round"`
-	Reason   string         `json:"reason,omitempty"`
-	Findings *Counts        `json:"findings,omitempty"`
+	Run        string         `json:"run"`
+	State      runstate.State `json:"state"`
+	Round      int            `json:"round"`
+	Reason     string         `json:"reason,omitempty"`
+	Findings   *Counts        `json:"findings,omitempty"`
+	Unanswered *int           `json:"unanswered,omitempty"`
 }
 
 type Finding struct {
@@ -42,17 +44,19 @@ type Findings struct {
 	RiskLevel     findings.Risk  `json:"risk_level,omitempty"`
 	RiskRationale string         `json:"risk_rationale,omitempty"`
 	Reason        string         `json:"reason,omitempty"`
+	Guidance      []string       `json:"guidance,omitempty"`
 }
 
 func StatusOf(store runstore.Store, name string) (Status, error) {
-	run, document, reviewed, round, err := read(store, name)
+	read, err := readRun(store, name)
 	if err != nil {
 		return Status{}, err
 	}
 
-	status := Status{Run: run.Name, State: run.State, Round: round, Reason: reasonOf(run)}
-	if reviewed {
-		classified := findings.Classify(document)
+	run := read.run
+	status := Status{Run: run.Name, State: run.State, Round: read.round, Reason: reasonOf(run)}
+	if read.reviewed {
+		classified := findings.Classify(read.document)
 		status.Findings = &Counts{
 			Total:          classified.Total(),
 			NeedingAPerson: len(classified.NeedingAPerson),
@@ -60,17 +64,25 @@ func StatusOf(store runstore.Store, name string) (Status, error) {
 			Informational:  len(classified.NoOps),
 		}
 	}
+	if run.State == runstate.AwaitingResponse {
+		waiting := len(read.responses.Unanswered(read.document))
+		status.Unanswered = &waiting
+	}
 	return status, nil
 }
 
 func FindingsOf(store runstore.Store, name string) (Findings, error) {
-	run, document, reviewed, _, err := read(store, name)
+	read, err := readRun(store, name)
 	if err != nil {
 		return Findings{}, err
 	}
 
-	reported := Findings{Run: run.Name, State: run.State, Reviewed: reviewed, Findings: []Finding{}, Reason: reasonOf(run)}
-	if !reviewed {
+	run, document := read.run, read.document
+	reported := Findings{Run: run.Name, State: run.State, Reviewed: read.reviewed, Findings: []Finding{}, Reason: reasonOf(run)}
+	if run.State == runstate.AwaitingResponse {
+		reported.Guidance = ResponseRules()
+	}
+	if !read.reviewed {
 		return reported, nil
 	}
 
@@ -89,32 +101,44 @@ func FindingsOf(store runstore.Store, name string) (Findings, error) {
 	return reported, nil
 }
 
-func read(store runstore.Store, name string) (*runstore.Run, findings.Document, bool, int, error) {
+type reading struct {
+	run       *runstore.Run
+	document  findings.Document
+	responses dialogue.Responses
+	reviewed  bool
+	round     int
+}
+
+func readRun(store runstore.Store, name string) (reading, error) {
 	run, err := store.Load(name)
 	if err != nil {
-		return nil, findings.Document{}, false, 0, err
+		return reading{}, err
 	}
 
 	round, hasRound, err := store.LatestRound(name)
 	if err != nil {
-		return nil, findings.Document{}, false, 0, err
+		return reading{}, err
 	}
 	if !hasRound {
-		return run, findings.Document{}, false, 0, nil
+		return reading{run: run}, nil
 	}
 	if !reviewCompleted(run.State) {
-		return run, findings.Document{}, false, round.Number, nil
+		return reading{run: run, round: round.Number}, nil
 	}
 
 	document, present, err := round.Findings()
 	if err != nil {
-		return nil, findings.Document{}, false, 0, err
+		return reading{}, err
 	}
-	return run, document, present, round.Number, nil
+	responses, err := round.Responses()
+	if err != nil {
+		return reading{}, err
+	}
+	return reading{run: run, document: document, responses: responses, reviewed: present, round: round.Number}, nil
 }
 
 func reviewCompleted(state runstate.State) bool {
-	return state == runstate.Clean || state == runstate.Escalated
+	return state == runstate.Clean || state == runstate.Escalated || state == runstate.AwaitingResponse
 }
 
 func reasonOf(run *runstore.Run) string {
@@ -141,6 +165,14 @@ func (s Status) Lines() []string {
 		lines = append(lines, fmt.Sprintf(countsLine,
 			s.Findings.Total, s.Findings.NeedingAPerson, s.Findings.Patchable, s.Findings.Informational))
 	}
+	if s.Unanswered == nil {
+		return lines
+	}
+
+	lines = append(lines, awaitingLine, fmt.Sprintf(unansweredLine, *s.Unanswered))
+	if *s.Unanswered == 0 {
+		lines = append(lines, readyLine)
+	}
 	return lines
 }
 
@@ -150,10 +182,10 @@ func (f Findings) Code() int {
 
 func (f Findings) Lines() []string {
 	if !f.Reviewed {
-		return []string{fmt.Sprintf(noReviewLine, f.stateReason())}
+		return append([]string{fmt.Sprintf(noReviewLine, f.stateReason())}, f.rules()...)
 	}
 	if len(f.Findings) == 0 {
-		return []string{nothingToReportLine, fmt.Sprintf(riskLine, f.RiskLevel), fmt.Sprintf(rationaleLine, f.RiskRationale)}
+		return append([]string{nothingToReportLine, fmt.Sprintf(riskLine, f.RiskLevel), fmt.Sprintf(rationaleLine, f.RiskRationale)}, f.rules()...)
 	}
 
 	var lines []string
@@ -162,7 +194,29 @@ func (f Findings) Lines() []string {
 			fmt.Sprintf(findingLine, finding.ID, finding.Severity, finding.File, finding.Line, Audience(finding.Resolved)),
 			fmt.Sprintf(descriptionLine, finding.Description))
 	}
-	return append(lines, fmt.Sprintf(riskLine, f.RiskLevel), fmt.Sprintf(rationaleLine, f.RiskRationale))
+	lines = append(lines, fmt.Sprintf(riskLine, f.RiskLevel), fmt.Sprintf(rationaleLine, f.RiskRationale))
+	return append(lines, f.rules()...)
+}
+
+func (f Findings) rules() []string {
+	if len(f.Guidance) == 0 {
+		return nil
+	}
+
+	lines := []string{"", rulesHeading}
+	for _, rule := range f.Guidance {
+		lines = append(lines, fmt.Sprintf(ruleLine, rule))
+	}
+	return lines
+}
+
+func ResponseRules() []string {
+	return []string{
+		didNotReviewIt,
+		fixOrReject,
+		aRejectionIsAClaim,
+		doNotWeakenTheWork,
+	}
 }
 
 func (f Findings) stateReason() string {

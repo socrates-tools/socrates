@@ -6,14 +6,15 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestTheSixStatesAndWhichAreTerminal(t *testing.T) {
+func TestEveryStateAndWhichAreTerminal(t *testing.T) {
 	want := map[State]bool{
-		Starting:  false,
-		Reviewing: false,
-		Clean:     true,
-		Escalated: true,
-		Failed:    true,
-		Cancelled: true,
+		Starting:         false,
+		Reviewing:        false,
+		AwaitingResponse: false,
+		Clean:            true,
+		Escalated:        true,
+		Failed:           true,
+		Cancelled:        true,
 	}
 
 	got := map[State]bool{}

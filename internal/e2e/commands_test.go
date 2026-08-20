@@ -23,7 +23,7 @@ func TestTheCommandSurfaceIsWhatItSays(t *testing.T) {
 	}
 
 	listed := commandsIn(printed)
-	want := []string{"cancel", "findings", "help", "review", "status"}
+	want := []string{"cancel", "continue", "findings", "help", "respond", "review", "status"}
 	if !slices.Equal(listed, want) {
 		t.Errorf("scrat lists %v, want %v", listed, want)
 	}

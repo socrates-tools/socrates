@@ -10,6 +10,7 @@ import (
 	"github.com/rui-ktei/socrates/internal/refusal"
 	"github.com/rui-ktei/socrates/internal/report"
 	"github.com/rui-ktei/socrates/internal/reviewer"
+	"github.com/rui-ktei/socrates/internal/runstate"
 	"github.com/rui-ktei/socrates/internal/runstore"
 	"github.com/rui-ktei/socrates/internal/state"
 	"github.com/spf13/cobra"
@@ -43,9 +44,9 @@ func newReviewCommand(code *int) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf(locatingHere, err)
 			}
-			binary, err := os.Executable()
+			binary, err := ownBinary()
 			if err != nil {
-				return fmt.Errorf(locatingScrat, err)
+				return err
 			}
 
 			run, err := reviewer.Begin(command.Context(), reviewer.Beginning{
@@ -91,7 +92,7 @@ func awaitVerdict(ctx context.Context, store runstore.Store, name string) (repor
 		if err != nil {
 			return report.Status{}, err
 		}
-		if status.State.Terminal() {
+		if status.State.Terminal() || status.State == runstate.AwaitingResponse {
 			return status, nil
 		}
 
@@ -101,6 +102,14 @@ func awaitVerdict(ctx context.Context, store runstore.Store, name string) (repor
 		case <-time.After(verdictPoll):
 		}
 	}
+}
+
+func ownBinary() (string, error) {
+	binary, err := os.Executable()
+	if err != nil {
+		return "", fmt.Errorf(locatingScrat, err)
+	}
+	return binary, nil
 }
 
 func openStore() (runstore.Store, error) {

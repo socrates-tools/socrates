@@ -1,0 +1,119 @@
+# A round parks on the author, every way of answering it wrongly is refused, and answering it starts the next round.
+
+[!exec:git] skip
+[!exec:sh] skip
+
+cd repo
+exec git -c init.defaultBranch=main init --quiet .
+exec git add -A
+exec git commit --quiet -m 'the first commit'
+
+env CLAUDESIM_SCENARIO=$WORK/dialogue.yaml
+cp $WORK/added.go added.go
+
+# A round that found only mechanical defects parks, and parking is not a verdict.
+exec sh -c 'scrat review --wait; echo exit=$?'
+stdout 'exit=4'
+stdout 'state: awaiting-response'
+stdout 'unanswered: 2'
+! stdout 'verdict:'
+
+# The findings arrive with the rules the author is being asked to work under.
+exec sh -c 'scrat findings; echo exit=$?'
+stdout 'exit=4'
+stdout 'You did not review this code'
+stdout 'A rejection is a claim'
+stdout 'weakening or deleting behaviour'
+
+# A rejection with no reason is refused, and nothing is stored.
+exec sh -c 'scrat respond --finding f1 --rejected --reason ""; echo exit=$?'
+stdout 'exit=3'
+stderr 'a rejection is a claim'
+exec sh -c 'ls $WORK/state/runs/*/r1/'
+! stdout 'responses.json'
+
+# A finding the round did not produce is refused, naming it.
+exec sh -c 'scrat respond --finding f9 --fixed; echo exit=$?'
+stdout 'exit=3'
+stderr 'f9'
+
+# Naming no finding at all is refused, and says how one is named.
+exec sh -c 'scrat respond --fixed; echo exit=$?'
+stdout 'exit=3'
+stderr '--finding'
+
+# An answer is a fix or a rejection, and never both or neither.
+exec sh -c 'scrat respond --finding f1 --fixed --rejected; echo exit=$?'
+stdout 'exit=3'
+stderr 'not both'
+exec sh -c 'scrat respond --finding f1; echo exit=$?'
+stdout 'exit=3'
+stderr 'not both'
+
+# Continuing while a blocking finding has no response is refused, naming what is unanswered.
+exec sh -c 'scrat continue; echo exit=$?'
+stdout 'exit=3'
+stderr 'f1'
+stderr 'f2'
+
+# A reason can arrive on standard input, so a long one does not have to survive a shell.
+stdin $WORK/reason.txt
+exec sh -c 'scrat respond --finding f1 --rejected --reason -; echo exit=$?'
+stdout 'exit=4'
+exec sh -c 'cat $WORK/state/runs/*/r1/responses.json'
+stdout 'the first line of the reason'
+stdout 'the second line of the reason'
+
+# Answering again replaces the earlier answer, and both are kept.
+exec sh -c 'scrat respond --finding f1 --fixed --note "on reflection the reviewer was right"; echo exit=$?'
+stdout 'exit=4'
+stdout 'replaced'
+exec sh -c 'cat $WORK/state/runs/*/r1/responses.json'
+stdout 'the first line of the reason'
+stdout 'on reflection the reviewer was right'
+
+# With every blocking finding answered the run says it is ready, and the informational one was never waited on.
+exec sh -c 'scrat respond --finding f2 --rejected --reason "the loop is bounded by the caller deadline"; echo exit=$?'
+stdout 'exit=4'
+exec sh -c 'scrat status; echo exit=$?'
+stdout 'exit=4'
+stdout 'unanswered: 0'
+stdout 'scrat continue'
+
+# The next round is a fresh reviewer that judges the answers.
+exec sh -c 'scrat continue --wait; echo exit=$?'
+stdout 'exit=0'
+stdout 'state: clean'
+exists $WORK/state/runs
+exec sh -c 'ls $WORK/state/runs/*/'
+stdout 'r1'
+stdout 'r2'
+
+# A run that has concluded has nothing to answer and nowhere to go.
+exec sh -c 'scrat respond --finding f1 --fixed; echo exit=$?'
+stdout 'exit=3'
+stderr 'clean'
+exec sh -c 'scrat continue; echo exit=$?'
+stdout 'exit=3'
+stderr 'clean'
+
+-- repo/README.md --
+socrates
+-- added.go --
+package repo
+
+func Answer(document string) int {
+	return len(document)
+}
+-- reason.txt --
+the first line of the reason
+the second line of the reason
+-- clean.yaml --
+default:
+  structured: '{"findings":[],"risk_level":"low","risk_rationale":"a small and self-contained change"}'
+-- dialogue.yaml --
+responses:
+  - when: "Where the code you are re-reviewing came from"
+    structured: '{"findings":[],"risk_level":"low","risk_rationale":"the patches answer what the first round found"}'
+default:
+  structured: '{"findings":[{"id":"f1","severity":"error","file":"added.go","line":4,"description":"Answer returns zero for an empty document, which is the answer for a document of length zero as well.","action":"auto-fix"},{"id":"f2","severity":"warning","file":"added.go","line":4,"description":"The retry loop never backs off.","action":"auto-fix"},{"id":"f3","severity":"info","file":"added.go","line":1,"description":"This package now owns two spellings of one idea.","action":"no-op"}],"risk_level":"medium","risk_rationale":"one changed path answers wrongly without erroring"}'

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -73,11 +74,22 @@ func (s *Session) ScratIn(directory string, arguments ...string) (string, string
 	return s.ScratWith(directory, nil, arguments...)
 }
 
+func (s *Session) ScratReading(input string, arguments ...string) (string, string, int) {
+	s.t.Helper()
+	return s.scrat(s.Repository.Root, nil, strings.NewReader(input), arguments...)
+}
+
 func (s *Session) ScratWith(directory string, environment []string, arguments ...string) (string, string, int) {
+	s.t.Helper()
+	return s.scrat(directory, environment, nil, arguments...)
+}
+
+func (s *Session) scrat(directory string, environment []string, input io.Reader, arguments ...string) (string, string, int) {
 	s.t.Helper()
 
 	command := exec.Command(s.Binary, arguments...)
 	command.Dir = directory
+	command.Stdin = input
 	if len(environment) > 0 {
 		command.Env = append(os.Environ(), environment...)
 	}

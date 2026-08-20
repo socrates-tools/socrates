@@ -41,6 +41,8 @@ func newRootCommand(code *int) *cobra.Command {
 		newReviewCommand(code),
 		newStatusCommand(code),
 		newFindingsCommand(code),
+		newRespondCommand(code),
+		newContinueCommand(code),
 		newCancelCommand(),
 		newSuperviseCommand(),
 	)

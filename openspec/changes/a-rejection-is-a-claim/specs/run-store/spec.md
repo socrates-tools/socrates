@@ -1,6 +1,11 @@
+## RENAMED Requirements
+
+- FROM: `### Requirement: A run holds one of six states and four of them are terminal`
+- TO: `### Requirement: A run holds one of seven states and four of them are terminal`
+
 ## MODIFIED Requirements
 
-### Requirement: A run holds one of six states and three of them are terminal
+### Requirement: A run holds one of seven states and four of them are terminal
 
 A run SHALL be in exactly one of `starting`, `reviewing`, `awaiting-response`, `clean`, `escalated`, `failed`, `cancelled`.
 `clean`, `escalated`, `failed` and `cancelled` SHALL be terminal.

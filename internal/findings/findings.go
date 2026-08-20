@@ -115,13 +115,19 @@ func (d Document) Patchable() []Finding {
 	return Classify(d).Patchable
 }
 
-func (d Document) Verdict() runstate.State {
-	for _, finding := range d.Findings {
-		if finding.Severity.Blocks() {
-			return runstate.Escalated
+func (c Classification) Verdict() runstate.State {
+	for _, group := range [][]Finding{c.NeedingAPerson, c.Patchable, c.NoOps} {
+		for _, finding := range group {
+			if finding.Severity.Blocks() {
+				return runstate.Escalated
+			}
 		}
 	}
 	return runstate.Clean
+}
+
+func (d Document) Verdict() runstate.State {
+	return Classify(d).Verdict()
 }
 
 func Parse(document []byte) (Document, error) {

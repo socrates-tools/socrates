@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/rui-ktei/socrates/internal/agent"
+	"github.com/rui-ktei/socrates/internal/dialogue"
 	"github.com/rui-ktei/socrates/internal/findings"
 	"github.com/rui-ktei/socrates/internal/prompt"
 	"github.com/rui-ktei/socrates/internal/runlog"
@@ -46,7 +47,20 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		return err
 	}
 
+	round, present, err := supervision.Store.LatestRound(run.Name)
+	if err != nil {
+		return err
+	}
+	if !present {
+		return supervision.end(run, runstate.Failed, noRoundToReview)
+	}
+
 	reviewed, err := changeIn(ctx, run)
+	if err != nil {
+		return supervision.end(run, runstate.Failed, err.Error())
+	}
+
+	prior, err := priorRounds(supervision.Store, run.Name, round.Number)
 	if err != nil {
 		return supervision.end(run, runstate.Failed, err.Error())
 	}
@@ -59,6 +73,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		Changed:    reviewed.paths,
 		Diff:       reviewed.diff,
 		Ceiling:    supervision.Ceiling,
+		Prior:      prior,
 	})
 
 	run.Diff = asked.Diff
@@ -66,10 +81,6 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		return err
 	}
 
-	round, err := supervision.Store.CreateRound(run.Name, firstRound)
-	if err != nil {
-		return err
-	}
 	if err := round.Write(round.PromptPath(), asked.Text); err != nil {
 		return err
 	}
@@ -137,10 +148,72 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		return removeWorktree(ctx, worktree)
 	}
 
-	if err := supervision.end(run, document.Verdict(), verdictReason(document)); err != nil {
+	classified := findings.Classify(document)
+	outcome := dialogue.After(classified, round.Number)
+
+	if outcome == runstate.AwaitingResponse {
+		if err := supervision.park(run, round.Number, classified); err != nil {
+			return err
+		}
+		return removeWorktree(ctx, worktree)
+	}
+
+	if err := supervision.end(run, outcome, verdictReason(document, classified, round.Number)); err != nil {
 		return err
 	}
 	return removeWorktree(ctx, worktree)
+}
+
+func (s Supervision) park(run *runstore.Run, round int, classified findings.Classification) error {
+	if err := run.Advance(runstate.AwaitingResponse); err != nil {
+		return err
+	}
+	if err := s.Store.Save(run); err != nil {
+		return err
+	}
+
+	lifted := liftTheSeal(run)
+	if s.Recorder == nil {
+		return lifted
+	}
+	return errors.Join(lifted, s.Recorder.Record(runlog.Event{
+		Kind:    EventRoundParked,
+		Subject: run.Name,
+		Fields:  map[string]any{"round": round, "patchable": len(classified.Patchable)},
+	}))
+}
+
+func priorRounds(store runstore.Store, name string, current int) ([]prompt.PriorRound, error) {
+	numbers, err := store.Rounds(name)
+	if err != nil {
+		return nil, err
+	}
+
+	var prior []prompt.PriorRound
+	for _, number := range numbers {
+		if number >= current {
+			continue
+		}
+
+		round := store.Round(name, number)
+		document, reported, err := round.Findings()
+		if err != nil {
+			return nil, err
+		}
+		if !reported {
+			continue
+		}
+		recorded, err := round.Responses()
+		if err != nil {
+			return nil, err
+		}
+		prior = append(prior, prompt.PriorRound{
+			Number:    number,
+			Findings:  document.Findings,
+			Responses: recorded.Latest(),
+		})
+	}
+	return prior, nil
 }
 
 func (s Supervision) end(run *runstore.Run, outcome runstate.State, reason string) error {
@@ -172,12 +245,16 @@ func liftTheSeal(run *runstore.Run) error {
 	return nil
 }
 
-func verdictReason(document findings.Document) string {
-	classified := findings.Classify(document)
+func verdictReason(document findings.Document, classified findings.Classification, round int) string {
 	if len(document.Findings) == 0 {
 		return nothingToReport
 	}
-	return fmt.Sprintf(whatAReviewerFound, len(document.Findings), len(classified.NeedingAPerson), document.RiskLevel)
+
+	found := fmt.Sprintf(whatAReviewerFound, len(document.Findings), len(classified.NeedingAPerson), document.RiskLevel)
+	if len(classified.NeedingAPerson) == 0 && dialogue.CapReached(round) {
+		return found + fmt.Sprintf(theCapWasReached, dialogue.Cap)
+	}
+	return found
 }
 
 func honoursTheSchema(structured json.RawMessage) error {

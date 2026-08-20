@@ -18,5 +18,13 @@ const (
 	schemaNotSatisfied   = "the findings document does not satisfy the schema: %s. It is kept at %s"
 	nothingToReport      = "a reviewer read the change and found nothing to report"
 	whatAReviewerFound   = "a reviewer reported %d findings, %d of them for the person, and rated the change %s risk"
+	theCapWasReached     = ". The round cap of %d was reached, so what is left is for the person rather than for another round"
 	cancelledReason      = "the person stopped it"
+	noRoundToReview      = "the run has no round to review, so nothing was given to a reviewer"
+
+	notAwaitingResponses  = "run %s is %s rather than awaiting responses, so there is nothing to answer: read what it found with scrat findings"
+	noRoundToRespondTo    = "run %s has no round to answer: start a review with scrat review"
+	noFindingsToRespondTo = "round %d of run %s reported no findings to answer: read what it concluded with scrat status"
+	noSuchFinding         = "round %d of run %s reported no finding named %s: name one of the identifiers scrat findings prints"
+	stillUnanswered       = "%d findings of this round have no response yet, and silence is neither a fix nor a rejection: run scrat respond for %s first"
 )

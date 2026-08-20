@@ -16,17 +16,19 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 
 ## Layout
 
-- `cmd/scrat` - the one binary a person runs: `review`, `status`, `findings`, `cancel`, and the hidden `supervise` that a review spawns.
+- `cmd/scrat` - the one binary a person runs: `review`, `status`, `findings`, `respond`, `continue`, `cancel`, and the hidden `supervise` that a review spawns.
 - `cmd/claudesim` - the simulator, which speaks the vendor CLI's wire contract and is symlinked as `claude` onto `PATH` by the test harness.
 - `cmd/scenario-coverage` - the coverage gate behind `scripts/scenario-coverage`.
 - `internal/snapshot` - the freeze: a temporary index from `HEAD`, `add -A`, `write-tree`, `commit-tree`, a detached worktree of the result, and the seal that makes that worktree unwritable.
 - `internal/runstore` - run directories, `run.json` written by rename, run selection, rounds, and the retention sweep.
-- `internal/runstate` - the six states and which of them are terminal.
+- `internal/runstate` - the run states and which of them are terminal.
 - `internal/findings` - the findings contract, the schema handed to the reviewer, the classification and the verdict rule. It imports nothing outward.
+- `internal/dialogue` - what a round leads to, as one pure rule over the classified findings and the round number; the round cap and the reason for it; the response document. It imports nothing outward.
+- `internal/hygiene` - neutralising a field of model output before it is re-embedded in a prompt.
 - `internal/prompt` - the delivered prompt, assembled from named sections in one fixed order.
 - `internal/testquality` - the test-quality rule, as one block, shared by every role that needs it.
 - `internal/agent` - the only package that starts a model process or parses its output.
-- `internal/reviewer` - beginning a run, supervising the round, cancelling.
+- `internal/reviewer` - beginning a run, supervising the round, recording a response, advancing to the next round, cancelling.
 - `internal/report` - what `status` and `findings` print, for a person and as JSON.
 - `internal/exit` - the exit-code table.
 - `internal/config` - the one optional configuration file under the user's configuration directory.
@@ -75,6 +77,12 @@ None of them is a matter of care.
 - **A write in the snapshot worktree is refused by the filesystem, not by good behaviour.** The worktree is sealed after checkout by clearing every write bit in it, the seal is proved by one write before a reviewer is spawned, and a filesystem that allows that write is a refusal rather than a review socrates cannot stand behind. The seal is not a sandbox: the session owns those files, so something determined to write can clear the bit back, and that is what the comparison after the round is for. The seal is lifted when the round ends, so a worktree kept for inspection is an ordinary directory.
 - **The reviewer loads user settings only.** The reviewed repository's own agent instructions are input authored by the thing under review, and a reviewer that reads them can be seated by them.
 - **The reviewer loads no external tool server.** A tool server is a second source of tools that the vendor's tool restriction does not cover, and one wrote a directory into the snapshot worktree on socrates' first live run. Where the CLI refuses to ignore the machine's own configuration, the review runs anyway and the run records that the servers were loaded, because the seal is what holds the reviewer read-only and no configuration of the vendor's CLI can lift it.
+- **One rule decides what a round leads to, and `ask-user` dominates it.** `dialogue.After` is it, tested against its whole input space rather than a sample. A finding that challenges intent escalates to the person at the round it appeared in, whatever else is in the set, because a machine arguing with intent is the thing this design refuses to build.
+- **A rejection is a claim, never a suppression.** The author may reject a finding, the reason is required, and both the finding and the reason travel to a fresh reviewer that judges them. No prompt socrates builds ever tells a reviewer to refrain from reporting a finding because it was found, rejected or answered before, and a test fails when one does.
+- **A round after the first inherits no session.** Each round is a new process, and the only cross-round context is the labelled block of prior findings and recorded responses. A reviewer resuming the round whose findings prescribed the patches would be seating the prescriber as the certifier.
+- **The round cap is two, and it is for context rather than for cost.** The reason is recorded beside the constant, nothing configures it, and a configuration file that names one is refused.
+- **Every round is snapshotted afresh against the run's original base.** A later round must see the patches as commits it can diff rather than as a description of them, and diffing against the previous round's snapshot would read a patch out of the context it was applied to. A base that has become unreachable fails the round naming it.
+- **Model output is neutralised per field on the way into a prompt, and never on the way to disk.** `internal/hygiene` is it. The stored findings and responses hold what was actually said.
 - **A review inside a review is refused.** The reviewer's environment carries `SOCRATES_RUN`, and `scrat review` refuses when it is already set.
 - **The prompt is a generated interface.** Tests assert on the prompt that was delivered, read back from the round directory or from the simulator's invocation log, and never on socrates' own source text.
 - **The reporting section is derived from the classifier.** The severities, actions and risk levels the prompt defines are generated from what `internal/findings` implements, so the two cannot drift.

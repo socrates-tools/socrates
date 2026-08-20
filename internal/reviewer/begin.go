@@ -24,8 +24,11 @@ const (
 )
 
 const (
-	EventRunStarted = "run-started"
-	EventRunEnded   = "run-ended"
+	EventRunStarted   = "run-started"
+	EventRunEnded     = "run-ended"
+	EventRoundParked  = "round-parked"
+	EventRoundStarted = "round-started"
+	EventResponse     = "response-recorded"
 )
 
 type Beginning struct {
@@ -92,6 +95,7 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 	if _, err := beginning.Store.CreateRound(run.Name, firstRound); err != nil {
 		return run, beginning.fail(run, err)
 	}
+	run.Snapshotted(firstRound, run.Base, run.Snapshot)
 
 	worktree, err := taken.Checkout(ctx, snapshot.WorktreePath(directory))
 	if err != nil {
@@ -113,23 +117,31 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 }
 
 func (b Beginning) fail(run *runstore.Run, reason error) error {
+	return fail(b.Store, run, reason)
+}
+
+func fail(store runstore.Store, run *runstore.Run, reason error) error {
 	if err := run.End(runstate.Failed, reason.Error()); err != nil {
 		return err
 	}
-	if err := b.Store.Save(run); err != nil {
+	if err := store.Save(run); err != nil {
 		return err
 	}
 	if err := liftTheSeal(run); err != nil {
 		return errors.Join(reason, err)
 	}
-	if err := b.recordEnd(run); err != nil {
+	if err := recordEnd(store, run); err != nil {
 		return err
 	}
 	return reason
 }
 
 func (b Beginning) recordEnd(run *runstore.Run) error {
-	return b.record(run, runlog.Event{
+	return recordEnd(b.Store, run)
+}
+
+func recordEnd(store runstore.Store, run *runstore.Run) error {
+	return record(store, run, runlog.Event{
 		Kind:    EventRunEnded,
 		Subject: run.Name,
 		Fields:  map[string]any{"state": string(run.State), "reason": run.Verdict.Reason},
@@ -137,7 +149,11 @@ func (b Beginning) recordEnd(run *runstore.Run) error {
 }
 
 func (b Beginning) record(run *runstore.Run, event runlog.Event) error {
-	events, err := runlog.Open(filepath.Join(b.Store.Path(run.Name), runlog.FileName), 0)
+	return record(b.Store, run, event)
+}
+
+func record(store runstore.Store, run *runstore.Run, event runlog.Event) error {
+	events, err := runlog.Open(filepath.Join(store.Path(run.Name), runlog.FileName), 0)
 	if err != nil {
 		return err
 	}

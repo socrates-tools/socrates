@@ -56,7 +56,28 @@ func Take(ctx context.Context, directory string) (Snapshot, error) {
 	if err != nil {
 		return Snapshot{}, err
 	}
+	return take(ctx, root, base)
+}
 
+func TakeAgainst(ctx context.Context, directory, base string) (Snapshot, error) {
+	root, err := Root(ctx, directory)
+	if err != nil {
+		return Snapshot{}, err
+	}
+	if err := Reachable(ctx, root, base); err != nil {
+		return Snapshot{}, err
+	}
+	return take(ctx, root, base)
+}
+
+func Reachable(ctx context.Context, repositoryRoot, commit string) error {
+	if _, err := git(ctx, repositoryRoot, nil, "rev-parse", "--verify", commit+"^{commit}"); err != nil {
+		return fmt.Errorf(baseHasGone, commit, repositoryRoot)
+	}
+	return nil
+}
+
+func take(ctx context.Context, root, base string) (Snapshot, error) {
 	baseTree, err := git(ctx, root, nil, "rev-parse", "--verify", base+"^{tree}")
 	if err != nil {
 		return Snapshot{}, err
