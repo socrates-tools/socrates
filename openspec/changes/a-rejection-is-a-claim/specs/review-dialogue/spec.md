@@ -6,15 +6,16 @@ The state a run reaches after a completed round SHALL be a pure function of the 
 
 - any finding whose effective action is `ask-user`: `escalated`
 - nothing blocking: `clean`
-- nothing blocking that a response could address: `escalated`
+- anything blocking that a response cannot address: `escalated`
 - the round number equals the cap: `escalated`
 - otherwise: `awaiting-response`
 
 Whether a document blocks SHALL have one owner, which is the classification's verdict.
 
-A round SHALL park only where it holds a finding that both holds the change and can be patched, and that SHALL be the same set the run waits on responses for.
+A round SHALL park only where every finding that holds the change can be patched and at least one does, and that set SHALL be exactly what the run waits on responses for.
 A round that parks with nothing for the author to answer asks a question nobody can close and then escalates at the cap for findings whose own action asked for nothing.
 A finding that holds the change while its action asks for nothing is a contradiction in what the reviewer returned, and it goes to the person rather than being demanded an answer socrates presents as unnecessary.
+It goes to the person whatever else the round holds, for the same reason `ask-user` does: parking on the rest would advance the run past a finding nothing in the dialogue can close, and the round it appeared in is the last place it is reported.
 
 The reason a round escalated SHALL name the cap only where the cap is why it escalated.
 A run that concluded `clean` naming the cap tells the author that something is left for them when nothing is.
@@ -41,7 +42,7 @@ A set holding one question about intent and five mechanical defects goes to the 
 
 #### Scenario: A blocking finding nobody can patch goes to the person
 
-- **WHEN** a round completes with a finding that holds the change and carries the action `no-op`
+- **WHEN** a round completes with a finding that holds the change and carries the action `no-op`, whether alone or alongside patchable findings
 - **THEN** the run is `escalated`, and the run waits on no response to that finding
 
 #### Scenario: A clean second round does not name the cap

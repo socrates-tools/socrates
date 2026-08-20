@@ -32,7 +32,7 @@ After a completed review of round `n`, with findings classified by the core's si
 
 - Any finding whose effective action is `ask-user`: `escalated`, whatever else is in the set. It challenges the author's deliberate intent, and a machine arguing with intent is the thing this design refuses to build.
 - Nothing blocking: `clean`. Patchability does not enter it, because a finding that holds nothing is not something the author is being asked to answer.
-- Nothing blocking that a response could address: `escalated`. A finding that holds the change while its own action asks for nothing is a contradiction, and a person resolves it rather than being asked to answer it.
+- Anything blocking that a response cannot address: `escalated`, whatever else is in the set. A finding that holds the change while its own action asks for nothing is a contradiction, and a person resolves it rather than being asked to answer it. Parking on the rest of the set would advance the run past it, and the round it appeared in is the last round that reports it.
 - `n` is the cap: `escalated`, naming the cap.
 - Otherwise: `awaiting-response`.
 
@@ -52,7 +52,7 @@ Both go to the next reviewer.
 A `fixed` response is a claim too: the reviewer verifies it against the current code rather than believing it, which is the provenance clause's whole job.
 
 `scrat continue` refuses while any finding that holds the change and can be patched has no response.
-A finding that holds the change while its own action asks for nothing is not something a response addresses, so it escalates at the round it appeared in rather than being waited on.
+A finding that holds the change while its own action asks for nothing is not something a response addresses, so its round escalates rather than parking, and the run never waits on it.
 Silence is not a rejection and it is not a fix, and a round that advanced on silence would present an unpatched, unargued finding to the next reviewer as though it had been dealt with.
 
 ### What socrates tells the author, and why socrates says it at all

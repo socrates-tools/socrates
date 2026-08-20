@@ -22,12 +22,11 @@ func TestTwoAnswersDoNotOverwriteEachOther(t *testing.T) {
 		waiting.Add(1)
 		go func() {
 			defer waiting.Done()
-			_, _, err := round.RecordResponse(dialogue.Response{
+			failures[position] = round.AppendResponse(dialogue.Response{
 				Finding:    "f" + strconv.Itoa(position),
 				Resolution: dialogue.Rejected,
 				Reason:     "the claim of f" + strconv.Itoa(position),
 			})
-			failures[position] = err
 		}()
 	}
 	waiting.Wait()
@@ -55,7 +54,7 @@ func TestTwoAnswersDoNotOverwriteEachOther(t *testing.T) {
 func TestAnAnswerIsAppendedRatherThanRewritten(t *testing.T) {
 	round := roundFor(t)
 
-	if _, _, err := round.RecordResponse(dialogue.Response{Finding: "f1", Resolution: dialogue.Fixed, Reason: "the first claim"}); err != nil {
+	if err := round.AppendResponse(dialogue.Response{Finding: "f1", Resolution: dialogue.Fixed, Reason: "the first claim"}); err != nil {
 		t.Fatalf("recording the first answer: %v", err)
 	}
 
@@ -64,7 +63,7 @@ func TestAnAnswerIsAppendedRatherThanRewritten(t *testing.T) {
 		t.Fatalf("reading the document: %v", err)
 	}
 
-	if _, _, err := round.RecordResponse(dialogue.Response{Finding: "f1", Resolution: dialogue.Rejected, Reason: "the second claim"}); err != nil {
+	if err := round.AppendResponse(dialogue.Response{Finding: "f1", Resolution: dialogue.Rejected, Reason: "the second claim"}); err != nil {
 		t.Fatalf("recording the replacement: %v", err)
 	}
 
@@ -86,6 +85,9 @@ func TestAnAnswerIsAppendedRatherThanRewritten(t *testing.T) {
 	answer, present := stored.For("f1")
 	if !present || answer.Reason != "the second claim" {
 		t.Errorf("the answer that counts is %+v, want the second claim", answer)
+	}
+	if answers := stored.Answers("f1"); answers != 2 {
+		t.Errorf("answering f1 twice reads as %d answers, so the replacement is not visible", answers)
 	}
 }
 

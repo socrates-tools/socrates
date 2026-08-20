@@ -1,6 +1,8 @@
 package reviewer
 
 import (
+	"fmt"
+
 	"github.com/rui-ktei/socrates/internal/dialogue"
 	"github.com/rui-ktei/socrates/internal/findings"
 	"github.com/rui-ktei/socrates/internal/refusal"
@@ -30,29 +32,36 @@ func Respond(store runstore.Store, name string, response dialogue.Response) (Rec
 		return Recording{}, refusal.New(noSuchFinding, round.Number, run.Name, response.Finding)
 	}
 
-	recorded, replaced, err := round.RecordResponse(response)
-	if err != nil {
+	if err := round.AppendResponse(response); err != nil {
 		return Recording{}, err
 	}
 
+	recorded, readBack := round.Responses()
 	recording := Recording{
 		Run:        run.Name,
 		Round:      round.Number,
 		Response:   response,
-		Replaced:   replaced,
+		Replaced:   recorded.Answers(response.Finding) > 1,
 		Unanswered: recorded.Unanswered(document),
 	}
-	return recording, record(store, run, runlog.Event{
-		Kind:    EventResponse,
-		Subject: run.Name,
-		Fields: map[string]any{
-			"round":      round.Number,
-			"finding":    response.Finding,
-			"resolution": string(response.Resolution),
-			"replaced":   replaced,
-			"unanswered": len(recording.Unanswered),
-		},
-	})
+
+	fields := map[string]any{
+		"round":      round.Number,
+		"finding":    response.Finding,
+		"resolution": string(response.Resolution),
+		"replaced":   recording.Replaced,
+		"unanswered": len(recording.Unanswered),
+	}
+	if readBack != nil {
+		fields["read_back"] = readBack.Error()
+	}
+	if err := record(store, run, runlog.Event{Kind: EventResponse, Subject: run.Name, Fields: fields}); err != nil {
+		return recording, err
+	}
+	if readBack != nil {
+		return recording, fmt.Errorf(storedAndUnreadable, round.ResponsesPath(), readBack)
+	}
+	return recording, nil
 }
 
 func Unanswered(store runstore.Store, name string) ([]string, error) {

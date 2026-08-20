@@ -62,6 +62,14 @@ The next round checks out the same path, so a run that reads parked while its wo
 A failure to tear it down SHALL NOT stop the run being published as parked, and SHALL be recorded against the round.
 A review that completed and cannot be reached by any command is worse than a directory left behind: the findings are on disk, `--wait` would poll a run that never leaves `reviewing`, and `scrat cancel` would be the only way out of a review that succeeded.
 
+The next round SHALL clear whatever stands where its worktree goes before it checks one out.
+Otherwise the dead end is only deferred: the round parks, the author answers, and the next round refuses on the leftover and ends the run failed, which is the same completed review lost one command later.
+
+#### Scenario: A leftover worktree does not stop the next round
+
+- **WHEN** the next round starts and the previous round's worktree is still on disk
+- **THEN** it is cleared, the round runs, and the run is not failed for it
+
 #### Scenario: A parked run has nothing left to tear down
 
 - **WHEN** a run first reads `awaiting-response`

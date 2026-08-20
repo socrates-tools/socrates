@@ -49,11 +49,16 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 	})
 
 	t.Run("A blocking finding nobody can patch goes to the person", func(t *testing.T) {
-		classified := classify(finding("f1", findings.Warning, findings.NoOp))
-		if got := dialogue.After(classified, 1); got != runstate.Escalated {
+		alone := finding("f1", findings.Warning, findings.NoOp)
+		if got := dialogue.After(classify(alone), 1); got != runstate.Escalated {
 			t.Errorf("a finding that holds the change while asking for nothing is %q, want %q: no response addresses it", got, runstate.Escalated)
 		}
-		if waiting := (dialogue.Responses{}).Unanswered(document(finding("f1", findings.Warning, findings.NoOp))); len(waiting) != 0 {
+
+		alongside := classify(alone, finding("f2", findings.Error, findings.AutoFix))
+		if got := dialogue.After(alongside, 1); got != runstate.Escalated {
+			t.Errorf("a finding no response addresses is %q when it arrives beside a patchable one, want %q: parking would drop it from the run", got, runstate.Escalated)
+		}
+		if waiting := (dialogue.Responses{}).Unanswered(document(alone)); len(waiting) != 0 {
 			t.Errorf("%v is waiting on an answer to a finding presented as asking for nothing", waiting)
 		}
 	})
@@ -95,9 +100,9 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 					if got != runstate.Clean {
 						t.Fatalf("round %d of %v blocks nothing and is %q, want %q", asked, describe(held), got, runstate.Clean)
 					}
-				case !answerable(held):
+				case blocksBeyondAnswering(held):
 					if got != runstate.Escalated {
-						t.Fatalf("round %d of %v holds nothing a response could address and is %q, want %q", asked, describe(held), got, runstate.Escalated)
+						t.Fatalf("round %d of %v holds something no response addresses and is %q, want %q", asked, describe(held), got, runstate.Escalated)
 					}
 				case asked >= dialogue.Cap:
 					if got != runstate.Escalated {
@@ -219,9 +224,9 @@ func blocks(held []findings.Finding) bool {
 	return false
 }
 
-func answerable(held []findings.Finding) bool {
+func blocksBeyondAnswering(held []findings.Finding) bool {
 	for _, one := range held {
-		if slices.Contains([]string{"error", "warning"}, string(one.Severity)) && string(one.Action) == "auto-fix" {
+		if slices.Contains([]string{"error", "warning"}, string(one.Severity)) && string(one.Action) == "no-op" {
 			return true
 		}
 	}

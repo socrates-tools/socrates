@@ -12,9 +12,6 @@ import (
 func TestAResponseIsAFixOrARejection(t *testing.T) {
 	t.Run("Recording a fix", func(t *testing.T) {
 		recorded := held(dialogue.Response{Finding: "f1", Resolution: dialogue.Fixed, Reason: "I moved the guard above the loop."})
-		if answers := recorded.Answers("f1"); answers != 1 {
-			t.Errorf("one response to a finding reads as %d", answers)
-		}
 
 		answer, answered := recorded.For("f1")
 		if !answered || answer.Resolution != dialogue.Fixed {
@@ -35,9 +32,9 @@ func TestAResponseIsAFixOrARejection(t *testing.T) {
 			t.Errorf("the reason reads %q, want it verbatim", answer.Reason)
 		}
 
-		encoded, err := recorded.Encode()
+		encoded, err := dialogue.Line(answer)
 		if err != nil {
-			t.Fatalf("encoding the responses: %v", err)
+			t.Fatalf("encoding the response: %v", err)
 		}
 		read, err := dialogue.Parse(encoded)
 		if err != nil {
@@ -71,9 +68,6 @@ func TestAResponseIsAFixOrARejection(t *testing.T) {
 			dialogue.Response{Finding: "f1", Resolution: dialogue.Fixed, Reason: "on reflection it was right"},
 		)
 
-		if answers := recorded.Answers("f1"); answers != 2 {
-			t.Errorf("two responses to one finding read as %d, so a replacement is not visible", answers)
-		}
 		if diff := cmp.Diff([]dialogue.Response{{Finding: "f1", Resolution: dialogue.Fixed, Reason: "on reflection it was right"}}, recorded.Latest()); diff != "" {
 			t.Errorf("the next reviewer would receive (-want +got):\n%s", diff)
 		}

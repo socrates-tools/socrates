@@ -120,23 +120,15 @@ func (r Round) Responses() (dialogue.Responses, error) {
 	return recorded, nil
 }
 
-func (r Round) RecordResponse(response dialogue.Response) (dialogue.Responses, bool, error) {
+func (r Round) AppendResponse(response dialogue.Response) error {
 	line, err := dialogue.Line(response)
 	if err != nil {
-		return dialogue.Responses{}, false, err
+		return err
 	}
-	if err := r.appendResponse(line); err != nil {
-		return dialogue.Responses{}, false, err
-	}
-
-	recorded, err := r.Responses()
-	if err != nil {
-		return dialogue.Responses{}, false, err
-	}
-	return recorded, recorded.Answers(response.Finding) > 1, nil
+	return r.appendLine(line)
 }
 
-func (r Round) appendResponse(line []byte) error {
+func (r Round) appendLine(line []byte) error {
 	file, err := os.OpenFile(r.ResponsesPath(), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return fmt.Errorf(creating, r.ResponsesPath(), err)

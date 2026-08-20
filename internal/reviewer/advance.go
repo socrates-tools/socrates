@@ -72,7 +72,13 @@ func Continue(ctx context.Context, continuation Continuation) (*runstore.Run, in
 	}
 
 	directory := store.Path(run.Name)
-	worktree, err := taken.Checkout(ctx, snapshot.WorktreePath(directory))
+	path := snapshot.WorktreePath(directory)
+	leftover := snapshot.Worktree{RepositoryRoot: run.Repository, Path: path, Commit: run.Snapshot}
+	if err := leftover.Remove(ctx); err != nil {
+		return run, next, fail(store, run, fmt.Errorf(clearingTheLastRound, err))
+	}
+
+	worktree, err := taken.Checkout(ctx, path)
 	if err != nil {
 		return run, next, fail(store, run, fmt.Errorf(checkingOutTheSnapshot, err))
 	}

@@ -125,15 +125,3 @@ func Line(response Response) ([]byte, error) {
 	}
 	return append(encoded, '\n'), nil
 }
-
-func (r Responses) Encode() ([]byte, error) {
-	var encoded []byte
-	for _, response := range r.Recorded {
-		line, err := Line(response)
-		if err != nil {
-			return nil, err
-		}
-		encoded = append(encoded, line...)
-	}
-	return encoded, nil
-}

@@ -416,6 +416,28 @@ func TestARoundWithNothingPatchedStillSnapshots(t *testing.T) {
 	}
 }
 
+func TestALeftoverWorktreeDoesNotStopTheNextRound(t *testing.T) {
+	session := harness.Start(t)
+	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
+
+	session.Repository.Write("internal/added.go", answeredBetter)
+	respond(t, session, name, "--finding", "f1", "--fixed", "--note", "an empty document now answers minus one")
+	respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all")
+
+	leftover := snapshotWorktree(session, name)
+	if err := os.MkdirAll(filepath.Join(leftover, "what", "the", "teardown", "left"), 0o755); err != nil {
+		t.Fatalf("leaving a worktree behind: %v", err)
+	}
+
+	printed, failures, code := session.Scrat("continue", name, "--wait")
+	if code != 0 {
+		t.Fatalf("a round whose predecessor could not be torn down exited %d: %s\n%s", code, failures, printed)
+	}
+	if run := session.Run(name); run.State != runstate.Clean {
+		t.Errorf("the run ended %s: %s", run.State, reason(run))
+	}
+}
+
 func TestACleanSecondRoundDoesNotNameTheCap(t *testing.T) {
 	const informationalOnly = `{"findings":[{"id":"g1","severity":"info","file":"internal/added.go","line":1,"description":"This package now owns two spellings of one idea.","action":"no-op"}],"risk_level":"low","risk_rationale":"nothing the patches introduced holds the change"}`
 

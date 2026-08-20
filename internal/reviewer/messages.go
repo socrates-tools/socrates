@@ -3,6 +3,8 @@ package reviewer
 const (
 	aReviewInsideAReview    = "this process is already the reviewer for run %s, and a review inside a review spawns without end: run scrat review from your own session instead"
 	checkingOutTheSnapshot  = "checking out the snapshot: %w"
+	clearingTheLastRound    = "clearing what the last round left where this round's worktree goes: %w"
+	storedAndUnreadable     = "the answer was appended to %s and the document could not be read back afterwards (%w), so the answer is recorded and what is still unanswered is not: read the last lines of that file and remove any partial one"
 	openingTheSupervisorLog = "opening the supervisor's own log: %w"
 	startingTheReviewer     = "starting the reviewer: %w"
 

@@ -118,7 +118,7 @@ func TestTheResponseRulesArriveWithTheFindings(t *testing.T) {
 func answer(t *testing.T, store runstore.Store, name string, response dialogue.Response) {
 	t.Helper()
 
-	if _, _, err := store.Round(name, 1).RecordResponse(response); err != nil {
+	if err := store.Round(name, 1).AppendResponse(response); err != nil {
 		t.Fatalf("recording a response to %s: %v", name, err)
 	}
 }
