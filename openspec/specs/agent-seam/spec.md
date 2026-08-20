@@ -43,14 +43,16 @@ The implementation shipped SHALL invoke the `claude` binary in print mode with a
 
 It SHALL load user-level settings and memory only, and SHALL NOT load the reviewed repository's own project or local settings, because those are authored by the thing under review.
 
-It SHALL restrict the agent's tools to those that do not write, on the vendor's own mechanism, as the first of the two things that keep a reviewer read-only.
+It SHALL restrict the agent's tools to those that do not write, on the vendor's own mechanism.
+That restriction covers the tools the model may call and nothing else.
 
 It SHALL load no external tool server, whatever the person has configured for their own sessions.
 A tool server is a second source of tools that the vendor's own tool restriction does not cover, and a review that loads one is a reviewer that can write, both to the snapshot worktree and outside it.
 The first live run of socrates found this: the person's own configured servers wrote a directory into the snapshot worktree, and the round failed for a write the reviewer never asked to make.
 
 Where the vendor's CLI refuses to ignore the machine's own tool server configuration, socrates SHALL run the review without that restriction rather than not at all, and SHALL record that the servers were loaded.
-The comparison of the snapshot worktree after the round is what holds the reviewer read-only in that case, which is why it and not the vendor's flags is the load-bearing mechanism.
+What holds the reviewer read-only in that case is the seal on the snapshot worktree, which no configuration of the vendor's CLI can lift.
+Neither this requirement nor the seal removes the comparison after the round, which is the check on anything that defeated both.
 
 #### Scenario: No tool server is loaded
 
@@ -61,6 +63,11 @@ The comparison of the snapshot worktree after the round is what holds the review
 
 - **WHEN** the CLI refuses the request to ignore the machine's own tool server configuration
 - **THEN** the review is invoked again without that request, the run records that the servers were loaded, and the tool restriction is unchanged
+
+#### Scenario: A tool server that writes cannot reach the change under review
+
+- **WHEN** a reviewer runs with the machine's tool servers loaded and one of them writes into its working directory as it starts
+- **THEN** the write is refused, the review completes, and the run's verdict is whatever the findings say
 
 #### Scenario: The invocation carries the schema
 
