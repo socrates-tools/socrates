@@ -72,6 +72,12 @@ func TestTheDialogueJourney(t *testing.T) {
 		}
 	})
 
+	t.Run("A parked run has nothing left to tear down", func(t *testing.T) {
+		if _, err := os.Stat(snapshotWorktree(session, name)); !os.IsNotExist(err) {
+			t.Errorf("the round's worktree is still at %s when the run reads parked: the next round checks out that exact path, and scrat continue races the teardown", snapshotWorktree(session, name))
+		}
+	})
+
 	t.Run("A parked run holds no process identifiers", func(t *testing.T) {
 		recorded := session.Recorded(name)
 		if recorded.Reviewer != 0 || recorded.Agent != 0 {
@@ -407,6 +413,29 @@ func TestARoundWithNothingPatchedStillSnapshots(t *testing.T) {
 	}
 	if session.Simulator.Invocations()[1].Directory == "" {
 		t.Error("the second round's reviewer was given no working directory")
+	}
+}
+
+func TestACleanSecondRoundDoesNotNameTheCap(t *testing.T) {
+	const informationalOnly = `{"findings":[{"id":"g1","severity":"info","file":"internal/added.go","line":1,"description":"This package now owns two spellings of one idea.","action":"no-op"}],"risk_level":"low","risk_rationale":"nothing the patches introduced holds the change"}`
+
+	session := harness.Start(t)
+	name := parkedRun(t, session, dialogueScenario(patchableFindings, informationalOnly))
+
+	session.Repository.Write("internal/added.go", answeredBetter)
+	respond(t, session, name, "--finding", "f1", "--fixed", "--note", "an empty document now answers minus one")
+	respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all")
+
+	if _, failures, code := session.Scrat("continue", name, "--wait"); code != 0 {
+		t.Fatalf("a second round that found nothing blocking exited %d: %s", code, failures)
+	}
+
+	run := session.Run(name)
+	if run.State != runstate.Clean {
+		t.Fatalf("the run ended %s: %s", run.State, reason(run))
+	}
+	if strings.Contains(reason(run), "cap") {
+		t.Errorf("a clean run's verdict names the round cap: %q", reason(run))
 	}
 }
 

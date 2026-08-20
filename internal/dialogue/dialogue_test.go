@@ -48,6 +48,16 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 		}
 	})
 
+	t.Run("A blocking finding nobody can patch goes to the person", func(t *testing.T) {
+		classified := classify(finding("f1", findings.Warning, findings.NoOp))
+		if got := dialogue.After(classified, 1); got != runstate.Escalated {
+			t.Errorf("a finding that holds the change while asking for nothing is %q, want %q: no response addresses it", got, runstate.Escalated)
+		}
+		if waiting := (dialogue.Responses{}).Unanswered(document(finding("f1", findings.Warning, findings.NoOp))); len(waiting) != 0 {
+			t.Errorf("%v is waiting on an answer to a finding presented as asking for nothing", waiting)
+		}
+	})
+
 	t.Run("Mechanical findings park for the author", func(t *testing.T) {
 		classified := classify(finding("f1", findings.Error, findings.AutoFix), finding("f2", findings.Warning, findings.AutoFix))
 		if got := dialogue.After(classified, 1); got != runstate.AwaitingResponse {
@@ -84,6 +94,10 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 				case !blocks(held):
 					if got != runstate.Clean {
 						t.Fatalf("round %d of %v blocks nothing and is %q, want %q", asked, describe(held), got, runstate.Clean)
+					}
+				case !answerable(held):
+					if got != runstate.Escalated {
+						t.Fatalf("round %d of %v holds nothing a response could address and is %q, want %q", asked, describe(held), got, runstate.Escalated)
 					}
 				case asked >= dialogue.Cap:
 					if got != runstate.Escalated {
@@ -199,6 +213,15 @@ func asksAPerson(held []findings.Finding) bool {
 func blocks(held []findings.Finding) bool {
 	for _, one := range held {
 		if one.Severity.Blocks() {
+			return true
+		}
+	}
+	return false
+}
+
+func answerable(held []findings.Finding) bool {
+	for _, one := range held {
+		if one.Severity.Blocks() && one.EffectiveAction() == findings.AutoFix {
 			return true
 		}
 	}

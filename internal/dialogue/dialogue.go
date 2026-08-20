@@ -16,10 +16,24 @@ func After(classified findings.Classification, round int) runstate.State {
 	if classified.Verdict() == runstate.Clean {
 		return runstate.Clean
 	}
-	if round >= Cap {
+	if len(Answerable(classified)) == 0 || round >= Cap {
 		return runstate.Escalated
 	}
 	return runstate.AwaitingResponse
+}
+
+func Answerable(classified findings.Classification) []findings.Finding {
+	var answerable []findings.Finding
+	for _, finding := range classified.Patchable {
+		if finding.Severity.Blocks() {
+			answerable = append(answerable, finding)
+		}
+	}
+	return answerable
+}
+
+func EscalatedByTheCap(classified findings.Classification, round int) bool {
+	return After(classified, round) == runstate.Escalated && len(classified.NeedingAPerson) == 0 && len(Answerable(classified)) > 0
 }
 
 func CapReached(round int) bool {

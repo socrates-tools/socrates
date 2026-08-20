@@ -6,11 +6,18 @@ The state a run reaches after a completed round SHALL be a pure function of the 
 
 - any finding whose effective action is `ask-user`: `escalated`
 - nothing blocking: `clean`
+- nothing blocking that a response could address: `escalated`
 - the round number equals the cap: `escalated`
 - otherwise: `awaiting-response`
 
 Whether a document blocks SHALL have one owner, which is the classification's verdict.
-A round parks only where something blocks, because a round that parks with nothing for the author to answer asks a question nobody can close and then escalates at the cap for findings whose own action asked for nothing.
+
+A round SHALL park only where it holds a finding that both holds the change and can be patched, and that SHALL be the same set the run waits on responses for.
+A round that parks with nothing for the author to answer asks a question nobody can close and then escalates at the cap for findings whose own action asked for nothing.
+A finding that holds the change while its action asks for nothing is a contradiction in what the reviewer returned, and it goes to the person rather than being demanded an answer socrates presents as unnecessary.
+
+The reason a round escalated SHALL name the cap only where the cap is why it escalated.
+A run that concluded `clean` naming the cap tells the author that something is left for them when nothing is.
 
 The rule SHALL be testable against its whole input space rather than sampled, and its package SHALL reach no filesystem, no clock and no process.
 
@@ -31,6 +38,16 @@ A set holding one question about intent and five mechanical defects goes to the 
 
 - **WHEN** a round completes with patchable findings that none of them block
 - **THEN** the run is `clean` rather than parked, because nothing is being asked of the author
+
+#### Scenario: A blocking finding nobody can patch goes to the person
+
+- **WHEN** a round completes with a finding that holds the change and carries the action `no-op`
+- **THEN** the run is `escalated`, and the run waits on no response to that finding
+
+#### Scenario: A clean second round does not name the cap
+
+- **WHEN** the final permitted round completes with nothing blocking
+- **THEN** the run is `clean` and its recorded reason does not name the round cap
 
 #### Scenario: Mechanical findings park for the author
 
@@ -105,9 +122,27 @@ A second response to the same finding SHALL replace the first, and the replaceme
 - **WHEN** a finding already responded to is responded to again
 - **THEN** the later response is what the next reviewer receives, and the run records that it was replaced
 
+### Requirement: A recorded response is not lost
+
+The stored responses of a round SHALL be append-only, and recording one SHALL NOT rewrite what an earlier one wrote.
+
+Two invocations recording at the same time is the ordinary case rather than the exotic one, because the author is a session that is encouraged to run independent commands at once.
+A read, an append in memory and a rewrite of the whole document loses whichever claim was written first, silently, and the claim is the entire value of a response.
+Appending also bounds what a crash can damage to the line being written, where a rewrite can leave a document that neither `scrat respond` nor `scrat continue` can read, on a run that cannot be advanced any other way.
+
+#### Scenario: Two answers do not overwrite each other
+
+- **WHEN** several responses to a round are recorded concurrently
+- **THEN** every response that was recorded is in the stored document
+
+#### Scenario: An answer is appended rather than rewritten
+
+- **WHEN** a response replaces an earlier response to the same finding
+- **THEN** the stored document still holds the earlier one, byte for byte, ahead of the later one
+
 ### Requirement: Silence does not advance a round
 
-`scrat continue` SHALL refuse while any blocking finding of the current round has no response, naming which findings are still unanswered.
+`scrat continue` SHALL refuse while any finding of the current round that holds the change and can be patched has no response, naming which findings are still unanswered.
 
 Silence is neither a fix nor a rejection.
 A round that advanced on it would present an unpatched, unargued finding to the next reviewer as though it had been dealt with, which is the one outcome worse than not asking.

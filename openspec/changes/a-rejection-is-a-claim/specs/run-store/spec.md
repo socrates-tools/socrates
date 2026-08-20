@@ -56,6 +56,14 @@ A run that has been parked longer than the retention age SHALL still be swept on
 A parked run SHALL record no process identifiers, because none of its processes is alive and a run can wait indefinitely.
 Cancelling signals what the run records, and a number that outlived its process names whatever the machine gave it next.
 
+A round's worktree SHALL be torn down before the run is published as parked.
+The next round checks out the same path, so a run that reads parked while its worktree is still being removed hands the author a command that fails on the state socrates itself left behind.
+
+#### Scenario: A parked run has nothing left to tear down
+
+- **WHEN** a run first reads `awaiting-response`
+- **THEN** the round's worktree is already gone
+
 #### Scenario: A parked run holds no process identifiers
 
 - **WHEN** a run parks on the author

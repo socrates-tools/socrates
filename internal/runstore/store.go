@@ -315,27 +315,5 @@ func write(directory string, run *Run) error {
 	}
 	encoded = append(encoded, '\n')
 
-	temporary, err := os.CreateTemp(directory, recordName+".")
-	if err != nil {
-		return fmt.Errorf(creatingATemporaryFile, directory, err)
-	}
-	defer os.Remove(temporary.Name())
-
-	if _, err := temporary.Write(encoded); err != nil {
-		temporary.Close()
-		return fmt.Errorf(writing, temporary.Name(), err)
-	}
-	if err := temporary.Sync(); err != nil {
-		temporary.Close()
-		return fmt.Errorf(flushing, temporary.Name(), err)
-	}
-	if err := temporary.Close(); err != nil {
-		return fmt.Errorf(closing, temporary.Name(), err)
-	}
-
-	target := filepath.Join(directory, recordName)
-	if err := os.Rename(temporary.Name(), target); err != nil {
-		return fmt.Errorf(renaming, target, err)
-	}
-	return nil
+	return replaceFile(filepath.Join(directory, recordName), encoded)
 }

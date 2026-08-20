@@ -30,7 +30,7 @@ exec sh -c 'scrat respond --finding f1 --rejected --reason ""; echo exit=$?'
 stdout 'exit=3'
 stderr 'a rejection is a claim'
 exec sh -c 'ls $WORK/state/runs/*/r1/'
-! stdout 'responses.json'
+! stdout 'responses.jsonl'
 
 # A finding the round did not produce is refused, naming it.
 exec sh -c 'scrat respond --finding f9 --fixed; echo exit=$?'
@@ -74,7 +74,7 @@ stderr 'f2'
 stdin $WORK/reason.txt
 exec sh -c 'scrat respond --finding f1 --rejected --reason -; echo exit=$?'
 stdout 'exit=4'
-exec sh -c 'cat $WORK/state/runs/*/r1/responses.json'
+exec sh -c 'cat $WORK/state/runs/*/r1/responses.jsonl'
 stdout 'the first line of the reason'
 stdout 'the second line of the reason'
 
@@ -82,7 +82,7 @@ stdout 'the second line of the reason'
 exec sh -c 'scrat respond --finding f1 --fixed --note "on reflection the reviewer was right"; echo exit=$?'
 stdout 'exit=4'
 stdout 'replaced'
-exec sh -c 'cat $WORK/state/runs/*/r1/responses.json'
+exec sh -c 'cat $WORK/state/runs/*/r1/responses.jsonl'
 stdout 'the first line of the reason'
 stdout 'on reflection the reviewer was right'
 

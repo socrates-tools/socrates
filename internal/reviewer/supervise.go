@@ -152,10 +152,10 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 	outcome := dialogue.After(classified, round.Number)
 
 	if outcome == runstate.AwaitingResponse {
-		if err := supervision.park(run, round.Number, classified); err != nil {
+		if err := removeWorktree(ctx, worktree); err != nil {
 			return err
 		}
-		return removeWorktree(ctx, worktree)
+		return supervision.park(run, round.Number, classified)
 	}
 
 	if err := supervision.end(run, outcome, verdictReason(document, classified, round.Number)); err != nil {
@@ -253,7 +253,7 @@ func verdictReason(document findings.Document, classified findings.Classificatio
 	}
 
 	found := fmt.Sprintf(whatAReviewerFound, len(document.Findings), len(classified.NeedingAPerson), document.RiskLevel)
-	if len(classified.NeedingAPerson) == 0 && dialogue.CapReached(round) {
+	if dialogue.EscalatedByTheCap(classified, round) {
 		return found + fmt.Sprintf(theCapWasReached, dialogue.Cap)
 	}
 	return found

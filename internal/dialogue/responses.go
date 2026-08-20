@@ -1,7 +1,6 @@
 package dialogue
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"slices"
@@ -76,10 +75,7 @@ func (r *Responses) Record(response Response) bool {
 
 func (r Responses) Unanswered(document findings.Document) []string {
 	var waiting []string
-	for _, finding := range document.Findings {
-		if !finding.Severity.Blocks() {
-			continue
-		}
+	for _, finding := range Answerable(findings.Classify(document)) {
 		if _, answered := r.For(finding.ID); !answered {
 			waiting = append(waiting, finding.ID)
 		}
@@ -99,24 +95,41 @@ func Names(document findings.Document, finding string) bool {
 func Parse(document []byte) (Responses, error) {
 	var parsed Responses
 
-	decoder := json.NewDecoder(bytes.NewReader(document))
-	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&parsed); err != nil {
-		return Responses{}, fmt.Errorf(readingTheDocument, err)
-	}
+	for line := range strings.SplitSeq(string(document), "\n") {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
 
-	for _, response := range parsed.Recorded {
+		var response Response
+		decoder := json.NewDecoder(strings.NewReader(line))
+		decoder.DisallowUnknownFields()
+		if err := decoder.Decode(&response); err != nil {
+			return Responses{}, fmt.Errorf(readingTheDocument, err)
+		}
 		if err := Validate(response); err != nil {
 			return Responses{}, err
 		}
+		parsed.Recorded = append(parsed.Recorded, response)
 	}
 	return parsed, nil
 }
 
-func (r Responses) Encode() ([]byte, error) {
-	encoded, err := json.MarshalIndent(r, "", "  ")
+func Line(response Response) ([]byte, error) {
+	encoded, err := json.Marshal(response)
 	if err != nil {
 		return nil, fmt.Errorf(writingTheDocument, err)
 	}
 	return append(encoded, '\n'), nil
+}
+
+func (r Responses) Encode() ([]byte, error) {
+	var encoded []byte
+	for _, response := range r.Recorded {
+		line, err := Line(response)
+		if err != nil {
+			return nil, err
+		}
+		encoded = append(encoded, line...)
+	}
+	return encoded, nil
 }

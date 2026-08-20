@@ -13,7 +13,7 @@ const (
 	superviseShort = "Conduct a review that scrat review started"
 
 	intentUsage   = "what the person asked for, in their words"
-	waitUsage     = "block until the review is terminal and exit with its verdict"
+	waitUsage     = "block until the review concludes or parks on you, and exit with its status"
 	jsonUsage     = "print one JSON object instead of lines for a person"
 	findingUsage  = "the identifier of the one finding this answers"
 	fixedUsage    = "the finding was fixed in the working tree"

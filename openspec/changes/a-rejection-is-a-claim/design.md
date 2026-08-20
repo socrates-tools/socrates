@@ -30,8 +30,9 @@ It changes no verdict, no exit code and no part of the agent seam.
 
 After a completed review of round `n`, with findings classified by the core's single helper:
 
-- Nothing blocking, and nothing patchable: `clean`.
 - Any finding whose effective action is `ask-user`: `escalated`, whatever else is in the set. It challenges the author's deliberate intent, and a machine arguing with intent is the thing this design refuses to build.
+- Nothing blocking: `clean`. Patchability does not enter it, because a finding that holds nothing is not something the author is being asked to answer.
+- Nothing blocking that a response could address: `escalated`. A finding that holds the change while its own action asks for nothing is a contradiction, and a person resolves it rather than being asked to answer it.
 - `n` is the cap: `escalated`, naming the cap.
 - Otherwise: `awaiting-response`.
 

@@ -30,12 +30,8 @@ func Respond(store runstore.Store, name string, response dialogue.Response) (Rec
 		return Recording{}, refusal.New(noSuchFinding, round.Number, run.Name, response.Finding)
 	}
 
-	recorded, err := round.Responses()
+	recorded, replaced, err := round.RecordResponse(response)
 	if err != nil {
-		return Recording{}, err
-	}
-	replaced := recorded.Record(response)
-	if err := round.SaveResponses(recorded); err != nil {
 		return Recording{}, err
 	}
 

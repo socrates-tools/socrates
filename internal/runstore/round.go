@@ -19,7 +19,7 @@ const (
 	promptFile    = "prompt.txt"
 	streamFile    = "stream.jsonl"
 	findingsFile  = "findings.json"
-	responsesFile = "responses.json"
+	responsesFile = "responses.jsonl"
 )
 
 type Round struct {
@@ -125,8 +125,37 @@ func (r Round) SaveResponses(recorded dialogue.Responses) error {
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.ResponsesPath(), encoded, 0o644); err != nil {
+	return replaceFile(r.ResponsesPath(), encoded)
+}
+
+func (r Round) RecordResponse(response dialogue.Response) (dialogue.Responses, bool, error) {
+	recorded, err := r.Responses()
+	if err != nil {
+		return dialogue.Responses{}, false, err
+	}
+	replaced := recorded.Record(response)
+
+	line, err := dialogue.Line(response)
+	if err != nil {
+		return dialogue.Responses{}, false, err
+	}
+	if err := r.appendResponse(line); err != nil {
+		return dialogue.Responses{}, false, err
+	}
+	return recorded, replaced, nil
+}
+
+func (r Round) appendResponse(line []byte) error {
+	file, err := os.OpenFile(r.ResponsesPath(), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		return fmt.Errorf(creating, r.ResponsesPath(), err)
+	}
+	if _, err := file.Write(line); err != nil {
+		file.Close()
 		return fmt.Errorf(writing, r.ResponsesPath(), err)
+	}
+	if err := file.Close(); err != nil {
+		return fmt.Errorf(closing, r.ResponsesPath(), err)
 	}
 	return nil
 }
