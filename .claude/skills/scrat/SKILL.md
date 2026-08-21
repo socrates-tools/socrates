@@ -25,9 +25,10 @@ What the reviewer says while it works is not for you: if the person wants to see
        scrat review --intent "count the characters of a document"
 
    It returns as soon as the run exists and prints the run identifier, which every later command takes as its argument.
-3. Wait for the review to end: poll scrat status until it reports one of the states below.
+3. Wait for the review to end: poll scrat status every five seconds or so until it reports one of the states below.
    Poll rather than follow what the reviewer is saying, because everything you read lands in your own context and you are about to need that context for the patching.
    scrat status prints the same handful of lines whether the reviewer was silent or said a great deal.
+   Do not set a timeout of your own. socrates gives the reviewer a deadline, a reviewer that answers nothing before it passes ends the run as failed, and so every run reaches one of the states below without you bounding the wait.
 4. Act on the state the run ended in. Each of them is below, and a run rests in no other.
 
 ### clean

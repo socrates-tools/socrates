@@ -57,6 +57,19 @@ func TestTheWaitingCommandIsStatus(t *testing.T) {
 	}
 }
 
+func TestTheWaitingStepSaysHowOftenAndForHowLong(t *testing.T) {
+	waiting := strings.ToLower(numberedStep(t, skill.Document(), 3))
+
+	if !strings.Contains(waiting, "five seconds") {
+		t.Errorf("the step that waits for a review names no interval, so a session picks its own:\n%s", waiting)
+	}
+	for _, stated := range []string{"timeout", "deadline", string(runstate.Failed)} {
+		if !strings.Contains(waiting, stated) {
+			t.Errorf("the step that waits for a review does not say %q, so a session bounds the wait itself:\n%s", stated, waiting)
+		}
+	}
+}
+
 func TestWatchIsForThePerson(t *testing.T) {
 	document := skill.Document()
 

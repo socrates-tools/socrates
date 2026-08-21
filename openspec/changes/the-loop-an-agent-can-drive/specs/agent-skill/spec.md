@@ -59,10 +59,20 @@ The skill SHALL name `scrat status` as the command to wait with, and SHALL say t
 
 It SHALL name `scrat watch` only as something to suggest to the person, in another terminal, and SHALL NOT put it in the session's own loop.
 
+It SHALL name how often to poll, and SHALL say that the wait is bounded by socrates rather than by the session.
+
+A session given no cadence and no bound invents both, and each way of inventing them is wrong in its own direction: polling several times a second spends the review re-reading a document nobody has written yet, and a timeout of the session's own reports a live review as stuck.
+Neither is needed, because a reviewer that answers nothing before its deadline ends the run as `failed`, so every run reaches a state to act on.
+
 #### Scenario: The waiting command is status
 
 - **WHEN** the skill describes waiting for a review
 - **THEN** it names `scrat status` and gives the reason
+
+#### Scenario: The waiting step says how often and for how long
+
+- **WHEN** the skill describes waiting for a review
+- **THEN** it names a polling interval and says that the run ends on its own, so the session invents neither
 
 #### Scenario: Watch is for the person
 

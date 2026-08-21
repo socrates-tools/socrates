@@ -67,7 +67,8 @@ scrat skill                    # writes the skill to ~/.claude/skills/scrat/SKIL
 scrat skill --to <directory>   # writes it somewhere else instead
 ```
 
-The skill teaches the loop: implement, `scrat review --intent`, then poll `scrat status` until it reports a state a run rests in.
+The skill teaches the loop: implement, `scrat review --intent`, then poll `scrat status` every few seconds until it reports a state a run rests in.
+It tells the session not to bound that wait itself, because a reviewer that answers nothing before its deadline ends the run as `failed`.
 On `clean`, say what was reviewed and stop.
 On `failed`, report the change as unreviewed, because no review completed and nothing has been checked.
 On `escalated`, hand the findings to you and stop, because a finding that questions what the change is for is not one to patch around.
