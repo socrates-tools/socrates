@@ -144,6 +144,48 @@ func TestRecordingFromAnotherRepositoryIsRefused(t *testing.T) {
 	}
 }
 
+func TestRecordingFromARepositoryThatDeclaresNoModuleIsRefused(t *testing.T) {
+	// scenario: Recording from another repository is refused
+	for _, foreign := range []struct {
+		named    string
+		declared string
+		written  bool
+	}{
+		{named: "a repository that is not Go at all", written: false},
+		{named: "a module file that declares nothing", declared: "go 1.25\n", written: true},
+	} {
+		t.Run(foreign.named, func(t *testing.T) {
+			repository := t.TempDir()
+			if foreign.written {
+				if err := os.WriteFile(filepath.Join(repository, "go.mod"), []byte(foreign.declared), 0o644); err != nil {
+					t.Fatalf("writing a module file that declares nothing: %v", err)
+				}
+			}
+
+			into := t.TempDir()
+			_, err := corpus.Record(into, repository, recordable())
+			if err == nil {
+				t.Fatal("recording an answer about a repository that is not socrates is accepted")
+			}
+			if !strings.Contains(err.Error(), repository) {
+				t.Errorf("the refusal does not name the repository: %v", err)
+			}
+			for _, misreading := range []string{"no such file", "file does not exist"} {
+				if strings.Contains(err.Error(), misreading) {
+					t.Errorf("the refusal reads as %q rather than as a repository that is not socrates: %v", misreading, err)
+				}
+			}
+			if !strings.Contains(err.Error(), "socrates") {
+				t.Errorf("the refusal does not say what the condition is: %v", err)
+			}
+
+			if _, err := os.Stat(filepath.Join(into, corpus.Directory)); !os.IsNotExist(err) {
+				t.Errorf("the refusal wrote into the corpus anyway: %v", err)
+			}
+		})
+	}
+}
+
 func TestARecordedAnswerIsStoredByteForByte(t *testing.T) {
 	reviewed := t.TempDir()
 	writeModule(t, reviewed, source.ModulePath)

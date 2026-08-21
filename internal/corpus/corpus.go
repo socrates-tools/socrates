@@ -3,6 +3,7 @@ package corpus
 import (
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -189,9 +190,14 @@ func path(at, name string) string {
 }
 
 func socratesOwnRepository(repository string) error {
-	stated, err := os.ReadFile(filepath.Join(repository, moduleFile))
+	path := filepath.Join(repository, moduleFile)
+
+	stated, err := os.ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf(noModuleDeclared, repository)
+	}
 	if err != nil {
-		return fmt.Errorf(notSocrates, repository, err)
+		return fmt.Errorf(unreadableModule, path, err)
 	}
 
 	for line := range strings.SplitSeq(string(stated), "\n") {
@@ -204,5 +210,5 @@ func socratesOwnRepository(repository string) error {
 		}
 		return fmt.Errorf(anotherRepository, repository, strings.TrimSpace(named))
 	}
-	return fmt.Errorf(notSocrates, repository, fs.ErrNotExist)
+	return fmt.Errorf(noModuleDeclared, repository)
 }

@@ -10,6 +10,7 @@ const (
 	nameIsAPath                 = "the recorded answer is named %q, which is a path rather than a name"
 	nameTheCorpusWouldNotSee    = "the recorded answer is named %q, and the corpus never reads a name opening with a dot or an underscore, so give it a name that starts with a letter"
 	documentSocratesCannotRoute = "the recorded answer %s holds a document socrates never routed, so it is evidence of nothing: %w"
-	notSocrates                 = "reading the module the repository %s declares: %w"
+	noModuleDeclared            = "the repository %s declares no Go module, so it is not socrates, and a findings document quotes the code it was written about: run corpus-record for a run that reviewed socrates itself"
+	unreadableModule            = "reading %s to see which repository an answer is about: %w"
 	anotherRepository           = "the repository %s is %s rather than socrates, and a findings document quotes the code it was written about"
 )
