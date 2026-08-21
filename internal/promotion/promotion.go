@@ -28,6 +28,7 @@ type Drop struct {
 }
 
 type Report struct {
+	Changes     int
 	Substituted int
 	Added       int
 	Drops       []Drop
@@ -65,8 +66,13 @@ func Check(root string) (Report, error) {
 		return Report{}, nil
 	}
 
-	var report Report
-	err := filepath.WalkDir(changes, func(path string, entry fs.DirEntry, err error) error {
+	underWay, err := changesUnderWay(changes)
+	if err != nil {
+		return Report{}, err
+	}
+
+	report := Report{Changes: underWay}
+	err = filepath.WalkDir(changes, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -100,6 +106,21 @@ func Check(root string) (Report, error) {
 		return strings.Compare(one.Requirement, other.Requirement)
 	})
 	return report, nil
+}
+
+func changesUnderWay(changes string) (int, error) {
+	entries, err := os.ReadDir(changes)
+	if err != nil {
+		return 0, err
+	}
+
+	under := 0
+	for _, entry := range entries {
+		if entry.IsDir() && entry.Name() != archiveDirectory {
+			under++
+		}
+	}
+	return under, nil
 }
 
 func comparison(root, delta string) (Report, error) {

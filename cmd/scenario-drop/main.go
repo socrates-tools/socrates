@@ -42,6 +42,10 @@ func report() (bool, error) {
 		}
 	}
 
+	if checked.Changes == 0 {
+		fmt.Fprintln(out, nothingUnderWay)
+		return false, nil
+	}
 	if len(checked.Drops) == 0 {
 		fmt.Fprintf(out, nothingDropped+"\n", checked.Substituted, checked.Added)
 		return false, nil

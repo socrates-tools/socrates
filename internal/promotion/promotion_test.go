@@ -200,6 +200,42 @@ func found(t *testing.T, root string) []promotion.Drop {
 	return report.Drops
 }
 
+func TestWhatIsUnderWay(t *testing.T) {
+	t.Run("A change under way is counted", func(t *testing.T) {
+		checked, err := promotion.Check(repositoryWith(t, "under-way", `## ADDED Requirements
+
+### Requirement: Something is proposed
+
+Something SHALL be proposed.
+
+#### Scenario: It is proposed
+
+- **WHEN** it is read
+- **THEN** it is there
+`))
+		if err != nil {
+			t.Fatalf("checking what archiving would drop: %v", err)
+		}
+		if checked.Changes != 1 {
+			t.Errorf("one change is under way and the check counts %d, so the live gate would skip itself", checked.Changes)
+		}
+	})
+
+	t.Run("An archived change is not under way", func(t *testing.T) {
+		root := t.TempDir()
+		write(t, filepath.Join(root, "openspec", "specs", "run-store", "spec.md"), baseline)
+		write(t, filepath.Join(root, "openspec", "changes", "archive", "2026-01-01-done", "tasks.md"), "- [x] 1.1 done\n")
+
+		checked, err := promotion.Check(root)
+		if err != nil {
+			t.Fatalf("checking what archiving would drop: %v", err)
+		}
+		if checked.Changes != 0 {
+			t.Errorf("nothing is under way and the check counts %d", checked.Changes)
+		}
+	})
+}
+
 func repositoryWith(t *testing.T, change, delta string) string {
 	t.Helper()
 

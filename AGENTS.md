@@ -65,6 +65,7 @@ make corpus-outcomes
 `make skill` rewrites the committed copy of the skill from its source, and `make test` fails while the two differ.
 `make scenario-coverage` fails when a scenario belonging to a change somebody has started is named by no test, and prints where each gap is.
 `make scenario-drop` fails when archiving a change would take a scenario out of the promoted specifications, which a `MODIFIED` delta does by substituting a requirement and carrying fewer scenarios than it holds.
+With no change under way it says so and passes, because what the rule does is held by tests over a fabricated tree rather than by whatever happens to be proposed today.
 `make corpus-outcomes` reports nothing but the truth about coverage: for each outcome the routing rule can produce, how many answers real reviewers gave reach it and how many tests in the suite name it.
 Naming is not asserting, and the report says naming, because an abstract-syntax walk cannot tell a test that requires an outcome from one that requires its absence.
 It is a statement rather than a gate and never fails for an outcome no reviewer has reached, because whether one ever appears is not this repository's to control.
