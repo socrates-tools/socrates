@@ -44,6 +44,9 @@ func sentence(event runlog.Event) string {
 	case roundStartedKind:
 		return fmt.Sprintf(roundStartedSentence, counted(held, roundField), short(stated(held, snapshotField)), short(stated(held, baseField)))
 	case roundParkedKind:
+		if asked := counted(held, aPersonField); asked > 0 {
+			return fmt.Sprintf(roundParkedOnAPerson, counted(held, roundField), counted(held, patchableField), asked)
+		}
 		return fmt.Sprintf(roundParkedSentence, counted(held, roundField), counted(held, patchableField))
 	case responseKind:
 		return fmt.Sprintf(responseSentence, stated(held, findingField), counted(held, roundField), stated(held, resolutionField), counted(held, unansweredField))

@@ -19,12 +19,13 @@ type Counts struct {
 }
 
 type Status struct {
-	Run        string         `json:"run"`
-	State      runstate.State `json:"state"`
-	Round      int            `json:"round"`
-	Reason     string         `json:"reason,omitempty"`
-	Findings   *Counts        `json:"findings,omitempty"`
-	Unanswered *int           `json:"unanswered,omitempty"`
+	Run             string         `json:"run"`
+	State           runstate.State `json:"state"`
+	Round           int            `json:"round"`
+	Reason          string         `json:"reason,omitempty"`
+	Findings        *Counts        `json:"findings,omitempty"`
+	Unanswered      *int           `json:"unanswered,omitempty"`
+	AwaitingAPerson *int           `json:"awaiting_a_person,omitempty"`
 }
 
 type Finding struct {
@@ -66,7 +67,9 @@ func StatusOf(store runstore.Store, name string) (Status, error) {
 	}
 	if run.State == runstate.AwaitingResponse {
 		waiting := len(read.responses.Unanswered(read.document))
+		asked := len(read.responses.AwaitingAPerson(read.document))
 		status.Unanswered = &waiting
+		status.AwaitingAPerson = &asked
 	}
 	return status, nil
 }
@@ -170,6 +173,9 @@ func (s Status) Lines() []string {
 	}
 
 	lines = append(lines, awaitingLine, fmt.Sprintf(unansweredLine, *s.Unanswered))
+	if s.AwaitingAPerson != nil {
+		lines = append(lines, fmt.Sprintf(awaitingAPersonLine, *s.AwaitingAPerson))
+	}
 	if *s.Unanswered == 0 {
 		lines = append(lines, readyLine)
 	}

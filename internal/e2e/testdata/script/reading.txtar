@@ -44,7 +44,7 @@ cp $WORK/other.go other.go
 exec sh -c 'scrat review > /dev/null; scrat watch; echo exit=$?'
 stdout 'exit=1'
 stdout 'state: escalated'
-stdout 'for the person'
+stdout 'asking for nothing'
 
 -- repo/README.md --
 socrates
@@ -57,7 +57,7 @@ default:
   structured: '{"findings":[],"risk_level":"low","risk_rationale":"a small and self-contained change"}'
 -- escalating.yaml --
 default:
-  structured: '{"findings":[{"id":"f1","severity":"error","file":"other.go","line":1,"description":"The added file answers wrongly for an empty input."}],"risk_level":"high","risk_rationale":"one changed path answers wrongly without erroring"}'
+  structured: '{"findings":[{"id":"f1","severity":"error","file":"other.go","line":1,"description":"The change takes away a behaviour the importer depends on, and nothing here can put it back.","action":"no-op"}],"risk_level":"high","risk_rationale":"what holds the change is not something a patch closes"}'
 -- loud-pager --
 #!/bin/sh
 sed 's/^/PAGED /'

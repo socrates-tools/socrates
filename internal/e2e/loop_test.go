@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"maps"
+	"os"
 	"slices"
 	"strings"
 	"testing"
@@ -128,7 +129,7 @@ func (j *journey) namedNothingTheSkillDoesNot() {
 
 func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 	t.Run(string(runstate.Escalated), func(t *testing.T) {
-		driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)
+		driven := driving(t, dialogueScenario(unanswerableFinding, nothingFoundAgain), answeredWrongly)
 		name := driven.review("count the characters of a document")
 
 		state, code := driven.waitedFor(name)
@@ -185,6 +186,169 @@ func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 		driven.wroteNothingItself()
 		driven.namedNothingTheSkillDoesNot()
 	})
+}
+
+func TestTheLoopAnswersAQuestionAndReachesAVerdict(t *testing.T) {
+	driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)
+	name := driven.review("count the characters of a document")
+
+	state, code := driven.waitedFor(name)
+	if state != runstate.AwaitingResponse || code != 4 {
+		t.Fatalf("a round holding a question left the run %s and scrat status exited %d, want a parked run", state, code)
+	}
+	driven.wroteNothingItself()
+
+	reported := driven.findings(name)
+	for _, needed := range []string{"f1", "needs a person", "can be patched"} {
+		if !strings.Contains(reported, needed) {
+			t.Fatalf("the findings the loop reads do not name %q:\n%s", needed, reported)
+		}
+	}
+
+	driven.author("internal/added.go", answeredBetter)
+	if _, failures, code := driven.run("respond", name, "--finding", "f2", "--fixed", "--note", "the guard is above the read now"); code != 4 {
+		t.Fatalf("recording a fix exited %d: %s", code, failures)
+	}
+	if _, failures, code := driven.run("respond", name, "--finding", "f3", "--rejected", "--reason", "there is no retry loop in this function at all"); code != 4 {
+		t.Fatalf("recording a rejection exited %d: %s", code, failures)
+	}
+	if _, failures, refused := driven.run("continue", name); refused != 3 {
+		t.Fatalf("continuing with the question unanswered exited %d, and only a person closes it: %s", refused, failures)
+	}
+
+	const decided = "Vic decided the function stays, because the importer reads it"
+	if _, failures, code := driven.run("respond", name, "--finding", "f1", "--decided", "--reason", decided); code != 4 {
+		t.Fatalf("recording what a person decided exited %d: %s", code, failures)
+	}
+	if _, failures, code := driven.run("continue", name); code != 0 {
+		t.Fatalf("scrat continue with everything answered exited %d: %s", code, failures)
+	}
+
+	state, code = driven.waitedFor(name)
+	if state != runstate.Clean || code != 0 {
+		t.Fatalf("the round that judged the decision left the run %s and scrat status exited %d, want clean", state, code)
+	}
+
+	invocations := driven.session.Simulator.Invocations()
+	if len(invocations) != 2 {
+		t.Fatalf("the reviewer was invoked %d times, want twice", len(invocations))
+	}
+	judging := invocations[1].Prompt
+	if !strings.Contains(judging, "A person answered this finding, and the author records what they decided:\n"+decided) {
+		t.Errorf("the round that judges the decision was not told a person made it:\n%s", judging)
+	}
+
+	driven.wroteNothingItself()
+	driven.namedNothingTheSkillDoesNot()
+}
+
+func TestAParkedRoundWaitsOnAQuestionAndOnAPatch(t *testing.T) {
+	driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)
+	name := driven.review("count the characters of a document")
+
+	state, _ := driven.waitedFor(name)
+	if state != runstate.AwaitingResponse {
+		t.Fatalf("a round holding a question and two patchable findings left the run %s", state)
+	}
+
+	waiting, _, _ := driven.run("status", name)
+	for _, said := range []string{"unanswered: 3", "needing a person rather than a patch: 1"} {
+		if !strings.Contains(waiting, said) {
+			t.Errorf("the status does not say %q, so a caller cannot tell what the round waits on:\n%s", said, waiting)
+		}
+	}
+
+	if _, failures, refused := driven.run("continue", name); refused != 3 {
+		t.Errorf("continuing with nothing answered exited %d: %s", refused, failures)
+	}
+
+	if _, failures, code := driven.run("respond", name, "--finding", "f1", "--decided", "--reason", "Vic decided the function stays"); code != 4 {
+		t.Fatalf("recording what a person decided exited %d: %s", code, failures)
+	}
+	if _, failures, refused := driven.run("continue", name); refused != 3 {
+		t.Errorf("continuing with the question answered and the patches unanswered exited %d: %s", refused, failures)
+	}
+
+	driven.author("internal/added.go", answeredBetter)
+	if _, failures, code := driven.run("respond", name, "--finding", "f2", "--fixed", "--note", "the guard is above the read now"); code != 4 {
+		t.Fatalf("recording a fix exited %d: %s", code, failures)
+	}
+	if _, failures, refused := driven.run("continue", name); refused != 3 {
+		t.Errorf("continuing with one patchable finding still unanswered exited %d: %s", refused, failures)
+	}
+	if _, failures, code := driven.run("respond", name, "--finding", "f3", "--rejected", "--reason", "there is no retry loop in this function at all"); code != 4 {
+		t.Fatalf("recording a rejection exited %d: %s", code, failures)
+	}
+
+	answered, _, _ := driven.run("status", name)
+	if !strings.Contains(answered, "unanswered: 0") {
+		t.Errorf("the status does not report zero unanswered once every finding has an answer:\n%s", answered)
+	}
+	if _, failures, code := driven.run("continue", name); code != 0 {
+		t.Fatalf("scrat continue with everything answered exited %d: %s", code, failures)
+	}
+
+	driven.wroteNothingItself()
+	driven.namedNothingTheSkillDoesNot()
+}
+
+func TestAQuestionThatReachesTheCapEscalatesWithEverythingKept(t *testing.T) {
+	driven := driving(t, dialogueScenario(patchableFindings, questionAtTheCap), answeredWrongly)
+	name := driven.review("count the characters of a document")
+
+	state, _ := driven.waitedFor(name)
+	if state != runstate.AwaitingResponse {
+		t.Fatalf("the first round left the run %s, want a parked run", state)
+	}
+
+	driven.author("internal/added.go", answeredBetter)
+	if _, failures, code := driven.run("respond", name, "--finding", "f1", "--fixed", "--note", "an empty document now answers minus one"); code != 4 {
+		t.Fatalf("recording a fix exited %d: %s", code, failures)
+	}
+	if _, failures, code := driven.run("respond", name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all"); code != 4 {
+		t.Fatalf("recording a rejection exited %d: %s", code, failures)
+	}
+	if _, failures, code := driven.run("continue", name); code != 0 {
+		t.Fatalf("scrat continue exited %d: %s", code, failures)
+	}
+
+	state, code := driven.waitedFor(name)
+	if state != runstate.Escalated || code != 1 {
+		t.Fatalf("a question at the final permitted round left the run %s and scrat status exited %d, want escalated", state, code)
+	}
+
+	run := driven.session.Run(name)
+	if !strings.Contains(reason(run), "cap") {
+		t.Errorf("the verdict does not say the round cap was reached: %q", reason(run))
+	}
+
+	reported := driven.findings(name)
+	if !strings.Contains(reported, "g1") || !strings.Contains(reported, "needs a person") {
+		t.Errorf("the question is not handed to the person:\n%s", reported)
+	}
+	if _, failures, refused := driven.run("respond", name, "--finding", "g1", "--decided", "--reason", "Vic decided the sentinel stays"); refused != 3 {
+		t.Errorf("answering a run that ran out of rounds exited %d: %s", refused, failures)
+	}
+
+	for _, path := range []string{
+		driven.session.Round(name, 1).PromptPath(),
+		driven.session.Round(name, 1).FindingsPath(),
+		driven.session.Round(name, 1).ResponsesPath(),
+		driven.session.Round(name, 2).PromptPath(),
+		driven.session.Round(name, 2).FindingsPath(),
+	} {
+		written, err := os.Stat(path)
+		if err != nil {
+			t.Errorf("%s is not readable after the run escalated: %v", path, err)
+			continue
+		}
+		if written.Size() == 0 {
+			t.Errorf("%s is empty", path)
+		}
+	}
+
+	driven.wroteNothingItself()
+	driven.namedNothingTheSkillDoesNot()
 }
 
 func TestTheLoopTheSkillDescribesReachesAVerdict(t *testing.T) {

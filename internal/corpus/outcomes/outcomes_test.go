@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	escalating = `{"findings":[{"id":"f1","severity":"warning","file":"a.go","line":1,"description":"d","action":"ask-user"}],"risk_level":"medium","risk_rationale":"r"}`
+	escalating = `{"findings":[{"id":"f1","severity":"warning","file":"a.go","line":1,"description":"d","action":"no-op"}],"risk_level":"medium","risk_rationale":"r"}`
 	parking    = `{"findings":[{"id":"f1","severity":"warning","file":"a.go","line":1,"description":"d","action":"auto-fix"}],"risk_level":"medium","risk_rationale":"r"}`
 	nothing    = `{"findings":[],"risk_level":"low","risk_rationale":"r"}`
 )

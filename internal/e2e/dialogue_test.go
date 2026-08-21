@@ -26,6 +26,12 @@ const nothingFoundAgain = `{"findings":[],"risk_level":"low","risk_rationale":"t
 
 const foundAgain = `{"findings":[{"id":"g1","severity":"error","file":"internal/added.go","line":3,"description":"The rejected finding is still true of the code as it stands.","action":"auto-fix"}],"risk_level":"medium","risk_rationale":"what the author rejected is still there"}`
 
+const unanswerableFinding = `{"findings":[{"id":"f1","severity":"error","file":"internal/added.go","line":3,"description":"The change takes away a behaviour the importer depends on, and nothing here can put it back.","action":"no-op"},{"id":"f2","severity":"warning","file":"internal/added.go","line":3,"description":"The retry loop never backs off.","action":"auto-fix"},{"id":"f3","severity":"info","file":"internal/added.go","line":1,"description":"This package now owns two spellings of one idea.","action":"no-op"}],"risk_level":"high","risk_rationale":"what holds the change is not something a patch closes"}`
+
+const questionOnly = `{"findings":[{"id":"f1","severity":"error","file":"internal/added.go","line":3,"description":"This function does not look like something the product needs.","action":"ask-user"},{"id":"f2","severity":"info","file":"internal/added.go","line":1,"description":"This package now owns two spellings of one idea.","action":"no-op"}],"risk_level":"high","risk_rationale":"the change may not be wanted at all"}`
+
+const questionAtTheCap = `{"findings":[{"id":"g1","severity":"error","file":"internal/added.go","line":3,"description":"The patch answers minus one for an empty document, and it is not clear the product wants a sentinel here at all.","action":"ask-user"}],"risk_level":"high","risk_rationale":"what the patch chose is a product decision nobody has made"}`
+
 const questionOfIntent = `{"findings":[{"id":"f1","severity":"error","file":"internal/added.go","line":3,"description":"This function does not look like something the product needs.","action":"ask-user"},{"id":"f2","severity":"error","file":"internal/added.go","line":3,"description":"The guard is missing.","action":"auto-fix"},{"id":"f3","severity":"warning","file":"internal/added.go","line":3,"description":"The retry loop never backs off.","action":"auto-fix"}],"risk_level":"high","risk_rationale":"the change may not be wanted at all"}`
 
 func dialogueScenario(first, second string) string {
@@ -269,13 +275,13 @@ func TestTheIntentQuestionJourney(t *testing.T) {
 	session.Repository.Write("internal/added.go", answeredWrongly)
 
 	printed, failures, code := session.Scrat("review", "--wait")
-	if code != 1 {
+	if code != 4 {
 		t.Fatalf("a round holding a question of intent exited %d: %s\n%s", code, failures, printed)
 	}
 
 	name := firstLine(printed)
 	run := session.Run(name)
-	if run.State != runstate.Escalated {
+	if run.State != runstate.AwaitingResponse {
 		t.Fatalf("a round holding a question of intent left the run %s: %s", run.State, reason(run))
 	}
 
@@ -284,6 +290,85 @@ func TestTheIntentQuestionJourney(t *testing.T) {
 		if !strings.Contains(readable, handed) {
 			t.Errorf("the person was not handed %s:\n%s", handed, readable)
 		}
+	}
+	for _, rule := range report.ResponseRules() {
+		if !strings.Contains(readable, rule) {
+			t.Errorf("a run parked on a question does not carry the rule %q:\n%s", rule, readable)
+		}
+	}
+
+	_, refused, respondCode := session.Scrat("respond", name, "--finding", "f1", "--fixed")
+	if respondCode != 3 {
+		t.Errorf("answering the question with a claimed patch exited %d, want 3", respondCode)
+	}
+	if !strings.Contains(refused, string(dialogue.Decided)) {
+		t.Errorf("the refusal does not name the resolution that applies: %s", refused)
+	}
+	if _, err := os.Stat(session.Round(name, 1).ResponsesPath()); !os.IsNotExist(err) {
+		t.Error("a patch claimed against a question stored something")
+	}
+}
+
+func TestAnEscalatedRunSaysWhichOfTheTwoReasonsItWas(t *testing.T) {
+	t.Run("a finding no response addresses", func(t *testing.T) {
+		session := harness.Start(t)
+		session.Simulator.Scenario(escalatingScenario)
+		session.Repository.Write("internal/added.go", answeredWrongly)
+
+		name := session.Review()
+		run := session.WaitForTerminal(name)
+		if run.State != runstate.Escalated {
+			t.Fatalf("the run ended as %s: %s", run.State, reason(run))
+		}
+
+		if !strings.Contains(reason(run), "asking for nothing") {
+			t.Errorf("the verdict does not say that what escalated the run is a finding no response addresses: %q", reason(run))
+		}
+		if strings.Contains(reason(run), "cap") {
+			t.Errorf("a run that escalated at its first round names the round cap: %q", reason(run))
+		}
+
+		printed, _, _ := session.Scrat("status", name)
+		if !strings.Contains(printed, "asking for nothing") {
+			t.Errorf("scrat status does not print which of the two reasons it was:\n%s", printed)
+		}
+	})
+
+	t.Run("the round cap", func(t *testing.T) {
+		session := harness.Start(t)
+		name := parkedRun(t, session, dialogueScenario(patchableFindings, foundAgain))
+
+		respond(t, session, name, "--finding", "f1", "--fixed")
+		respond(t, session, name, "--finding", "f2", "--fixed")
+		if _, failures, code := session.Scrat("continue", name, "--wait"); code != 1 {
+			t.Fatalf("a second round that still found something blocking exited %d: %s", code, failures)
+		}
+
+		run := session.Run(name)
+		if !strings.Contains(reason(run), "cap") {
+			t.Errorf("the verdict does not say the round cap was reached: %q", reason(run))
+		}
+		if strings.Contains(reason(run), "asking for nothing") {
+			t.Errorf("a run that escalated at the cap names a finding no response addresses: %q", reason(run))
+		}
+	})
+}
+
+func TestAnEscalatedRunTakesNoResponse(t *testing.T) {
+	// scenario: Responding to a run that is not awaiting responses
+	session := harness.Start(t)
+	session.Simulator.Scenario(escalatingScenario)
+	session.Repository.Write("internal/added.go", answeredWrongly)
+
+	name := session.Review()
+	run := session.WaitForTerminal(name)
+	if run.State != runstate.Escalated {
+		t.Fatalf("a round holding a finding no response addresses left the run %s: %s", run.State, reason(run))
+	}
+
+	readable, _, findingsCode := session.Scrat("findings", name)
+	if findingsCode != 1 {
+		t.Errorf("scrat findings of an escalated run exited %d, want 1", findingsCode)
 	}
 	for _, rule := range report.ResponseRules() {
 		if strings.Contains(readable, rule) {
@@ -677,6 +762,94 @@ func TestRespondingIsOneFindingAtATime(t *testing.T) {
 	})
 }
 
+func TestADecisionsReasonFromStandardInput(t *testing.T) {
+	const decided = "Vic decided the function stays.\nThe migration reads it, and nothing else does.\n"
+
+	session := harness.Start(t)
+	name := parkedRun(t, session, dialogueScenario(questionOfIntent, nothingFoundAgain))
+
+	printed, failures, code := session.ScratReading(decided, "respond", name, "--finding", "f1", "--decided", "--reason", "-")
+	if code != 4 {
+		t.Fatalf("scrat respond --decided reading its reason from standard input exited %d: %s\n%s", code, failures, printed)
+	}
+
+	recorded := readResponses(t, session, name)
+	answer, present := recorded.For("f1")
+	if !present {
+		t.Fatalf("nothing was stored against f1: %+v", recorded)
+	}
+	if answer.Resolution != dialogue.Decided {
+		t.Errorf("f1 is recorded as %q, want %q", answer.Resolution, dialogue.Decided)
+	}
+	if answer.Reason != decided {
+		t.Errorf("what the person decided reads %q, want %q verbatim", answer.Reason, decided)
+	}
+
+	t.Run("A reason is read only where it is asked for", func(t *testing.T) {
+		_, failures, code := session.ScratReading("bytes nobody meant as a reason", "respond", name, "--finding", "f1", "--decided")
+		if code != 3 {
+			t.Fatalf("a decision with no reason and a pipe on standard input exited %d, want 3: %s", code, failures)
+		}
+		if !strings.Contains(failures, "claim") {
+			t.Errorf("the refusal does not say a decision is a claim: %s", failures)
+		}
+		if again := readResponses(t, session, name); len(again.Recorded) != 1 {
+			t.Errorf("the run holds %d responses, so what was on standard input was stored as the person's decision", len(again.Recorded))
+		}
+	})
+}
+
+func TestARunParkedOnAQuestionIsNotAVerdictEither(t *testing.T) {
+	session := harness.Start(t)
+	name := parkedRun(t, session, dialogueScenario(questionOfIntent, nothingFoundAgain))
+
+	for _, command := range []string{"status", "findings"} {
+		printed, failures, code := session.Scrat(command, name)
+		if code != 4 {
+			t.Errorf("scrat %s of a run parked on a question exited %d, want 4: %s", command, code, failures)
+		}
+		for _, verdict := range []string{string(runstate.Clean), string(runstate.Escalated), string(runstate.Failed)} {
+			if strings.Contains(printed, "verdict: "+verdict) {
+				t.Errorf("scrat %s of a run parked on a question printed a verdict:\n%s", command, printed)
+			}
+		}
+	}
+
+	if recorded := session.Recorded(name); recorded.Verdict != nil {
+		t.Errorf("a run parked on a question carries the verdict %+v", *recorded.Verdict)
+	}
+
+	printed, _, _ := session.Scrat("status", name)
+	if !strings.Contains(printed, "needing a person rather than a patch: 1") {
+		t.Errorf("the status of a run parked on a question does not say how many of what it waits on need a person:\n%s", printed)
+	}
+}
+
+func TestChangingADecisionKeepsWhatWasSaidFirst(t *testing.T) {
+	// scenario: Changing a response
+	session := harness.Start(t)
+	name := parkedRun(t, session, dialogueScenario(questionOfIntent, nothingFoundAgain))
+
+	respond(t, session, name, "--finding", "f1", "--decided", "--reason", "Vic said to take the function out")
+	printed := respond(t, session, name, "--finding", "f1", "--decided", "--reason", "Vic changed their mind, and the function stays")
+
+	if !strings.Contains(printed, "replaced") {
+		t.Errorf("scrat respond does not say that an earlier decision was replaced:\n%s", printed)
+	}
+
+	recorded := readResponses(t, session, name)
+	if len(recorded.Recorded) != 2 {
+		t.Errorf("the run holds %d responses, so the change of mind is not visible", len(recorded.Recorded))
+	}
+	answer, _ := recorded.For("f1")
+	if answer.Reason != "Vic changed their mind, and the function stays" {
+		t.Errorf("the decision the next reviewer receives reads %q", answer.Reason)
+	}
+	if !strings.Contains(session.File(session.Round(name, 1).ResponsesPath()), "take the function out") {
+		t.Error("the decision that was replaced is gone from the record")
+	}
+}
+
 func TestRespondRefusesWhatItCannotRecord(t *testing.T) {
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
@@ -704,6 +877,9 @@ func TestRespondRefusesWhatItCannotRecord(t *testing.T) {
 		}{
 			{named: "a fix reasoned", arguments: []string{"--fixed", "--reason", "I moved the guard above the loop"}, names: "--note"},
 			{named: "a rejection noted", arguments: []string{"--rejected", "--note", "the loop is bounded by the caller's deadline"}, names: "--reason"},
+			{named: "a decision noted", arguments: []string{"--decided", "--note", "Vic said to leave the endpoint alone"}, names: "--reason"},
+			{named: "a fix and a decision at once", arguments: []string{"--fixed", "--decided", "--reason", "Vic said to leave it"}, names: "--decided"},
+			{named: "no answer at all", arguments: []string{"--reason", "Vic said to leave it"}, names: "--decided"},
 		} {
 			_, failures, code := session.Scrat(append([]string{"respond", name, "--finding", "f1"}, attempt.arguments...)...)
 			if code != 3 {
@@ -817,6 +993,40 @@ func TestContinuingTooEarly(t *testing.T) {
 			t.Errorf("the informational finding was made to wait for a response: %+v", recorded)
 		}
 	})
+}
+
+func TestContinuingWithAQuestionUnanswered(t *testing.T) {
+	session := harness.Start(t)
+	name := parkedRun(t, session, dialogueScenario(questionOfIntent, nothingFoundAgain))
+
+	session.Repository.Write("internal/added.go", answeredBetter)
+	respond(t, session, name, "--finding", "f2", "--fixed", "--note", "the guard is above the loop now")
+	respond(t, session, name, "--finding", "f3", "--rejected", "--reason", "there is no retry loop in this function at all")
+
+	_, failures, code := session.Scrat("continue", name)
+	if code != 3 {
+		t.Fatalf("continuing with the question unanswered exited %d, want 3: %s", code, failures)
+	}
+	if !strings.Contains(failures, "f1") {
+		t.Errorf("the refusal does not name the finding that asks a person: %s", failures)
+	}
+	if !strings.Contains(failures, "person") {
+		t.Errorf("the refusal does not say that a person is what is waited on: %s", failures)
+	}
+	if _, err := os.Stat(session.Round(name, 2).Directory); !os.IsNotExist(err) {
+		t.Error("a second round was started with the question unanswered")
+	}
+	if session.Recorded(name).State != runstate.AwaitingResponse {
+		t.Errorf("refusing to continue moved the run to %s", session.Recorded(name).State)
+	}
+
+	respond(t, session, name, "--finding", "f1", "--decided", "--reason", "Vic decided the function stays, because the migration reads it")
+	if _, failures, code := session.Scrat("continue", name, "--wait"); code != 0 {
+		t.Fatalf("continuing with the question answered exited %d: %s", code, failures)
+	}
+	if run := session.Run(name); run.State != runstate.Clean {
+		t.Errorf("the second round left the run %s: %s", run.State, reason(run))
+	}
 }
 
 func TestAParkedRunCanStillBeCancelled(t *testing.T) {

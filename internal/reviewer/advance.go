@@ -35,6 +35,9 @@ func Continue(ctx context.Context, continuation Continuation) (*runstore.Run, in
 		return nil, 0, err
 	}
 	if waiting := recorded.Unanswered(document); len(waiting) > 0 {
+		if asked := recorded.AwaitingAPerson(document); len(asked) > 0 {
+			return nil, 0, refusal.New(stillUnansweredByAPerson, len(waiting), strings.Join(waiting, ", "), len(asked), strings.Join(asked, ", "))
+		}
 		return nil, 0, refusal.New(stillUnanswered, len(waiting), strings.Join(waiting, ", "))
 	}
 

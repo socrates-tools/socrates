@@ -86,6 +86,49 @@ func TestEveryKindTheCoreWritesIsRendered(t *testing.T) {
 	}
 }
 
+func TestAParkedRoundRendersWhatItWaitsOn(t *testing.T) {
+	rendered := func(held map[string]any) string {
+		t.Helper()
+
+		lines := presentation.Lines([]runlog.Event{{At: at, Kind: reviewer.EventRoundParked, Subject: "a-run", Fields: held}})
+		if len(lines) != 1 {
+			t.Fatalf("a parked round rendered as %d lines: %v", len(lines), lines)
+		}
+		return lines[0]
+	}
+
+	t.Run("a round parked on a question alone", func(t *testing.T) {
+		line := rendered(map[string]any{"round": float64(1), "patchable": float64(0), "needing_a_person": float64(2)})
+
+		for _, needed := range []string{"0 findings can be patched", "2 need a person"} {
+			if !strings.Contains(line, needed) {
+				t.Errorf("a round waiting on two questions and no patches does not say %q: %q", needed, line)
+			}
+		}
+	})
+
+	t.Run("a round parked on patches alone", func(t *testing.T) {
+		line := rendered(map[string]any{"round": float64(1), "patchable": float64(3), "needing_a_person": float64(0)})
+
+		if !strings.Contains(line, "3 findings can be patched") {
+			t.Errorf("a round waiting on three patches does not say so: %q", line)
+		}
+		if strings.Contains(line, "person") {
+			t.Errorf("a round waiting on nobody names a person: %q", line)
+		}
+	})
+
+	t.Run("a round parked on both", func(t *testing.T) {
+		line := rendered(map[string]any{"round": float64(2), "patchable": float64(3), "needing_a_person": float64(1)})
+
+		for _, needed := range []string{"3 findings can be patched", "1 need a person"} {
+			if !strings.Contains(line, needed) {
+				t.Errorf("a round waiting on both does not carry %q: %q", needed, line)
+			}
+		}
+	})
+}
+
 func TestAnUnknownEventKindIsStillShown(t *testing.T) {
 	lines := presentation.Lines([]runlog.Event{
 		{At: at, Kind: "reviewer-thought-about-it", Subject: "r1", Fields: map[string]any{

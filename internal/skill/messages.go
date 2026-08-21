@@ -31,6 +31,8 @@ What the reviewer says while it works is not for you: if the person wants to see
    scrat status prints the same handful of lines whether the reviewer was silent or said a great deal.
    Do not set a timeout of your own. socrates gives the reviewer a deadline, a reviewer that answers nothing before it passes ends the run as failed, and so every run reaches one of the states below without you bounding the wait.
 4. Act on the state the run ended in. Each of them is below, and a run rests in no other.
+5. Report what happened. Say how many rounds ran and what the last one found, not just the verdict.
+   Two rounds ending with nothing blocking and one round ending the same way are different results, and the verdict alone does not say which of them the person got.
 
 ### clean
 
@@ -47,20 +49,29 @@ Report the change as unreviewed, and offer to start another review.
 ### escalated
 
 Read scrat findings, hand every finding to the person, and stop.
-These are theirs to decide.
-A finding that questions what the change is for is not one to patch your way out of, which is why the reviewer escalated it instead of asking you to answer it.
-A run also escalates where a second round still found something blocking, and then the findings are ordinary ones that ran out of rounds rather than questions of intent.
-scrat status prints which of the two it was.
+These are theirs to decide, and socrates has nothing further it can do about them.
+A run escalates for one of two reasons, and scrat status prints which: a finding holds the change while its own action asks for nothing, so no answer of yours addresses it, or the last permitted round still found something blocking.
+No further round is possible. A run has two rounds at most, and no flag gives it a third.
+Looking again means a fresh scrat review of the code as it now stands, and the reviewer of a new run is told nothing about this run, nothing about what it found and nothing about the answers recorded against it. It reads the change cold.
+Offer that, and start one only where the person asks for it.
 
 ### awaiting-response
 
-Read scrat findings.
-Every finding it reports as one that can be patched needs an answer from you, one finding per command:
+Read scrat findings. It says of every finding whether it can be patched or needs a person, and that line is what splits the work in two.
+
+A finding it reports as one that can be patched is yours. Patch it, or say why it is wrong, one finding per command:
 
        scrat respond --finding f1 --fixed --note "an empty document now answers minus one"
        scrat respond --finding f2 --rejected --reason "there is no retry loop in this function at all"
 
-Then run scrat continue, and go back to waiting on scrat status.
+A finding it reports as needing a person is the person's. Put it in front of them, wait for them, and record what they decided:
+
+       scrat respond --finding f3 --decided --reason "Vic decided the endpoint stays, because the migration reads it"
+
+You do not answer such a finding on your own behalf. It asks what the change is for, you are the one who wrote the change, and a recorded decision that no person made is a claim a later reader will find and a reviewer will judge.
+
+Once every finding that takes an answer has one, run scrat continue, and go back to waiting on scrat status.
+Do not ask the person whether the round is worth spending. A patch is unreviewed new code you wrote just after being told you were wrong, which is the code most worth reading, and the round is what the findings earned.
 The next round is a fresh reviewer that reads your answers and judges them, and there are two rounds at most.
 
 ### cancelled

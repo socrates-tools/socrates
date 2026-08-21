@@ -149,6 +149,35 @@ func TestAFollowerStopsWhereTheRoundStops(t *testing.T) {
 			t.Errorf("scrat watch does not report %q for a parked round:\n%s", needed, printed)
 		}
 	}
+	if parked := lineSaying(printed, "is waiting on you"); strings.Contains(parked, "person") {
+		t.Errorf("a round parked on patches alone reports a person to answer it: %q", parked)
+	}
+}
+
+func lineSaying(printed, said string) string {
+	for line := range strings.SplitSeq(printed, "\n") {
+		if strings.Contains(line, said) {
+			return line
+		}
+	}
+	return ""
+}
+
+func TestAFollowerSaysAQuestionIsWhatTheRoundWaitsOn(t *testing.T) {
+	session := harness.Start(t)
+	name := parkedRun(t, session, dialogueScenario(questionOnly, nothingFoundAgain))
+
+	printed, failures, code := session.Scrat("watch", name)
+	if code != 4 {
+		t.Fatalf("scrat watch of a round parked on a question exited %d, want 4: %s\n%s", code, failures, printed)
+	}
+	parked := lineSaying(printed, "is waiting on you")
+	if parked == "" {
+		t.Fatalf("scrat watch reports no parked round:\n%s", printed)
+	}
+	if !strings.Contains(parked, "1 need a person") {
+		t.Errorf("the one line a follower prints for a round parked on a question alone does not say what it waits on: %q", parked)
+	}
 }
 
 func TestReadingAFinishedRun(t *testing.T) {

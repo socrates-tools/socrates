@@ -23,6 +23,7 @@ exec sh -c 'scrat findings; echo exit=$?'
 stdout 'exit=4'
 stdout 'You did not review this code'
 stdout 'A rejection is a claim'
+stdout 'is the person.s to answer'
 stdout 'weakening or deleting behaviour'
 
 # A rejection with no reason is refused, and nothing is stored.
@@ -56,13 +57,20 @@ exec sh -c 'scrat respond --finding f1 --rejected; echo exit=$?'
 stdout 'exit=3'
 stderr 'a rejection is a claim'
 
-# An answer is a fix or a rejection, and never both or neither.
+# An answer is a fix, a rejection or a decision, and never two of them and never none.
 exec sh -c 'scrat respond --finding f1 --fixed --rejected; echo exit=$?'
 stdout 'exit=3'
-stderr 'not both'
+stderr 'exactly one'
 exec sh -c 'scrat respond --finding f1; echo exit=$?'
 stdout 'exit=3'
-stderr 'not both'
+stderr 'exactly one'
+
+# A decision is refused for a finding whose action asks for a patch, naming what does apply.
+exec sh -c 'scrat respond --finding f1 --decided --reason "Vic decided the guard stays"; echo exit=$?'
+stdout 'exit=3'
+stderr 'asks for a patch'
+exec sh -c 'ls $WORK/state/runs/*/r1/'
+! stdout 'responses.jsonl'
 
 # Continuing while a blocking finding has no response is refused, naming what is unanswered.
 exec sh -c 'scrat continue; echo exit=$?'

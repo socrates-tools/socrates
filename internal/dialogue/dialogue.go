@@ -10,9 +10,6 @@ const Cap = 2
 const CapIsForContextRatherThanCost = "The session being handed findings is already large from implementing the change, and each round adds findings, patches and rebuttals to it. Round three is where that session starts compacting mid-review and quietly loses the thing it was defending. A cap chosen for a reason that is not cost is a cap nobody raises the moment they meet a run that nearly finished."
 
 func After(classified findings.Classification, round int) runstate.State {
-	if len(classified.NeedingAPerson) > 0 {
-		return runstate.Escalated
-	}
 	if classified.Verdict() == runstate.Clean {
 		return runstate.Clean
 	}
@@ -23,7 +20,15 @@ func After(classified findings.Classification, round int) runstate.State {
 }
 
 func Answerable(classified findings.Classification) []findings.Finding {
+	return append(AnsweredByAPatch(classified), AnsweredByAPerson(classified)...)
+}
+
+func AnsweredByAPatch(classified findings.Classification) []findings.Finding {
 	return blocking(classified.Patchable)
+}
+
+func AnsweredByAPerson(classified findings.Classification) []findings.Finding {
+	return blocking(classified.NeedingAPerson)
 }
 
 func BeyondAnswering(classified findings.Classification) []findings.Finding {
@@ -41,7 +46,7 @@ func blocking(held []findings.Finding) []findings.Finding {
 }
 
 func EscalatedByTheCap(classified findings.Classification, round int) bool {
-	return After(classified, round) == runstate.Escalated && len(classified.NeedingAPerson) == 0 && len(Answerable(classified)) > 0
+	return After(classified, round) == runstate.Escalated && len(BeyondAnswering(classified)) == 0 && len(Answerable(classified)) > 0
 }
 
 func CapReached(round int) bool {

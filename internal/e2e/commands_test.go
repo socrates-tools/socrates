@@ -215,8 +215,8 @@ func TestFindingsAreReadableFromTheCommand(t *testing.T) {
 		t.Fatalf("scrat findings exited %d: %s", code, failures)
 	}
 	for _, needed := range []string{
-		"f1", "error", "internal/added.go:1", "The added file answers wrongly for an empty input.", "needs a person",
-		"f2", "can be patched", "f3", "informational",
+		"f1", "error", "internal/added.go:1", "The added file answers wrongly for an empty input.", "informational",
+		"f2", "can be patched", "f3", "needs a person",
 		"medium", "one changed path answers wrongly without erroring",
 	} {
 		if !strings.Contains(printed, needed) {
@@ -231,8 +231,8 @@ func TestFindingsAreReadableFromTheCommand(t *testing.T) {
 	if err := json.Unmarshal([]byte(asJSON), &reported); err != nil {
 		t.Fatalf("scrat findings --json printed something other than one JSON object: %v:\n%s", err, asJSON)
 	}
-	if reported.Findings[0]["action"] != "ask-user" {
-		t.Errorf("the finding that stated no action is reported as %v", reported.Findings[0]["action"])
+	if reported.Findings[2]["action"] != "ask-user" {
+		t.Errorf("the finding that stated no action is reported as %v", reported.Findings[2]["action"])
 	}
 }
 

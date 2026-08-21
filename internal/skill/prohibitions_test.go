@@ -34,6 +34,7 @@ func TestNoChannelIsImpliedForTheAuthorsAccount(t *testing.T) {
 		"--finding":  "which finding an answer is about",
 		"--fixed":    "that a finding was patched",
 		"--rejected": "that a finding is wrong",
+		"--decided":  "that a person answered the question a finding asked",
 		"--note":     "what was done about a patched finding, which reaches the next reviewer as a claim it judges",
 		"--reason":   "why a rejected finding is wrong, which reaches the next reviewer as a claim it judges",
 		"--to":       "where to install the skill, which reaches no reviewer at all",

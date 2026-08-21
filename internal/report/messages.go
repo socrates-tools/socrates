@@ -18,9 +18,10 @@ const (
 	informationalAudience = "informational"
 	encodingFailed        = "encoding what socrates concluded: %w"
 
-	awaitingLine   = "awaiting responses: socrates is waiting for the author, and no process of this run is running"
-	unansweredLine = "unanswered: %d"
-	readyLine      = "ready to continue: run scrat continue to start the next round"
+	awaitingLine        = "awaiting responses: socrates is waiting for the author, or for a person the author asks, and no process of this run is running"
+	unansweredLine      = "unanswered: %d"
+	awaitingAPersonLine = "of those, needing a person rather than a patch: %d"
+	readyLine           = "ready to continue: run scrat continue to start the next round"
 
 	rulesHeading = "How to answer these findings:"
 	ruleLine     = "  - %s"

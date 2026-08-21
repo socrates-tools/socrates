@@ -9,7 +9,7 @@ import (
 	"github.com/rui-ktei/socrates/internal/findings"
 )
 
-func TestAResponseIsAFixOrARejection(t *testing.T) {
+func TestAResponseIsAFixARejectionOrADecision(t *testing.T) {
 	t.Run("Recording a fix", func(t *testing.T) {
 		recorded := held(dialogue.Response{Finding: "f1", Resolution: dialogue.Fixed, Reason: "I moved the guard above the loop."})
 
@@ -60,6 +60,82 @@ func TestAResponseIsAFixOrARejection(t *testing.T) {
 		}
 	})
 
+	t.Run("Recording a decision", func(t *testing.T) {
+		const reason = "  Vic decided the endpoint stays, because the migration reads it.\n"
+
+		question := finding("f1", findings.Error, findings.AskUser)
+		response := dialogue.Response{Finding: "f1", Resolution: dialogue.Decided, Reason: reason}
+		if err := dialogue.Answering(question, response); err != nil {
+			t.Fatalf("a decision against a finding that asks a person was refused: %v", err)
+		}
+
+		recorded := held(response)
+		answer, answered := recorded.For("f1")
+		if !answered || answer.Resolution != dialogue.Decided {
+			t.Fatalf("f1 reads as %+v, want a decision", answer)
+		}
+		if answer.Reason != reason {
+			t.Errorf("the reason reads %q, want it verbatim", answer.Reason)
+		}
+
+		encoded, err := dialogue.Line(answer)
+		if err != nil {
+			t.Fatalf("encoding the response: %v", err)
+		}
+		read, err := dialogue.Parse(encoded)
+		if err != nil {
+			t.Fatalf("reading the responses back: %v", err)
+		}
+		if diff := cmp.Diff(recorded, read); diff != "" {
+			t.Errorf("what was stored differs from what was read back (-stored +read):\n%s", diff)
+		}
+	})
+
+	t.Run("A decision with no reason", func(t *testing.T) {
+		for _, blank := range []string{"", "   ", "\n\t "} {
+			err := dialogue.Validate(dialogue.Response{Finding: "f1", Resolution: dialogue.Decided, Reason: blank})
+			if err == nil {
+				t.Fatalf("a decision reasoned %q was accepted", blank)
+			}
+			if !strings.Contains(err.Error(), "claim") {
+				t.Errorf("the refusal does not say that a decision is a claim: %v", err)
+			}
+		}
+	})
+
+	t.Run("A patch offered where a decision is required", func(t *testing.T) {
+		question := finding("f1", findings.Error, findings.AskUser)
+
+		for _, offered := range []dialogue.Response{
+			{Finding: "f1", Resolution: dialogue.Fixed, Reason: "I took the endpoint out"},
+			{Finding: "f1", Resolution: dialogue.Rejected, Reason: "the endpoint is needed"},
+		} {
+			err := dialogue.Answering(question, offered)
+			if err == nil {
+				t.Fatalf("%q was accepted against a finding that asks a person", offered.Resolution)
+			}
+			if !strings.Contains(err.Error(), string(dialogue.Decided)) {
+				t.Errorf("the refusal of %q does not name the resolution that applies: %v", offered.Resolution, err)
+			}
+		}
+	})
+
+	t.Run("A decision offered where none was asked for", func(t *testing.T) {
+		decided := dialogue.Response{Finding: "f1", Resolution: dialogue.Decided, Reason: "Vic said to leave it"}
+
+		for _, asking := range []findings.Action{findings.AutoFix, findings.NoOp} {
+			err := dialogue.Answering(finding("f1", findings.Error, asking), decided)
+			if err == nil {
+				t.Fatalf("a decision was accepted against a finding actioned %q", asking)
+			}
+			for _, named := range []dialogue.Resolution{dialogue.Fixed, dialogue.Rejected} {
+				if !strings.Contains(err.Error(), string(named)) {
+					t.Errorf("the refusal against a finding actioned %q does not name %q: %v", asking, named, err)
+				}
+			}
+		}
+	})
+
 	t.Run("Changing a response", func(t *testing.T) {
 		document := document(finding("f1", findings.Error, findings.AutoFix))
 
@@ -100,10 +176,10 @@ func TestOnlyBlockingFindingsWaitForAResponse(t *testing.T) {
 func TestAResponseToAFindingThatDoesNotExist(t *testing.T) {
 	document := document(finding("f1", findings.Error, findings.AutoFix))
 
-	if !dialogue.Names(document, "f1") {
+	if _, reported := dialogue.Reported(document, "f1"); !reported {
 		t.Error("the round's own finding reads as one it did not produce")
 	}
-	if dialogue.Names(document, "f9") {
+	if _, reported := dialogue.Reported(document, "f9"); reported {
 		t.Error("a finding the round did not produce reads as one it did")
 	}
 }

@@ -28,8 +28,12 @@ func Respond(store runstore.Store, name string, response dialogue.Response) (Rec
 	if err := dialogue.Validate(response); err != nil {
 		return Recording{}, err
 	}
-	if !dialogue.Names(document, response.Finding) {
+	reported, present := dialogue.Reported(document, response.Finding)
+	if !present {
 		return Recording{}, refusal.New(noSuchFinding, round.Number, run.Name, response.Finding)
+	}
+	if err := dialogue.Answering(reported, response); err != nil {
+		return Recording{}, err
 	}
 
 	if err := round.AppendResponse(response); err != nil {

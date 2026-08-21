@@ -18,10 +18,12 @@ func secondRound() Request {
 			{ID: "f1", Severity: findings.Error, File: "internal/parse/parse.go", Line: 12, Description: "The guard reads the document before checking its length.", Action: findings.AutoFix},
 			{ID: "f2", Severity: findings.Warning, File: "internal/parse/parse.go", Line: 40, Description: "The retry loop never backs off.", Action: findings.AutoFix},
 			{ID: "f3", Severity: findings.Info, File: "internal/parse/parse.go", Line: 3, Description: "This package now owns two spellings of one idea.", Action: findings.NoOp},
+			{ID: "f4", Severity: findings.Error, File: "internal/parse/parse.go", Line: 61, Description: "This parser does not look like something the product needs.", Action: findings.AskUser},
 		},
 		Responses: []dialogue.Response{
 			{Finding: "f1", Resolution: dialogue.Fixed, Reason: "I moved the length check above the read."},
 			{Finding: "f2", Resolution: dialogue.Rejected, Reason: "The loop runs at most twice, and the caller's deadline bounds it."},
+			{Finding: "f4", Resolution: dialogue.Decided, Reason: "Vic decided the parser stays, because the importer reads it."},
 		},
 	}}
 	return request
@@ -136,6 +138,24 @@ func TestARereviewCarriesTheProvenanceClause(t *testing.T) {
 			if !strings.Contains(clause, statement) {
 				t.Errorf("the clause does not carry %q:\n%s", statement, clause)
 			}
+		}
+	})
+
+	t.Run("A decision arrives as a decision", func(t *testing.T) {
+		block, present := BodyOf(Sections(delivered), PriorHeading)
+		if !present {
+			t.Fatalf("a second round delivered no %q section:\n%s", PriorHeading, delivered)
+		}
+
+		attributed := "A person answered this finding, and the author records what they decided:"
+		if !strings.Contains(block, attributed+"\nVic decided the parser stays, because the importer reads it.") {
+			t.Errorf("what a person decided does not arrive attributed to a person:\n%s", block)
+		}
+		if strings.Contains(block, "The author claims to have fixed this, and says what they did:\nVic decided") {
+			t.Errorf("a decision arrives as a claimed fix:\n%s", block)
+		}
+		if !strings.Contains(delivered, "Judge whether the code now matches what was decided") {
+			t.Error("nothing asks the reviewer to judge the code against what was decided")
 		}
 	})
 
@@ -320,6 +340,8 @@ func provenanceStatements() []string {
 		"It is unreviewed new code, not a settled resolution of the findings that prompted it, and it is reviewed to exactly the same adversarial standard as the original change.",
 		"Prior findings, claimed fixes and rejections are claims, not evidence.",
 		"Verify each against the current code, and judge independently whether what the patches introduced is correct, not merely whether it does what was prescribed.",
+		"A decision recorded against a finding that asked a person is a claim that a person answered it, and what was decided is a claim about what the change is for.",
+		"Judge whether the code now matches what was decided, and say so where the decision leaves the finding unresolved.",
 		"A test written or changed in the same round as the code it exercises is part of that round's claim, not independent proof.",
 		"Judge whether its asserted outcome is the right outcome and whether it could still pass with the code wrong.",
 	}

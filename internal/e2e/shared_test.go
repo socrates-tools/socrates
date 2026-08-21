@@ -16,7 +16,7 @@ default:
 
 const escalatingScenario = `
 default:
-  structured: '{"findings":[{"id":"f1","severity":"error","file":"internal/added.go","line":1,"description":"The added file answers wrongly for an empty input."},{"id":"f2","severity":"warning","file":"internal/added.go","line":1,"description":"The retry loop never backs off.","action":"auto-fix"},{"id":"f3","severity":"info","file":"internal/added.go","line":1,"description":"This package now owns two spellings of one idea.","action":"no-op"}],"risk_level":"medium","risk_rationale":"one changed path answers wrongly without erroring"}'
+  structured: '{"findings":[{"id":"f1","severity":"error","file":"internal/added.go","line":1,"description":"The added file answers wrongly for an empty input.","action":"no-op"},{"id":"f2","severity":"warning","file":"internal/added.go","line":1,"description":"The retry loop never backs off.","action":"auto-fix"},{"id":"f3","severity":"info","file":"internal/added.go","line":1,"description":"This package now owns two spellings of one idea."}],"risk_level":"medium","risk_rationale":"one changed path answers wrongly without erroring"}'
 `
 
 const informationalScenario = `

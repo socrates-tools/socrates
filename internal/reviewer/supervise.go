@@ -177,7 +177,11 @@ func (s Supervision) park(run *runstore.Run, round int, classified findings.Clas
 		return lifted
 	}
 
-	fields := map[string]any{"round": round, "patchable": len(classified.Patchable)}
+	fields := map[string]any{
+		"round":            round,
+		"patchable":        len(dialogue.AnsweredByAPatch(classified)),
+		"needing_a_person": len(dialogue.AnsweredByAPerson(classified)),
+	}
 	if teardown != nil {
 		fields["worktree"] = teardown.Error()
 	}
@@ -256,6 +260,9 @@ func verdictReason(document findings.Document, classified findings.Classificatio
 	}
 
 	found := fmt.Sprintf(whatAReviewerFound, len(document.Findings), len(classified.NeedingAPerson), document.RiskLevel)
+	if beyond := dialogue.BeyondAnswering(classified); len(beyond) > 0 {
+		return found + fmt.Sprintf(nothingAddressesThem, len(beyond))
+	}
 	if dialogue.EscalatedByTheCap(classified, round) {
 		return found + fmt.Sprintf(theCapWasReached, dialogue.Cap)
 	}

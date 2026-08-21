@@ -90,7 +90,7 @@ func TestTheEscalatedJourney(t *testing.T) {
 	}
 }
 
-func TestTheEscalatedJourneyOnARecordedAnswer(t *testing.T) {
+func TestTheJourneyOnARecordedAnswer(t *testing.T) {
 	entry, err := corpus.Named("dialogue-layer-first-look")
 	if err != nil {
 		t.Fatalf("reading the recorded answer: %v", err)
@@ -101,13 +101,13 @@ func TestTheEscalatedJourneyOnARecordedAnswer(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	printed, failures, code := session.Scrat("review", "--wait")
-	if code != 1 {
-		t.Fatalf("scrat review --wait exited %d for a recorded answer that escalates: %s\n%s", code, failures, printed)
+	if code != 4 {
+		t.Fatalf("scrat review --wait exited %d for a recorded answer that parks: %s\n%s", code, failures, printed)
 	}
 
 	name := firstLine(printed)
 	run := session.Run(name)
-	if run.State != runstate.Escalated {
+	if run.State != runstate.AwaitingResponse {
 		t.Fatalf("the run ended as %s: %s", run.State, reason(run))
 	}
 
@@ -117,8 +117,8 @@ func TestTheEscalatedJourneyOnARecordedAnswer(t *testing.T) {
 	}
 
 	readable, _, findingsCode := session.Scrat("findings", name)
-	if findingsCode != 1 {
-		t.Errorf("scrat findings of an escalated run exited %d, want 1", findingsCode)
+	if findingsCode != 4 {
+		t.Errorf("scrat findings of a run parked on a recorded answer exited %d, want 4", findingsCode)
 	}
 	if !strings.Contains(readable, "needs a person") {
 		t.Errorf("scrat findings does not say who the recorded findings are for:\n%s", readable)

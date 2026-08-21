@@ -54,7 +54,7 @@ They stay distinct on purpose.
 `watch` and `logs` print into a person's terminal, where being told what happened is the point.
 So `status` has no way to follow, and `watch` has no way to return after one read.
 
-`scrat watch` stops when the run reaches a verdict, when it fails, when you cancel it from another terminal, and when the round parks on you.
+`scrat watch` stops when the run reaches a verdict, when it fails, when you cancel it from another terminal, and when the round parks, whether on a patch you owe it or on a question somebody has to answer.
 It never waits for an event a finished run will not write.
 Started in the moment between `scrat review` returning and the reviewer's first byte, it waits for the log rather than failing, and gives up if nothing is ever written.
 
@@ -71,13 +71,15 @@ The skill teaches the loop: implement, `scrat review --intent`, then poll `scrat
 It tells the session not to bound that wait itself, because a reviewer that answers nothing before its deadline ends the run as `failed`.
 On `clean`, say what was reviewed and stop.
 On `failed`, report the change as unreviewed, because no review completed and nothing has been checked.
-On `escalated`, hand the findings to you and stop, because a finding that questions what the change is for is not one to patch around.
-On `awaiting-response`, answer every finding that can be patched, run `scrat continue`, and go back to polling.
+On `escalated`, hand the findings to you and stop, because socrates has nothing further it can do about them.
+On `awaiting-response`, answer every finding that can be patched, bring every finding that asks a person to you and record what you decided, run `scrat continue`, and go back to polling.
+It says the session does not answer a question about intent on its own behalf, and that the round the findings earned is spent without asking you whether it is worth spending.
+Where a run escalated at the round cap, it says that no third round exists and that looking again means a fresh `scrat review`, started only where you ask for one, whose reviewer is told nothing about the run before it.
 On `cancelled`, say that nothing was decided, because somebody stopped the review on purpose.
 Those are every state a run rests in, and a test compares the list against `internal/runstate` so a sixth could not appear without the skill gaining a branch for it.
 
 It teaches polling rather than following, because everything a session reads lands in its own context and it is about to need that context for the patching.
-It carries the four response rules in the same words `scrat findings` prints them, in front of the session before it has read a single finding.
+It carries the five response rules in the same words `scrat findings` prints them, in front of the session before it has read a single finding.
 And it says what socrates will not do: it patches nothing, it offers no way to explain the change to the reviewer, and it refuses a rejection with no reason.
 
 The text has one source in `internal/skill`, and the copy at `.claude/skills/scrat/SKILL.md` is generated from it by `make skill`.
@@ -88,7 +90,7 @@ Exit codes are a contract:
 | code | meaning |
 | --- | --- |
 | `0` | `clean`, or a command whose job was to start something that started |
-| `1` | `escalated`: a reviewer found something and it is yours to decide |
+| `1` | `escalated`: socrates is finished and what is left is yours to decide |
 | `2` | `failed`: no review completed, so nothing has been checked |
 | `3` | a usage or precondition error |
 | `4` | the run is not terminal yet |
@@ -96,6 +98,12 @@ Exit codes are a contract:
 `failed` is deliberately not `escalated`.
 Escalated means read the findings.
 Failed means socrates could not do its job and nothing was reviewed.
+
+A run escalates for two reasons and no others: a finding holds the change while its own action asks for nothing, so no answer addresses it, or the last permitted round still found something blocking.
+A finding that asks a person is not one of them.
+It parks the round and returns `4` until somebody answers it, because ending the run there is what leaves the answer nowhere to go: you decide, you patch what you decided, and no round remains to judge either.
+`scrat respond --decided --reason` records the answer, `--fixed` and `--rejected` are refused for such a finding, and the next round is told a person decided rather than that a patch was claimed.
+After the cap, a further look is a fresh `scrat review` rather than a third round, and its reviewer knows nothing of the run before it.
 
 ## What it does to your repository
 
@@ -144,6 +152,7 @@ This repository is built in layers, specified in `openspec/` before they are imp
 - `what-a-reviewer-actually-answered` - the corpus of what real reviewers answered, replayed by name in the suite.
 - `one-window-three-needs` - `scrat watch` and `scrat logs`.
 - `the-loop-an-agent-can-drive` - the generated skill that lets a session drive the loop itself.
+- `an-answered-question-is-a-response` - a question the reviewer asked parks the round, and the person's answer is recorded and judged.
 
 Every one of them ships today.
 

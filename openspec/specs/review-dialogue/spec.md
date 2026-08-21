@@ -7,26 +7,30 @@ TBD - created by archiving change a-rejection-is-a-claim. Update Purpose after a
 
 The state a run reaches after a completed round SHALL be a pure function of the classified findings and the round number:
 
-- any finding whose effective action is `ask-user`: `escalated`
 - nothing blocking: `clean`
-- anything blocking that a response cannot address: `escalated`
+- anything blocking that no response can address: `escalated`
 - the round number equals the cap: `escalated`
 - otherwise: `awaiting-response`
 
 Whether a document blocks SHALL have one owner, which is the classification's verdict.
 
-A round SHALL park only where every finding that holds the change can be patched and at least one does, and that set SHALL be exactly what the run waits on responses for.
+A response SHALL be able to address a blocking finding whose action asks for a patch and a blocking finding whose action asks a person, and those two SHALL be answered by different resolutions.
+A round SHALL park only where every finding that holds the change can be answered and at least one does, and that set SHALL be exactly what the run waits on responses for.
 A round that parks with nothing for the author to answer asks a question nobody can close and then escalates at the cap for findings whose own action asked for nothing.
 A finding that holds the change while its action asks for nothing is a contradiction in what the reviewer returned, and it goes to the person rather than being demanded an answer socrates presents as unnecessary.
-It goes to the person whatever else the round holds, for the same reason `ask-user` does: parking on the rest would advance the run past a finding nothing in the dialogue can close, and the round it appeared in is the last place it is reported.
+It goes to the person whatever else the round holds, because parking on the rest would advance the run past a finding nothing and nobody can close, and the round it appeared in is the last place it is reported.
+
+A finding that asks a person SHALL stop the loop until a person has answered it, and SHALL NOT end the run.
+Ending the run is what leaves the answer nowhere to go: the author decides, patches what was decided, and no round remains to judge either.
+A machine answering a question about intent is what the rule refuses, and that refusal is carried by which resolution the finding accepts rather than by ending the run.
 
 The reason a round escalated SHALL name the cap only where the cap is why it escalated.
 A run that concluded `clean` naming the cap tells the author that something is left for them when nothing is.
 
 The rule SHALL be testable against its whole input space rather than sampled, and its package SHALL reach no filesystem, no clock and no process.
 
-The `ask-user` case SHALL dominate the others.
-A set holding one question about intent and five mechanical defects goes to the person with all six, because the person's answer to the sixth may change what the other five should have been.
+A round holding a finding that asks a person SHALL wait on that finding whatever else it holds.
+A set holding one question about intent and five mechanical defects waits on all six, because the person's answer to the sixth may change what the other five should have been, and none of them is judged until the next round sees the answer.
 
 #### Scenario: A clean round finishes the run
 
@@ -36,7 +40,7 @@ A set holding one question about intent and five mechanical defects goes to the 
 #### Scenario: A question about intent stops the loop at once
 
 - **WHEN** a round completes with one `ask-user` finding and several `auto-fix` findings
-- **THEN** the run is `escalated`, all the findings are handed to the person, and none of them is offered for a response
+- **THEN** the run is `awaiting-response`, all the findings are handed to the person, and the run waits on the question as well as on the patches
 
 #### Scenario: An informational round finishes the run
 
@@ -62,6 +66,16 @@ A set holding one question about intent and five mechanical defects goes to the 
 
 - **WHEN** the final permitted round completes with blocking findings
 - **THEN** the run is `escalated`, naming that the round cap was reached
+
+#### Scenario: A question left unanswered at the cap escalates
+
+- **WHEN** the final permitted round completes holding a finding that asks a person
+- **THEN** the run is `escalated` rather than parked, because no round remains in which an answer could be judged
+
+#### Scenario: A question alone parks the run
+
+- **WHEN** a round completes with one `ask-user` finding and nothing else blocking
+- **THEN** the run is `awaiting-response` and that finding is what it waits on
 
 #### Scenario: The rule reaches nothing outward
 
@@ -93,39 +107,6 @@ A number chosen for a reason that is not cost is a number somebody raises the mo
 - **WHEN** the configuration file is examined
 - **THEN** it holds no round cap
 
-### Requirement: A response is a fix or a rejection, and a rejection needs a reason
-
-`scrat respond` SHALL record, against one finding identifier, either that it was fixed, with an optional note, or that it is rejected, with a reason.
-
-A rejection's reason SHALL be required and SHALL NOT be accepted empty or blank.
-A response naming a finding the round did not produce SHALL be refused, naming the identifier.
-A second response to the same finding SHALL replace the first, and the replacement SHALL be recorded so that changing one's mind is visible rather than silent.
-
-#### Scenario: Recording a fix
-
-- **WHEN** `scrat respond` records a finding as fixed
-- **THEN** the response is stored against that identifier and the run stays `awaiting-response` until every blocking finding has one
-
-#### Scenario: Recording a rejection
-
-- **WHEN** `scrat respond` records a finding as rejected with a reason
-- **THEN** the reason is stored verbatim against that identifier
-
-#### Scenario: A rejection with no reason
-
-- **WHEN** `scrat respond` records a rejection with an empty or blank reason
-- **THEN** it is refused, saying that a rejection is a claim and needs one, and nothing is stored
-
-#### Scenario: A response to a finding that does not exist
-
-- **WHEN** `scrat respond` names an identifier the round did not produce
-- **THEN** it is refused naming the identifier, and nothing is stored
-
-#### Scenario: Changing a response
-
-- **WHEN** a finding already responded to is responded to again
-- **THEN** the later response is what the next reviewer receives, and the run records that it was replaced
-
 ### Requirement: A recorded response is not lost
 
 The stored responses of a round SHALL be append-only, and recording one SHALL NOT rewrite what an earlier one wrote.
@@ -146,10 +127,11 @@ Appending also bounds what a crash can damage to the line being written, where a
 
 ### Requirement: Silence does not advance a round
 
-`scrat continue` SHALL refuse while any finding of the current round that holds the change and can be patched has no response, naming which findings are still unanswered.
+`scrat continue` SHALL refuse while any finding of the current round that holds the change and can be answered has no response, naming which findings are still unanswered and which of them need a person.
 
-Silence is neither a fix nor a rejection.
+Silence is neither a fix, nor a rejection, nor a decision.
 A round that advanced on it would present an unpatched, unargued finding to the next reviewer as though it had been dealt with, which is the one outcome worse than not asking.
+A round that advanced past an unanswered question would do worse: it would carry a question about what the change is for into a round that judges patches, and nothing would ever answer it.
 
 #### Scenario: Continuing too early
 
@@ -160,6 +142,11 @@ A round that advanced on it would present an unpatched, unargued finding to the 
 
 - **WHEN** every blocking finding has a response
 - **THEN** `scrat continue` takes a fresh snapshot and starts the next round
+
+#### Scenario: Continuing with a question unanswered
+
+- **WHEN** `scrat continue` is run while a finding that asks a person has no decision recorded against it
+- **THEN** it refuses, names that finding as one needing a person, and starts no round
 
 #### Scenario: Nothing left to review ends the run
 
@@ -213,6 +200,7 @@ Where a run is `awaiting-response`, `scrat findings` SHALL print, alongside the 
 - The author did not review this code; an independent reviewer did.
 - For each finding, either apply a fix or record a rejection with a concrete reason.
 - A rejection is a claim being made to the next reviewer, not a decision.
+- A finding that asks a person is the person's to answer. Take it to them, and record what they decided.
 - Do not resolve a finding by weakening or deleting behaviour that was added on purpose. Where the finding is right about a symptom and wrong about the cause, say so and fix the cause.
 
 socrates does not run the author's session and cannot constrain it.
@@ -221,10 +209,70 @@ Putting the rules in front of it, at the moment it has findings in hand, in the 
 #### Scenario: The rules arrive with the findings
 
 - **WHEN** `scrat findings` is run against a run awaiting responses
-- **THEN** it prints the four rules alongside the findings
+- **THEN** it prints the rules alongside the findings, including the one saying whose a finding that asks a person is
 
 #### Scenario: The rules do not arrive where they do not apply
 
 - **WHEN** `scrat findings` is run against a run that is clean, escalated or failed
 - **THEN** it prints the findings without the response rules, because no response is being asked for
+
+### Requirement: A response is a fix, a rejection or a decision, and neither a rejection nor a decision is accepted without a reason
+
+`scrat respond` SHALL record, against one finding identifier, either that it was fixed, with an optional note, or that it is rejected, with a reason, or that a person decided it, with a reason saying what was decided.
+
+A rejection's reason SHALL be required and SHALL NOT be accepted empty or blank, and a decision's reason SHALL be required on the same terms.
+A decision SHALL be the only resolution accepted for a finding whose action asks a person, and SHALL NOT be accepted for any other finding.
+A fix or a rejection offered for a finding whose action asks a person SHALL be refused, naming the resolution that applies.
+
+socrates cannot verify that a person rather than the session answered, and SHALL NOT pretend to.
+It records the claim, labels it as a decision, and hands it to a reviewer that owes it nothing, which is exactly what it already does with a rejection.
+What it does enforce is that answering such a finding cannot be done by asserting a patch, so a session that answers one on its own behalf has made a claim a reader can see rather than taken a silent shortcut.
+
+A response naming a finding the round did not produce SHALL be refused, naming the identifier.
+A second response to the same finding SHALL replace the first, and the replacement SHALL be recorded so that changing one's mind is visible rather than silent.
+
+#### Scenario: Recording a fix
+
+- **WHEN** `scrat respond` records a finding as fixed
+- **THEN** the response is stored against that identifier and the run stays `awaiting-response` until every blocking finding has one
+
+#### Scenario: Recording a rejection
+
+- **WHEN** `scrat respond` records a finding as rejected with a reason
+- **THEN** the reason is stored verbatim against that identifier
+
+#### Scenario: A rejection with no reason
+
+- **WHEN** `scrat respond` records a rejection with an empty or blank reason
+- **THEN** it is refused, saying that a rejection is a claim and needs one, and nothing is stored
+
+#### Scenario: Recording a decision
+
+- **WHEN** `scrat respond` records a finding that asks a person as decided, with a reason
+- **THEN** the reason is stored verbatim against that identifier, labelled as a decision rather than as a fix
+
+#### Scenario: A decision with no reason
+
+- **WHEN** `scrat respond` records a decision with an empty or blank reason
+- **THEN** it is refused for the same reason a rejection is, and nothing is stored
+
+#### Scenario: A patch offered where a decision is required
+
+- **WHEN** `scrat respond` records a fix or a rejection against a finding whose action asks a person
+- **THEN** it is refused, naming that the finding takes a decision, and nothing is stored
+
+#### Scenario: A decision offered where none was asked for
+
+- **WHEN** `scrat respond` records a decision against a finding whose action asks for a patch
+- **THEN** it is refused, naming the resolutions that apply, and nothing is stored
+
+#### Scenario: A response to a finding that does not exist
+
+- **WHEN** `scrat respond` names an identifier the round did not produce
+- **THEN** it is refused naming the identifier, and nothing is stored
+
+#### Scenario: Changing a response
+
+- **WHEN** a finding already responded to is responded to again
+- **THEN** the later response is what the next reviewer receives, and the run records that it was replaced
 

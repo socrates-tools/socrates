@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/rui-ktei/socrates/internal/dialogue"
 	"github.com/rui-ktei/socrates/internal/findings"
 	"github.com/rui-ktei/socrates/internal/runstate"
@@ -28,16 +29,20 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 	})
 
 	t.Run("A question about intent stops the loop at once", func(t *testing.T) {
-		classified := classify(
+		held := []findings.Finding{
 			finding("f1", findings.Error, findings.AskUser),
 			finding("f2", findings.Error, findings.AutoFix),
 			finding("f3", findings.Warning, findings.AutoFix),
 			finding("f4", findings.Warning, findings.AutoFix),
 			finding("f5", findings.Error, findings.AutoFix),
 			finding("f6", findings.Warning, findings.AutoFix),
-		)
-		if got := dialogue.After(classified, 1); got != runstate.Escalated {
-			t.Errorf("one question about intent among five mechanical defects is %q at the first round, want %q", got, runstate.Escalated)
+		}
+
+		if got := dialogue.After(classify(held...), 1); got != runstate.AwaitingResponse {
+			t.Errorf("one question about intent among five mechanical defects is %q at the first round, want %q", got, runstate.AwaitingResponse)
+		}
+		if diff := cmp.Diff([]string{"f1", "f2", "f3", "f4", "f5", "f6"}, (dialogue.Responses{}).Unanswered(document(held...))); diff != "" {
+			t.Errorf("a set holding one question and five mechanical defects waits on (-want +got):\n%s", diff)
 		}
 	})
 
@@ -54,12 +59,46 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 			t.Errorf("a finding that holds the change while asking for nothing is %q, want %q: no response addresses it", got, runstate.Escalated)
 		}
 
-		alongside := classify(alone, finding("f2", findings.Error, findings.AutoFix))
-		if got := dialogue.After(alongside, 1); got != runstate.Escalated {
-			t.Errorf("a finding no response addresses is %q when it arrives beside a patchable one, want %q: parking would drop it from the run", got, runstate.Escalated)
+		for _, beside := range []findings.Finding{
+			finding("f2", findings.Error, findings.AutoFix),
+			finding("f2", findings.Error, findings.AskUser),
+		} {
+			alongside := classify(alone, beside)
+			if got := dialogue.After(alongside, 1); got != runstate.Escalated {
+				t.Errorf("a finding no response addresses is %q when it arrives beside %s, want %q: parking would drop it from the run", got, beside.Action, runstate.Escalated)
+			}
+			if dialogue.EscalatedByTheCap(alongside, 1) {
+				t.Errorf("a first round escalating for a finding no response addresses reads as the cap being why, beside %s", beside.Action)
+			}
+			if diff := cmp.Diff([]string{"f2"}, (dialogue.Responses{}).Unanswered(document(alone, beside))); diff != "" {
+				t.Errorf("what the round waits on beside %s differs (-want +got):\n%s", beside.Action, diff)
+			}
 		}
+
 		if waiting := (dialogue.Responses{}).Unanswered(document(alone)); len(waiting) != 0 {
 			t.Errorf("%v is waiting on an answer to a finding presented as asking for nothing", waiting)
+		}
+	})
+
+	t.Run("A clean second round does not name the cap", func(t *testing.T) {
+		classified := classify(finding("f1", findings.Info, findings.NoOp))
+		if got := dialogue.After(classified, dialogue.Cap); got != runstate.Clean {
+			t.Errorf("the final permitted round with nothing blocking is %q, want %q", got, runstate.Clean)
+		}
+		if dialogue.EscalatedByTheCap(classified, dialogue.Cap) {
+			t.Error("a clean final round reads as escalated by the cap, so its verdict would tell the author something is left for them")
+		}
+	})
+
+	t.Run("A question alone parks the run", func(t *testing.T) {
+		question := finding("f1", findings.Error, findings.AskUser)
+		classified := classify(question, finding("f2", findings.Info, findings.NoOp))
+
+		if got := dialogue.After(classified, 1); got != runstate.AwaitingResponse {
+			t.Errorf("a round holding one question about intent and nothing else blocking is %q, want %q: the person's answer has nowhere to go otherwise", got, runstate.AwaitingResponse)
+		}
+		if diff := cmp.Diff([]string{"f1"}, (dialogue.Responses{}).Unanswered(document(question, finding("f2", findings.Info, findings.NoOp)))); diff != "" {
+			t.Errorf("what the round waits on differs (-want +got):\n%s", diff)
 		}
 	})
 
@@ -74,6 +113,21 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 		classified := classify(finding("f1", findings.Error, findings.AutoFix))
 		if got := dialogue.After(classified, dialogue.Cap); got != runstate.Escalated {
 			t.Errorf("blocking findings at the final permitted round are %q, want %q", got, runstate.Escalated)
+		}
+	})
+
+	t.Run("A question left unanswered at the cap escalates", func(t *testing.T) {
+		for _, held := range [][]findings.Finding{
+			{finding("f1", findings.Error, findings.AskUser)},
+			{finding("f1", findings.Error, findings.AskUser), finding("f2", findings.Error, findings.AutoFix)},
+		} {
+			classified := classify(held...)
+			if got := dialogue.After(classified, dialogue.Cap); got != runstate.Escalated {
+				t.Errorf("%v at the final permitted round is %q, want %q: no round remains in which an answer could be judged", describe(held), got, runstate.Escalated)
+			}
+			if !dialogue.EscalatedByTheCap(classified, dialogue.Cap) {
+				t.Errorf("%v at the final permitted round escalates without the cap being why, so the verdict would not say what is left for the person", describe(held))
+			}
 		}
 	})
 
@@ -92,10 +146,6 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 					t.Fatalf("round %d of %v is %q, which is not an outcome of a round", asked, describe(held), got)
 				}
 				switch {
-				case asksAPerson(held):
-					if got != runstate.Escalated {
-						t.Fatalf("round %d of %v holds a question about intent and is %q, want %q", asked, describe(held), got, runstate.Escalated)
-					}
 				case !blocks(held):
 					if got != runstate.Clean {
 						t.Fatalf("round %d of %v blocks nothing and is %q, want %q", asked, describe(held), got, runstate.Clean)
@@ -111,6 +161,10 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 				default:
 					if got != runstate.AwaitingResponse {
 						t.Fatalf("round %d of %v is %q, want %q", asked, describe(held), got, runstate.AwaitingResponse)
+					}
+					waiting := (dialogue.Responses{}).Unanswered(document(held...))
+					if diff := cmp.Diff(blockingIdentifiers(held), waiting); diff != "" {
+						t.Fatalf("round %d of %v parks and waits on (-want +got):\n%s", asked, describe(held), diff)
 					}
 				}
 			}
@@ -206,13 +260,14 @@ func describe(held []findings.Finding) []string {
 	return described
 }
 
-func asksAPerson(held []findings.Finding) bool {
+func blockingIdentifiers(held []findings.Finding) []string {
+	var named []string
 	for _, one := range held {
-		if string(one.Action) == "ask-user" {
-			return true
+		if slices.Contains([]string{"error", "warning"}, string(one.Severity)) {
+			named = append(named, one.ID)
 		}
 	}
-	return false
+	return named
 }
 
 func blocks(held []findings.Finding) bool {

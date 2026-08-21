@@ -1,0 +1,10 @@
+{
+  "model": "opus",
+  "effort": "high",
+  "round": 2,
+  "base": "36a09688faee9af6949372959aefb364b79053c2",
+  "snapshot": "6e54f957d1415322e735a8ef1fadab9c52b42759",
+  "run": "20260821T102616Z-b46337b5",
+  "recorded_on": "2026-08-21",
+  "subject": "the same change with the two decisions recorded and the patches applied, re-reviewed against 36a0968"
+}

@@ -26,9 +26,10 @@ exec sh -c 'scrat review --wait; echo exit=$?'
 stdout 'exit=1'
 exec sh -c 'scrat status; echo exit=$?'
 stdout 'exit=1'
+stdout 'asking for nothing'
 exec sh -c 'scrat findings; echo exit=$?'
 stdout 'exit=1'
-stdout 'needs a person'
+stdout 'other.go:1'
 
 # A review that never completed exits two, and says so rather than reporting findings.
 env CLAUDESIM_SCENARIO=$WORK/broken.yaml
@@ -53,7 +54,7 @@ default:
   structured: '{"findings":[],"risk_level":"low","risk_rationale":"a small and self-contained change"}'
 -- escalating.yaml --
 default:
-  structured: '{"findings":[{"id":"f1","severity":"error","file":"other.go","line":1,"description":"The added file answers wrongly for an empty input."}],"risk_level":"high","risk_rationale":"one changed path answers wrongly without erroring"}'
+  structured: '{"findings":[{"id":"f1","severity":"error","file":"other.go","line":1,"description":"The change takes away a behaviour the importer depends on, and nothing here can put it back.","action":"no-op"}],"risk_level":"high","risk_rationale":"what holds the change is not something a patch closes"}'
 -- broken.yaml --
 default:
   behaviour: no-result

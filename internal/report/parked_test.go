@@ -1,6 +1,7 @@
 package report_test
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -18,6 +19,16 @@ const patchableDocument = `{
   ],
   "risk_level": "medium",
   "risk_rationale": "two changed paths answer wrongly without erroring"
+}`
+
+const questioningDocument = `{
+  "findings": [
+    {"id": "f1", "severity": "error", "file": "parse.go", "line": 12, "description": "This endpoint does not look like something the product needs.", "action": "ask-user"},
+    {"id": "f2", "severity": "warning", "file": "parse.go", "line": 40, "description": "The retry loop never backs off.", "action": "auto-fix"},
+    {"id": "f3", "severity": "info", "file": "parse.go", "line": 88, "description": "This package now owns two spellings of the same idea.", "action": "no-op"}
+  ],
+  "risk_level": "high",
+  "risk_rationale": "the change may not be wanted at all"
 }`
 
 func TestAParkedRunReportsWhatItWants(t *testing.T) {
@@ -48,7 +59,59 @@ func TestAParkedRunReportsWhatItWants(t *testing.T) {
 	}
 }
 
+func TestAParkedRunSaysWhatNeedsAPerson(t *testing.T) {
+	store, name := run(t, runstate.AwaitingResponse, questioningDocument)
+
+	status, err := report.StatusOf(store, name)
+	if err != nil {
+		t.Fatalf("reading the status of %s: %v", name, err)
+	}
+	if status.Unanswered == nil || *status.Unanswered != 2 {
+		t.Fatalf("a round holding a question and a patchable defect reports %v unanswered, want 2", status.Unanswered)
+	}
+	if status.AwaitingAPerson == nil || *status.AwaitingAPerson != 1 {
+		t.Fatalf("a round holding one question reports %v awaiting a person, want 1", status.AwaitingAPerson)
+	}
+
+	printed := strings.Join(status.Lines(), "\n")
+	for _, needed := range []string{"unanswered: 2", "person"} {
+		if !strings.Contains(printed, needed) {
+			t.Errorf("the status does not say %q:\n%s", needed, printed)
+		}
+	}
+
+	encoded, err := report.AsJSON(status)
+	if err != nil {
+		t.Fatalf("encoding the status: %v", err)
+	}
+	var read map[string]any
+	if err := json.Unmarshal([]byte(encoded), &read); err != nil {
+		t.Fatalf("reading back what socrates printed: %v", err)
+	}
+	if read["unanswered"] != float64(2) {
+		t.Errorf("the JSON object reports %v unanswered", read["unanswered"])
+	}
+	if read["awaiting_a_person"] != float64(1) {
+		t.Errorf("the JSON object reports %v awaiting a person, so a caller that must stop and ask has to read prose", read["awaiting_a_person"])
+	}
+}
+
 func TestTheCountReachesZero(t *testing.T) {
+	store, name := run(t, runstate.AwaitingResponse, questioningDocument)
+	answer(t, store, name, dialogue.Response{Finding: "f1", Resolution: dialogue.Decided, Reason: "Vic decided the endpoint stays"})
+	answer(t, store, name, dialogue.Response{Finding: "f2", Resolution: dialogue.Rejected, Reason: "the loop is bounded by the caller's deadline"})
+
+	parked, err := report.StatusOf(store, name)
+	if err != nil {
+		t.Fatalf("reading the status of %s: %v", name, err)
+	}
+	if parked.AwaitingAPerson == nil || *parked.AwaitingAPerson != 0 {
+		t.Errorf("the question is answered and the status reports %v awaiting a person", parked.AwaitingAPerson)
+	}
+}
+
+func TestTheCountOfWhatAPatchableRoundWantsReachesZero(t *testing.T) {
+	// scenario: The count reaches zero
 	store, name := run(t, runstate.AwaitingResponse, patchableDocument)
 	answer(t, store, name, dialogue.Response{Finding: "f1", Resolution: dialogue.Fixed})
 	answer(t, store, name, dialogue.Response{Finding: "f2", Resolution: dialogue.Rejected, Reason: "the loop is bounded by the caller's deadline"})

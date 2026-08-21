@@ -15,9 +15,10 @@ type Resolution string
 const (
 	Fixed    Resolution = "fixed"
 	Rejected Resolution = "rejected"
+	Decided  Resolution = "decided"
 )
 
-var resolutions = []Resolution{Fixed, Rejected}
+var resolutions = []Resolution{Fixed, Rejected, Decided}
 
 func Resolutions() []Resolution {
 	return slices.Clone(resolutions)
@@ -44,10 +45,33 @@ func Validate(response Response) error {
 	if !slices.Contains(resolutions, response.Resolution) {
 		return refusal.New(notAResolution, response.Resolution, resolutions)
 	}
-	if response.Resolution == Rejected && strings.TrimSpace(response.Reason) == "" {
+	if strings.TrimSpace(response.Reason) != "" {
+		return nil
+	}
+	if response.Resolution == Rejected {
 		return refusal.New(aRejectionIsAClaim)
 	}
+	if response.Resolution == Decided {
+		return refusal.New(aDecisionIsAClaim)
+	}
 	return nil
+}
+
+func Accepts(finding findings.Finding) []Resolution {
+	if finding.EffectiveAction() == findings.AskUser {
+		return []Resolution{Decided}
+	}
+	return []Resolution{Fixed, Rejected}
+}
+
+func Answering(finding findings.Finding, response Response) error {
+	if slices.Contains(Accepts(finding), response.Resolution) {
+		return nil
+	}
+	if finding.EffectiveAction() == findings.AskUser {
+		return refusal.New(theFindingAsksAPerson, finding.ID, response.Resolution, Decided)
+	}
+	return refusal.New(theFindingAsksForAPatch, finding.ID, Fixed, Rejected)
 }
 
 func (r Responses) For(finding string) (Response, bool) {
@@ -82,22 +106,36 @@ func (r Responses) Answers(finding string) int {
 }
 
 func (r Responses) Unanswered(document findings.Document) []string {
+	answerable := Answerable(findings.Classify(document))
+
 	var waiting []string
-	for _, finding := range Answerable(findings.Classify(document)) {
-		if _, answered := r.For(finding.ID); !answered {
-			waiting = append(waiting, finding.ID)
+	for _, reported := range document.Findings {
+		waitedOn := slices.ContainsFunc(answerable, func(one findings.Finding) bool { return one.ID == reported.ID })
+		if _, answered := r.For(reported.ID); waitedOn && !answered {
+			waiting = append(waiting, reported.ID)
 		}
 	}
 	return waiting
 }
 
-func Names(document findings.Document, finding string) bool {
-	for _, reported := range document.Findings {
-		if reported.ID == finding {
-			return true
+func (r Responses) AwaitingAPerson(document findings.Document) []string {
+	var waiting []string
+	for _, unanswered := range r.Unanswered(document) {
+		reported, _ := Reported(document, unanswered)
+		if reported.EffectiveAction() == findings.AskUser {
+			waiting = append(waiting, unanswered)
 		}
 	}
-	return false
+	return waiting
+}
+
+func Reported(document findings.Document, finding string) (findings.Finding, bool) {
+	for _, reported := range document.Findings {
+		if reported.ID == finding {
+			return reported, true
+		}
+	}
+	return findings.Finding{}, false
 }
 
 func Parse(document []byte) (Responses, error) {

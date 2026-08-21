@@ -185,6 +185,74 @@ func TestTheRulesAreStatedBeforeTheFindingsAreRead(t *testing.T) {
 	}
 }
 
+func TestAQuestionIsThePersons(t *testing.T) {
+	said := sectionAbout(t, skill.Document(), string(runstate.AwaitingResponse))
+
+	for _, stated := range []string{"needing a person", "is the person's", "record what they decided"} {
+		if !strings.Contains(said, stated) {
+			t.Errorf("the parked branch does not say %q, so a session reads a question as work of its own:\n%s", stated, said)
+		}
+	}
+	if !strings.Contains(said, "You do not answer such a finding on your own behalf.") {
+		t.Errorf("the parked branch does not say that the session does not answer a question itself, and nothing else stops it now that a question parks rather than ends the run:\n%s", said)
+	}
+	if !strings.Contains(said, "--decided") {
+		t.Errorf("the parked branch does not say how what a person decided is recorded:\n%s", said)
+	}
+}
+
+func TestARoundIsSpentWithoutAsking(t *testing.T) {
+	said := sectionAbout(t, skill.Document(), string(runstate.AwaitingResponse))
+
+	if !strings.Contains(said, "Do not ask the person whether the round is worth spending.") {
+		t.Errorf("the parked branch does not say that the round is spent without asking:\n%s", said)
+	}
+	for _, stated := range []string{"unreviewed new code", "scrat continue"} {
+		if !strings.Contains(said, stated) {
+			t.Errorf("the parked branch does not say %q, so a session that answered everything has no reason to spend the round:\n%s", stated, said)
+		}
+	}
+}
+
+func TestWhatThePersonIsToldAtTheEnd(t *testing.T) {
+	reporting := numberedStep(t, skill.Document(), 5)
+
+	for _, stated := range []string{"how many rounds", "what the last one found"} {
+		if !strings.Contains(reporting, stated) {
+			t.Errorf("the step that reports a finished run does not say %q:\n%s", stated, reporting)
+		}
+	}
+}
+
+func TestAFurtherLookIsANewRun(t *testing.T) {
+	said := sectionAbout(t, skill.Document(), string(runstate.Escalated))
+
+	t.Run("There is no third round", func(t *testing.T) {
+		if !strings.Contains(said, "No further round is possible.") {
+			t.Errorf("the escalated branch does not say that no further round is possible, so a session looks for the flag that gives it one:\n%s", said)
+		}
+		if !strings.Contains(said, "fresh scrat review") {
+			t.Errorf("the escalated branch names no fresh review as the way to look again:\n%s", said)
+		}
+	})
+
+	t.Run("A fresh review is the person's to ask for", func(t *testing.T) {
+		for _, stated := range []string{"Offer that", "only where the person asks"} {
+			if !strings.Contains(said, stated) {
+				t.Errorf("the escalated branch does not say %q, so a session starts a review nobody asked for:\n%s", stated, said)
+			}
+		}
+	})
+
+	t.Run("A new run knows nothing of the old one", func(t *testing.T) {
+		for _, stated := range []string{"told nothing about this run", "nothing about what it found", "nothing about the answers recorded against it"} {
+			if !strings.Contains(said, stated) {
+				t.Errorf("the escalated branch does not say %q, so the person does not know what a fresh review gives them:\n%s", stated, said)
+			}
+		}
+	})
+}
+
 func TestTheLoopCloses(t *testing.T) {
 	said := sectionAbout(t, skill.Document(), string(runstate.AwaitingResponse))
 

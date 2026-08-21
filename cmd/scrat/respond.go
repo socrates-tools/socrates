@@ -18,6 +18,7 @@ func newRespondCommand(code *int) *cobra.Command {
 	var finding string
 	var fixed bool
 	var rejected bool
+	var decided bool
 	var reason string
 	var note string
 
@@ -29,20 +30,21 @@ func newRespondCommand(code *int) *cobra.Command {
 			if strings.TrimSpace(finding) == "" {
 				return refusal.New(nameTheFinding)
 			}
-			if fixed == rejected {
-				return refusal.New(oneAnswerAtATime)
+
+			chosen, err := oneResolution(fixed, rejected, decided)
+			if err != nil {
+				return err
 			}
-			if fixed && reason != "" {
-				return refusal.New(reasonBelongsToARejection)
+			if chosen == dialogue.Fixed && reason != "" {
+				return refusal.New(reasonBelongsToAClaim)
 			}
-			if rejected && note != "" {
-				return refusal.New(noteBelongsToAFix)
+			if chosen != dialogue.Fixed && note != "" {
+				return refusal.New(noteBelongsToAFix, chosen)
 			}
 
-			response := dialogue.Response{Finding: strings.TrimSpace(finding), Resolution: dialogue.Fixed, Reason: note}
-			if rejected {
-				response.Resolution = dialogue.Rejected
-				response.Reason = reason
+			response := dialogue.Response{Finding: strings.TrimSpace(finding), Resolution: chosen, Reason: reason}
+			if chosen == dialogue.Fixed {
+				response.Reason = note
 			}
 
 			if response.Reason == fromStandardInput {
@@ -86,9 +88,25 @@ func newRespondCommand(code *int) *cobra.Command {
 	command.Flags().StringVar(&finding, "finding", "", findingUsage)
 	command.Flags().BoolVar(&fixed, "fixed", false, fixedUsage)
 	command.Flags().BoolVar(&rejected, "rejected", false, rejectedUsage)
+	command.Flags().BoolVar(&decided, "decided", false, decidedUsage)
 	command.Flags().StringVar(&reason, "reason", "", reasonUsage)
 	command.Flags().StringVar(&note, "note", "", noteUsage)
 	return command
+}
+
+func oneResolution(fixed, rejected, decided bool) (dialogue.Resolution, error) {
+	chosen := map[dialogue.Resolution]bool{dialogue.Fixed: fixed, dialogue.Rejected: rejected, dialogue.Decided: decided}
+
+	var named []dialogue.Resolution
+	for _, resolution := range dialogue.Resolutions() {
+		if chosen[resolution] {
+			named = append(named, resolution)
+		}
+	}
+	if len(named) != 1 {
+		return "", refusal.New(oneAnswerAtATime, dialogue.Fixed, dialogue.Rejected, dialogue.Decided)
+	}
+	return named[0], nil
 }
 
 func readStandardInput(command *cobra.Command) (string, error) {

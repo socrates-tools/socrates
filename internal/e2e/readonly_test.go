@@ -70,31 +70,43 @@ func TestAReviewerThatCreatedAFileFailsTheRound(t *testing.T) {
 	}
 }
 
+const sealScenario = `
+default:
+  structured: '{"findings":[{"id":"f1","severity":"warning","file":"internal/added.go","line":1,"description":"this file has no caller, and whether it should exist at all is not something a patch settles","action":"no-op"}],"risk_level":"medium","risk_rationale":"one small file"}'
+`
+
+func eventNaming(t *testing.T, session *harness.Session, name, said string) string {
+	t.Helper()
+
+	printed, failures, _ := session.Scrat("logs", name)
+	if printed == "" {
+		t.Fatalf("scrat logs printed nothing for %s: %s", name, failures)
+	}
+	return lineSaying(printed, said)
+}
+
 func TestACleanReviewerPassesTheCheck(t *testing.T) {
 	session := harness.Start(t)
-	session.Simulator.Scenario(`
-default:
-  structured: '{"findings":[{"id":"f1","severity":"warning","file":"internal/added.go","line":1,"description":"this package has no name anybody would guess","action":"ask-user"}],"risk_level":"medium","risk_rationale":"one small file"}'
-`)
+	session.Simulator.Scenario(sealScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	name := session.Review()
 	run := session.WaitForTerminal(name)
 
-	if run.State != runstate.Escalated {
-		t.Fatalf("the run ended as %s, want the verdict the findings imply: %s", run.State, reason(run))
+	if named := eventNaming(t, session, name, "wrote to the snapshot worktree"); named != "" {
+		t.Errorf("a reviewer that wrote nothing was recorded as having written: %s", named)
 	}
 	if strings.Contains(reason(run), "wrote to the snapshot worktree") {
 		t.Errorf("a reviewer that wrote nothing was reported as having written: %q", reason(run))
+	}
+	if run.State != runstate.Escalated {
+		t.Fatalf("the run ended as %s, want the verdict the findings imply: %s", run.State, reason(run))
 	}
 }
 
 func TestAWriteTheSealRefusedIsNotAFindingAgainstTheReviewer(t *testing.T) {
 	session := harness.Start(t)
-	session.Simulator.Scenario(`
-default:
-  structured: '{"findings":[{"id":"f1","severity":"warning","file":"internal/added.go","line":1,"description":"this package has no name anybody would guess","action":"ask-user"}],"risk_level":"medium","risk_rationale":"one small file"}'
-  writes:
+	session.Simulator.Scenario(sealScenario + `  writes:
     - path: .serena/project.yml
       content: "a tool server writing its own bookkeeping\n"
     - path: internal/added.go
@@ -105,11 +117,14 @@ default:
 	name := session.Review()
 	run := session.WaitForTerminal(name)
 
-	if run.State != runstate.Escalated {
-		t.Fatalf("the run ended as %s, want the verdict the findings imply: %s", run.State, reason(run))
+	if named := eventNaming(t, session, name, ".serena"); named != "" {
+		t.Errorf("a write the seal refused was recorded against the reviewer: %s", named)
 	}
 	if strings.Contains(reason(run), ".serena") || strings.Contains(reason(run), "wrote to the snapshot worktree") {
 		t.Errorf("a write the seal refused was reported against the reviewer: %q", reason(run))
+	}
+	if run.State != runstate.Escalated {
+		t.Fatalf("the run ended as %s, want the verdict the findings imply: %s", run.State, reason(run))
 	}
 
 	refused := session.Simulator.OnlyInvocation().WritesRefused
