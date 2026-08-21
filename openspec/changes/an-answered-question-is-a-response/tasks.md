@@ -38,7 +38,9 @@
 - [ ] 5.1 Split the `awaiting-response` branch into what the session answers and what the person answers, and regenerate the committed copy
 - [ ] 5.2 Say that the session does not answer a finding that asks a person, and that it records what the person decided. Covers `A question is the person's`
 - [ ] 5.3 Assert the sentence is present, and mutate it away to confirm the test fails, because this sentence is what replaced a terminal state
-- [ ] 5.4 Confirm the skill still names every state a run rests in and every command and flag it names exists, now that `--decided` is one of them. Covers `Every terminal state is covered`, `A failed run is stated not to be a pass`, `A cancelled run is not a verdict`, `Every state a run rests in is named`, `The loop closes`
+- [ ] 5.4 Say that the session continues once everything answerable is answered, without asking whether to spend the round, and that a finished run is reported with how many rounds it took and what the last one found. Covers `A round is spent without asking`, `What the person is told at the end`
+- [ ] 5.5 Say that there is no third round, that a further look is a fresh review, that the person asks for it, and that its reviewer knows nothing of the run before it. Covers `There is no third round`, `A fresh review is the person's to ask for`, `A new run knows nothing of the old one`
+- [ ] 5.6 Confirm the skill still names every state a run rests in and every command and flag it names exists, now that `--decided` is one of them. Covers `Every terminal state is covered`, `A failed run is stated not to be a pass`, `A cancelled run is not a verdict`, `Every state a run rests in is named`, `The loop closes`
 
 ## 6. End to end
 
@@ -50,7 +52,7 @@
 ## 7. What moved because the rule moved
 
 - [ ] 7.1 Rewrite `internal/corpus/outcomes/distribution.txt` with `scripts/corpus-outcomes -write`, and read the diff: every recorded answer holding a question moves from `escalated` to `awaiting-response`
-- [ ] 7.2 Update `README.md`: the exit code a question now returns, and what a parked round can be waiting for
+- [ ] 7.2 Update `README.md`: the exit code a question now returns, what a parked round can be waiting for, and that a further look after the cap is a new run rather than a third round
 - [ ] 7.3 Update `AGENTS.md`: the routing invariant no longer says `ask-user` dominates by ending the run, and the invariant that a decision is a claim rather than a shortcut
 
 ## 8. Verification

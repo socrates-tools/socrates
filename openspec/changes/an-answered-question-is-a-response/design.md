@@ -63,6 +63,20 @@ A decision joins it as a third kind of claim, attributed to a person, so a revie
 
 The reason is model output's mirror image: text written by the session under review, re-embedded in a prompt, so it goes through the same per-field neutralisation every other such field does.
 
+### A round is spent without asking, and a further look is a new run
+
+Once every answerable finding of a parked round has a response, the session continues, and it does not ask whether the round is worth spending.
+A patch made in response to a finding is unreviewed new code written by the session that has just been told it was wrong, which is the code most worth reading, and the corpus already holds two answers that are reviews of fixes rather than of the original change.
+Asking the person to authorise each round would put the decision where the information is worst: before anyone has seen what the patches did.
+
+Where the cap escalates, the further look is a fresh `scrat review`, not a third round, and only where the person asks for one.
+The cap's reason is context rather than cost, so a third round is not something to unlock on request: its prompt would carry two rounds of findings and rebuttals, and the reviewer would be reading an argument instead of a change.
+A new run has none of that history, costs the same or less, and needs no rule relaxed. What the person is told, and what the skill therefore says, is that the reviewer of a new run knows nothing of the old one.
+
+A verb that ends a parked run by answering it rather than by continuing was considered and rejected.
+It only pays where the author wants to skip a round, and a round that the findings earned is one this design spends: the alternative is a run whose patches nobody read, recorded as though something had.
+`cancel` remains the honest verb for abandoning a run, and it says nothing was decided because nothing was.
+
 ### The skill states what the terminal state used to enforce
 
 Until now a session could not answer an intent question because the run was over.

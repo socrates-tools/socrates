@@ -15,6 +15,7 @@ It stops being true the moment a person has answered one, which is exactly the c
 - **What a round waits on distinguishes a patch from a decision.** `scrat status` and `scrat findings` say how many of the unanswered findings need a person, so a caller that must stop and ask can tell without parsing prose. The exit-code table does not change.
 - **`escalated` narrows to what it always meant: socrates is finished and nothing more it can do.** The round cap reached with something still blocking, and a question the person left unanswered when the cap ran out.
 - **The skill teaches the branch.** A parked round holding a question is where the session presents to the person and waits, rather than answering it and continuing.
+- **The skill teaches that a round is spent without asking, and that there is no third one.** Once every answerable finding is answered the session continues, because a patch is unreviewed new code and judging it is the point. Where the cap escalates, a further look is a fresh `scrat review` rather than a third round, and only where the person asks for one.
 
 ## Capabilities
 
@@ -23,7 +24,7 @@ It stops being true the moment a person has answered one, which is exactly the c
 - `review-dialogue`: what a round leads to when it holds an `ask-user` finding, what the set of answerable findings contains, the third resolution and the reason it requires, and what the next round is told about a decision.
 - `cli-foundation`: `scrat respond` gains `--decided`, and `scrat status` says how many of the unanswered findings need a person rather than a patch.
 - `run-store`: what `awaiting-response` means, which is no longer only that what the round found is mechanical.
-- `agent-skill`: the `awaiting-response` branch splits into what the session may answer and what it must hand to the person, and the prohibition against answering an intent question moves from being enforced by a terminal state to being stated.
+- `agent-skill`: the `awaiting-response` branch splits into what the session may answer and what it must hand to the person, the prohibition against answering an intent question moves from being enforced by a terminal state to being stated, and the skill states who decides that a round is spent.
 - `reviewer-prompt`: the labelled prior-round block carries a decision as a decision, so the next reviewer knows a person answered rather than that the author claimed a fix.
 
 ## Impact
