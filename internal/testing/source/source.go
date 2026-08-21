@@ -10,9 +10,11 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/rui-ktei/socrates/internal/corpus"
 )
 
-const ModulePath = "github.com/rui-ktei/socrates"
+const ModulePath = corpus.ModulePath
 
 var skippedDirectories = []string{".git", "bin", "node_modules", "testdata"}
 

@@ -8,13 +8,18 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/rui-ktei/socrates/internal/corpus"
 	"github.com/rui-ktei/socrates/internal/testing/source"
 )
 
 var behindATag = []string{"record_test.go", "drift_test.go", "livesmoke_test.go"}
 
+const fidelityPackage = "./internal/fidelity"
+
+var replayingPackages = []string{"./internal/corpus", "./internal/claudesim"}
+
 func TestTheOrdinarySuiteReachesNoNetwork(t *testing.T) {
-	listed := listPackage(t)
+	listed := listPackage(t, fidelityPackage)
 
 	compiled := slices.Concat(listed.GoFiles, listed.TestGoFiles, listed.XTestGoFiles)
 	for _, guarded := range behindATag {
@@ -28,7 +33,7 @@ func TestTheOrdinarySuiteReachesNoNetwork(t *testing.T) {
 }
 
 func TestEveryFileBehindATagIsThere(t *testing.T) {
-	listed := listPackage(t)
+	listed := listPackage(t, fidelityPackage)
 
 	for _, guarded := range behindATag {
 		if _, err := os.Stat(guarded); err != nil {
@@ -40,6 +45,22 @@ func TestEveryFileBehindATagIsThere(t *testing.T) {
 	}
 }
 
+func TestReplayingARecordedAnswerNeedsNoBuildTag(t *testing.T) {
+	for _, replaying := range replayingPackages {
+		if ignored := listPackage(t, replaying).IgnoredGoFiles; len(ignored) > 0 {
+			t.Errorf("%s keeps %v out of the default build, and replaying a recorded answer reaches nothing", replaying, ignored)
+		}
+	}
+
+	entries, err := corpus.Entries()
+	if err != nil {
+		t.Fatalf("reading the corpus from the ordinary suite: %v", err)
+	}
+	if len(entries) == 0 {
+		t.Fatal("the corpus holds no recorded answer, so nothing can be replayed")
+	}
+}
+
 type packageFiles struct {
 	GoFiles        []string
 	TestGoFiles    []string
@@ -47,10 +68,10 @@ type packageFiles struct {
 	IgnoredGoFiles []string
 }
 
-func listPackage(t *testing.T) packageFiles {
+func listPackage(t *testing.T, named string) packageFiles {
 	t.Helper()
 
-	command := exec.Command("go", "list", "-json", "./internal/fidelity")
+	command := exec.Command("go", "list", "-json", named)
 	command.Dir = source.Root(t)
 	command.Env = append(os.Environ(), source.Toolchain()...)
 

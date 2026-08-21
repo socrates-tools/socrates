@@ -20,6 +20,8 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 - `cmd/claudesim` - the simulator, which speaks the vendor CLI's wire contract and is symlinked as `claude` onto `PATH` by the test harness.
 - `cmd/scenario-coverage` - the coverage gate behind `scripts/scenario-coverage`.
 - `cmd/scenario-drop` - the promotion gate behind `scripts/scenario-drop`.
+- `cmd/corpus-outcomes` - the report behind `scripts/corpus-outcomes`, and the `-write` that rewrites the recorded distribution.
+- `cmd/corpus-record` - records one completed run's answer into the corpus.
 - `internal/snapshot` - the freeze: a temporary index from `HEAD`, `add -A`, `write-tree`, `commit-tree`, a detached worktree of the result, and the seal that makes that worktree unwritable.
 - `internal/runstore` - run directories, `run.json` written by rename, run selection, rounds, and the retention sweep.
 - `internal/runstate` - the run states and which of them are terminal.
@@ -37,6 +39,7 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 - `internal/convention` - the repository's own conventions as executable checks: no commentary, the test-quality rule, the message registry.
 - `internal/coverage` - scenario coverage: what `openspec/specs` and the changes under way promise against what the tests name. An archived change is skipped, because its specification was promoted.
 - `internal/promotion` - what archiving a change would do to the promoted specifications: a `MODIFIED` requirement that carries fewer scenarios than the one it substitutes, one that substitutes nothing, and one added beside a requirement that already exists.
+- `internal/corpus` - what real reviewers answered, stored verbatim beside the circumstances it was answered in, embedded so replay needs no path. `runs` takes an answer out of a completed run; `outcomes` classifies the corpus through the routing rule and says which outcomes only fixtures reach.
 - `internal/fidelity` - the recorded shapes of the real CLI, the drift check, and the live smoke check. Everything that reaches the network is behind a build tag.
 - `internal/e2e` - the end-to-end suite: the real binary, a real repository, real git, real processes, the simulator on `PATH`.
 - `internal/testing` - the harness, the temporary repository, the simulator installer, and source helpers. Test support only.
@@ -51,12 +54,16 @@ make lint
 make test
 make scenario-coverage
 make scenario-drop
+make corpus-outcomes
 ```
 
 `make lint` fails on anything `gofmt` would rewrite, so formatting is never a separate thing to remember.
 `make scenario-coverage` fails when a scenario belonging to a change somebody has started is named by no test, and prints where each gap is.
 `make scenario-drop` fails when archiving a change would take a scenario out of the promoted specifications, which a `MODIFIED` delta does by substituting a requirement and carrying fewer scenarios than it holds.
-`make test` holds both gates, so a scenario nobody tests and a delta that would drop one fail the ordinary suite as well.
+`make corpus-outcomes` reports nothing but the truth about coverage: for each outcome the routing rule can produce, how many answers real reviewers gave reach it and how many scenarios in the suite assert it.
+It is a statement rather than a gate and never fails for an outcome no reviewer has reached, because whether one ever appears is not this repository's to control.
+`make test` holds both gates and the comparison of the corpus against `internal/corpus/outcomes/distribution.txt`, so a scenario nobody tests, a delta that would drop one, and a routing change that moves what the corpus reaches all fail the ordinary suite.
+Rewrite that distribution with `scripts/corpus-outcomes -write` once the move is deliberate.
 Neither gate reads prose: a delta that rewrites a requirement's sentences from a stale copy is still something only a reader catches.
 
 These reach the network and are not part of the ordinary sequence:
@@ -90,6 +97,9 @@ None of them is a matter of care.
 - **Model output is neutralised per field on the way into a prompt, and never on the way to disk.** `internal/hygiene` is it, and what it removes includes the heading marker socrates' own sections are built from, because a field that opens a section is a session under review composing the prompt that reviews it. The stored findings and responses hold what was actually said.
 - **A recorded response is appended, never rewritten.** The author is a session that runs commands at once, and a read-append-rewrite of the whole document loses whichever claim was written first, silently. `responses.jsonl` is append-only and the last response to a finding is the one that counts.
 - **A review inside a review is refused.** The reviewer's environment carries `SOCRATES_RUN`, and `scrat review` refuses when it is already set.
+- **What a real reviewer answered is kept, verbatim, and replayed rather than invented.** `internal/corpus` holds every live answer beside the model, effort, round, base, snapshot, run and subject it was an answer to, and a scenario naming one is answered with those bytes and no others: the simulator does not adapt a recorded document to the prompt, renumber its findings or supply a field it lacks. Recording refuses any repository that is not socrates, because a findings document quotes the code it was written about.
+- **The suite says which outcomes only fixtures have reached.** The corpus is classified by `dialogue.After` rather than by a second reading of the rule, the report names any outcome no recorded answer reaches, and it never fails for one. The distribution is checked in, so an entry that disappears and a routing change that moves the corpus are both a diff somebody reads.
+- **A verification task may not require a particular answer.** A task about a live run may require that the run happened, that its answer was recorded and that socrates routed whatever came back. It may not require a severity, an action, a count or a shape: what a reviewer finds is the reviewer's, and four live reviews that closed no such task are what this rule exists to prevent repeating.
 - **The prompt is a generated interface.** Tests assert on the prompt that was delivered, read back from the round directory or from the simulator's invocation log, and never on socrates' own source text.
 - **The reporting section is derived from the classifier.** The severities, actions and risk levels the prompt defines are generated from what `internal/findings` implements, so the two cannot drift.
 - **Snapshot commits are content-addressed.** Author and committer dates are pinned to the epoch, so the same worktree and base always produce the same commit, and therefore a byte-identical prompt.
@@ -107,4 +117,5 @@ None of them is a matter of care.
 - **Commit messages say what the change is**, with no rationale essay and no AI attribution trailer.
 - **Tests name their scenario.** Prefer a test name that contains the scenario text; use a `// scenario:` marker where the honest test name would not.
 - **Test first.** A task is not done until a test named for the scenario failed for the right reason and then passed.
+- **A task about a live run says record it, never return this.** Require the run, the recording and the routing; never a severity, an action or a count.
 - **Mutate a guard you rely on.** A check nobody has broken on purpose is a check nobody knows works.

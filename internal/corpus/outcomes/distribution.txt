@@ -1,0 +1,11 @@
+what socrates would do with each answer a real reviewer gave
+
+awaiting-response: 0 recorded
+clean: 0 recorded
+escalated: 4 recorded
+  dialogue-fixes-first-look
+  dialogue-fixes-second-look
+  dialogue-layer-first-look
+  dialogue-layer-second-look
+
+recorded answers: 4

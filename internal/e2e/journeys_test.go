@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/rui-ktei/socrates/internal/corpus"
 	"github.com/rui-ktei/socrates/internal/findings"
 	"github.com/rui-ktei/socrates/internal/runstate"
 	"github.com/rui-ktei/socrates/internal/testing/harness"
@@ -86,6 +87,41 @@ func TestTheEscalatedJourney(t *testing.T) {
 		if !strings.Contains(readable, needed) {
 			t.Errorf("scrat findings does not say who %q is for:\n%s", needed, readable)
 		}
+	}
+}
+
+func TestTheEscalatedJourneyOnARecordedAnswer(t *testing.T) {
+	entry, err := corpus.Named("dialogue-layer-first-look")
+	if err != nil {
+		t.Fatalf("reading the recorded answer: %v", err)
+	}
+
+	session := harness.Start(t)
+	session.Simulator.Scenario("default:\n  recorded: " + entry.Name + "\n")
+	session.Repository.Write("internal/added.go", "package internal\n")
+
+	printed, failures, code := session.Scrat("review", "--wait")
+	if code != 1 {
+		t.Fatalf("scrat review --wait exited %d for a recorded answer that escalates: %s\n%s", code, failures, printed)
+	}
+
+	name := firstLine(printed)
+	run := session.Run(name)
+	if run.State != runstate.Escalated {
+		t.Fatalf("the run ended as %s: %s", run.State, reason(run))
+	}
+
+	stored := strings.TrimSuffix(session.File(session.Round(name, 1).FindingsPath()), "\n")
+	if stored != string(entry.Document) {
+		t.Errorf("what a real reviewer answered did not reach disk intact: %d bytes recorded, %d stored", len(entry.Document), len(stored))
+	}
+
+	readable, _, findingsCode := session.Scrat("findings", name)
+	if findingsCode != 1 {
+		t.Errorf("scrat findings of an escalated run exited %d, want 1", findingsCode)
+	}
+	if !strings.Contains(readable, "needs a person") {
+		t.Errorf("scrat findings does not say who the recorded findings are for:\n%s", readable)
 	}
 }
 

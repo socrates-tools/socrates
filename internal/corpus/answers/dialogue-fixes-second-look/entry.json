@@ -1,0 +1,10 @@
+{
+  "model": "opus",
+  "effort": "high",
+  "round": 1,
+  "base": "dc9cf7bdf33d560da16aa7c9b41ebf4699c34016",
+  "snapshot": "dd32dcb29d1caedabbfc854484c71cb8464ca3df",
+  "run": "20260820T100854Z-80725392",
+  "recorded_on": "2026-08-20",
+  "subject": "the fixes for what the third review found, 12 files against dc9cf7b"
+}

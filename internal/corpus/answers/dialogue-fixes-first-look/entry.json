@@ -1,0 +1,10 @@
+{
+  "model": "opus",
+  "effort": "high",
+  "round": 1,
+  "base": "ce9877d6fe3b42a58de490a6a985fd93ef1c02cf",
+  "snapshot": "ac8fea9782d9b554eaa7a2a8b0e952bdf8affa4b",
+  "run": "20260820T095643Z-43015b70",
+  "recorded_on": "2026-08-20",
+  "subject": "the fixes for seven defects the first two reviews found, 18 files against ce9877d"
+}

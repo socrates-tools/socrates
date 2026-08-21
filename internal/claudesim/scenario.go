@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"go.yaml.in/yaml/v3"
+
+	"github.com/rui-ktei/socrates/internal/corpus"
 )
 
 type Behaviour string
@@ -54,6 +56,7 @@ type Write struct {
 type Response struct {
 	When         string    `yaml:"when"`
 	Behaviour    Behaviour `yaml:"behaviour"`
+	Recorded     string    `yaml:"recorded"`
 	Structured   string    `yaml:"structured"`
 	Text         string    `yaml:"text"`
 	Model        string    `yaml:"model"`
@@ -95,14 +98,36 @@ func LoadScenario(path string) (*Scenario, error) {
 		if err := scenario.Default.validate(); err != nil {
 			return nil, fmt.Errorf("the scenario %s states a default that %w", path, err)
 		}
+		if err := replay(scenario.Default); err != nil {
+			return nil, fmt.Errorf("the scenario %s states a default that %w", path, err)
+		}
 	}
-	for _, response := range scenario.Responses {
+	for position, response := range scenario.Responses {
 		if err := response.validate(); err != nil {
+			return nil, fmt.Errorf("the scenario %s states a response for %q that %w", path, response.When, err)
+		}
+		if err := replay(&scenario.Responses[position]); err != nil {
 			return nil, fmt.Errorf("the scenario %s states a response for %q that %w", path, response.When, err)
 		}
 	}
 
 	return &scenario, nil
+}
+
+func replay(response *Response) error {
+	if response.Recorded == "" {
+		return nil
+	}
+	if response.Structured != "" {
+		return fmt.Errorf("names the recorded answer %s and carries a structured answer of its own, and a recorded answer is emitted as it was recorded", response.Recorded)
+	}
+
+	entry, err := corpus.Named(response.Recorded)
+	if err != nil {
+		return fmt.Errorf("names a recorded answer that %w", err)
+	}
+	response.Structured = string(entry.Document)
+	return nil
 }
 
 func (s *Scenario) Match(prompt string) Response {

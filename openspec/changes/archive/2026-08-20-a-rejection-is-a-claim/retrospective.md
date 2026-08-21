@@ -141,3 +141,15 @@ Every one of them was found by the next reviewer, and none of them by the suite.
 
 The honest summary is that a fresh reviewer per round on real work is worth its cost, and that the thing it is best at is finding what the previous fix broke.
 That is an argument for the round cap being about context rather than confidence: two rounds is not enough for a change of this size to converge, and the point of stopping is that a person decides, not that socrates has finished.
+
+## How task 9.4 closed
+
+It closed on being reworded, not on a dialogue having happened.
+
+The task asked for a live dialogue including one genuine rejection.
+Four live runs later there was still no dialogue, because every round returned an `ask-user` finding and escalated, and no amount of working could change what the model chose to answer.
+
+`what-a-reviewer-actually-answered` is where that became a rule: a task about a live run may require the run, the recording and the routing, and may not require a severity, an action, a count or a shape.
+Task 9.4 now asks for what a live run can produce, and the four answers that could not satisfy the old wording are the seed of the corpus.
+
+The rejection is still owed, and it is owed by a scenario replaying a recorded answer rather than by another live run.
