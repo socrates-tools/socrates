@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/rui-ktei/socrates/internal/findings"
 )
 
 const ModulePath = "github.com/rui-ktei/socrates"
@@ -119,8 +121,14 @@ func (e Entry) Validate() error {
 	if len(absent) > 0 {
 		return fmt.Errorf(entryStatesNothingFor, e.Name, strings.Join(absent, ", "))
 	}
-	if strings.ContainsAny(e.Name, `/\`) || e.Name == ".." {
+	if e.Name != filepath.Base(e.Name) || strings.ContainsAny(e.Name, `/\`) {
 		return fmt.Errorf(nameIsAPath, e.Name)
+	}
+	if strings.HasPrefix(e.Name, ".") || strings.HasPrefix(e.Name, "_") {
+		return fmt.Errorf(nameTheCorpusWouldNotSee, e.Name)
+	}
+	if _, err := findings.Parse(e.Document); err != nil {
+		return fmt.Errorf(documentSocratesCannotRoute, e.Name, err)
 	}
 	return nil
 }

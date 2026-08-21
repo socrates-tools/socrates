@@ -33,7 +33,10 @@ Recording from any other repository would check somebody else's source into this
 
 ### Requirement: The suite says which outcomes only fixtures have reached
 
-A report SHALL classify every corpus entry through the routing rule and print, for each outcome the rule can produce, how many recorded answers reach it and how many scenarios in the suite assert it.
+A report SHALL classify every corpus entry through the routing rule and print, for each outcome the rule can produce, how many recorded answers reach it and how many tests in the suite name it.
+
+The second number SHALL be counted from the tests rather than from a list somebody maintains, and SHALL be labelled as what it is.
+A test that names an outcome is not the same as a test that asserts it, and a report that called it coverage would be making the claim this report exists to stop.
 
 It SHALL name in words any outcome that no recorded answer has ever reached.
 
@@ -51,7 +54,7 @@ A report that restated the rule would be an oracle derived from the sentence the
 #### Scenario: The report counts what it classified
 
 - **WHEN** the report runs
-- **THEN** every outcome carries the number of recorded answers reaching it and the number of scenarios asserting it, and the totals account for every entry
+- **THEN** every outcome carries the number of recorded answers reaching it and the number of tests naming it, and the totals account for every entry
 
 ### Requirement: The recorded distribution cannot drift silently
 

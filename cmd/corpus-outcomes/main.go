@@ -45,11 +45,11 @@ func report() error {
 		return nil
 	}
 
-	asserting, err := outcomes.Asserting(root)
+	naming, err := outcomes.Naming(root)
 	if err != nil {
 		return err
 	}
 
-	fmt.Print(reached.Render(asserting))
+	fmt.Print(reached.Render(naming))
 	return nil
 }

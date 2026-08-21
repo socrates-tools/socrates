@@ -11,8 +11,7 @@ import (
 	"github.com/rui-ktei/socrates/internal/testing/harness"
 )
 
-// scenario: A live review's answer is kept
-func TestAReviewsAnswerIsKept(t *testing.T) {
+func TestAnAnswerIsRecordedFromTheRunThatProducedIt(t *testing.T) {
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("go.mod", "module "+corpus.ModulePath+"\n\ngo 1.24\n")

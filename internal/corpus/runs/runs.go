@@ -8,17 +8,21 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/rui-ktei/socrates/internal/agent"
 	"github.com/rui-ktei/socrates/internal/corpus"
+	"github.com/rui-ktei/socrates/internal/findings"
+	"github.com/rui-ktei/socrates/internal/reviewer"
 	"github.com/rui-ktei/socrates/internal/runlog"
 	"github.com/rui-ktei/socrates/internal/runstore"
 )
 
 const (
-	agentStarted   = "agent-started"
 	reviewerAgent  = "reviewer"
 	modelField     = "model"
 	effortField    = "effort"
+	roundField     = "round"
 	writtenNewline = "\n"
+	firstRound     = 1
 )
 
 type Request struct {
@@ -49,8 +53,12 @@ func Answered(store runstore.Store, request Request) (Answer, error) {
 	if err != nil {
 		return Answer{}, fmt.Errorf(roundAnsweredNothing, request.Round, run.Name, err)
 	}
+	returned := strings.TrimSuffix(string(document), writtenNewline)
+	if _, err := findings.Parse([]byte(returned)); err != nil {
+		return Answer{}, fmt.Errorf(roundAnsweredSomethingUnreadable, request.Round, run.Name, err)
+	}
 
-	routing, err := routingOf(store, run.Name)
+	routing, err := routingOf(store, run.Name, request.Round)
 	if err != nil {
 		return Answer{}, err
 	}
@@ -67,12 +75,12 @@ func Answered(store runstore.Store, request Request) (Answer, error) {
 			Run:        run.Name,
 			RecordedOn: request.On,
 			Subject:    request.Subject,
-			Document:   []byte(strings.TrimSuffix(string(document), writtenNewline)),
+			Document:   []byte(returned),
 		},
 	}, nil
 }
 
-func routingOf(store runstore.Store, run string) (map[string]string, error) {
+func routingOf(store runstore.Store, run string, round int) (map[string]string, error) {
 	path := filepath.Join(store.Path(run), runlog.FileName)
 	file, err := os.Open(path)
 	if err != nil {
@@ -81,6 +89,7 @@ func routingOf(store runstore.Store, run string) (map[string]string, error) {
 	defer file.Close()
 
 	routing := map[string]string{}
+	reached := firstRound
 	scanner := bufio.NewScanner(file)
 	scanner.Buffer(make([]byte, 0, 64*1024), 16*1024*1024)
 
@@ -89,7 +98,16 @@ func routingOf(store runstore.Store, run string) (map[string]string, error) {
 		if err := json.Unmarshal(scanner.Bytes(), &event); err != nil {
 			return nil, fmt.Errorf(readingTheLog, path, err)
 		}
-		if event.Kind != agentStarted || event.Subject != reviewerAgent {
+
+		if event.Kind == reviewer.EventRoundStarted {
+			started, stated := event.Fields[roundField].(float64)
+			if !stated {
+				return nil, fmt.Errorf(logStatesNoRound, path)
+			}
+			reached = int(started)
+			continue
+		}
+		if event.Kind != agent.EventStarted || event.Subject != reviewerAgent || reached != round {
 			continue
 		}
 		for _, field := range []string{modelField, effortField} {
@@ -109,7 +127,7 @@ func routingOf(store runstore.Store, run string) (map[string]string, error) {
 		}
 	}
 	if len(absent) > 0 {
-		return nil, fmt.Errorf(logStatesNothingFor, path, strings.Join(absent, ", "))
+		return nil, fmt.Errorf(logStatesNothingFor, round, path, strings.Join(absent, ", "))
 	}
 	return routing, nil
 }

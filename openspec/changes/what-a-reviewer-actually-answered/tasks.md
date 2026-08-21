@@ -22,7 +22,7 @@
 
 - [x] 3.1 Add the report, classifying every entry through `dialogue.After` and counting per outcome. Covers `The report counts what it classified`
 - [x] 3.2 Add the naming of outcomes no recorded answer reaches, and the test that it does not fail for one. Covers `An outcome no reviewer has reached is named`
-- [x] 3.3 Count the scenarios in the suite that assert each outcome, from the tests rather than from a list somebody maintains
+- [x] 3.3 Count the tests that name each outcome, from the tests rather than from a list somebody maintains, and label the count as naming rather than asserting because a syntax walk cannot tell the two apart
 - [x] 3.4 Write the distribution to a checked-in file, and add the test comparing it. Covers `A removed entry is visible`
 - [x] 3.5 Mutate the routing rule and confirm the comparison fails. Covers `A routing change that moves the corpus is visible`
 - [x] 3.6 Add the report to the ordinary verification sequence, and to `AGENTS.md` beside `make scenario-coverage`
@@ -43,4 +43,4 @@
 - [x] 6.1 `make fmt && make lint test` clean
 - [x] 6.2 `make scenario-coverage` naming no scenario this change adds
 - [x] 6.3 The ordinary suite still compiles no network-reaching code, and replay works with no build tag
-- [ ] 6.4 One live run, recorded into the corpus, satisfied by whatever it answered
+- [x] 6.4 One live run, recorded into the corpus, satisfied by whatever it answered

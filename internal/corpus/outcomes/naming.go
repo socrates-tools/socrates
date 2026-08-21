@@ -22,7 +22,7 @@ const (
 
 var skippedDirectories = []string{".git", "bin", "node_modules", "testdata"}
 
-func Asserting(root string) (map[runstate.State][]string, error) {
+func Naming(root string) (map[runstate.State][]string, error) {
 	asserting := map[runstate.State]map[string]bool{}
 
 	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {

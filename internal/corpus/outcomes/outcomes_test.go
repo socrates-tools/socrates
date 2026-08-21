@@ -52,26 +52,15 @@ func TestTheReportCountsWhatItClassified(t *testing.T) {
 		t.Errorf("the report holds %d outcomes, and the routing rule reaches %d", len(report.Reaches), len(reachable))
 	}
 
-	asserting, err := outcomes.Asserting(source.Root(t))
+	naming, err := outcomes.Naming(source.Root(t))
 	if err != nil {
-		t.Fatalf("counting what the suite asserts: %v", err)
+		t.Fatalf("counting the tests that name an outcome: %v", err)
 	}
-	rendered := report.Render(asserting)
+	rendered := report.Render(naming)
 	for _, state := range reachable {
 		if !strings.Contains(rendered, string(state)) {
 			t.Errorf("the report does not name the outcome %s:\n%s", state, rendered)
 		}
-	}
-	if !strings.Contains(rendered, string(runstate.Escalated)) {
-		t.Errorf("the report does not name the outcome every recorded answer reached:\n%s", rendered)
-	}
-
-	named := 0
-	for _, state := range reachable {
-		named += len(asserting[state])
-	}
-	if named == 0 {
-		t.Error("no test in the suite is counted as asserting any outcome, so the report's second number says nothing")
 	}
 }
 

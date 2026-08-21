@@ -16,19 +16,26 @@ import (
 const replayed = "dialogue-layer-first-look"
 
 func TestAScenarioNamesARecordedAnswer(t *testing.T) {
-	scenario(t, "default:\n  recorded: "+replayed+"\n")
-
-	out, failures, code := simulate(t, validArguments, "review the change")
-	if code != 0 {
-		t.Fatalf("the simulator exited %d: %s", code, failures)
-	}
-
-	entry, err := corpus.Named(replayed)
+	entries, err := corpus.Entries()
 	if err != nil {
-		t.Fatalf("reading the recorded answer: %v", err)
+		t.Fatalf("reading the corpus: %v", err)
 	}
-	if answered := structuredOutput(t, out); !bytes.Equal(answered, entry.Document) {
-		t.Errorf("the structured result is not the recorded document, byte for byte: %s", difference(entry.Document, answered))
+	if len(entries) == 0 {
+		t.Fatal("the corpus holds no recorded answer, so nothing here proves anything")
+	}
+
+	for _, entry := range entries {
+		t.Run(entry.Name, func(t *testing.T) {
+			scenario(t, "default:\n  recorded: "+entry.Name+"\n")
+
+			out, failures, code := simulate(t, validArguments, "review the change")
+			if code != 0 {
+				t.Fatalf("the simulator exited %d: %s", code, failures)
+			}
+			if answered := structuredOutput(t, out); !bytes.Equal(answered, entry.Document) {
+				t.Errorf("the structured result is not the recorded document, byte for byte: %s", difference(entry.Document, answered))
+			}
+		})
 	}
 }
 

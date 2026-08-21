@@ -12,6 +12,7 @@ import (
 	"github.com/rui-ktei/socrates/internal/testing/source"
 )
 
+// scenario: A live review's answer is kept
 func TestAnEntryHoldsTheAnswerAndItsCircumstances(t *testing.T) {
 	entries, err := corpus.Entries()
 	if err != nil {
@@ -77,6 +78,54 @@ func TestAnEntryThatNamesNoModelIsRefused(t *testing.T) {
 	}
 }
 
+func TestAnEntryTheCorpusCannotHoldIsRefused(t *testing.T) {
+	reviewed := t.TempDir()
+	writeModule(t, reviewed, source.ModulePath)
+
+	for named, entry := range map[string]corpus.Entry{
+		"a document socrates never routed":    withDocument(`{"findings":"none that matter","risk_level":"low","risk_rationale":"r"}`),
+		"a document that is not JSON":         withDocument("I read the change and it looks fine"),
+		"a name embedding drops":              withName(".first-look"),
+		"a name embedding drops, underscored": withName("_first-look"),
+		"a name that is the corpus itself":    withName("."),
+		"a name that climbs out":              withName("../../etc"),
+	} {
+		t.Run(named, func(t *testing.T) {
+			into := t.TempDir()
+			if _, err := corpus.Record(into, reviewed, entry); err == nil {
+				t.Fatalf("the corpus accepted %s", named)
+			}
+
+			held, err := corpus.Read(filepath.Join(into, corpus.Directory))
+			if err == nil && len(held) > 0 {
+				t.Errorf("the refusal left %d answers in the corpus", len(held))
+			}
+		})
+	}
+}
+
+func TestEveryRecordedAnswerIsVisibleToTheCorpus(t *testing.T) {
+	entries, err := corpus.Entries()
+	if err != nil {
+		t.Fatalf("reading the corpus: %v", err)
+	}
+
+	directories, err := os.ReadDir(filepath.Join(source.Root(t), corpus.Directory))
+	if err != nil {
+		t.Fatalf("reading the answers directory: %v", err)
+	}
+
+	held := 0
+	for _, directory := range directories {
+		if directory.IsDir() {
+			held++
+		}
+	}
+	if held != len(entries) {
+		t.Errorf("%d answers are on disk and %d are visible to the corpus", held, len(entries))
+	}
+}
+
 func TestRecordingFromAnotherRepositoryIsRefused(t *testing.T) {
 	foreign := t.TempDir()
 	writeModule(t, foreign, "github.com/somebody/else")
@@ -123,6 +172,18 @@ func TestARecordedAnswerIsStoredByteForByte(t *testing.T) {
 	if recorded[0].Name != entry.Name || recorded[0].Model != entry.Model || recorded[0].Round != entry.Round {
 		t.Errorf("the circumstances read back differ: %+v", recorded[0])
 	}
+}
+
+func withDocument(document string) corpus.Entry {
+	entry := recordable()
+	entry.Document = []byte(document)
+	return entry
+}
+
+func withName(name string) corpus.Entry {
+	entry := recordable()
+	entry.Name = name
+	return entry
 }
 
 func recordable() corpus.Entry {

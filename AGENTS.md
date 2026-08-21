@@ -60,7 +60,8 @@ make corpus-outcomes
 `make lint` fails on anything `gofmt` would rewrite, so formatting is never a separate thing to remember.
 `make scenario-coverage` fails when a scenario belonging to a change somebody has started is named by no test, and prints where each gap is.
 `make scenario-drop` fails when archiving a change would take a scenario out of the promoted specifications, which a `MODIFIED` delta does by substituting a requirement and carrying fewer scenarios than it holds.
-`make corpus-outcomes` reports nothing but the truth about coverage: for each outcome the routing rule can produce, how many answers real reviewers gave reach it and how many scenarios in the suite assert it.
+`make corpus-outcomes` reports nothing but the truth about coverage: for each outcome the routing rule can produce, how many answers real reviewers gave reach it and how many tests in the suite name it.
+Naming is not asserting, and the report says naming, because an abstract-syntax walk cannot tell a test that requires an outcome from one that requires its absence.
 It is a statement rather than a gate and never fails for an outcome no reviewer has reached, because whether one ever appears is not this repository's to control.
 `make test` holds both gates and the comparison of the corpus against `internal/corpus/outcomes/distribution.txt`, so a scenario nobody tests, a delta that would drop one, and a routing change that moves what the corpus reaches all fail the ordinary suite.
 Rewrite that distribution with `scripts/corpus-outcomes -write` once the move is deliberate.

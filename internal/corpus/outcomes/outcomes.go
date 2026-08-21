@@ -61,12 +61,12 @@ func (r Report) Distribution() string {
 	return built.String()
 }
 
-func (r Report) Render(asserting map[runstate.State][]string) string {
+func (r Report) Render(naming map[runstate.State][]string) string {
 	var built strings.Builder
 
 	built.WriteString(whatSocratesWouldDo + "\n\n")
 	for _, reach := range r.Reaches {
-		fmt.Fprintf(&built, reachedByAndAsserted+"\n", reach.State, len(reach.Recorded), len(asserting[reach.State]))
+		fmt.Fprintf(&built, reachedByAndNamed+"\n", reach.State, len(reach.Recorded), len(naming[reach.State]))
 		names(&built, reach)
 		if len(reach.Recorded) == 0 {
 			fmt.Fprintf(&built, onlyReachedByHand+"\n", reach.State)

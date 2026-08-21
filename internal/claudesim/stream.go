@@ -1,6 +1,7 @@
 package claudesim
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -110,11 +111,14 @@ func writeStream(out io.Writer, response Response, invocation Invocation) error 
 }
 
 func writeEvent(out io.Writer, emitted event) error {
-	encoded, err := json.Marshal(emitted)
-	if err != nil {
+	var encoded bytes.Buffer
+	encoder := json.NewEncoder(&encoded)
+	encoder.SetEscapeHTML(false)
+
+	if err := encoder.Encode(emitted); err != nil {
 		return fmt.Errorf("encoding a %s event: %w", emitted.Type, err)
 	}
-	if _, err := out.Write(append(encoded, '\n')); err != nil {
+	if _, err := out.Write(encoded.Bytes()); err != nil {
 		return fmt.Errorf("writing a %s event: %w", emitted.Type, err)
 	}
 	return nil
