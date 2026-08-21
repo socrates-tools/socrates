@@ -9,6 +9,8 @@ const (
 	findingsShort  = "Print what a review found, as socrates classified it"
 	respondShort   = "Record that one finding was fixed, or that it is wrong and why"
 	continueShort  = "Snapshot the patched working tree and have a fresh reviewer judge the answers"
+	watchShort     = "Follow a review as it happens and exit with its verdict"
+	logsShort      = "Print what a review recorded, for a person to read afterwards"
 	cancelShort    = "Stop a review and say that nothing was decided"
 	superviseShort = "Conduct a review that scrat review started"
 
@@ -37,6 +39,8 @@ const (
 	everythingIsAnswered = "every finding of this round that a response can address now has one"
 	stillToAnswer        = "%d findings still have none: %s"
 	roundStarted         = "round %d is under way"
+
+	stillStarting = "run %s is %s, and its reviewer has written nothing yet"
 
 	followIt      = "follow it with: scrat status %s"
 	stoppedIt     = "run %s is cancelled, and nothing was decided about the change"

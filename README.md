@@ -41,6 +41,23 @@ scrat cancel                   # stop a review and say that nothing was decided
 
 Naming no run means the most recent run for the repository you are standing in.
 
+## Three ways to read one run, for three readers
+
+| command | behaviour | who it is for |
+| --- | --- | --- |
+| `scrat watch` | follows the run live, stops when it is over, exits with the verdict's code | you, in a second tab |
+| `scrat logs` | prints what the run recorded and exits, paging where your terminal and `PAGER` say so | you, afterwards |
+| `scrat status` | one shot, a handful of lines, no stream | the session waiting on the review |
+
+They stay distinct on purpose.
+`status` is what a coding session should call, because everything it prints lands in that session's context, and it prints the same few lines for a silent reviewer and a loud one.
+`watch` and `logs` print into a person's terminal, where being told what happened is the point.
+So `status` has no way to follow, and `watch` has no way to return after one read.
+
+`scrat watch` stops when the run reaches a verdict, when it fails, when you cancel it from another terminal, and when the round parks on you.
+It never waits for an event a finished run will not write.
+Started in the moment between `scrat review` returning and the reviewer's first byte, it waits for the log rather than failing, and gives up if nothing is ever written.
+
 Exit codes are a contract:
 
 | code | meaning |
@@ -97,9 +114,12 @@ run_retention: 336h
 
 This repository is built in layers, specified in `openspec/` before they are implemented.
 
-- `a-review-nobody-authored` - the core: freeze, review, findings, verdict, one round. This is what ships today.
+- `a-review-nobody-authored` - the core: freeze, review, findings, verdict, one round.
 - `a-rejection-is-a-claim` - rounds, rebuttals and the dialogue between author and reviewer.
+- `what-a-reviewer-actually-answered` - the corpus of what real reviewers answered, replayed by name in the suite.
 - `one-window-three-needs` - `scrat watch` and `scrat logs`.
 - `the-loop-an-agent-can-drive` - the generated skill that lets a session drive the loop itself.
+
+Everything above the last line ships today.
 
 `AGENTS.md` is the working document: layout, verification sequence and the invariants that hold the design up.

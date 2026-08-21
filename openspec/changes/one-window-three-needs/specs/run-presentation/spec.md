@@ -29,6 +29,9 @@ The same bytes are summarised by one command, rendered by another and parsed by 
 It SHALL treat a terminal event in the log and a terminal state in `run.json` as equally sufficient to stop.
 Waiting only for a terminal event is the version that hangs: a run that failed before its reviewer wrote anything has a terminal state and an empty log.
 
+It SHALL also stop where the round parked on the author, print what the round is waiting for, and exit with the code for a run that is not terminal yet.
+A parked round has no process of its own running and ends only when the author answers it, so a follower that treated parking as work in progress would wait for events that arrive after the person acts, which is the stall this requirement exists to refuse.
+
 #### Scenario: Following a review to a clean verdict
 
 - **WHEN** `scrat watch` is run against a review in progress that goes on to find nothing blocking
@@ -48,6 +51,11 @@ Waiting only for a terminal event is the version that hangs: a run that failed b
 
 - **WHEN** a run reaches any terminal state while a follower is attached
 - **THEN** the follower exits within a bounded time, and never waits for further events
+
+#### Scenario: A follower stops where the round stops
+
+- **WHEN** the round parks on the author while a follower is attached
+- **THEN** the follower stops, says what the round is waiting for, and exits `4`
 
 #### Scenario: Cancelling while following
 

@@ -13,17 +13,19 @@ import (
 )
 
 var ContractsTestsRead = map[string]string{
-	filepath.Join("internal", "agent", "boundary_test.go"):      "the rule that one package alone names the vendor's binary, which is a structural invariant of this module rather than a claim about behaviour",
-	filepath.Join("internal", "claudesim", "failure_test.go"):   "the file the simulator wrote into a temporary directory, which is the observable side effect that scenario asks for",
-	filepath.Join("internal", "convention", "comments_test.go"): "this repository's no-commentary convention, where the source is the subject of the check and not a proxy for anything else",
-	filepath.Join("internal", "convention", "evidence_test.go"): "this convention itself, which is a property of the test suite",
-	filepath.Join("internal", "convention", "wording_test.go"):  "the wording convention itself, where the source is the subject of the check and not a proxy for anything else",
-	filepath.Join("internal", "dialogue", "dialogue_test.go"):   "the direction the dialogue package may import in, which is a structural invariant of this module",
-	filepath.Join("internal", "findings", "classify_test.go"):   "the rule that one function decides a finding's effective action, which is a structural invariant of this module",
-	filepath.Join("internal", "findings", "verdict_test.go"):    "the direction the findings package may import in, which is a structural invariant of this module",
+	filepath.Join("internal", "agent", "boundary_test.go"):        "the rule that one package alone names the vendor's binary, which is a structural invariant of this module rather than a claim about behaviour",
+	filepath.Join("internal", "claudesim", "failure_test.go"):     "the file the simulator wrote into a temporary directory, which is the observable side effect that scenario asks for",
+	filepath.Join("internal", "convention", "comments_test.go"):   "this repository's no-commentary convention, where the source is the subject of the check and not a proxy for anything else",
+	filepath.Join("internal", "convention", "evidence_test.go"):   "this convention itself, which is a property of the test suite",
+	filepath.Join("internal", "convention", "rendering_test.go"):  "the rule that one place alone turns an event into a line, which is a structural invariant of this module",
+	filepath.Join("internal", "convention", "wording_test.go"):    "the wording convention itself, where the source is the subject of the check and not a proxy for anything else",
+	filepath.Join("internal", "dialogue", "dialogue_test.go"):     "the direction the dialogue package may import in, which is a structural invariant of this module",
+	filepath.Join("internal", "findings", "classify_test.go"):     "the rule that one function decides a finding's effective action, which is a structural invariant of this module",
+	filepath.Join("internal", "findings", "verdict_test.go"):      "the direction the findings package may import in, which is a structural invariant of this module",
+	filepath.Join("internal", "presentation", "boundary_test.go"): "what the renderer may import and call, which is what makes it a function of the events and nothing else",
 }
 
-var sourceListingCalls = map[string][]string{"source": {"Files", "Imports"}}
+var sourceListingCalls = map[string][]string{"source": {"Files", "Imports", "DirectImports", "PackagesCalled"}}
 
 var fileReadingCalls = map[string][]string{
 	"os":       {"ReadFile", "Open", "OpenFile", "ReadDir"},

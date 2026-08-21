@@ -16,7 +16,7 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 
 ## Layout
 
-- `cmd/scrat` - the one binary a person runs: `review`, `status`, `findings`, `respond`, `continue`, `cancel`, and the hidden `supervise` that a review spawns.
+- `cmd/scrat` - the one binary a person runs: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, and the hidden `supervise` that a review spawns.
 - `cmd/claudesim` - the simulator, which speaks the vendor CLI's wire contract and is symlinked as `claude` onto `PATH` by the test harness.
 - `cmd/scenario-coverage` - the coverage gate behind `scripts/scenario-coverage`.
 - `cmd/scenario-drop` - the promotion gate behind `scripts/scenario-drop`.
@@ -33,6 +33,9 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 - `internal/agent` - the only package that starts a model process or parses its output.
 - `internal/reviewer` - beginning a run, supervising the round, recording a response, advancing to the next round, cancelling.
 - `internal/report` - what `status` and `findings` print, for a person and as JSON.
+- `internal/presentation` - the one place an event becomes a line a person reads. A function from events to lines, and it imports nothing that could reach anything.
+- `internal/follow` - following a run's event log live: the two stopping conditions, the bounded wait for a log that does not exist yet, and reading what the log holds once.
+- `internal/terminal` - whether the output is a terminal, what `PAGER` says, and the plain fallback where a pager will not start.
 - `internal/exit` - the exit-code table.
 - `internal/config` - the one optional configuration file under the user's configuration directory.
 - `internal/runlog` - the JSONL event log, its byte ceiling and its in-place rotation.
@@ -101,6 +104,10 @@ None of them is a matter of care.
 - **What a real reviewer answered is kept, verbatim, and replayed rather than invented.** `internal/corpus` holds every live answer beside the model, effort, round, base, snapshot, run and subject it was an answer to, and a scenario naming one is answered with those bytes and no others: the simulator does not adapt a recorded document to the prompt, renumber its findings or supply a field it lacks. Recording refuses any repository that is not socrates, because a findings document quotes the code it was written about.
 - **The suite says which outcomes only fixtures have reached.** The corpus is classified by `dialogue.After` rather than by a second reading of the rule, the report names any outcome no recorded answer reaches, and it never fails for one. The distribution is checked in, so an entry that disappears and a routing change that moves the corpus are both a diff somebody reads.
 - **A verification task may not require a particular answer.** A task about a live run may require that the run happened, that its answer was recorded and that socrates routed whatever came back. It may not require a severity, an action, a count or a shape: what a reviewer finds is the reviewer's, and four live reviews that closed no such task are what this rule exists to prevent repeating.
+- **One place turns an event into a line a person reads.** `internal/presentation` is it, and a check fails when any other package names an event kind, unless that package is named in `convention.EventKindsNamed` with why it reads the log as data rather than rendering it. The renderer imports nothing beyond the event type and text formatting, so it cannot reach the filesystem, the clock or a terminal even by accident.
+- **A follower stops on the run's record and on the log, and either is enough.** Waiting only for a terminal event is the version that hangs, because a run that failed before its reviewer wrote anything has a terminal state and an empty log. A parked round stops a follower too: nothing of that run is running, and only the author ends it.
+- **A follower started too early waits, bounded, rather than failing.** `scrat review` returns as soon as the run exists, so the window between that and the reviewer's first byte is exactly when a person is most likely to run `scrat watch`. The wait is bounded, and a log that never appears is reported as a failed run.
+- **`status`, `watch` and `logs` stay three commands.** `status` prints into a language model's context and the other two print into a person's terminal, which is an order of magnitude difference in what verbosity costs. A test reads the flags of each, so `status` cannot grow a way to follow and `watch` cannot grow a way to return after one read.
 - **The prompt is a generated interface.** Tests assert on the prompt that was delivered, read back from the round directory or from the simulator's invocation log, and never on socrates' own source text.
 - **The reporting section is derived from the classifier.** The severities, actions and risk levels the prompt defines are generated from what `internal/findings` implements, so the two cannot drift.
 - **Snapshot commits are content-addressed.** Author and committer dates are pinned to the epoch, so the same worktree and base always produce the same commit, and therefore a byte-identical prompt.

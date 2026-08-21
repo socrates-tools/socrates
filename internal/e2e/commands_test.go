@@ -23,12 +23,12 @@ func TestTheCommandSurfaceIsWhatItSays(t *testing.T) {
 	}
 
 	listed := commandsIn(printed)
-	want := []string{"cancel", "continue", "findings", "help", "respond", "review", "status"}
+	want := []string{"cancel", "continue", "findings", "help", "logs", "respond", "review", "status", "watch"}
 	if !slices.Equal(listed, want) {
 		t.Errorf("scrat lists %v, want %v", listed, want)
 	}
 
-	for _, forbidden := range []string{"commit", "push", "pr", "pull-request", "merge", "land", "ci", "test", "lint", "watch", "verify"} {
+	for _, forbidden := range []string{"commit", "push", "pr", "pull-request", "merge", "land", "ci", "test", "lint", "verify"} {
 		if slices.Contains(listed, forbidden) {
 			t.Errorf("scrat lists %q, which lands or verifies a change", forbidden)
 		}

@@ -1,6 +1,7 @@
 package source
 
 import (
+	"go/ast"
 	"go/parser"
 	"go/token"
 	"io/fs"
@@ -61,6 +62,76 @@ func Files(t *testing.T, root string) []string {
 		t.Fatalf("reading %s: %v", root, err)
 	}
 
+	return found
+}
+
+func DirectImports(t *testing.T, root, packageDirectory string) []string {
+	t.Helper()
+
+	seen := map[string]bool{}
+	for _, path := range packageFiles(t, filepath.Join(root, packageDirectory)) {
+		for _, imported := range importsOf(t, path) {
+			seen[imported] = true
+		}
+	}
+	return sorted(seen)
+}
+
+func PackagesCalled(t *testing.T, root, packageDirectory string) []string {
+	t.Helper()
+
+	seen := map[string]bool{}
+	for _, path := range packageFiles(t, filepath.Join(root, packageDirectory)) {
+		set := token.NewFileSet()
+		parsed, err := parser.ParseFile(set, path, nil, parser.SkipObjectResolution)
+		if err != nil {
+			t.Fatalf("parsing %s: %v", path, err)
+		}
+
+		ast.Inspect(parsed, func(node ast.Node) bool {
+			call, isCall := node.(*ast.CallExpr)
+			if !isCall {
+				return true
+			}
+			selected, isSelector := call.Fun.(*ast.SelectorExpr)
+			if !isSelector {
+				return true
+			}
+			if qualifier, isIdentifier := selected.X.(*ast.Ident); isIdentifier {
+				seen[qualifier.Name] = true
+			}
+			return true
+		})
+	}
+	return sorted(seen)
+}
+
+func packageFiles(t *testing.T, directory string) []string {
+	t.Helper()
+
+	entries, err := os.ReadDir(directory)
+	if err != nil {
+		t.Fatalf("reading %s: %v", directory, err)
+	}
+
+	var found []string
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() || !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		found = append(found, filepath.Join(directory, name))
+	}
+	slices.Sort(found)
+	return found
+}
+
+func sorted(seen map[string]bool) []string {
+	found := make([]string, 0, len(seen))
+	for name := range seen {
+		found = append(found, name)
+	}
+	slices.Sort(found)
 	return found
 }
 

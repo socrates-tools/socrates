@@ -110,6 +110,62 @@ func (s *Session) scrat(directory string, environment []string, input io.Reader,
 	return out.String(), failures.String(), code
 }
 
+type Running struct {
+	t         *testing.T
+	arguments []string
+	command   *exec.Cmd
+	out       *bytes.Buffer
+	failures  *bytes.Buffer
+	finished  chan error
+}
+
+func (s *Session) Starting(arguments ...string) *Running {
+	s.t.Helper()
+
+	command := exec.Command(s.Binary, arguments...)
+	command.Dir = s.Repository.Root
+
+	running := &Running{t: s.t, arguments: arguments, command: command, out: &bytes.Buffer{}, failures: &bytes.Buffer{}, finished: make(chan error, 1)}
+	command.Stdout = running.out
+	command.Stderr = running.failures
+
+	if err := command.Start(); err != nil {
+		s.t.Fatalf("starting scrat %s: %v", strings.Join(arguments, " "), err)
+	}
+	go func() { running.finished <- command.Wait() }()
+	s.t.Cleanup(running.stop)
+	return running
+}
+
+func (r *Running) Wait() (string, string, int) {
+	r.t.Helper()
+
+	select {
+	case err := <-r.finished:
+		code := 0
+		if err != nil {
+			var exited *exec.ExitError
+			if !errors.As(err, &exited) {
+				r.t.Fatalf("running scrat %s: %v", strings.Join(r.arguments, " "), err)
+			}
+			code = exited.ExitCode()
+		}
+		return r.out.String(), r.failures.String(), code
+	case <-time.After(terminalWait):
+		r.t.Fatalf("scrat %s is still running after %s", strings.Join(r.arguments, " "), terminalWait)
+		return "", "", 0
+	}
+}
+
+func (r *Running) stop() {
+	select {
+	case err := <-r.finished:
+		r.finished <- err
+	default:
+		_ = r.command.Process.Kill()
+	}
+}
+
 func (s *Session) Review(arguments ...string) string {
 	s.t.Helper()
 

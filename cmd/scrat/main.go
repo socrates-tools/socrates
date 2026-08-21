@@ -43,6 +43,8 @@ func newRootCommand(code *int) *cobra.Command {
 		newFindingsCommand(code),
 		newRespondCommand(code),
 		newContinueCommand(code),
+		newWatchCommand(code),
+		newLogsCommand(code),
 		newCancelCommand(),
 		newSuperviseCommand(),
 	)
