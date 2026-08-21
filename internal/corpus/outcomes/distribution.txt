@@ -2,11 +2,12 @@ what socrates would do with each answer a real reviewer gave
 
 awaiting-response: 0 recorded
 clean: 0 recorded
-escalated: 5 recorded
+escalated: 6 recorded
   dialogue-fixes-first-look
   dialogue-fixes-second-look
   dialogue-layer-first-look
   dialogue-layer-second-look
+  the-loop-a-session-drives
   the-reviewer-corpus
 
-recorded answers: 5
+recorded answers: 6

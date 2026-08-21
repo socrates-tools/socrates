@@ -10,6 +10,8 @@ import (
 	"github.com/rui-ktei/socrates/internal/skill"
 )
 
+const loopHeading = "## The loop"
+
 func sectionHeading(subject string) string {
 	return "### " + subject
 }
@@ -22,7 +24,12 @@ func sectionAbout(t *testing.T, document, subject string) string {
 		t.Fatalf("the skill has no section about %s:\n%s", subject, document)
 	}
 
-	body, _, _ := strings.Cut(after, "\n### ")
+	body := after
+	for _, boundary := range []string{"\n### ", "\n## "} {
+		if within, _, found := strings.Cut(body, boundary); found {
+			body = within
+		}
+	}
 	return body
 }
 
@@ -63,8 +70,13 @@ func TestWatchIsForThePerson(t *testing.T) {
 			t.Errorf("the sentence naming scrat watch does not say %q, so it does not read as a suggestion for the person: %q", stated, suggestion)
 		}
 	}
-	if strings.Contains(numberedStep(t, document, 3), "scrat watch") && !strings.Contains(suggestion, "person") {
-		t.Errorf("the session's own waiting step names scrat watch: %q", suggestion)
+
+	loop := strings.Index(document, loopHeading)
+	if loop < 0 {
+		t.Fatal("the skill has no loop, so there is nothing for the suggestion to stay out of")
+	}
+	if strings.Index(document, "scrat watch") > loop {
+		t.Errorf("scrat watch is named inside the loop the session is told to run: %q", suggestion)
 	}
 }
 
@@ -89,6 +101,29 @@ func TestEveryTerminalStateIsCovered(t *testing.T) {
 				t.Errorf("the skill names %s and says next to nothing about what to do: %q", state, said)
 			}
 		})
+	}
+}
+
+func TestEveryStateARunRestsInIsNamed(t *testing.T) {
+	document := skill.Document()
+
+	for _, state := range runstate.States() {
+		if !state.Terminal() && state != runstate.AwaitingResponse {
+			continue
+		}
+		if !strings.Contains(document, sectionHeading(string(state))) {
+			t.Errorf("a run rests in %s and the skill says nothing about it, so a loop waiting for the states it names would poll through it", state)
+		}
+	}
+}
+
+func TestACancelledRunIsNotAVerdict(t *testing.T) {
+	said := strings.ToLower(sectionAbout(t, skill.Document(), string(runstate.Cancelled)))
+
+	for _, stated := range []string{"nothing was decided", "not report the change as reviewed", "on purpose"} {
+		if !strings.Contains(said, stated) {
+			t.Errorf("the section about a cancelled run does not say %q:\n%s", stated, said)
+		}
 	}
 }
 

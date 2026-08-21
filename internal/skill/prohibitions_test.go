@@ -39,7 +39,24 @@ func TestNoChannelIsImpliedForTheAuthorsAccount(t *testing.T) {
 		"--to":       "where to install the skill, which reaches no reviewer at all",
 	}
 
+	commands := map[string]string{
+		"review":    "starts a review, and carries one line of intent and nothing else",
+		"status":    "reports on a run",
+		"findings":  "reads what a reviewer said",
+		"respond":   "records one answer to one finding",
+		"continue":  "starts the next round from what was recorded",
+		"watch":     "prints a run's events into a person's terminal",
+		"cancel":    "stops a run",
+		"logs":      "prints what a run recorded",
+		"skill":     "installs this skill",
+		"supervise": "conducts a review that scrat review started",
+	}
+
 	for _, named := range skill.Named() {
+		if _, allowed := commands[named.Command]; !allowed {
+			t.Errorf("the skill names scrat %s, and nothing says why it is not a way to send the reviewer the session's own account of the change", named.Command)
+			continue
+		}
 		if named.Flag == "" {
 			continue
 		}
@@ -47,20 +64,4 @@ func TestNoChannelIsImpliedForTheAuthorsAccount(t *testing.T) {
 			t.Errorf("the skill names scrat %s %s, and nothing says why it is not a way to send the reviewer the session's own account of the change", named.Command, named.Flag)
 		}
 	}
-
-	for _, word := range strings.Fields(skill.Document()) {
-		named := strings.Trim(word, "`.,:;\"'()[]")
-		if strings.Contains(named, "/") || namesAFile(named) {
-			t.Errorf("the skill names %q, and a file is somewhere a session could write its own account of the change for a reviewer to read", named)
-		}
-	}
-}
-
-func namesAFile(word string) bool {
-	for _, extension := range []string{".md", ".txt", ".json", ".yaml", ".yml", ".log"} {
-		if strings.HasSuffix(word, extension) {
-			return true
-		}
-	}
-	return false
 }

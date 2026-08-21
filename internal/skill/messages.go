@@ -10,12 +10,15 @@ description: Have an independent reviewer read the change you just made, and dri
 
 You have just implemented something and nobody has read it.
 scrat review freezes your working tree into a commit nothing can move and hands it to a reviewer that wrote none of it.
-You drive that review to a verdict, and every patch along the way is yours to make.`
+You drive that review to a verdict, and every patch along the way is yours to make.
+What the reviewer says while it works is not for you: if the person wants to see it happen, suggest that they run scrat watch in another terminal.`
 
 	rulesHeading = "## How to answer a finding"
 	ruleLine     = "- %s"
 
-	theLoop = `## The loop
+	loopHeading = "## The loop"
+
+	theLoop = loopHeading + `
 
 1. Implement what the person asked for.
 2. Start the review, passing what the person asked for in their own words:
@@ -23,11 +26,10 @@ You drive that review to a verdict, and every patch along the way is yours to ma
        scrat review --intent "count the characters of a document"
 
    It returns as soon as the run exists and prints the run identifier, which every later command takes as its argument.
-3. Wait for the review to end: poll scrat status until it reports one of the four states below.
+3. Wait for the review to end: poll scrat status until it reports one of the states below.
    Poll rather than follow what the reviewer is saying, because everything you read lands in your own context and you are about to need that context for the patching.
    scrat status prints the same handful of lines whether the reviewer was silent or said a great deal.
-   If the person wants to see it happen, suggest that they run scrat watch in another terminal.
-4. Act on the state the run ended in. There are four, and each of them is below.
+4. Act on the state the run ended in. Each of them is below, and a run rests in no other.
 
 ### clean
 
@@ -46,6 +48,8 @@ Report the change as unreviewed, and offer to start another review.
 Read scrat findings, hand every finding to the person, and stop.
 These are theirs to decide.
 A finding that questions what the change is for is not one to patch your way out of, which is why the reviewer escalated it instead of asking you to answer it.
+A run also escalates where a second round still found something blocking, and then the findings are ordinary ones that ran out of rounds rather than questions of intent.
+scrat status prints which of the two it was.
 
 ### awaiting-response
 
@@ -56,7 +60,13 @@ Every finding it reports as one that can be patched needs an answer from you, on
        scrat respond --finding f2 --rejected --reason "there is no retry loop in this function at all"
 
 Then run scrat continue, and go back to waiting on scrat status.
-The next round is a fresh reviewer that reads your answers and judges them, and there are two rounds at most.`
+The next round is a fresh reviewer that reads your answers and judges them, and there are two rounds at most.
+
+### cancelled
+
+Somebody stopped the review, so nothing was decided about the change.
+Say that, and do not report the change as reviewed.
+Whoever cancelled it did so on purpose, so ask before starting another one.`
 
 	prohibitions = `## What socrates will not do for you
 

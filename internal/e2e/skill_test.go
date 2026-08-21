@@ -171,27 +171,31 @@ func TestARemovedFlagFailsTheSuite(t *testing.T) {
 	session := harness.Start(t)
 	offered := surfaceOf(t, session)
 
-	var named skill.Invocation
-	for _, invocation := range skill.Named() {
-		if invocation.Flag != "" {
-			named = invocation
-			break
+	flagged := 0
+	for _, named := range skill.Named() {
+		if named.Flag == "" {
+			continue
 		}
+		flagged++
+
+		t.Run(named.Command+" "+named.Flag, func(t *testing.T) {
+			without := maps.Clone(offered)
+			without[named.Command] = slices.DeleteFunc(slices.Clone(offered[named.Command]), func(flag string) bool { return flag == named.Flag })
+
+			absent := skill.Unavailable(without)
+			if len(absent) == 0 {
+				t.Fatalf("the check passes with %s removed from scrat %s", named.Flag, named.Command)
+			}
+			for _, reported := range absent {
+				if !strings.Contains(reported, named.Flag) || !strings.Contains(reported, "skill") {
+					t.Errorf("the check reports %q, which names neither the flag nor the skill", reported)
+				}
+			}
+		})
 	}
-	if named.Flag == "" {
+
+	if flagged == 0 {
 		t.Fatal("the skill names no flag at all, so this check has nothing to remove")
-	}
-
-	offered[named.Command] = slices.DeleteFunc(offered[named.Command], func(flag string) bool { return flag == named.Flag })
-
-	absent := skill.Unavailable(offered)
-	if len(absent) == 0 {
-		t.Fatalf("the check passes with %s removed from scrat %s", named.Flag, named.Command)
-	}
-	for _, reported := range absent {
-		if !strings.Contains(reported, named.Flag) || !strings.Contains(reported, "skill") {
-			t.Errorf("the check reports %q, which names neither the flag nor the skill", reported)
-		}
 	}
 }
 

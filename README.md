@@ -67,11 +67,13 @@ scrat skill                    # writes the skill to ~/.claude/skills/scrat/SKIL
 scrat skill --to <directory>   # writes it somewhere else instead
 ```
 
-The skill teaches the loop: implement, `scrat review --intent`, then poll `scrat status` until it reports one of four states.
+The skill teaches the loop: implement, `scrat review --intent`, then poll `scrat status` until it reports a state a run rests in.
 On `clean`, say what was reviewed and stop.
 On `failed`, report the change as unreviewed, because no review completed and nothing has been checked.
 On `escalated`, hand the findings to you and stop, because a finding that questions what the change is for is not one to patch around.
 On `awaiting-response`, answer every finding that can be patched, run `scrat continue`, and go back to polling.
+On `cancelled`, say that nothing was decided, because somebody stopped the review on purpose.
+Those are every state a run rests in, and a test compares the list against `internal/runstate` so a sixth could not appear without the skill gaining a branch for it.
 
 It teaches polling rather than following, because everything a session reads lands in its own context and it is about to need that context for the patching.
 It carries the four response rules in the same words `scrat findings` prints them, in front of the session before it has read a single finding.
@@ -128,7 +130,7 @@ run_retention: 336h
 - **It does not write in your repository.** Three things hold that, in the order they act. The reviewer's tools cannot write. The snapshot worktree it reads is sealed, so the filesystem refuses a write from anything in that session, whether the model asked for it or a tool server did. And the round fails if the worktree differs by one byte afterwards, which is what catches anything that defeated the seal. Your machine can take the first two away from socrates; it cannot take the third.
 - **It does not load your tool servers.** A tool server is a second source of tools the vendor's own tool restriction does not cover, and one of them writing into the working directory is enough to fail a round. Where your CLI will not let socrates ignore the servers your machine configures, the review runs anyway and the run says so, because the seal holds the reviewer read-only whatever is loaded.
 - **It will not review where the seal cannot hold.** socrates proves the seal with one write before a reviewer is spawned, and refuses the review if that write succeeds. That covers a filesystem that ignores permission bits and it covers running as root, which ignores them by design. A verdict it cannot stand behind is worse than no verdict.
-- **It does not read your project's agent instructions.** They are authored by the thing under review, so the reviewer loads user-level settings only. The cost is that it does not know your conventions, and the prompt's "stay in lane" rule is what covers most of what that would otherwise produce.
+- **It does not read your project's agent instructions.** They are authored by the thing under review, so the reviewer loads user-level settings only. The cost is that it does not know your conventions, and the prompt's "stay in lane" rule is what covers most of what that would otherwise produce. One consequence of loading user-level settings is that a reviewer can see the `scrat` skill you installed there. It cannot act on it: a reviewer's tools are read-only, and a review inside a review is refused.
 - **It is not a daemon.** One detached process per round and a directory of files. Nothing to install, nothing to keep running, nothing to restart.
 - **It does not tell the reviewer what you told it about how the change came to be.** Only the change, and optionally the one line of intent you chose to state. The skill says the same thing to the session, because a session that believes such a channel exists will go looking for it.
 

@@ -76,6 +76,7 @@ func flagsIn(help string) []string {
 		for _, word := range strings.Fields(line) {
 			if strings.HasPrefix(word, "--") {
 				offered = append(offered, strings.TrimSuffix(word, ","))
+				break
 			}
 		}
 	}

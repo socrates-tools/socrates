@@ -25,6 +25,9 @@ It SHALL name what to do for each of `clean`, `failed`, `escalated` and `awaitin
 
 A session scanning for what to do about findings reads past a state that has none, and a `failed` run has none.
 
+It SHALL also name `cancelled`, and SHALL name every state a run can rest in.
+A person who stops a review from another terminal leaves a state that is neither a verdict nor work in progress, and a loop told to wait for one of a fixed list of states polls a cancelled run for as long as anybody lets it.
+
 #### Scenario: Every terminal state is covered
 
 - **WHEN** the skill is rendered
@@ -34,6 +37,16 @@ A session scanning for what to do about findings reads past a state that has non
 
 - **WHEN** the skill describes `failed`
 - **THEN** it says that no review completed, that nothing has been checked, and that this is not a clean result
+
+#### Scenario: A cancelled run is not a verdict
+
+- **WHEN** the skill describes `cancelled`
+- **THEN** it says that nothing was decided, that the change is not reviewed, and that somebody stopped it on purpose
+
+#### Scenario: Every state a run rests in is named
+
+- **WHEN** the states the skill names are compared with the states a run can rest in
+- **THEN** every one of them is named, so the loop has no state it would poll through
 
 #### Scenario: The loop closes
 

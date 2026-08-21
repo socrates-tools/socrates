@@ -45,4 +45,4 @@
 - [x] 7.1 `make fmt && make lint test` clean
 - [x] 7.2 `make scenario-coverage` naming no scenario this change adds
 - [x] 7.3 `make scenario-drop` before archiving, for the command surface requirement this change substitutes
-- [ ] 7.4 A live run: install the skill, hand a real session a real task, and let it drive a real review to a real verdict without being told the sequence. Record in `retrospective.md` every place it deviated, because each one is a sentence the skill is missing rather than a fault of the session
+- [x] 7.4 A live run: install the skill, hand a real session a real task, and let it drive a real review to a real verdict without being told the sequence. Record in `retrospective.md` every place it deviated, because each one is a sentence the skill is missing rather than a fault of the session
