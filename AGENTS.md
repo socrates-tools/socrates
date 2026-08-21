@@ -16,7 +16,7 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 
 ## Layout
 
-- `cmd/scrat` - the one binary a person runs: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, and the hidden `supervise` that a review spawns.
+- `cmd/scrat` - the one binary a person runs: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, and the hidden `supervise` that a review spawns.
 - `cmd/claudesim` - the simulator, which speaks the vendor CLI's wire contract and is symlinked as `claude` onto `PATH` by the test harness.
 - `cmd/scenario-coverage` - the coverage gate behind `scripts/scenario-coverage`.
 - `cmd/scenario-drop` - the promotion gate behind `scripts/scenario-drop`.
@@ -36,6 +36,7 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 - `internal/presentation` - the one place an event becomes a line a person reads. A function from events to lines, and it imports nothing that could reach anything.
 - `internal/follow` - following a run's event log live: the two stopping conditions, the bounded wait for a log that does not exist yet, and reading what the log holds once.
 - `internal/terminal` - whether the output is a terminal, what `PAGER` says, and the plain fallback where a pager will not start.
+- `internal/skill` - the skill a coding session reads to drive the loop itself: its text as the one source, what the committed copy is generated from, the commands and flags it names, and installing it at user level.
 - `internal/exit` - the exit-code table.
 - `internal/config` - the one optional configuration file under the user's configuration directory.
 - `internal/runlog` - the JSONL event log, its byte ceiling and its in-place rotation.
@@ -61,6 +62,7 @@ make corpus-outcomes
 ```
 
 `make lint` fails on anything `gofmt` would rewrite, so formatting is never a separate thing to remember.
+`make skill` rewrites the committed copy of the skill from its source, and `make test` fails while the two differ.
 `make scenario-coverage` fails when a scenario belonging to a change somebody has started is named by no test, and prints where each gap is.
 `make scenario-drop` fails when archiving a change would take a scenario out of the promoted specifications, which a `MODIFIED` delta does by substituting a requirement and carrying fewer scenarios than it holds.
 `make corpus-outcomes` reports nothing but the truth about coverage: for each outcome the routing rule can produce, how many answers real reviewers gave reach it and how many tests in the suite name it.
@@ -108,6 +110,11 @@ None of them is a matter of care.
 - **A follower stops on the run's record and on the log, and either is enough.** Waiting only for a terminal event is the version that hangs, because a run that failed before its reviewer wrote anything has a terminal state and an empty log. A parked round stops a follower too: nothing of that run is running, and only the author ends it.
 - **A follower started too early waits, bounded, rather than failing.** `scrat review` returns as soon as the run exists, so the window between that and the reviewer's first byte is exactly when a person is most likely to run `scrat watch`. The wait is bounded, and a log that never appears is reported as a failed run.
 - **`status`, `watch` and `logs` stay three commands.** `status` prints into a language model's context and the other two print into a person's terminal, which is an order of magnitude difference in what verbosity costs. A test reads the flags of each, so `status` cannot grow a way to follow and `watch` cannot grow a way to return after one read.
+- **The skill has one source, and the committed copy is generated from it.** `internal/skill` holds the text, `make skill` writes `.claude/skills/scrat/SKILL.md`, and a test fails while the two differ. A committed file that is read rather than generated fails the way that matters: somebody edits it, nobody runs the generator, and the installed skill and the repository's copy disagree with nothing failing.
+- **The response rules are stated once and rendered twice.** `dialogue.ResponseRules` is the source, `scrat findings` prints it where a round parks, the skill states it before the session has read a finding, and a test compares the two. Two copies of four sentences drift, and the copy in front of the session is the one that gets softened.
+- **The skill names nothing the binary does not offer.** Every command and flag its text names is extracted and checked against the built binary, and removing one from the surface fails the check. A skill naming a flag that does not exist is a session doing something plausible and wrong at the point where the person has stopped watching.
+- **The skill teaches polling, and names `scrat watch` once.** `scrat status` is the command in the session's loop, because everything a session reads lands in the context it is about to need for patching. The one mention of `scrat watch` is a suggestion for the person in another terminal, and a test fails on a second.
+- **The loop the skill describes is driven end to end, not read.** Every branch it names is walked through the real binary against the simulator, and each journey asserts that nothing socrates ran wrote in the repository and that no command outside what the skill names was used. Text fails quietly, and a skill whose sequence nobody executes is prose.
 - **The prompt is a generated interface.** Tests assert on the prompt that was delivered, read back from the round directory or from the simulator's invocation log, and never on socrates' own source text.
 - **The reporting section is derived from the classifier.** The severities, actions and risk levels the prompt defines are generated from what `internal/findings` implements, so the two cannot drift.
 - **Snapshot commits are content-addressed.** Author and committer dates are pinned to the epoch, so the same worktree and base always produce the same commit, and therefore a byte-identical prompt.

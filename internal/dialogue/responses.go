@@ -23,6 +23,10 @@ func Resolutions() []Resolution {
 	return slices.Clone(resolutions)
 }
 
+func Rules() []string {
+	return strings.Split(ResponseRules, "\n")
+}
+
 type Response struct {
 	Finding    string     `json:"finding"`
 	Resolution Resolution `json:"resolution"`

@@ -12,6 +12,7 @@ const (
 	watchShort     = "Follow a review as it happens and exit with its verdict"
 	logsShort      = "Print what a review recorded, for a person to read afterwards"
 	cancelShort    = "Stop a review and say that nothing was decided"
+	skillShort     = "Install the skill that teaches a coding session to drive a review"
 	superviseShort = "Conduct a review that scrat review started"
 
 	intentUsage   = "what the person asked for, in their words"
@@ -22,6 +23,7 @@ const (
 	rejectedUsage = "the finding is wrong, and --reason says why"
 	reasonUsage   = "why the rejected finding is wrong, or - to read it from standard input"
 	noteUsage     = "what was done about the fixed finding, or - to read it from standard input"
+	toUsage       = "the skills directory to write to, instead of the one under your home directory"
 
 	notACommand            = "%q is not a scrat command: run scrat --help to see what scrat does"
 	unusableFlag           = "%s: run scrat --help to see what scrat accepts"
@@ -39,6 +41,8 @@ const (
 	everythingIsAnswered = "every finding of this round that a response can address now has one"
 	stillToAnswer        = "%d findings still have none: %s"
 	roundStarted         = "round %d is under way"
+
+	installedTheSkill = "the scrat skill is at %s, and a session that reads it can drive a review itself"
 
 	stillStarting = "run %s is %s, and its reviewer has written nothing yet"
 

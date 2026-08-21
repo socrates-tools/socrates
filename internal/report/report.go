@@ -211,12 +211,7 @@ func (f Findings) rules() []string {
 }
 
 func ResponseRules() []string {
-	return []string{
-		didNotReviewIt,
-		fixOrReject,
-		aRejectionIsAClaim,
-		doNotWeakenTheWork,
-	}
+	return dialogue.Rules()
 }
 
 func (f Findings) stateReason() string {

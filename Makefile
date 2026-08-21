@@ -1,6 +1,6 @@
 BINARY := bin/scrat
 
-.PHONY: build test lint fmt scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
+.PHONY: build test lint fmt skill scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
 
 build:
 	go build -o $(BINARY) ./cmd/scrat
@@ -17,6 +17,9 @@ lint:
 
 fmt:
 	gofmt -w .
+
+skill:
+	go run ./cmd/scrat skill --to .claude/skills
 
 scenario-coverage:
 	./scripts/scenario-coverage
