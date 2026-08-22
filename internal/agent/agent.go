@@ -61,7 +61,6 @@ type Response struct {
 	Effort      string
 	SessionID   string
 	Usage       Usage
-	Opened      bool
 	ToolServers []string
 	Tools       []string
 }

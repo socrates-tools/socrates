@@ -162,7 +162,7 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 	}
 	waitErr := command.Wait()
 
-	reached := Response{Opened: read.opened, ToolServers: read.toolServers, Tools: read.tools}
+	reached := Response{ToolServers: read.toolServers, Tools: read.tools}
 
 	if deadlineErr := a.deadlineReached(bounded, parent); deadlineErr != nil {
 		return reached, deadlineErr
@@ -180,7 +180,6 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 		Effort:      routing.Effort,
 		SessionID:   read.sessionID,
 		Usage:       read.usage,
-		Opened:      read.opened,
 		ToolServers: read.toolServers,
 		Tools:       read.tools,
 	}

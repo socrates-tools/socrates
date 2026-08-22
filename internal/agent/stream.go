@@ -57,7 +57,6 @@ type streamed struct {
 	model       string
 	sessionID   string
 	usage       Usage
-	opened      bool
 	toolServers []string
 	tools       []string
 }
@@ -97,7 +96,6 @@ func parseStream(input io.Reader) (streamed, error) {
 			if event.Subtype != "init" {
 				break
 			}
-			read.opened = true
 			read.tools = event.Tools
 			read.toolServers = nil
 			for _, server := range event.ToolServers {

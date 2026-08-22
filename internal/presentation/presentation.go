@@ -57,7 +57,10 @@ func sentence(event runlog.Event) string {
 	case agentFailedKind:
 		return fmt.Sprintf(agentFailedSentence, event.Subject, stated(held, reasonField))
 	case toolServersLoadedKind:
-		return fmt.Sprintf(toolServersLoadedSentence, stated(held, serversField), counted(held, toolsField))
+		if servers := stated(held, serversField); servers != "" {
+			return fmt.Sprintf(toolServersLoadedSentence, servers, counted(held, toolsField))
+		}
+		return fmt.Sprintf(toolServersLoadedForAReason, stated(held, reasonField))
 	default:
 		return unrecognised(event)
 	}

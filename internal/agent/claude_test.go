@@ -327,8 +327,8 @@ func TestWhatTheMechanismsDoNotCover(t *testing.T) {
 		named    string
 		scenario string
 	}{
-		{named: "a machine with servers configured", scenario: "default:\n  tool_servers: [serena]\n"},
-		{named: "a machine that names them in its own settings", scenario: "default:\n  tool_servers: [serena, playwright]\n"},
+		{named: "a machine with one server configured", scenario: "default:\n  tool_servers: [serena]\n"},
+		{named: "a machine with several servers configured", scenario: "default:\n  tool_servers: [serena, playwright]\n"},
 	} {
 		t.Run(machine.named, func(t *testing.T) {
 			simulated := simulator.Install(t)

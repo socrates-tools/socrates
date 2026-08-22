@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/rui-ktei/socrates/internal/corpus"
@@ -106,12 +107,24 @@ func TestTheRecordingsCarryWhatSocratesReadsFromTheOpeningEvent(t *testing.T) {
 			t.Errorf("%s records no opening event", recording.Path)
 			continue
 		}
-		for _, needed := range []string{"mcp_servers", "mcp_servers[].name", "tools"} {
+		for _, needed := range []string{"mcp_servers", "tools"} {
 			if !slices.Contains(opening.Fields, needed) {
 				t.Errorf("%s does not record %q, and socrates reads it to know what the reviewer loaded: a recording taken without it would let the field disappear unnoticed", recording.Path, needed)
 			}
 		}
+		if namesAServer(opening) && !slices.Contains(opening.Fields, "mcp_servers[].name") {
+			t.Errorf("%s records a tool server without a name, and the name is what socrates records when a machine loads one anyway", recording.Path)
+		}
 	}
+}
+
+func namesAServer(opening fidelity.Shape) bool {
+	for _, field := range opening.Fields {
+		if strings.HasPrefix(field, "mcp_servers[]") {
+			return true
+		}
+	}
+	return false
 }
 
 func systemShape(shapes []fidelity.Shape) (fidelity.Shape, bool) {

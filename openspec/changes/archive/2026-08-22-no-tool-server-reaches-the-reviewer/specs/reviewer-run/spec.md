@@ -10,13 +10,13 @@ socrates SHALL hold this with three mechanisms, named here in the order they act
 
 All three bound the snapshot worktree and none of them bounds anything else.
 A tool that reaches outside the worktree is therefore not covered by any of them, and what covers it is that no tool server loads into a reviewer at all.
-That is why the tool servers are stopped by two mechanisms of their own rather than left to the seal, and why a run on which one loaded anyway records that it did.
+That is why the tool servers are stopped by a mechanism of their own rather than left to the seal, why what actually loaded is read from the session rather than assumed, and why a run on which one loaded anyway records that it did.
 
 When a round ends, socrates SHALL compare the snapshot worktree against the snapshot commit.
 Any difference SHALL fail the round, naming the paths that differ, and SHALL leave the worktree in place.
 
 A reviewer with write access will eventually decide to just fix something, after which the next round's diff contains changes nobody attributes.
-The first two mechanisms can be taken away from socrates by the machine it runs on, and were: a vendor CLI can refuse to stop loading a tool server, and a filesystem can decline to enforce permissions.
+The first two mechanisms can be taken away from socrates by the machine it runs on, and were: a machine's policy can override the allowlist that keeps tool servers out, leaving the session tools the vendor's restriction was never about, and a filesystem can decline to enforce permissions.
 The comparison cannot be taken away, which is why it stays even though the seal makes it unreachable in ordinary use.
 
 #### Scenario: A reviewer that wrote fails the round

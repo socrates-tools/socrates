@@ -44,14 +44,27 @@ The implementation shipped SHALL invoke the `claude` binary in print mode with a
 It SHALL load user-level settings and memory only, and SHALL NOT load the reviewed repository's own project or local settings, because those are authored by the thing under review.
 
 It SHALL restrict the agent's tools to those that do not write, on the vendor's own mechanism.
-That restriction covers the tools the model may call and nothing else.
+That restriction covers the built-in tools the model may call and nothing else.
+It does not cover a tool that a tool server contributes, which is why stopping the servers loading is a separate mechanism rather than the same one stated twice.
 
 It SHALL load no external tool server, whatever the person has configured for their own sessions.
 A tool server is a second source of tools that the vendor's own tool restriction does not cover, and a review that loads one is a reviewer that can write, both to the snapshot worktree and outside it.
 The first live run of socrates found this: the person's own configured servers wrote a directory into the snapshot worktree, and the round failed for a write the reviewer never asked to make.
+A later live run found the other half of it: on a machine whose managed configuration the CLI would not let socrates ignore, the reviewer's session held script execution, file upload and browser control, and nothing socrates holds covers what those reach.
 
-Where the vendor's CLI refuses to ignore the machine's own tool server configuration, socrates SHALL run the review without that restriction rather than not at all, and SHALL record that the servers were loaded.
-What holds the reviewer read-only in that case is the seal on the snapshot worktree, which no configuration of the vendor's CLI can lift.
+It SHALL stop them with an empty tool-server allowlist, supplied with the invocation's own settings, which the vendor evaluates before a server loads and which an empty value SHALL express as permitting none.
+It SHALL NOT ask the vendor to replace the machine's own tool server configuration.
+That request is refused at startup wherever a managed configuration is deployed, because it asks to replace a managed set, and it is the only reason socrates ever needed a second attempt.
+An allowlist that permits nothing makes reading those configuration files pointless, so one mechanism that is never refused replaces two of which one always was.
+
+The mechanism SHALL NOT be trusted to have worked.
+socrates SHALL take the tool servers and the session's tool list from the stream's opening event and SHALL record what that event reported.
+An allowlist merges with the ones the machine already has, so a person's own settings can permit a server socrates did not, and a policy that makes managed allowlists the only ones that count can ignore what socrates supplied altogether.
+Deriving the answer from a vendor's error message instead is a rule that stops working when the prose is edited, and it stops working by failing every review rather than by reporting the truth.
+
+Where the machine loads them anyway, socrates SHALL run the review rather than not at all, and the run SHALL record which servers the opening event named and how many tools they contributed.
+A machine whose policy is set by somebody entitled to set it should still get reviews.
+Inside the snapshot worktree the seal holds the reviewer read-only, and outside it nothing socrates holds bounds what a loaded tool reaches, which is why loading none of them is a mechanism of its own rather than something the seal answers.
 Neither this requirement nor the seal removes the comparison after the round, which is the check on anything that defeated both.
 
 #### Scenario: No tool server is loaded
@@ -59,10 +72,20 @@ Neither this requirement nor the seal removes the comparison after the round, wh
 - **WHEN** a reviewer is invoked on a machine whose user configuration names external tool servers
 - **THEN** the recorded invocation loads none of them, and nothing outside the vendor's restricted tools reaches the reviewer
 
+#### Scenario: Nothing asks to replace a managed set
+
+- **WHEN** any reviewer is invoked
+- **THEN** the recorded invocation carries an empty tool-server allowlist in its own settings, and carries no request to replace the machine's own tool server configuration
+
 #### Scenario: A machine that will not let them be ignored
 
-- **WHEN** the CLI refuses the request to ignore the machine's own tool server configuration
-- **THEN** the review is invoked again without that request, the run records that the servers were loaded, and the tool restriction is unchanged
+- **WHEN** the machine's policy overrides the allowlist socrates supplied, so the opening event names tool servers
+- **THEN** the review completes, the tool restriction is unchanged, and the run records the servers that event named and how many tools they contributed
+
+#### Scenario: What loaded is read rather than inferred
+
+- **WHEN** a review completes and the stream's opening event names the tool servers of the session
+- **THEN** what the run records about tool servers is what that event reported, and no part of the decision reads the text of a vendor error
 
 #### Scenario: A tool server that writes cannot reach the change under review
 

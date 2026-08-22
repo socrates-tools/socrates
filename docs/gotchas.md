@@ -78,6 +78,12 @@ What the run records is what that event reported.
 `--tools` covers built-in tools only, so a tool a server contributes appears in the opening event's `tools` beside them, prefixed `mcp__`.
 The live run that found this held `mcp__playwright__browser_run_code_unsafe` and `mcp__chrome-devtools__evaluate_script`, and the seal bounds the snapshot worktree rather than what those reach.
 
+**Doing this right takes the evidence for `mcp_servers[].name` away.**
+The fidelity recordings pin the fields socrates reads out of the opening event, and they are recorded through socrates' own invocation, which now permits no server.
+So `make fixtures` on a machine like this one records `mcp_servers` as an empty array, and no recording afterwards holds `mcp_servers[].name` for the guard to pin.
+The guard requires the name of any server a recording does list, and stays quiet where none does, because failing would read as the vendor removing a field when what happened is socrates keeping servers out.
+The two recordings checked in were taken before the allowlist and still list servers, so the name is pinned until somebody re-records them.
+
 **A sealed worktree is fully usable by the vendor's CLI.**
 Clearing every write bit in the worktree does not disturb a reviewer: `git status`, `git grep` and every read work, because a worktree's index and administrative state live under the main repository's `.git/worktrees/<name>/` rather than in the worktree.
 A tool server that writes at startup has its write refused and the session carries on, verified against the real CLI with an enterprise configuration loaded.

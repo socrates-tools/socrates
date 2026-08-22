@@ -170,6 +170,26 @@ func TestARotatedLogIsMarked(t *testing.T) {
 	}
 }
 
+func TestAnEventRecordedBeforeTheServersWereNamedStillReads(t *testing.T) {
+	lines := presentation.Lines([]runlog.Event{
+		{At: at, Kind: agent.EventToolServersLoaded, Subject: "reviewer", Fields: map[string]any{
+			"reason": "claude exited: exit status 1: You cannot use --strict-mcp-config when an enterprise MCP config is present",
+		}},
+	})
+
+	if len(lines) != 1 {
+		t.Fatalf("one event rendered as %d lines:\n%s", len(lines), strings.Join(lines, "\n"))
+	}
+	if !strings.Contains(lines[0], "You cannot use --strict-mcp-config") {
+		t.Errorf("the line drops the only account the event carries: %q", lines[0])
+	}
+	for _, absent := range []string{"0 tools", ": ,"} {
+		if strings.Contains(lines[0], absent) {
+			t.Errorf("the line reads %q off a field the event never carried: %q", absent, lines[0])
+		}
+	}
+}
+
 func fields() map[string]any {
 	return map[string]any{
 		"repository":    "/home/a/project",
