@@ -85,6 +85,19 @@ func (s *Simulator) Invocations() []claudesim.Invocation {
 	return invocations
 }
 
+func (s *Simulator) Processes() []int {
+	invocations, err := claudesim.ReadLog(s.LogPath)
+	if err != nil {
+		return nil
+	}
+
+	var processes []int
+	for _, invocation := range invocations {
+		processes = append(processes, invocation.Process)
+	}
+	return processes
+}
+
 func (s *Simulator) OnlyInvocation() claudesim.Invocation {
 	s.t.Helper()
 

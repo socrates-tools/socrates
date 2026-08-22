@@ -23,7 +23,12 @@ import (
 	"github.com/rui-ktei/socrates/internal/testing/source"
 )
 
-const terminalWait = 30 * time.Second
+const (
+	terminalWait = 30 * time.Second
+	reapingWait  = 10 * time.Second
+	reapingPoll  = 10 * time.Millisecond
+	quietSweeps  = 3
+)
 
 type Session struct {
 	t          *testing.T
@@ -292,14 +297,50 @@ func (s *Session) liftEverySeal() {
 }
 
 func (s *Session) stopEveryReviewer() {
+	deadline := time.Now().Add(reapingWait)
+	quiet := 0
+
+	for quiet < quietSweeps {
+		alive := s.killWhatIsStillRunning()
+		if alive == 0 {
+			quiet++
+		} else {
+			quiet = 0
+		}
+		if time.Now().After(deadline) {
+			s.t.Errorf("%d of the processes this session started were alive %s after being killed, and whatever they write next lands in a directory the test is deleting", alive, reapingWait)
+			return
+		}
+		time.Sleep(reapingPoll)
+	}
+}
+
+func (s *Session) killWhatIsStillRunning() int {
+	alive := 0
+
 	for _, name := range s.Names() {
 		run, err := s.Store.Load(name)
 		if err != nil {
 			continue
 		}
-		_ = process.KillGroup(run.Agent)
-		_ = process.Kill(run.Reviewer)
+		if process.Alive(run.Agent) {
+			alive++
+			_ = process.KillGroup(run.Agent)
+		}
+		if process.Alive(run.Reviewer) {
+			alive++
+			_ = process.Kill(run.Reviewer)
+		}
 	}
+
+	for _, pid := range s.Simulator.Processes() {
+		if process.Alive(pid) {
+			alive++
+			_ = process.Kill(pid)
+		}
+	}
+
+	return alive
 }
 
 func reasonOf(run *runstore.Run) string {
