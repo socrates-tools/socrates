@@ -55,4 +55,4 @@
 - [x] 8.2 `make scenario-coverage` naming every scenario this change renames
 - [x] 8.3 `make scenario-drop` before archiving
 - [x] 8.4 `make corpus-outcomes` read, because the routing rule is untouched and its numbers should not move
-- [ ] 8.5 A live run confirming from the delivered invocation and the recorded stream that the reviewer held the tools socrates asked for and no others. Require the run, the recording and what the opening event reported, and require no severity, action or count
+- [x] 8.5 A live run confirming from the delivered invocation and the recorded stream that the reviewer held the tools socrates asked for and no others. Require the run, the recording and what the opening event reported, and require no severity, action or count

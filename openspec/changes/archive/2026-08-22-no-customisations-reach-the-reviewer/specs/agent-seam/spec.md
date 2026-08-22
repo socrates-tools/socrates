@@ -21,23 +21,39 @@
 
 The implementation shipped SHALL invoke the `claude` binary in print mode with a streaming JSON output format, supply the JSON schema on the command line, and take the structured output from the terminal `result` event of the stream.
 
-It SHALL load user-level settings and memory only, and SHALL NOT load the reviewed repository's own project or local settings, because those are authored by the thing under review.
+It SHALL load user-level settings only, and SHALL NOT load the reviewed repository's own project or local settings, because those are authored by the thing under review.
 
 The reviewer SHALL hold the tools socrates asked for and no others.
 It asks on the vendor's own mechanism for tools that do not write, and that mechanism covers the built-in tools the model may call and nothing else.
-A tool from any other source is therefore not covered by it: an external tool server contributes tools, so does a hook, so does a plugin, and so does a built-in the vendor adds in a release nobody read.
+A tool from any other source is therefore not covered by it: an external tool server contributes tools, so does a plugin, and so does a built-in the vendor adds in a release nobody read.
+A hook contributes no tool and is worse than one for it, because it runs a command of its own on an event rather than waiting to be called.
 A reviewer holding such a tool is a reviewer that can write, both to the snapshot worktree and outside it.
 socrates' first live run found this when the machine's own configured tool server wrote a directory into the snapshot worktree, and a later one found the reviewer's session holding script execution, file upload and browser control.
 
-It SHALL ask for no other source of tools, with an empty allowlist supplied in the invocation's own settings, which the vendor evaluates before another source loads and which an empty value SHALL express as permitting none.
-It SHALL NOT ask the vendor to replace the machine's own configuration of those sources.
+The tools socrates asks for SHALL be those that read the change and those that check a claim against the world, and SHALL NOT be those that write.
+A reviewer that cannot look up what a library actually does writes a finding about its own recollection, and patching is the author's half of the asymmetry this design rests on.
+The tools that write are also the ones that reach outside the snapshot worktree, where nothing socrates holds bounds anything.
+
+It SHALL ask the vendor to disable the customisations the machine brings on its own account, on the one mechanism that disables all of those at once and leaves auth, model selection and the built-in tools working.
+It SHALL supply no settings of its own, because that mechanism makes an allowlist for one source of tools pointless and covers the sources such an allowlist said nothing about.
+It SHALL NOT ask the vendor to replace the machine's own configuration of any source.
 That request is refused at startup wherever a managed configuration is deployed, because it asks to replace a managed set, and it is the only reason socrates ever needed a second attempt.
-An allowlist that permits nothing makes reading those configuration files pointless, so one mechanism that is never refused replaces two of which one always was.
+One mechanism that is never refused therefore replaces two of which one always was.
+
+What that mechanism does not reach is a hook an administrator's policy configures, which the vendor keeps in force by design, along with a policy-configured status line and policy-configured file-suggestion commands.
+Only the policy-configured ones survive it, and a policy-configured tool source is not among them: those do not load, which socrates measured on such a machine, where a plugin's own tool left the session's list at the same time.
+The vendor documents managed plugins, managed skills and managed memory going the same way, and socrates holds no measurement that distinguishes a managed one from a person's own, because the session's tool list does not say what contributed a tool.
+A policy hook contributes no tool, so the session's tool list is not what would catch it.
+What does catch it inside the snapshot worktree is the seal and the comparison, because its command is a child of the session and the session runs there.
+What nothing socrates holds bounds is where that command reaches outside the worktree, and that one residual is accepted and stated rather than covered, for the same reason the review runs at all on such a machine: a policy set by somebody entitled to set it should still get reviews.
 
 The mechanism SHALL NOT be trusted to have worked.
 socrates SHALL take the session's tool list from the stream's opening event, SHALL treat every tool in it that socrates did not ask for as a tool it did not ask for whatever put it there, and SHALL record those.
-An allowlist merges with the ones the machine already has, so a person's own settings can permit a source socrates did not, and a policy that makes managed allowlists the only ones that count can ignore what socrates supplied altogether.
+The set socrates asked for SHALL be derived from what the invocation carries rather than stated a second time.
+A vendor release that adds a built-in outside that set therefore records an unexpected tool on every run until somebody looks, which is the direction to be wrong in.
 Deriving the answer from a vendor's error message instead is a rule that stops working when the prose is edited, and it stops working by failing every review rather than by reporting the truth.
+The list is what the reviewer could use at the point socrates read it rather than a proof that nothing arrived later, because a source that connects after the opening event can contribute a tool that event did not name.
+What covers later is those customisations not loading at all, and the comparison after the round.
 
 Where such a tool is in the session anyway, socrates SHALL run the review rather than not at all, and the run SHALL record the tools it did not ask for.
 A machine whose policy is set by somebody entitled to set it should still get reviews.
@@ -52,7 +68,12 @@ Neither this requirement nor the seal removes the comparison after the round, wh
 #### Scenario: Nothing asks for the machine's own customisations
 
 - **WHEN** any reviewer is invoked
-- **THEN** the recorded invocation carries an empty allowlist for other tool sources in its own settings, and carries no request to replace the machine's own configuration of them
+- **THEN** the recorded invocation asks the vendor to disable the customisations the machine brings on its own account, supplies no settings of its own, and carries no request to replace the machine's own configuration of any source
+
+#### Scenario: The reviewer is given tools that do not write
+
+- **WHEN** any reviewer is invoked
+- **THEN** the recorded invocation asks for the tools that read the change and check a claim, and for none of the tools that write
 
 #### Scenario: A machine that hands the reviewer more than it asked for
 

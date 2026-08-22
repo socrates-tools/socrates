@@ -1,16 +1,20 @@
 what socrates would do with each answer a real reviewer gave
 
-awaiting-response: 8 recorded
+awaiting-response: 10 recorded
+  a-security-boundary-restated-first-look
   an-answered-question-parks
   dialogue-fixes-first-look
   dialogue-fixes-second-look
   dialogue-layer-first-look
   dialogue-layer-second-look
+  no-customisation-reaches-the-reviewer-first-look
   no-tool-server-reaches-the-reviewer
   the-loop-a-session-drives
   the-reviewer-corpus
 clean: 0 recorded
-escalated: 1 recorded
+escalated: 3 recorded
+  a-security-boundary-restated-second-look
   an-answered-question-second-look
+  no-customisation-reaches-the-reviewer-second-look
 
-recorded answers: 9
+recorded answers: 13

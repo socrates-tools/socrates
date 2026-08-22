@@ -58,8 +58,14 @@ It says nothing about the customisations the machine loads, and one of those wri
 A later run found the same session holding script execution, file upload and browser control, none of which `--tools` had any opinion about.
 
 **`--safe-mode` is the one flag that answers all of it.**
-It disables every customisation the machine brings, and the vendor's own help lists them: memory files, skills, plugins, hooks, custom commands and agents, output styles, and external tool sources.
+It disables the customisations the machine brings on its own account, and the vendor's own help lists them: memory files and auto memory, skills, plugins, hooks, external tool sources, custom commands and agents, output styles, workflows, themes, keybindings, the status line, the file-suggestion commands and LSP servers.
 Auth, model selection, built-in tools and permissions keep working, which is the whole point: the reviewer loses the machine's additions and keeps the CLI.
+The same help says `Admin-managed (policy) settings still apply`, and the binary says which part of them that is: `Hooks from settings files are suspended and will not run this session (managed policy hooks still apply)`, beside a `Hooks Restricted by Policy` notice.
+So the residual is a hook an administrator's policy configures, along with a policy-configured status line and policy-configured file-suggestion commands: only the policy-configured ones survive, and the machine's own do not load.
+A policy-configured tool source is not in that residual, which the measurement below shows going away, and the vendor's documentation puts managed plugins, managed skills and managed memory with it.
+That half is documentation rather than measurement, because the tool list does not say what contributed a tool and its `plugins` field is an inventory of the machine.
+A policy hook contributes no tool for the list check to see, but its command is a child of the session, whose working directory is the sealed worktree, so a write it makes there is refused and the comparison afterwards catches one the seal did not.
+What nothing socrates holds bounds is where that command reaches outside the worktree, so the residual is socrates' to state rather than to close: the flag that would ask to replace a managed set is the one refused at startup.
 Measured on this machine, which deploys a managed configuration: without it the opening event named four external sources, with it none, and the plugin-contributed `LSP` tool disappeared from the session's tool list at the same time.
 It is not refused by a managed configuration, which is the trap the flags below fall into.
 
@@ -78,6 +84,14 @@ It took a reviewer's session from 74 externally contributed tools to none.
 socrates takes `tools` from the stream's opening event, subtracts what it asked for, and records the remainder.
 Anything a customisation contributes lands in that list, so one check covers every source rather than one of them.
 An externally contributed tool is recognisable in that list by an `mcp__` prefix, which is how the live run that found this was diagnosed.
+
+**The opening event still enumerates the customisations the flag disabled.**
+Under `--safe-mode` its `skills`, `plugins`, `slash_commands` and `agents` fields name everything installed on the machine, and its `tools` field holds only what socrates asked for.
+Those fields are an inventory of the machine rather than a statement about the session, so a check that read them instead of `tools` would report a customisation on every run of every machine that has one.
+
+**The opening event is not always the first line of the stream.**
+Without `--safe-mode` a `SessionStart` hook fires first on this machine and its `hook_started` event arrives before `system`/`init`; with the flag no hook of this machine's own runs and the init event is first, though a machine whose policy configures one would still see it fire.
+socrates matches the event by type and subtype wherever it appears, so this is one more thing the flag makes true rather than something to rely on.
 
 **A tool list at the opening event can be incomplete.**
 External sources connect asynchronously, so a probe on this machine reported four of them in the opening event while the tool list held none of their tools yet.

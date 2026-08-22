@@ -13,7 +13,8 @@ A hook is another, a plugin is another, a memory file that seats the reviewer is
 Naming one of them left the rest uncovered and put the vendor's vocabulary through five packages.
 
 The vendor already has a flag for all of it.
-`--safe-mode` disables every customisation the machine brings and leaves auth, model selection and the built-in tools working, which is exactly the reviewer socrates wants.
+`--safe-mode` disables the customisations the machine brings on its own account and leaves auth, model selection and the built-in tools working, which is exactly the reviewer socrates wants.
+What it leaves in force is a hook an administrator's policy configures, which contributes no tool and is a residual socrates states rather than covers.
 Measured on a machine that deploys a managed configuration: the opening event named four external sources without it and none with it, and a plugin-contributed tool left the session's tool list at the same time.
 Unlike the flags that ask to replace a managed set, it is not refused where one exists.
 

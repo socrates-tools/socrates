@@ -4,7 +4,7 @@ The change before this one made the tool-source protection correct.
 This one makes it small, by noticing two things.
 
 The property being protected was never about one vendor feature: it is that the reviewer holds the tools socrates asked for and nothing else.
-And the vendor already ships a flag that disables every source of the ones socrates did not ask for.
+And the vendor already ships a flag that disables every source of the ones socrates did not ask for that the machine brings on its own account.
 
 ## Goals / Non-Goals
 
@@ -24,7 +24,8 @@ And the vendor already ships a flag that disables every source of the ones socra
 
 ### `--safe-mode` replaces the settings allowlist
 
-The vendor documents it as disabling all customisations, and lists them: memory files, skills, plugins, hooks, custom commands and agents, output styles, and external tool sources.
+The vendor documents it as disabling the customisations the machine brings on its own account, and lists them: memory files and auto memory, skills, plugins, hooks, external tool sources, custom commands and agents, output styles, workflows, themes, keybindings, the status line, the file-suggestion commands and LSP servers.
+What it keeps in force is the managed settings policy, which is the carve-out recorded below.
 It also documents what keeps working: auth, model selection, built-in tools, permissions.
 
 Measured on a machine that deploys a managed configuration, which is the case that defeated everything before it:
@@ -40,6 +41,8 @@ It is not refused by a managed configuration, so the refusal that produced a sec
 It covers more than the allowlist it replaces. A hook and a plugin are tool sources the allowlist said nothing about, and the requirement it replaces admitted as much: the tool restriction "does not cover a tool server, a hook, or any other process the vendor's session starts". The plugin tool leaving the session's list is that admission being answered rather than restated.
 
 It also takes the user's own memory and skills out of the reviewer, which is the same direction socrates already went by refusing the reviewed repository's instructions. The `scrat` skill a person installs at user level can no longer seat the reviewer that reads their code.
+
+What it does not cover, measured after the fact and stated rather than closed: a hook an administrator's policy configures still runs, along with the status line and the file-suggestion commands, because the vendor keeps the managed settings policy in force by design. A policy hook contributes no tool, so the tool-list check cannot see it, and outside the snapshot worktree nothing socrates holds bounds it. A policy-configured tool source is not in that residual, which is what the table above shows: the four external sources are gone with the flag and so is the plugin's tool. Managed plugins, managed skills and managed memory go the same way by the vendor's documentation rather than by anything measured here, because the tool list does not say what contributed a tool.
 
 ### The tool list is the check
 
