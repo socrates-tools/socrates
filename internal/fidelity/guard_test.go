@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"slices"
-	"strings"
 	"testing"
 
 	"github.com/rui-ktei/socrates/internal/corpus"
@@ -92,7 +91,7 @@ func listPackage(t *testing.T, named string) packageFiles {
 }
 
 func TestTheRecordingsCarryWhatSocratesReadsFromTheOpeningEvent(t *testing.T) {
-	// scenario: What loaded is read rather than inferred
+	// scenario: What the reviewer held is read rather than assumed
 	recordings, err := fidelity.Recordings(fidelity.RecordingsDirectory)
 	if err != nil {
 		t.Fatalf("%v", err)
@@ -107,24 +106,10 @@ func TestTheRecordingsCarryWhatSocratesReadsFromTheOpeningEvent(t *testing.T) {
 			t.Errorf("%s records no opening event", recording.Path)
 			continue
 		}
-		for _, needed := range []string{"mcp_servers", "tools"} {
-			if !slices.Contains(opening.Fields, needed) {
-				t.Errorf("%s does not record %q, and socrates reads it to know what the reviewer loaded: a recording taken without it would let the field disappear unnoticed", recording.Path, needed)
-			}
-		}
-		if namesAServer(opening) && !slices.Contains(opening.Fields, "mcp_servers[].name") {
-			t.Errorf("%s records a tool server without a name, and the name is what socrates records when a machine loads one anyway", recording.Path)
+		if !slices.Contains(opening.Fields, "tools") {
+			t.Errorf("%s does not record the session's tool list, and socrates reads it to know what the reviewer held: a recording taken without it would let the field disappear unnoticed", recording.Path)
 		}
 	}
-}
-
-func namesAServer(opening fidelity.Shape) bool {
-	for _, field := range opening.Fields {
-		if strings.HasPrefix(field, "mcp_servers[]") {
-			return true
-		}
-	}
-	return false
 }
 
 func systemShape(shapes []fidelity.Shape) (fidelity.Shape, bool) {

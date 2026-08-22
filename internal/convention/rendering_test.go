@@ -17,7 +17,7 @@ func TestOnlyOnePlaceTurnsAnEventIntoALinePeopleRead(t *testing.T) {
 		agent.EventStarted,
 		agent.EventCompleted,
 		agent.EventFailed,
-		agent.EventToolServersLoaded,
+		agent.EventUnexpectedTools,
 		reviewer.EventRunStarted,
 		reviewer.EventRunEnded,
 		reviewer.EventRoundStarted,

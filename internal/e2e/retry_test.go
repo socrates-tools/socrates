@@ -49,37 +49,38 @@ func TestCancellingStopsTheReviewerThatIsAnswering(t *testing.T) {
 	waitForDeath(t, name, started.Reviewer, 0)
 }
 
-func TestAMachineThatLoadsThemAnywayIsRecorded(t *testing.T) {
-	// scenario: A machine that will not let them be ignored
+func TestAMachineThatHandsTheReviewerMoreIsRecorded(t *testing.T) {
+	// scenario: A machine that hands the reviewer more than it asked for
 	session := harness.Start(t)
-	session.Simulator.Scenario("default:\n  ignores_allowlist: true\n  tool_servers: [serena, playwright]\n")
+	session.Simulator.Scenario("default:\n  extra_tools: [Bash, browser_run_code_unsafe]\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	name := session.Review()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Clean {
-		t.Fatalf("a machine that loads its tool servers anyway ended the run as %s: %s", run.State, reason(run))
+		t.Fatalf("a session holding more than socrates asked for ended the run as %s: %s", run.State, reason(run))
 	}
 
 	recorded := ""
 	for _, event := range session.Events(name) {
-		if event.Kind == agent.EventToolServersLoaded {
-			recorded = fmt.Sprint(event.Fields["servers"])
+		if event.Kind == agent.EventUnexpectedTools {
+			recorded = fmt.Sprint(event.Fields["tools"])
 		}
 	}
 	if recorded == "" {
-		t.Fatal("a run whose reviewer loaded the machine's tool servers records nothing about it")
+		t.Fatal("a run whose reviewer held tools socrates did not ask for records nothing about it")
 	}
-	for _, named := range []string{"serena", "playwright"} {
+	for _, named := range []string{"Bash", "browser_run_code_unsafe"} {
 		if !strings.Contains(recorded, named) {
 			t.Errorf("the recorded event does not name %s: %q", named, recorded)
 		}
 	}
 }
 
-func TestAToolServerThatWritesCannotReachTheChangeUnderReview(t *testing.T) {
+func TestAToolThatWritesCannotReachTheChangeUnderReview(t *testing.T) {
+	// scenario: A tool that writes cannot reach the change under review
 	session := harness.Start(t)
-	session.Simulator.Scenario("default:\n  ignores_allowlist: true\n  tool_servers: [serena]\n  writes:\n    - path: .serena/project.yml\n      content: \"a tool server writing its own bookkeeping as it starts\\n\"\n")
+	session.Simulator.Scenario("default:\n  extra_tools: [Bash]\n  writes:\n    - path: .serena/project.yml\n      content: \"a tool writing its own bookkeeping as it starts\\n\"\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	name := session.Review()
@@ -97,7 +98,7 @@ func TestAToolServerThatWritesCannotReachTheChangeUnderReview(t *testing.T) {
 	}
 
 	if _, err := os.Stat(run.Worktree); run.Worktree != "" && !os.IsNotExist(err) {
-		t.Errorf("the worktree at %s was kept, so a tool server's write reached the change under review", run.Worktree)
+		t.Errorf("the worktree at %s was kept, so the write reached the change under review", run.Worktree)
 	}
 	if listed := session.Repository.Git("status", "--porcelain=v1", "--untracked-files=all"); listed != "?? internal/added.go" {
 		t.Errorf("the person's own repository reads:\n%s", listed)

@@ -3,8 +3,8 @@ package agent_test
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 
@@ -67,91 +67,82 @@ func TestProjectSettingsAreNotLoaded(t *testing.T) {
 	}
 }
 
-func TestNoToolServerIsLoaded(t *testing.T) {
+func TestNoCustomisationReachesTheReviewer(t *testing.T) {
+	// scenario: No tool socrates did not ask for reaches the reviewer
 	simulated := simulator.Install(t)
 	claude := build(t, agent.Options{})
 
-	if _, err := claude.Run(context.Background(), request()); err != nil {
+	answer, err := claude.Run(context.Background(), request())
+	if err != nil {
 		t.Fatalf("running the reviewer: %v", err)
+	}
+
+	if len(answer.Tools) == 0 {
+		t.Fatal("the session reported no tools at all, so this test would pass on an empty reading")
+	}
+	if unexpected := agent.UnexpectedTools(answer.Tools); len(unexpected) != 0 {
+		t.Errorf("the reviewer held %v, which socrates never asked for", unexpected)
 	}
 
 	invocation := simulated.OnlyInvocation()
 
-	supplied, found := invocation.ValueOf("--settings")
-	if !found {
-		t.Fatal("the invocation supplies no settings of its own, so the machine's tool servers load")
+	if !invocation.Has("--safe-mode") {
+		t.Error("the invocation asks for no customisations to be disabled, so the machine's own tool sources, hooks and plugins reach the reviewer")
 	}
 
-	var allowing struct {
-		Allowed *[]any `json:"allowedMcpServers"`
-	}
-	if err := json.Unmarshal([]byte(supplied), &allowing); err != nil {
-		t.Fatalf("the settings socrates supplies are not JSON: %v: %s", err, supplied)
-	}
-	if allowing.Allowed == nil {
-		t.Fatalf("the settings name no tool server allowlist, and an absent allowlist permits every server: %s", supplied)
-	}
-	if len(*allowing.Allowed) != 0 {
-		t.Errorf("the allowlist permits %v, and it is the mechanism that has to permit nothing", *allowing.Allowed)
-	}
-	if invocation.Settings != supplied {
-		t.Error("the settings the simulator read are not the ones socrates passed")
-	}
-
-	t.Run("and nothing asks to replace a managed set", func(t *testing.T) {
-		// scenario: Nothing asks to replace a managed set
-		for _, refused := range []string{"--strict-mcp-config", "--mcp-config"} {
-			if invocation.Has(refused) {
-				t.Errorf("the invocation carries %s, which a machine with a managed configuration rejects at startup and which the allowlist makes unnecessary", refused)
-			}
+	t.Run("and nothing else is asked for", func(t *testing.T) {
+		// scenario: Nothing asks for the machine's own customisations
+		if invocation.Has("--settings") {
+			t.Error("the invocation supplies settings of its own, which asking for no customisations makes unnecessary")
 		}
 	})
 }
-func TestAMachineThatIgnoresTheAllowlistTooStillGetsItsReview(t *testing.T) {
-	// scenario: A machine that will not let them be ignored
+
+func TestAMachineThatHandsTheReviewerMoreThanItAskedFor(t *testing.T) {
+	// scenario: A machine that hands the reviewer more than it asked for
 	simulated := simulator.Install(t)
-	simulated.Scenario("default:\n  ignores_allowlist: true\n  tool_servers: [serena, playwright]\n")
+	simulated.Scenario("default:\n  extra_tools: [Bash, browser_run_code_unsafe]\n")
 
 	recorded := &collector{}
 	answer, err := build(t, agent.Options{Recorder: recorded}).Run(context.Background(), request())
 	if err != nil {
-		t.Fatalf("a machine that loads its tool servers anyway ended the review: %v", err)
+		t.Fatalf("a session holding more than socrates asked for ended the review: %v", err)
 	}
 
-	if diff := cmp.Diff([]string{"serena", "playwright"}, answer.ToolServers); diff != "" {
-		t.Errorf("what the reviewer reported loading differs (-want +got):\n%s", diff)
+	if diff := cmp.Diff([]string{"Bash", "browser_run_code_unsafe"}, agent.UnexpectedTools(answer.Tools)); diff != "" {
+		t.Errorf("what the reviewer reported holding differs (-want +got):\n%s", diff)
 	}
 
-	loaded := recorded.events(agent.EventToolServersLoaded)
-	if len(loaded) != 1 {
-		t.Fatalf("%d events record that the machine's tool servers were loaded, want one", len(loaded))
+	held := recorded.events(agent.EventUnexpectedTools)
+	if len(held) != 1 {
+		t.Fatalf("%d events record tools socrates did not ask for, want one", len(held))
 	}
-	for _, named := range []string{"serena", "playwright"} {
-		if !strings.Contains(fmt.Sprint(loaded[0].Fields["servers"]), named) {
-			t.Errorf("the recorded event does not name %s: %v", named, loaded[0].Fields)
+	for _, named := range []string{"Bash", "browser_run_code_unsafe"} {
+		if !strings.Contains(fmt.Sprint(held[0].Fields["tools"]), named) {
+			t.Errorf("the recorded event does not name %s: %v", named, held[0].Fields)
 		}
 	}
 }
 
-func TestWhatLoadedIsReadRatherThanInferred(t *testing.T) {
+func TestWhatTheReviewerHeldIsReadRatherThanAssumed(t *testing.T) {
 	for _, reported := range []struct {
-		named   string
-		servers string
-		want    int
+		named    string
+		scenario string
+		want     int
 	}{
-		{named: "a machine whose servers loaded", servers: "  ignores_allowlist: true\n  tool_servers: [serena]\n", want: 1},
-		{named: "a machine whose servers did not", servers: "  tool_servers: [serena]\n", want: 0},
+		{named: "a session holding a tool socrates did not ask for", scenario: "default:\n  extra_tools: [Bash]\n", want: 1},
+		{named: "a session holding only what it asked for", scenario: "default:\n", want: 0},
 	} {
 		t.Run(reported.named, func(t *testing.T) {
 			simulated := simulator.Install(t)
-			simulated.Scenario("default:\n" + reported.servers)
+			simulated.Scenario(reported.scenario)
 
 			recorded := &collector{}
 			if _, err := build(t, agent.Options{Recorder: recorded}).Run(context.Background(), request()); err != nil {
 				t.Fatalf("running the reviewer: %v", err)
 			}
-			if loaded := recorded.events(agent.EventToolServersLoaded); len(loaded) != reported.want {
-				t.Errorf("%d events record tool servers as loaded, want %d: what the run records is what the opening event reported", len(loaded), reported.want)
+			if held := recorded.events(agent.EventUnexpectedTools); len(held) != reported.want {
+				t.Errorf("%d events record tools socrates did not ask for, want %d: what the run records is what the opening event reported", len(held), reported.want)
 			}
 		})
 	}
@@ -170,12 +161,14 @@ func TestTheReviewerIsGivenToolsThatDoNotWrite(t *testing.T) {
 		t.Fatal("the invocation restricts no tools")
 	}
 	for _, writing := range []string{"Write", "Edit", "NotebookEdit", "Bash"} {
-		if strings.Contains(tools, writing) {
+		if slices.Contains(strings.Split(tools, ","), writing) {
 			t.Errorf("the reviewer is allowed %s, and it writes", writing)
 		}
 	}
-	if !strings.Contains(tools, "Read") {
-		t.Errorf("the reviewer is allowed %q, and it cannot read the change", tools)
+	for _, reading := range []string{"Read", "Grep", "Glob", "WebSearch", "WebFetch"} {
+		if !slices.Contains(strings.Split(tools, ","), reading) {
+			t.Errorf("the reviewer is allowed %q, which leaves out %s", tools, reading)
+		}
 	}
 }
 
@@ -323,31 +316,22 @@ func TestARejectedInvocationFailsWithNoFallback(t *testing.T) {
 }
 
 func TestWhatTheMechanismsDoNotCover(t *testing.T) {
-	for _, machine := range []struct {
-		named    string
-		scenario string
-	}{
-		{named: "a machine with one server configured", scenario: "default:\n  tool_servers: [serena]\n"},
-		{named: "a machine with several servers configured", scenario: "default:\n  tool_servers: [serena, playwright]\n"},
-	} {
-		t.Run(machine.named, func(t *testing.T) {
-			simulated := simulator.Install(t)
-			simulated.Scenario(machine.scenario)
+	// scenario: What the mechanisms do not cover
+	simulated := simulator.Install(t)
+	claude := build(t, agent.Options{})
 
-			answer, err := build(t, agent.Options{}).Run(context.Background(), request())
-			if err != nil {
-				t.Fatalf("running the reviewer: %v", err)
-			}
+	answer, err := claude.Run(context.Background(), request())
+	if err != nil {
+		t.Fatalf("running the reviewer: %v", err)
+	}
 
-			if contributed := agent.ToolsFromServers(answer.Tools); len(contributed) != 0 {
-				t.Errorf("the reviewer was given %v, and a tool a server contributes reaches past the worktree that the seal and the comparison bound", contributed)
-			}
-			if len(answer.ToolServers) != 0 {
-				t.Errorf("the reviewer loaded %v", answer.ToolServers)
-			}
-			if len(answer.Tools) == 0 {
-				t.Fatal("the reviewer reported no tools at all, so this test would pass on an empty reading")
-			}
-		})
+	if len(answer.Tools) == 0 {
+		t.Fatal("the reviewer reported no tools at all, so this test would pass on an empty reading")
+	}
+	if unexpected := agent.UnexpectedTools(answer.Tools); len(unexpected) != 0 {
+		t.Errorf("the reviewer was given %v, and a tool socrates did not ask for reaches past the worktree that the seal and the comparison bound", unexpected)
+	}
+	if !simulated.OnlyInvocation().Has("--safe-mode") {
+		t.Error("nothing asks the vendor to disable the customisations that put a tool in the session")
 	}
 }

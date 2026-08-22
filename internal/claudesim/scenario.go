@@ -1,7 +1,6 @@
 package claudesim
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"slices"
@@ -55,24 +54,23 @@ type Write struct {
 }
 
 type Response struct {
-	When             string    `yaml:"when"`
-	Behaviour        Behaviour `yaml:"behaviour"`
-	Recorded         string    `yaml:"recorded"`
-	Structured       string    `yaml:"structured"`
-	Text             string    `yaml:"text"`
-	Model            string    `yaml:"model"`
-	SessionID        string    `yaml:"session_id"`
-	Exit             int       `yaml:"exit"`
-	Stderr           string    `yaml:"stderr"`
-	InputTokens      int       `yaml:"input_tokens"`
-	OutputTokens     int       `yaml:"output_tokens"`
-	Events           int       `yaml:"events"`
-	Interval         string    `yaml:"interval"`
-	Hold             string    `yaml:"hold"`
-	Writes           []Write   `yaml:"writes"`
-	ChildCommand     []string  `yaml:"child_command"`
-	ToolServers      []string  `yaml:"tool_servers"`
-	IgnoresAllowlist bool      `yaml:"ignores_allowlist"`
+	When         string    `yaml:"when"`
+	Behaviour    Behaviour `yaml:"behaviour"`
+	Recorded     string    `yaml:"recorded"`
+	Structured   string    `yaml:"structured"`
+	Text         string    `yaml:"text"`
+	Model        string    `yaml:"model"`
+	SessionID    string    `yaml:"session_id"`
+	Exit         int       `yaml:"exit"`
+	Stderr       string    `yaml:"stderr"`
+	InputTokens  int       `yaml:"input_tokens"`
+	OutputTokens int       `yaml:"output_tokens"`
+	Events       int       `yaml:"events"`
+	Interval     string    `yaml:"interval"`
+	Hold         string    `yaml:"hold"`
+	Writes       []Write   `yaml:"writes"`
+	ChildCommand []string  `yaml:"child_command"`
+	ExtraTools   []string  `yaml:"extra_tools"`
 }
 
 type Scenario struct {
@@ -223,28 +221,4 @@ func parseDuration(stated string) (time.Duration, error) {
 
 func isKnownBehaviour(behaviour Behaviour) bool {
 	return slices.Contains(behaviours, behaviour)
-}
-
-func (r Response) loadedToolServers(invocation Invocation) []string {
-	if len(r.ToolServers) == 0 {
-		return nil
-	}
-	if !r.IgnoresAllowlist && allowsNoToolServer(invocation.Settings) {
-		return nil
-	}
-	return r.ToolServers
-}
-
-func allowsNoToolServer(settings string) bool {
-	if settings == "" {
-		return false
-	}
-
-	var supplied struct {
-		Allowed *[]json.RawMessage `json:"allowedMcpServers"`
-	}
-	if err := json.Unmarshal([]byte(settings), &supplied); err != nil {
-		return false
-	}
-	return supplied.Allowed != nil && len(*supplied.Allowed) == 0
 }

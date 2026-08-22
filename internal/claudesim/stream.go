@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 )
 
@@ -29,18 +30,12 @@ type message struct {
 	Usage   usage     `json:"usage"`
 }
 
-type toolServer struct {
-	Name   string `json:"name"`
-	Status string `json:"status"`
-}
-
 type event struct {
 	Type             string          `json:"type"`
 	Subtype          string          `json:"subtype,omitempty"`
 	SessionID        string          `json:"session_id"`
 	Model            string          `json:"model,omitempty"`
 	Tools            []string        `json:"tools,omitempty"`
-	ToolServers      []toolServer    `json:"mcp_servers,omitempty"`
 	CurrentWorking   string          `json:"cwd,omitempty"`
 	Message          *message        `json:"message,omitempty"`
 	IsError          *bool           `json:"is_error,omitempty"`
@@ -53,14 +48,11 @@ type event struct {
 }
 
 func writeStream(out io.Writer, response Response, invocation Invocation) error {
-	loaded := response.loadedToolServers(invocation)
-
-	tools := []string{"Read", "Grep", "Glob"}
-	var servers []toolServer
-	for _, name := range loaded {
-		servers = append(servers, toolServer{Name: name, Status: "connected"})
-		tools = append(tools, "mcp__"+name+"__do_something")
+	tools := strings.Split(invocation.Tools, ",")
+	if len(invocation.Schema) > 0 {
+		tools = append(tools, "StructuredOutput")
 	}
+	tools = append(tools, response.ExtraTools...)
 
 	if err := writeEvent(out, event{
 		Type:           "system",
@@ -68,7 +60,6 @@ func writeStream(out io.Writer, response Response, invocation Invocation) error 
 		SessionID:      response.SessionID,
 		Model:          response.Model,
 		Tools:          tools,
-		ToolServers:    servers,
 		CurrentWorking: invocation.Directory,
 	}); err != nil {
 		return err

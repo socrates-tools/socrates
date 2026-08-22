@@ -56,11 +56,8 @@ func sentence(event runlog.Event) string {
 		return fmt.Sprintf(agentCompletedSentence, event.Subject, stated(held, modelField), counted(held, inputTokensField), counted(held, outputTokensField))
 	case agentFailedKind:
 		return fmt.Sprintf(agentFailedSentence, event.Subject, stated(held, reasonField))
-	case toolServersLoadedKind:
-		if servers := stated(held, serversField); servers != "" {
-			return fmt.Sprintf(toolServersLoadedSentence, servers, counted(held, toolsField))
-		}
-		return fmt.Sprintf(toolServersLoadedForAReason, stated(held, reasonField))
+	case unexpectedToolsKind:
+		return fmt.Sprintf(unexpectedToolsSentence, stated(held, toolsField))
 	default:
 		return unrecognised(event)
 	}

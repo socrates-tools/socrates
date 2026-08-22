@@ -69,7 +69,7 @@ func TestEveryKindTheCoreWritesIsRendered(t *testing.T) {
 		agent.EventStarted,
 		agent.EventCompleted,
 		agent.EventFailed,
-		agent.EventToolServersLoaded,
+		agent.EventUnexpectedTools,
 	} {
 		t.Run(kind, func(t *testing.T) {
 			lines := presentation.Lines([]runlog.Event{{At: at, Kind: kind, Subject: "a-run", Fields: fields()}})
@@ -170,23 +170,24 @@ func TestARotatedLogIsMarked(t *testing.T) {
 	}
 }
 
-func TestAnEventRecordedBeforeTheServersWereNamedStillReads(t *testing.T) {
+func TestAnEventRecordedBeforeThisChangeStillReads(t *testing.T) {
 	lines := presentation.Lines([]runlog.Event{
-		{At: at, Kind: agent.EventToolServersLoaded, Subject: "reviewer", Fields: map[string]any{
-			"reason": "claude exited: exit status 1: You cannot use --strict-mcp-config when an enterprise MCP config is present",
+		{At: at, Kind: "agent-tool-servers-loaded", Subject: "reviewer", Fields: map[string]any{
+			"servers": "serena, playwright",
+			"tools":   float64(41),
 		}},
 	})
 
 	if len(lines) != 1 {
 		t.Fatalf("one event rendered as %d lines:\n%s", len(lines), strings.Join(lines, "\n"))
 	}
-	if !strings.Contains(lines[0], "You cannot use --strict-mcp-config") {
-		t.Errorf("the line drops the only account the event carries: %q", lines[0])
-	}
-	for _, absent := range []string{"0 tools", ": ,"} {
-		if strings.Contains(lines[0], absent) {
-			t.Errorf("the line reads %q off a field the event never carried: %q", absent, lines[0])
+	for _, carried := range []string{"agent-tool-servers-loaded", "serena, playwright", "41"} {
+		if !strings.Contains(lines[0], carried) {
+			t.Errorf("a run recorded before this change loses %q from its log: %q", carried, lines[0])
 		}
+	}
+	if strings.Contains(lines[0], "%!") {
+		t.Errorf("the line was rendered from a field it could not read: %q", lines[0])
 	}
 }
 
@@ -204,8 +205,7 @@ func fields() map[string]any {
 		"reason":        "the model provider answered 529",
 		"state":         string(runstate.Failed),
 		"patchable":     float64(2),
-		"servers":       "serena, playwright",
-		"tools":         float64(41),
+		"tools":         "Bash, browser_run_code_unsafe",
 		"finding":       "f1",
 		"resolution":    "fixed",
 		"unanswered":    float64(1),

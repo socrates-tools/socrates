@@ -48,8 +48,6 @@ func Run(arguments []string, input io.Reader, out, failures io.Writer, environme
 		SettingSources: parsed.settingSources,
 		Settings:       parsed.settings,
 		Tools:          parsed.tools,
-		MCPServers:     parsed.mcpServers,
-		StrictMCP:      parsed.strictMCP,
 	}
 
 	scenario, err := LoadScenario(os.Getenv(ScenarioVariable))

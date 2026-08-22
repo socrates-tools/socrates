@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"slices"
 	"strings"
 	"time"
 
@@ -18,20 +19,20 @@ const (
 	DefaultBinary   = "claude"
 	DefaultDeadline = 30 * time.Minute
 
-	readingTools         = "Read,Grep,Glob"
-	toolServerPrefix     = "mcp__"
-	noToolServersAllowed = `{"allowedMcpServers":[]}`
-	settingSources       = "user"
-	streamFormat         = "stream-json"
-	waitDelay            = 5 * time.Second
-	failureTailBytes     = 8 * 1024
+	inspectingTools  = "Read,Grep,Glob,WebSearch,WebFetch"
+	schemaTool       = "StructuredOutput"
+	noCustomisations = "--safe-mode"
+	settingSources   = "user"
+	streamFormat     = "stream-json"
+	waitDelay        = 5 * time.Second
+	failureTailBytes = 8 * 1024
 )
 
 const (
-	EventStarted           = "agent-started"
-	EventCompleted         = "agent-completed"
-	EventFailed            = "agent-failed"
-	EventToolServersLoaded = "agent-tool-servers-loaded"
+	EventStarted         = "agent-started"
+	EventCompleted       = "agent-completed"
+	EventFailed          = "agent-failed"
+	EventUnexpectedTools = "agent-unexpected-tools"
 )
 
 type Options struct {
@@ -80,41 +81,42 @@ func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error
 
 	answer, err := a.attempt(bounded, ctx, request, routing)
 
-	a.recordToolServers(request, answer)
+	a.recordUnexpectedTools(request, answer)
 	if err != nil {
 		return answer, a.failed(request, routing, err)
 	}
 	return answer, nil
 }
 
-func (a *claudeAgent) recordToolServers(request Request, answer Response) {
-	contributed := ToolsFromServers(answer.Tools)
-	if len(answer.ToolServers) == 0 && len(contributed) == 0 {
+func (a *claudeAgent) recordUnexpectedTools(request Request, answer Response) {
+	unexpected := UnexpectedTools(answer.Tools)
+	if len(unexpected) == 0 {
 		return
 	}
 
-	named := answer.ToolServers
-	if len(named) == 0 {
-		named = []string{whateverNamedThem}
-	}
 	a.record(runlog.Event{
-		Kind:    EventToolServersLoaded,
+		Kind:    EventUnexpectedTools,
 		Subject: string(request.Role),
 		Fields: map[string]any{
-			"servers": strings.Join(named, ", "),
-			"tools":   len(contributed),
+			"tools": strings.Join(unexpected, ", "),
 		},
 	})
 }
 
-func ToolsFromServers(tools []string) []string {
-	var contributed []string
-	for _, tool := range tools {
-		if strings.HasPrefix(tool, toolServerPrefix) {
-			contributed = append(contributed, tool)
+func ToolsAskedFor() []string {
+	return append(strings.Split(inspectingTools, ","), schemaTool)
+}
+
+func UnexpectedTools(held []string) []string {
+	asked := ToolsAskedFor()
+
+	var unexpected []string
+	for _, tool := range held {
+		if !slices.Contains(asked, tool) {
+			unexpected = append(unexpected, tool)
 		}
 	}
-	return contributed
+	return unexpected
 }
 
 func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, routing Routing) (Response, error) {
@@ -162,7 +164,7 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 	}
 	waitErr := command.Wait()
 
-	reached := Response{ToolServers: read.toolServers, Tools: read.tools}
+	reached := Response{Tools: read.tools}
 
 	if deadlineErr := a.deadlineReached(bounded, parent); deadlineErr != nil {
 		return reached, deadlineErr
@@ -175,13 +177,12 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 	}
 
 	answer := Response{
-		Text:        read.text,
-		Model:       read.model,
-		Effort:      routing.Effort,
-		SessionID:   read.sessionID,
-		Usage:       read.usage,
-		ToolServers: read.toolServers,
-		Tools:       read.tools,
+		Text:      read.text,
+		Model:     read.model,
+		Effort:    routing.Effort,
+		SessionID: read.sessionID,
+		Usage:     read.usage,
+		Tools:     read.tools,
 	}
 
 	if read.result == nil {
@@ -228,9 +229,9 @@ func (a *claudeAgent) arguments(routing Routing, request Request) []string {
 		"-p",
 		"--verbose",
 		"--output-format", streamFormat,
+		noCustomisations,
 		"--setting-sources", settingSources,
-		"--settings", noToolServersAllowed,
-		"--tools", readingTools,
+		"--tools", inspectingTools,
 		"--dangerously-skip-permissions",
 	}
 	if routing.Model != "" {

@@ -108,7 +108,7 @@ func TestAWriteTheSealRefusedIsNotAFindingAgainstTheReviewer(t *testing.T) {
 	session := harness.Start(t)
 	session.Simulator.Scenario(sealScenario + `  writes:
     - path: .serena/project.yml
-      content: "a tool server writing its own bookkeeping\n"
+      content: "a tool writing its own bookkeeping\n"
     - path: internal/added.go
       content: "package internal // and a fix nobody asked for\n"
 `)

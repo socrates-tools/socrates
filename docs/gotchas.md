@@ -52,41 +52,40 @@ socrates gives the root command `ArbitraryArgs` and a `RunE` that refuses the fi
 
 ## The vendor CLI
 
-**Restricting the reviewer's tools does not restrict its tool servers.**
-`--tools Read,Grep,Glob` says nothing about the servers the machine loads, and a server writes wherever it likes the moment it starts.
-The first live run of socrates failed because the machine's own configured server wrote a `.serena` directory into the snapshot worktree, and the round correctly refused a write the reviewer never asked to make.
-socrates asks for `--settings '{"allowedMcpServers":[]}'` and for nothing else.
+**Restricting the reviewer's tools does not restrict where else tools come from.**
+`--tools` is an allowlist over the vendor's built-in set and nothing else.
+It says nothing about the customisations the machine loads, and one of those writes wherever it likes the moment it starts: socrates' first live run failed because a configured tool source wrote a `.serena` directory into the snapshot worktree, and the round correctly refused a write the reviewer never asked to make.
+A later run found the same session holding script execution, file upload and browser control, none of which `--tools` had any opinion about.
 
-**`--strict-mcp-config` is refused outright where an enterprise configuration exists, so socrates does not send it.**
-`You cannot use --strict-mcp-config when an enterprise MCP config is present`, and the exit status is 1.
-The refusal is deliberate rather than a bug: an enterprise configuration is a managed set, and that flag asks to replace it.
-It lives outside the person's control, at `/etc/claude-code/managed-mcp.json` on Linux.
-socrates used to send it anyway and fall back on the refusal, which is where the second invocation, the retry and a log line reading `the reviewer failed` on every round all came from. The allowlist does the same job and is never refused, so the flag is gone and so is all of that.
+**`--safe-mode` is the one flag that answers all of it.**
+It disables every customisation the machine brings, and the vendor's own help lists them: memory files, skills, plugins, hooks, custom commands and agents, output styles, and external tool sources.
+Auth, model selection, built-in tools and permissions keep working, which is the whole point: the reviewer loses the machine's additions and keeps the CLI.
+Measured on this machine, which deploys a managed configuration: without it the opening event named four external sources, with it none, and the plugin-contributed `LSP` tool disappeared from the session's tool list at the same time.
+It is not refused by a managed configuration, which is the trap the flags below fall into.
 
-**An empty allowlist stops the servers where the flag cannot.**
-`allowedMcpServers` may be set in any settings file, entries merge from every source, and the check runs before a server loads, including one from a managed configuration.
-An empty array is documented as distinct from unset: unset permits every server, empty permits none.
-Supplying it with `--settings` alongside an enterprise configuration took a reviewer's session from 74 tool-server tools to none, measured on this machine.
-That leaves `allowManagedMcpServersOnly` as the case socrates cannot answer, because it makes managed allowlists the only ones that count.
+**The flags that ask to replace a managed set are refused at startup.**
+`You cannot use --strict-mcp-config when an enterprise MCP config is present`, exit status 1, and the refusal is deliberate rather than a bug: a managed configuration is a managed set and that flag asks to replace it.
+The file lives outside the person's control, at `/etc/claude-code/managed-mcp.json` on Linux.
+socrates sent it anyway once and fell back on the refusal, which is where a second invocation, a retry and a log line reading `the reviewer failed` on every round of every run all came from.
+Nothing sends it now, and the simulator no longer accepts it, so putting it back fails every test that runs a reviewer rather than quietly reintroducing the fallback.
 
-**A person's own settings can widen what socrates supplied.**
-Allowlists merge from every source, so an `allowedMcpServers` entry in `~/.claude/settings.json` permits that server in a reviewer too.
-This is why socrates does not trust either mechanism to have worked and reads the stream's opening event instead, which names `mcp_servers` and the session's `tools`.
-What the run records is what that event reported.
+**A settings allowlist also works, and was what socrates used before `--safe-mode`.**
+An empty `allowedMcpServers` supplied through `--settings` is evaluated before a source loads, including one from a managed configuration, and an empty array is documented as distinct from unset: unset permits everything, empty permits nothing.
+It took a reviewer's session from 74 externally contributed tools to none.
+`--safe-mode` replaced it because it covers hooks and plugins too, and because it needs no vendor feature named in socrates' own vocabulary.
 
-**The reviewer's tool list is where a loaded server is visible.**
-`--tools` covers built-in tools only, so a tool a server contributes appears in the opening event's `tools` beside them, prefixed `mcp__`.
-The live run that found this held `mcp__playwright__browser_run_code_unsafe` and `mcp__chrome-devtools__evaluate_script`, and the seal bounds the snapshot worktree rather than what those reach.
+**The session's tool list is the only thing worth reading, and it is read rather than trusted.**
+socrates takes `tools` from the stream's opening event, subtracts what it asked for, and records the remainder.
+Anything a customisation contributes lands in that list, so one check covers every source rather than one of them.
+An externally contributed tool is recognisable in that list by an `mcp__` prefix, which is how the live run that found this was diagnosed.
 
-**Doing this right takes the evidence for `mcp_servers[].name` away.**
-The fidelity recordings pin the fields socrates reads out of the opening event, and they are recorded through socrates' own invocation, which now permits no server.
-So `make fixtures` on a machine like this one records `mcp_servers` as an empty array, and no recording afterwards holds `mcp_servers[].name` for the guard to pin.
-The guard requires the name of any server a recording does list, and stays quiet where none does, because failing would read as the vendor removing a field when what happened is socrates keeping servers out.
-The two recordings checked in were taken before the allowlist and still list servers, so the name is pinned until somebody re-records them.
+**A tool list at the opening event can be incomplete.**
+External sources connect asynchronously, so a probe on this machine reported four of them in the opening event while the tool list held none of their tools yet.
+The list is what the reviewer can use, and it is what socrates checks; the guarantee that nothing arrives later is `--safe-mode` not loading them at all, and the comparison after the round is what catches a write from anything that got in regardless.
 
 **A sealed worktree is fully usable by the vendor's CLI.**
 Clearing every write bit in the worktree does not disturb a reviewer: `git status`, `git grep` and every read work, because a worktree's index and administrative state live under the main repository's `.git/worktrees/<name>/` rather than in the worktree.
-A tool server that writes at startup has its write refused and the session carries on, verified against the real CLI with an enterprise configuration loaded.
+A tool that writes at startup has its write refused and the session carries on, verified against the real CLI with a managed configuration loaded.
 
 **`chmod` returning no error is not evidence that permissions are enforced.**
 A filesystem can accept the call and ignore the bits, and `root` ignores them by design.

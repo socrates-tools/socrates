@@ -135,7 +135,7 @@ A partially registered worktree left in `.git/worktrees` is a repository the per
 ### Requirement: The snapshot worktree cannot be written to
 
 socrates SHALL seal the snapshot worktree after checking it out: every directory and every file in it SHALL be left without write permission for as long as the round runs.
-A write attempted by a reviewer, a tool server, a hook, or anything else a vendor's session starts SHALL therefore be refused by the filesystem rather than trusted, restricted by a flag, or caught afterwards.
+A write attempted by a reviewer, a hook, or anything else a vendor's session starts SHALL therefore be refused by the filesystem rather than trusted, restricted by a flag, or caught afterwards.
 
 The seal is not a sandbox and SHALL NOT be described as one.
 The session runs as the owner of those files, so something that sets out to defeat the seal can clear the bit back and write, which is what the comparison after the round is for.

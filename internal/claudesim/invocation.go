@@ -28,8 +28,6 @@ type Invocation struct {
 	SettingSources string            `json:"setting_sources,omitempty"`
 	Settings       string            `json:"settings,omitempty"`
 	Tools          string            `json:"tools,omitempty"`
-	MCPServers     string            `json:"mcp_servers,omitempty"`
-	StrictMCP      bool              `json:"strict_mcp,omitempty"`
 	WritesRefused  []string          `json:"writes_refused,omitempty"`
 	Child          int               `json:"child,omitempty"`
 	Process        int               `json:"process"`
