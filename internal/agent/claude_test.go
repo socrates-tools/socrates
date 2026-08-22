@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/rui-ktei/socrates/internal/agent"
 	"github.com/rui-ktei/socrates/internal/findings"
 	"github.com/rui-ktei/socrates/internal/testing/gitrepo"
@@ -74,55 +76,84 @@ func TestNoToolServerIsLoaded(t *testing.T) {
 	}
 
 	invocation := simulated.OnlyInvocation()
-	if !invocation.StrictMCP {
-		t.Error("the invocation does not restrict the reviewer to the tool servers socrates named")
-	}
 
-	named, found := invocation.ValueOf("--mcp-config")
+	supplied, found := invocation.ValueOf("--settings")
 	if !found {
-		t.Fatal("the invocation names no tool server configuration, so the person's own servers are loaded")
+		t.Fatal("the invocation supplies no settings of its own, so the machine's tool servers load")
 	}
 
-	var configured struct {
-		Servers map[string]any `json:"mcpServers"`
+	var allowing struct {
+		Allowed *[]any `json:"allowedMcpServers"`
 	}
-	if err := json.Unmarshal([]byte(named), &configured); err != nil {
-		t.Fatalf("the tool server configuration is not JSON: %v: %s", err, named)
+	if err := json.Unmarshal([]byte(supplied), &allowing); err != nil {
+		t.Fatalf("the settings socrates supplies are not JSON: %v: %s", err, supplied)
 	}
-	if len(configured.Servers) != 0 {
-		t.Errorf("the invocation loads the tool servers %v", configured.Servers)
+	if allowing.Allowed == nil {
+		t.Fatalf("the settings name no tool server allowlist, and an absent allowlist permits every server: %s", supplied)
 	}
-	if invocation.MCPServers != named {
-		t.Error("the configuration the simulator read is not the one socrates passed")
+	if len(*allowing.Allowed) != 0 {
+		t.Errorf("the allowlist permits %v, and it is the mechanism that has to permit nothing", *allowing.Allowed)
+	}
+	if invocation.Settings != supplied {
+		t.Error("the settings the simulator read are not the ones socrates passed")
+	}
+
+	t.Run("and nothing asks to replace a managed set", func(t *testing.T) {
+		// scenario: Nothing asks to replace a managed set
+		for _, refused := range []string{"--strict-mcp-config", "--mcp-config"} {
+			if invocation.Has(refused) {
+				t.Errorf("the invocation carries %s, which a machine with a managed configuration rejects at startup and which the allowlist makes unnecessary", refused)
+			}
+		}
+	})
+}
+func TestAMachineThatIgnoresTheAllowlistTooStillGetsItsReview(t *testing.T) {
+	// scenario: A machine that will not let them be ignored
+	simulated := simulator.Install(t)
+	simulated.Scenario("default:\n  ignores_allowlist: true\n  tool_servers: [serena, playwright]\n")
+
+	recorded := &collector{}
+	answer, err := build(t, agent.Options{Recorder: recorded}).Run(context.Background(), request())
+	if err != nil {
+		t.Fatalf("a machine that loads its tool servers anyway ended the review: %v", err)
+	}
+
+	if diff := cmp.Diff([]string{"serena", "playwright"}, answer.ToolServers); diff != "" {
+		t.Errorf("what the reviewer reported loading differs (-want +got):\n%s", diff)
+	}
+
+	loaded := recorded.events(agent.EventToolServersLoaded)
+	if len(loaded) != 1 {
+		t.Fatalf("%d events record that the machine's tool servers were loaded, want one", len(loaded))
+	}
+	for _, named := range []string{"serena", "playwright"} {
+		if !strings.Contains(fmt.Sprint(loaded[0].Fields["servers"]), named) {
+			t.Errorf("the recorded event does not name %s: %v", named, loaded[0].Fields)
+		}
 	}
 }
 
-func TestAToolServerConfigurationTheCLIWillNotIgnoreIsNotFatal(t *testing.T) {
-	// scenario: A machine that will not let them be ignored
-	simulated := simulator.Install(t)
-	simulated.Scenario("default:\n  behaviour: strict-tool-servers-refused\n")
+func TestWhatLoadedIsReadRatherThanInferred(t *testing.T) {
+	for _, reported := range []struct {
+		named   string
+		servers string
+		want    int
+	}{
+		{named: "a machine whose servers loaded", servers: "  ignores_allowlist: true\n  tool_servers: [serena]\n", want: 1},
+		{named: "a machine whose servers did not", servers: "  tool_servers: [serena]\n", want: 0},
+	} {
+		t.Run(reported.named, func(t *testing.T) {
+			simulated := simulator.Install(t)
+			simulated.Scenario("default:\n" + reported.servers)
 
-	recorded := &collector{}
-	if _, err := build(t, agent.Options{Recorder: recorded}).Run(context.Background(), request()); err != nil {
-		t.Fatalf("a CLI that refuses to ignore the machine's tool servers ended the review: %v", err)
-	}
-
-	if loaded := recorded.events(agent.EventToolServersLoaded); len(loaded) != 1 {
-		t.Errorf("%d events record that the machine's tool servers were loaded, want one", len(loaded))
-	}
-
-	invocations := simulated.Invocations()
-	if len(invocations) != 2 {
-		t.Fatalf("the reviewer was invoked %d times, want the refused one and the one that ran", len(invocations))
-	}
-	if !invocations[0].StrictMCP {
-		t.Error("the first invocation did not ask for the machine's tool servers to be ignored")
-	}
-	if invocations[1].StrictMCP {
-		t.Error("the second invocation asked again for what the CLI had just refused")
-	}
-	if invocations[1].Tools != invocations[0].Tools {
-		t.Errorf("the second invocation restricts tools to %q, and the first to %q", invocations[1].Tools, invocations[0].Tools)
+			recorded := &collector{}
+			if _, err := build(t, agent.Options{Recorder: recorded}).Run(context.Background(), request()); err != nil {
+				t.Fatalf("running the reviewer: %v", err)
+			}
+			if loaded := recorded.events(agent.EventToolServersLoaded); len(loaded) != reported.want {
+				t.Errorf("%d events record tool servers as loaded, want %d: what the run records is what the opening event reported", len(loaded), reported.want)
+			}
+		})
 	}
 }
 
@@ -244,11 +275,19 @@ func TestANonZeroExitAfterACompleteStream(t *testing.T) {
 }
 
 func TestAnAgentThatWasNeverThereFails(t *testing.T) {
-	simulator.Install(t)
-	claude := build(t, agent.Options{Binary: "claude-that-is-not-installed"})
+	simulated := simulator.Install(t)
+	recorded := &collector{}
+	claude := build(t, agent.Options{Binary: "claude-that-is-not-installed", Recorder: recorded})
 
 	if _, err := claude.Run(context.Background(), request()); err == nil {
 		t.Fatal("a call to an agent that is not installed succeeded")
+	}
+
+	if invoked := len(simulated.Invocations()); invoked != 0 {
+		t.Errorf("a binary that is not installed produced %d invocations", invoked)
+	}
+	if failures := recorded.events(agent.EventFailed); len(failures) != 1 {
+		t.Errorf("%d events record the failure, want the one the call ended on", len(failures))
 	}
 }
 
@@ -264,4 +303,51 @@ func refuse(t *testing.T, response string) string {
 		t.Fatalf("the call succeeded, answering %+v", answer)
 	}
 	return err.Error()
+}
+
+func TestARejectedInvocationFailsWithNoFallback(t *testing.T) {
+	simulated := simulator.Install(t)
+	simulated.Scenario("default:\n  behaviour: rejected-at-startup\n")
+
+	recorded := &collector{}
+	if _, err := build(t, agent.Options{Recorder: recorded}).Run(context.Background(), request()); err == nil {
+		t.Fatal("a CLI that rejects the invocation at startup answered the call")
+	}
+
+	if invoked := len(simulated.Invocations()); invoked != 1 {
+		t.Errorf("the reviewer was invoked %d times, and there is nothing to fall back to: one mechanism means one attempt", invoked)
+	}
+	if failures := recorded.events(agent.EventFailed); len(failures) != 1 {
+		t.Errorf("%d events record the failure, want the one the run ended on", len(failures))
+	}
+}
+
+func TestWhatTheMechanismsDoNotCover(t *testing.T) {
+	for _, machine := range []struct {
+		named    string
+		scenario string
+	}{
+		{named: "a machine with servers configured", scenario: "default:\n  tool_servers: [serena]\n"},
+		{named: "a machine that names them in its own settings", scenario: "default:\n  tool_servers: [serena, playwright]\n"},
+	} {
+		t.Run(machine.named, func(t *testing.T) {
+			simulated := simulator.Install(t)
+			simulated.Scenario(machine.scenario)
+
+			answer, err := build(t, agent.Options{}).Run(context.Background(), request())
+			if err != nil {
+				t.Fatalf("running the reviewer: %v", err)
+			}
+
+			if contributed := agent.ToolsFromServers(answer.Tools); len(contributed) != 0 {
+				t.Errorf("the reviewer was given %v, and a tool a server contributes reaches past the worktree that the seal and the comparison bound", contributed)
+			}
+			if len(answer.ToolServers) != 0 {
+				t.Errorf("the reviewer loaded %v", answer.ToolServers)
+			}
+			if len(answer.Tools) == 0 {
+				t.Fatal("the reviewer reported no tools at all, so this test would pass on an empty reading")
+			}
+		})
+	}
 }

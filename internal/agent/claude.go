@@ -18,14 +18,13 @@ const (
 	DefaultBinary   = "claude"
 	DefaultDeadline = 30 * time.Minute
 
-	readingTools      = "Read,Grep,Glob"
-	noToolServers     = `{"mcpServers":{}}`
-	strictToolServers = "strict-mcp-config"
-	strictnessRefused = "cannot use --" + strictToolServers
-	settingSources    = "user"
-	streamFormat      = "stream-json"
-	waitDelay         = 5 * time.Second
-	failureTailBytes  = 8 * 1024
+	readingTools         = "Read,Grep,Glob"
+	toolServerPrefix     = "mcp__"
+	noToolServersAllowed = `{"allowedMcpServers":[]}`
+	settingSources       = "user"
+	streamFormat         = "stream-json"
+	waitDelay            = 5 * time.Second
+	failureTailBytes     = 8 * 1024
 )
 
 const (
@@ -33,13 +32,6 @@ const (
 	EventCompleted         = "agent-completed"
 	EventFailed            = "agent-failed"
 	EventToolServersLoaded = "agent-tool-servers-loaded"
-)
-
-type toolServers int
-
-const (
-	ownToolServersOnly toolServers = iota
-	whateverIsConfigured
 )
 
 type Options struct {
@@ -86,29 +78,48 @@ func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error
 	bounded, release := context.WithTimeout(ctx, a.deadline)
 	defer release()
 
-	answer, err := a.attempt(bounded, ctx, request, routing, ownToolServersOnly)
-	if !refusesToIgnoreToolServers(answer, err) {
-		return answer, err
+	answer, err := a.attempt(bounded, ctx, request, routing)
+
+	a.recordToolServers(request, answer)
+	if err != nil {
+		return answer, a.failed(request, routing, err)
+	}
+	return answer, nil
+}
+
+func (a *claudeAgent) recordToolServers(request Request, answer Response) {
+	contributed := ToolsFromServers(answer.Tools)
+	if len(answer.ToolServers) == 0 && len(contributed) == 0 {
+		return
 	}
 
+	named := answer.ToolServers
+	if len(named) == 0 {
+		named = []string{whateverNamedThem}
+	}
 	a.record(runlog.Event{
 		Kind:    EventToolServersLoaded,
 		Subject: string(request.Role),
-		Fields:  map[string]any{"reason": err.Error()},
+		Fields: map[string]any{
+			"servers": strings.Join(named, ", "),
+			"tools":   len(contributed),
+		},
 	})
-	return a.attempt(bounded, ctx, request, routing, whateverIsConfigured)
 }
 
-func refusesToIgnoreToolServers(answer Response, err error) bool {
-	if err == nil || !strings.Contains(err.Error(), strictnessRefused) {
-		return false
+func ToolsFromServers(tools []string) []string {
+	var contributed []string
+	for _, tool := range tools {
+		if strings.HasPrefix(tool, toolServerPrefix) {
+			contributed = append(contributed, tool)
+		}
 	}
-	return len(answer.Structured) == 0 && answer.Text == ""
+	return contributed
 }
 
-func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, routing Routing, servers toolServers) (Response, error) {
+func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, routing Routing) (Response, error) {
 
-	arguments := a.arguments(routing, request, servers)
+	arguments := a.arguments(routing, request)
 	command := exec.CommandContext(bounded, a.binary, arguments...)
 	command.Dir = request.Dir
 	command.Stdin = strings.NewReader(request.Prompt)
@@ -125,7 +136,7 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 	}
 
 	if err := command.Start(); err != nil {
-		return Response{}, a.failed(request, routing, fmt.Errorf(startingTheAgent, a.binary, err))
+		return Response{}, fmt.Errorf(startingTheAgent, a.binary, err)
 	}
 	defer func() {
 		_ = process.KillGroup(command.Process.Pid)
@@ -151,44 +162,49 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 	}
 	waitErr := command.Wait()
 
+	reached := Response{Opened: read.opened, ToolServers: read.toolServers, Tools: read.tools}
+
 	if deadlineErr := a.deadlineReached(bounded, parent); deadlineErr != nil {
-		return Response{}, a.failed(request, routing, deadlineErr)
+		return reached, deadlineErr
 	}
 	if parseErr != nil {
-		return Response{}, a.failed(request, routing, parseErr)
+		return reached, parseErr
 	}
 	if waitErr != nil {
-		return Response{}, a.failed(request, routing, fmt.Errorf(theAgentExited, a.binary, waitErr, failures.String()))
+		return reached, fmt.Errorf(theAgentExited, a.binary, waitErr, failures.String())
 	}
 
 	answer := Response{
-		Text:      read.text,
-		Model:     read.model,
-		Effort:    routing.Effort,
-		SessionID: read.sessionID,
-		Usage:     read.usage,
+		Text:        read.text,
+		Model:       read.model,
+		Effort:      routing.Effort,
+		SessionID:   read.sessionID,
+		Usage:       read.usage,
+		Opened:      read.opened,
+		ToolServers: read.toolServers,
+		Tools:       read.tools,
 	}
 
 	if read.result == nil {
-		return Response{}, a.failed(request, routing, fmt.Errorf(noResultEvent, a.binary))
+		return reached, fmt.Errorf(noResultEvent, a.binary)
 	}
 	if read.result.IsError || read.result.Subtype != "success" {
-		return Response{}, a.failed(request, routing, fmt.Errorf(theResultReported, a.binary, read.result.Subtype))
+		return reached, fmt.Errorf(theResultReported, a.binary, read.result.Subtype)
 	}
 
 	if len(request.Schema) > 0 {
 		if len(read.result.StructuredOutput) == 0 {
-			return Response{}, a.failed(request, routing, fmt.Errorf(noStructuredOutput, a.binary))
+			return reached, fmt.Errorf(noStructuredOutput, a.binary)
 		}
 		if !json.Valid(read.result.StructuredOutput) {
-			return Response{}, a.failed(request, routing, fmt.Errorf(structuredOutputIsNotJSON, a.binary))
+			return reached, fmt.Errorf(structuredOutputIsNotJSON, a.binary)
 		}
 	}
 	answer.Structured = read.result.StructuredOutput
 
 	if request.Honours != nil && len(answer.Structured) > 0 {
 		if err := request.Honours(answer.Structured); err != nil {
-			return answer, a.failed(request, routing, fmt.Errorf(schemaNotSatisfied, err))
+			return answer, fmt.Errorf(schemaNotSatisfied, err)
 		}
 	}
 
@@ -208,17 +224,15 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 	return answer, nil
 }
 
-func (a *claudeAgent) arguments(routing Routing, request Request, servers toolServers) []string {
+func (a *claudeAgent) arguments(routing Routing, request Request) []string {
 	arguments := []string{
 		"-p",
 		"--verbose",
 		"--output-format", streamFormat,
 		"--setting-sources", settingSources,
+		"--settings", noToolServersAllowed,
 		"--tools", readingTools,
 		"--dangerously-skip-permissions",
-	}
-	if servers == ownToolServersOnly {
-		arguments = append(arguments, "--mcp-config", noToolServers, "--"+strictToolServers)
 	}
 	if routing.Model != "" {
 		arguments = append(arguments, "--model", routing.Model)

@@ -46,6 +46,7 @@ func Run(arguments []string, input io.Reader, out, failures io.Writer, environme
 		Effort:         parsed.effort,
 		Schema:         parsed.schema,
 		SettingSources: parsed.settingSources,
+		Settings:       parsed.settings,
 		Tools:          parsed.tools,
 		MCPServers:     parsed.mcpServers,
 		StrictMCP:      parsed.strictMCP,
@@ -72,8 +73,12 @@ func Run(arguments []string, input io.Reader, out, failures io.Writer, environme
 		return exitUsage
 	}
 
-	if response.Behaviour == RefuseStrictness && parsed.strictMCP {
-		fmt.Fprintln(failures, strictnessRefused)
+	if response.Behaviour == RejectAtStartup {
+		refusal := defaultRejection
+		if response.Stderr != "" {
+			refusal = response.Stderr
+		}
+		fmt.Fprintln(failures, refusal)
 		return exitUsage
 	}
 

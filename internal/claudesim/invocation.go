@@ -26,6 +26,7 @@ type Invocation struct {
 	Effort         string            `json:"effort,omitempty"`
 	Schema         string            `json:"schema,omitempty"`
 	SettingSources string            `json:"setting_sources,omitempty"`
+	Settings       string            `json:"settings,omitempty"`
 	Tools          string            `json:"tools,omitempty"`
 	MCPServers     string            `json:"mcp_servers,omitempty"`
 	StrictMCP      bool              `json:"strict_mcp,omitempty"`

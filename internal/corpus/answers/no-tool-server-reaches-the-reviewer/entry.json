@@ -1,0 +1,10 @@
+{
+  "model": "opus",
+  "effort": "high",
+  "round": 1,
+  "base": "7a3c3b0b7896dd68c0e96c4332b6f999f61032d4",
+  "snapshot": "b9a5f8bc2923dd1e8a78a9b2bb361fb7e34d0122",
+  "run": "20260821T165114Z-b46337b5",
+  "recorded_on": "2026-08-22",
+  "subject": "the change that stops the machine's tool servers reaching the reviewer, reviewed by a session that loaded none of them"
+}

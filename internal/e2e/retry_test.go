@@ -1,7 +1,9 @@
 package e2e_test
 
 import (
+	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -12,17 +14,17 @@ import (
 	"github.com/rui-ktei/socrates/internal/testing/harness"
 )
 
-const refusedStrictnessScenario = "default:\n  behaviour: strict-tool-servers-refused\n  events: 60\n  interval: 100ms\n"
+const talkativeScenario = "default:\n  events: 60\n  interval: 100ms\n"
 
-func TestCancellingStopsEverythingAfterASecondInvocation(t *testing.T) {
+func TestCancellingStopsTheReviewerThatIsAnswering(t *testing.T) {
 	// scenario: Cancelling stops everything
 	session := harness.Start(t)
-	session.Simulator.Scenario(refusedStrictnessScenario)
+	session.Simulator.Scenario(talkativeScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	name := session.Review()
 	session.WaitFor(name, runstate.Reviewing)
-	answering := waitForTheSecondInvocation(t, session)
+	answering := waitForTheReviewerToAnswer(t, session)
 
 	started := session.Recorded(name)
 	if started.Agent != answering.Process {
@@ -47,39 +49,37 @@ func TestCancellingStopsEverythingAfterASecondInvocation(t *testing.T) {
 	waitForDeath(t, name, started.Reviewer, 0)
 }
 
-func TestTheReviewIsRunAgainWithoutWhatTheCLIRefused(t *testing.T) {
+func TestAMachineThatLoadsThemAnywayIsRecorded(t *testing.T) {
+	// scenario: A machine that will not let them be ignored
 	session := harness.Start(t)
-	session.Simulator.Scenario("default:\n  behaviour: strict-tool-servers-refused\n")
+	session.Simulator.Scenario("default:\n  ignores_allowlist: true\n  tool_servers: [serena, playwright]\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	name := session.Review()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Clean {
-		t.Fatalf("a CLI that refused to ignore the machine's tool servers ended the run as %s: %s", run.State, reason(run))
+		t.Fatalf("a machine that loads its tool servers anyway ended the run as %s: %s", run.State, reason(run))
 	}
 
-	invocations := session.Simulator.Invocations()
-	if len(invocations) != 2 {
-		t.Fatalf("the reviewer was invoked %d times, want the refused one and the one that ran", len(invocations))
-	}
-	if !invocations[0].StrictMCP || invocations[1].StrictMCP {
-		t.Errorf("the invocations asked for strictness %v and %v", invocations[0].StrictMCP, invocations[1].StrictMCP)
-	}
-
-	loaded := 0
+	recorded := ""
 	for _, event := range session.Events(name) {
 		if event.Kind == agent.EventToolServersLoaded {
-			loaded++
+			recorded = fmt.Sprint(event.Fields["servers"])
 		}
 	}
-	if loaded != 1 {
-		t.Errorf("%d events in the run's log record that the machine's tool servers were loaded, want one", loaded)
+	if recorded == "" {
+		t.Fatal("a run whose reviewer loaded the machine's tool servers records nothing about it")
+	}
+	for _, named := range []string{"serena", "playwright"} {
+		if !strings.Contains(recorded, named) {
+			t.Errorf("the recorded event does not name %s: %q", named, recorded)
+		}
 	}
 }
 
 func TestAToolServerThatWritesCannotReachTheChangeUnderReview(t *testing.T) {
 	session := harness.Start(t)
-	session.Simulator.Scenario("default:\n  behaviour: strict-tool-servers-refused\n  writes:\n    - path: .serena/project.yml\n      content: \"a tool server writing its own bookkeeping as it starts\\n\"\n")
+	session.Simulator.Scenario("default:\n  ignores_allowlist: true\n  tool_servers: [serena]\n  writes:\n    - path: .serena/project.yml\n      content: \"a tool server writing its own bookkeeping as it starts\\n\"\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	name := session.Review()
@@ -91,17 +91,9 @@ func TestAToolServerThatWritesCannotReachTheChangeUnderReview(t *testing.T) {
 		t.Errorf("the verdict is %+v, want the one the findings imply", run.Verdict)
 	}
 
-	invocations := session.Simulator.Invocations()
-	if len(invocations) != 2 {
-		t.Fatalf("the reviewer was invoked %d times, want the refused one and the one that ran with the machine's servers", len(invocations))
-	}
-	if invocations[1].StrictMCP {
-		t.Error("the review that completed still asked the CLI to ignore the machine's tool servers")
-	}
-	for position, invocation := range invocations {
-		if len(invocation.WritesRefused) != 1 {
-			t.Fatalf("invocation %d recorded %v, and this test proves nothing unless the write was attempted and refused", position, invocation.WritesRefused)
-		}
+	invocation := session.Simulator.OnlyInvocation()
+	if len(invocation.WritesRefused) != 1 {
+		t.Fatalf("the invocation recorded %v, and this test proves nothing unless the write was attempted and refused", invocation.WritesRefused)
 	}
 
 	if _, err := os.Stat(run.Worktree); run.Worktree != "" && !os.IsNotExist(err) {
@@ -112,18 +104,34 @@ func TestAToolServerThatWritesCannotReachTheChangeUnderReview(t *testing.T) {
 	}
 }
 
-func waitForTheSecondInvocation(t *testing.T, session *harness.Session) claudesim.Invocation {
+func waitForTheReviewerToAnswer(t *testing.T, session *harness.Session) claudesim.Invocation {
 	t.Helper()
 
 	deadline := time.Now().Add(20 * time.Second)
 	for time.Now().Before(deadline) {
 		invocations := session.Simulator.Invocations()
-		if len(invocations) == 2 && process.Alive(invocations[1].Process) {
-			return invocations[1]
+		if len(invocations) == 1 && process.Alive(invocations[0].Process) {
+			return invocations[0]
 		}
 		time.Sleep(20 * time.Millisecond)
 	}
 
-	t.Fatalf("the reviewer was invoked %d times, and the second one never started answering", len(session.Simulator.Invocations()))
+	t.Fatalf("the reviewer was invoked %d times and never started answering", len(session.Simulator.Invocations()))
 	return claudesim.Invocation{}
+}
+
+func TestAReviewThatReallyFailedStillReadsAsOne(t *testing.T) {
+	session := harness.Start(t)
+	session.Simulator.Scenario("default:\n  behaviour: no-result\n")
+	session.Repository.Write("internal/added.go", "package internal\n")
+
+	name := session.Review()
+	if run := session.WaitForTerminal(name); run.State != runstate.Failed {
+		t.Fatalf("a reviewer that returned no result ended the run as %s", run.State)
+	}
+
+	printed, _, _ := session.Scrat("logs", name)
+	if !strings.Contains(printed, "the reviewer failed") {
+		t.Errorf("a review that failed does not read as one:\n%s", printed)
+	}
 }

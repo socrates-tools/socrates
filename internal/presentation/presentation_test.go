@@ -184,6 +184,8 @@ func fields() map[string]any {
 		"reason":        "the model provider answered 529",
 		"state":         string(runstate.Failed),
 		"patchable":     float64(2),
+		"servers":       "serena, playwright",
+		"tools":         float64(41),
 		"finding":       "f1",
 		"resolution":    "fixed",
 		"unanswered":    float64(1),

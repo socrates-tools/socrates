@@ -33,24 +33,33 @@ type wireMessage struct {
 	Content []wireContent `json:"content"`
 }
 
+type wireToolServer struct {
+	Name string `json:"name"`
+}
+
 type wireEvent struct {
-	Type             string          `json:"type"`
-	Subtype          string          `json:"subtype"`
-	SessionID        string          `json:"session_id"`
-	Model            string          `json:"model"`
-	Message          json.RawMessage `json:"message"`
-	IsError          bool            `json:"is_error"`
-	Result           string          `json:"result"`
-	StructuredOutput json.RawMessage `json:"structured_output"`
-	Usage            *wireUsage      `json:"usage"`
+	Type             string           `json:"type"`
+	Subtype          string           `json:"subtype"`
+	ToolServers      []wireToolServer `json:"mcp_servers"`
+	Tools            []string         `json:"tools"`
+	SessionID        string           `json:"session_id"`
+	Model            string           `json:"model"`
+	Message          json.RawMessage  `json:"message"`
+	IsError          bool             `json:"is_error"`
+	Result           string           `json:"result"`
+	StructuredOutput json.RawMessage  `json:"structured_output"`
+	Usage            *wireUsage       `json:"usage"`
 }
 
 type streamed struct {
-	result    *wireEvent
-	text      string
-	model     string
-	sessionID string
-	usage     Usage
+	result      *wireEvent
+	text        string
+	model       string
+	sessionID   string
+	usage       Usage
+	opened      bool
+	toolServers []string
+	tools       []string
 }
 
 func parseStream(input io.Reader) (streamed, error) {
@@ -73,7 +82,7 @@ func parseStream(input io.Reader) (streamed, error) {
 			continue
 		}
 		if malformed != "" {
-			return streamed{}, notAnEvent(malformed)
+			return read, notAnEvent(malformed)
 		}
 
 		if event.SessionID != "" {
@@ -84,10 +93,20 @@ func parseStream(input io.Reader) (streamed, error) {
 		}
 
 		switch event.Type {
+		case "system":
+			if event.Subtype != "init" {
+				break
+			}
+			read.opened = true
+			read.tools = event.Tools
+			read.toolServers = nil
+			for _, server := range event.ToolServers {
+				read.toolServers = append(read.toolServers, server.Name)
+			}
 		case "assistant":
 			var message wireMessage
 			if err := json.Unmarshal(event.Message, &message); err != nil {
-				return streamed{}, fmt.Errorf(noMessageInAnAssistantEvent, err)
+				return read, fmt.Errorf(noMessageInAnAssistantEvent, err)
 			}
 			if message.Model != "" {
 				read.model = message.Model
@@ -109,16 +128,16 @@ func parseStream(input io.Reader) (streamed, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return streamed{}, fmt.Errorf(readingTheStream, err)
+		return read, fmt.Errorf(readingTheStream, err)
 	}
 	if malformed != "" {
 		if watched.truncated() {
-			return streamed{}, truncatedStream(malformed)
+			return read, truncatedStream(malformed)
 		}
-		return streamed{}, notAnEvent(malformed)
+		return read, notAnEvent(malformed)
 	}
 	if watched.truncated() {
-		return streamed{}, truncatedStream("")
+		return read, truncatedStream("")
 	}
 
 	return read, nil

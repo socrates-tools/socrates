@@ -27,6 +27,8 @@ const (
 	inputTokensField  = "input_tokens"
 	outputTokensField = "output_tokens"
 	patchableField    = "patchable"
+	serversField      = "servers"
+	toolsField        = "tools"
 	aPersonField      = "needing_a_person"
 	findingField      = "finding"
 	resolutionField   = "resolution"
@@ -42,7 +44,7 @@ const (
 	agentStartedSentence      = "the %s started: %s at %s effort, process %d"
 	agentCompletedSentence    = "the %s answered: %s, %d tokens in and %d out"
 	agentFailedSentence       = "the %s failed: %s"
-	toolServersLoadedSentence = "the tool servers this machine configures were loaded: %s"
+	toolServersLoadedSentence = "the machine's tool servers were loaded and socrates could not stop them: %s, adding %d tools the reviewer was not meant to have, and nothing here bounds what those reach outside the snapshot worktree"
 	rotationNotice            = "earlier events were discarded when the log reached its ceiling, so this rendering does not begin where the run did"
 
 	unknownSentence = "%s on %s"

@@ -55,13 +55,28 @@ socrates gives the root command `ArbitraryArgs` and a `RunE` that refuses the fi
 **Restricting the reviewer's tools does not restrict its tool servers.**
 `--tools Read,Grep,Glob` says nothing about the servers the machine loads, and a server writes wherever it likes the moment it starts.
 The first live run of socrates failed because the machine's own configured server wrote a `.serena` directory into the snapshot worktree, and the round correctly refused a write the reviewer never asked to make.
-socrates now asks for `--mcp-config {"mcpServers":{}} --strict-mcp-config`.
+socrates asks for `--settings '{"allowedMcpServers":[]}'` and for nothing else.
 
-**`--strict-mcp-config` is refused outright where an enterprise configuration exists.**
+**`--strict-mcp-config` is refused outright where an enterprise configuration exists, so socrates does not send it.**
 `You cannot use --strict-mcp-config when an enterprise MCP config is present`, and the exit status is 1.
-An enterprise configuration lives outside the person's control, at `/etc/claude-code/managed-mcp.json` on Linux, so there is nothing socrates can do about it from inside the invocation.
-socrates asks for strictness, and on that refusal runs the review again without it and records `agent-tool-servers-loaded` in the run's event log.
-Where a server named there writes into the working directory, nothing in the invocation stops it, which is why the snapshot worktree is sealed against writing instead.
+The refusal is deliberate rather than a bug: an enterprise configuration is a managed set, and that flag asks to replace it.
+It lives outside the person's control, at `/etc/claude-code/managed-mcp.json` on Linux.
+socrates used to send it anyway and fall back on the refusal, which is where the second invocation, the retry and a log line reading `the reviewer failed` on every round all came from. The allowlist does the same job and is never refused, so the flag is gone and so is all of that.
+
+**An empty allowlist stops the servers where the flag cannot.**
+`allowedMcpServers` may be set in any settings file, entries merge from every source, and the check runs before a server loads, including one from a managed configuration.
+An empty array is documented as distinct from unset: unset permits every server, empty permits none.
+Supplying it with `--settings` alongside an enterprise configuration took a reviewer's session from 74 tool-server tools to none, measured on this machine.
+That leaves `allowManagedMcpServersOnly` as the case socrates cannot answer, because it makes managed allowlists the only ones that count.
+
+**A person's own settings can widen what socrates supplied.**
+Allowlists merge from every source, so an `allowedMcpServers` entry in `~/.claude/settings.json` permits that server in a reviewer too.
+This is why socrates does not trust either mechanism to have worked and reads the stream's opening event instead, which names `mcp_servers` and the session's `tools`.
+What the run records is what that event reported.
+
+**The reviewer's tool list is where a loaded server is visible.**
+`--tools` covers built-in tools only, so a tool a server contributes appears in the opening event's `tools` beside them, prefixed `mcp__`.
+The live run that found this held `mcp__playwright__browser_run_code_unsafe` and `mcp__chrome-devtools__evaluate_script`, and the seal bounds the snapshot worktree rather than what those reach.
 
 **A sealed worktree is fully usable by the vendor's CLI.**
 Clearing every write bit in the worktree does not disturb a reviewer: `git status`, `git grep` and every read work, because a worktree's index and administrative state live under the main repository's `.git/worktrees/<name>/` rather than in the worktree.

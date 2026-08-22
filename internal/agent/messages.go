@@ -18,4 +18,5 @@ const (
 	schemaNotSatisfied          = "the structured output does not satisfy the schema: %w"
 	theDeadlinePassed           = "the review was given a deadline and it passed"
 	silenceUntilTheDeadline     = "%s answered nothing within %s, so its process group was killed"
+	whateverNamedThem           = "servers the opening event did not name"
 )

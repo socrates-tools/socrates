@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/rui-ktei/socrates/internal/corpus"
+	"github.com/rui-ktei/socrates/internal/fidelity"
 	"github.com/rui-ktei/socrates/internal/testing/source"
 )
 
@@ -87,4 +88,37 @@ func listPackage(t *testing.T, named string) packageFiles {
 		t.Fatalf("reading what go list said: %v", err)
 	}
 	return listed
+}
+
+func TestTheRecordingsCarryWhatSocratesReadsFromTheOpeningEvent(t *testing.T) {
+	// scenario: What loaded is read rather than inferred
+	recordings, err := fidelity.Recordings(fidelity.RecordingsDirectory)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	if len(recordings) == 0 {
+		t.Fatal("there are no recordings, so nothing pins the fields socrates depends on")
+	}
+
+	for _, recording := range recordings {
+		opening, found := systemShape(recording.Shapes)
+		if !found {
+			t.Errorf("%s records no opening event", recording.Path)
+			continue
+		}
+		for _, needed := range []string{"mcp_servers", "mcp_servers[].name", "tools"} {
+			if !slices.Contains(opening.Fields, needed) {
+				t.Errorf("%s does not record %q, and socrates reads it to know what the reviewer loaded: a recording taken without it would let the field disappear unnoticed", recording.Path, needed)
+			}
+		}
+	}
+}
+
+func systemShape(shapes []fidelity.Shape) (fidelity.Shape, bool) {
+	for _, shape := range shapes {
+		if shape.Type == "system" {
+			return shape, true
+		}
+	}
+	return fidelity.Shape{}, false
 }

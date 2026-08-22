@@ -1,6 +1,7 @@
 package claudesim
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"slices"
@@ -15,30 +16,30 @@ import (
 type Behaviour string
 
 const (
-	ReportFindings   Behaviour = "findings"
-	TruncateStream   Behaviour = "truncated-stream"
-	OmitResult       Behaviour = "no-result"
-	OmitStructured   Behaviour = "no-structured-output"
-	ViolateSchema    Behaviour = "schema-violation"
-	ExitNonZero      Behaviour = "non-zero-exit"
-	SayNothingAtAll  Behaviour = "silence"
-	RefuseStrictness Behaviour = "strict-tool-servers-refused"
+	ReportFindings  Behaviour = "findings"
+	TruncateStream  Behaviour = "truncated-stream"
+	OmitResult      Behaviour = "no-result"
+	OmitStructured  Behaviour = "no-structured-output"
+	ViolateSchema   Behaviour = "schema-violation"
+	ExitNonZero     Behaviour = "non-zero-exit"
+	SayNothingAtAll Behaviour = "silence"
+	RejectAtStartup Behaviour = "rejected-at-startup"
 )
 
 const (
-	strictnessRefused       = "You cannot use --strict-mcp-config when an enterprise MCP config is present"
 	defaultText             = "I read the change against the base."
 	defaultModel            = "claude-sim-1"
 	defaultSession          = "00000000-0000-4000-8000-000000000000"
 	defaultHold             = 10 * time.Minute
 	defaultStderr           = "error: the model provider answered 529"
+	defaultRejection        = "error: unknown option '--settings'"
 	defaultViolation        = `{"findings":"none that matter","risk_level":"low","risk_rationale":"r"}`
 	defaultStructuredOutput = `{"findings":[],"risk_level":"low","risk_rationale":"nothing in this change needs attention"}`
 )
 
 var behaviours = []Behaviour{
 	ReportFindings,
-	RefuseStrictness,
+	RejectAtStartup,
 	TruncateStream,
 	OmitResult,
 	OmitStructured,
@@ -54,22 +55,24 @@ type Write struct {
 }
 
 type Response struct {
-	When         string    `yaml:"when"`
-	Behaviour    Behaviour `yaml:"behaviour"`
-	Recorded     string    `yaml:"recorded"`
-	Structured   string    `yaml:"structured"`
-	Text         string    `yaml:"text"`
-	Model        string    `yaml:"model"`
-	SessionID    string    `yaml:"session_id"`
-	Exit         int       `yaml:"exit"`
-	Stderr       string    `yaml:"stderr"`
-	InputTokens  int       `yaml:"input_tokens"`
-	OutputTokens int       `yaml:"output_tokens"`
-	Events       int       `yaml:"events"`
-	Interval     string    `yaml:"interval"`
-	Hold         string    `yaml:"hold"`
-	Writes       []Write   `yaml:"writes"`
-	ChildCommand []string  `yaml:"child_command"`
+	When             string    `yaml:"when"`
+	Behaviour        Behaviour `yaml:"behaviour"`
+	Recorded         string    `yaml:"recorded"`
+	Structured       string    `yaml:"structured"`
+	Text             string    `yaml:"text"`
+	Model            string    `yaml:"model"`
+	SessionID        string    `yaml:"session_id"`
+	Exit             int       `yaml:"exit"`
+	Stderr           string    `yaml:"stderr"`
+	InputTokens      int       `yaml:"input_tokens"`
+	OutputTokens     int       `yaml:"output_tokens"`
+	Events           int       `yaml:"events"`
+	Interval         string    `yaml:"interval"`
+	Hold             string    `yaml:"hold"`
+	Writes           []Write   `yaml:"writes"`
+	ChildCommand     []string  `yaml:"child_command"`
+	ToolServers      []string  `yaml:"tool_servers"`
+	IgnoresAllowlist bool      `yaml:"ignores_allowlist"`
 }
 
 type Scenario struct {
@@ -220,4 +223,28 @@ func parseDuration(stated string) (time.Duration, error) {
 
 func isKnownBehaviour(behaviour Behaviour) bool {
 	return slices.Contains(behaviours, behaviour)
+}
+
+func (r Response) loadedToolServers(invocation Invocation) []string {
+	if len(r.ToolServers) == 0 {
+		return nil
+	}
+	if !r.IgnoresAllowlist && allowsNoToolServer(invocation.Settings) {
+		return nil
+	}
+	return r.ToolServers
+}
+
+func allowsNoToolServer(settings string) bool {
+	if settings == "" {
+		return false
+	}
+
+	var supplied struct {
+		Allowed *[]json.RawMessage `json:"allowedMcpServers"`
+	}
+	if err := json.Unmarshal([]byte(settings), &supplied); err != nil {
+		return false
+	}
+	return supplied.Allowed != nil && len(*supplied.Allowed) == 0
 }
