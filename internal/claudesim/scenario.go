@@ -23,6 +23,7 @@ const (
 	ExitNonZero     Behaviour = "non-zero-exit"
 	SayNothingAtAll Behaviour = "silence"
 	RejectAtStartup Behaviour = "rejected-at-startup"
+	OmitToolList    Behaviour = "no-tool-list"
 )
 
 const (
@@ -45,6 +46,7 @@ var behaviours = []Behaviour{
 	ViolateSchema,
 	ExitNonZero,
 	SayNothingAtAll,
+	OmitToolList,
 }
 
 type Write struct {

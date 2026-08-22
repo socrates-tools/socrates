@@ -70,6 +70,7 @@ func TestEveryKindTheCoreWritesIsRendered(t *testing.T) {
 		agent.EventCompleted,
 		agent.EventFailed,
 		agent.EventUnexpectedTools,
+		agent.EventToolsUnreported,
 	} {
 		t.Run(kind, func(t *testing.T) {
 			lines := presentation.Lines([]runlog.Event{{At: at, Kind: kind, Subject: "a-run", Fields: fields()}})
@@ -81,6 +82,9 @@ func TestEveryKindTheCoreWritesIsRendered(t *testing.T) {
 			}
 			if strings.Contains(lines[0], "%!") || strings.Contains(lines[0], "map[") {
 				t.Errorf("the kind %s is rendered from a field it could not read: %q", kind, lines[0])
+			}
+			if strings.TrimRight(lines[0], " ") != lines[0] {
+				t.Errorf("the kind %s is rendered as a sentence that stops where a field it could not read belongs: %q", kind, lines[0])
 			}
 		})
 	}
@@ -206,8 +210,27 @@ func fields() map[string]any {
 		"state":         string(runstate.Failed),
 		"patchable":     float64(2),
 		"tools":         "Bash, browser_run_code_unsafe",
+		"asked_for":     "Read, Grep, Glob, WebSearch, WebFetch, StructuredOutput",
 		"finding":       "f1",
 		"resolution":    "fixed",
 		"unanswered":    float64(1),
+	}
+}
+
+func TestASessionThatSaidNothingIsRenderedWithWhatSocratesAskedFor(t *testing.T) {
+	line := presentation.Lines([]runlog.Event{{
+		At:      at,
+		Kind:    agent.EventToolsUnreported,
+		Subject: string(agent.Reviewer),
+		Fields:  map[string]any{"asked_for": strings.Join(agent.ToolsAskedFor(), ", ")},
+	}})
+
+	if len(line) != 1 {
+		t.Fatalf("one event rendered as %d lines: %v", len(line), line)
+	}
+	for _, asked := range agent.ToolsAskedFor() {
+		if !strings.Contains(line[0], asked) {
+			t.Errorf("the line does not name %s, which socrates asked for: %q", asked, line[0])
+		}
 	}
 }

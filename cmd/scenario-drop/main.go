@@ -37,8 +37,12 @@ func report() (bool, error) {
 			fmt.Fprintf(out, dropHeading+"\n", spec)
 		}
 		fmt.Fprintf(out, dropLine+"\n", drop.Requirement, drop.Condition)
+		named := scenarioLine
+		if drop.Condition == promotion.PromotedAhead {
+			named = promotedLine
+		}
 		for _, scenario := range drop.Scenarios {
-			fmt.Fprintf(out, scenarioLine+"\n", scenario)
+			fmt.Fprintf(out, named+"\n", scenario)
 		}
 	}
 

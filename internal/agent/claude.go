@@ -33,6 +33,7 @@ const (
 	EventCompleted       = "agent-completed"
 	EventFailed          = "agent-failed"
 	EventUnexpectedTools = "agent-unexpected-tools"
+	EventToolsUnreported = "agent-tools-unreported"
 )
 
 type Options struct {
@@ -81,14 +82,27 @@ func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error
 
 	answer, err := a.attempt(bounded, ctx, request, routing)
 
-	a.recordUnexpectedTools(request, answer)
+	a.recordToolsHeld(request, answer, err == nil)
 	if err != nil {
 		return answer, a.failed(request, routing, err)
 	}
 	return answer, nil
 }
 
-func (a *claudeAgent) recordUnexpectedTools(request Request, answer Response) {
+func (a *claudeAgent) recordToolsHeld(request Request, answer Response, completed bool) {
+	if len(answer.Tools) == 0 {
+		if completed {
+			a.record(runlog.Event{
+				Kind:    EventToolsUnreported,
+				Subject: string(request.Role),
+				Fields: map[string]any{
+					"asked_for": strings.Join(ToolsAskedFor(), ", "),
+				},
+			})
+		}
+		return
+	}
+
 	unexpected := UnexpectedTools(answer.Tools)
 	if len(unexpected) == 0 {
 		return

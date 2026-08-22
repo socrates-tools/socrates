@@ -53,6 +53,9 @@ func writeStream(out io.Writer, response Response, invocation Invocation) error 
 		tools = append(tools, "StructuredOutput")
 	}
 	tools = append(tools, response.ExtraTools...)
+	if response.Behaviour == OmitToolList {
+		tools = nil
+	}
 
 	if err := writeEvent(out, event{
 		Type:           "system",

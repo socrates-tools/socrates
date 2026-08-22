@@ -335,3 +335,60 @@ func TestWhatTheMechanismsDoNotCover(t *testing.T) {
 		t.Error("nothing asks the vendor to disable the customisations that put a tool in the session")
 	}
 }
+
+func TestASessionThatNeverSaidWhatItHeld(t *testing.T) {
+	// scenario: A session that never said what it held
+	simulated := simulator.Install(t)
+	simulated.Scenario("default:\n  behaviour: no-tool-list\n")
+
+	recorded := &collector{}
+	var stream bytes.Buffer
+	asked := request()
+	asked.Transcript = &stream
+
+	answer, err := build(t, agent.Options{Recorder: recorded}).Run(context.Background(), asked)
+	if err != nil {
+		t.Fatalf("a session that said nothing about its tools ended the review: %v", err)
+	}
+
+	if strings.Contains(stream.String(), `"tools"`) {
+		t.Fatal("the delivered stream carries a tool list, so this test is not reading the case it names")
+	}
+	if len(answer.Tools) != 0 {
+		t.Errorf("the answer carries the tools %v, and the session named none", answer.Tools)
+	}
+
+	unreported := recorded.events(agent.EventToolsUnreported)
+	if len(unreported) != 1 {
+		t.Fatalf("%d events record that the session never said what it held, want one", len(unreported))
+	}
+	if held := recorded.events(agent.EventUnexpectedTools); len(held) != 0 {
+		t.Error("a session that said nothing is recorded as one holding a tool socrates did not ask for")
+	}
+
+	t.Run("and the round is not failed for it", func(t *testing.T) {
+		if failures := recorded.events(agent.EventFailed); len(failures) != 0 {
+			t.Errorf("the round failed for a tool list the vendor did not emit: %v", failures)
+		}
+		if completed := recorded.events(agent.EventCompleted); len(completed) != 1 {
+			t.Errorf("%d events record the round completing, want one", len(completed))
+		}
+	})
+}
+
+func TestARoundThatFailedBeforeAnsweringRecordsTheFailure(t *testing.T) {
+	simulated := simulator.Install(t)
+	simulated.Scenario("default:\n  behaviour: rejected-at-startup\n")
+
+	recorded := &collector{}
+	if _, err := build(t, agent.Options{Recorder: recorded}).Run(context.Background(), request()); err == nil {
+		t.Fatal("a reviewer refused at startup answered the request")
+	}
+
+	if failures := recorded.events(agent.EventFailed); len(failures) != 1 {
+		t.Fatalf("%d events record the failure, want one", len(failures))
+	}
+	if unreported := recorded.events(agent.EventToolsUnreported); len(unreported) != 0 {
+		t.Error("a round that failed before answering also records that the session said nothing about its tools, which says less than the failure beside it")
+	}
+}

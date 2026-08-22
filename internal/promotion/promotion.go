@@ -17,6 +17,7 @@ const (
 	ScenariosDropped   Condition = "the promoted specification would stop holding scenarios it holds now"
 	SubstitutesNothing Condition = "the requirement it modifies is in no promoted specification, so archiving would add it beside whatever is there"
 	AddsWhatExists     Condition = "the promoted specification already holds a requirement under that heading"
+	PromotedAhead      Condition = "the promoted specification already holds the new name of a scenario the delta renames, so there is nothing for the rename to be checked against"
 )
 
 type Drop struct {
@@ -99,7 +100,7 @@ func Check(root string) (Report, error) {
 		return Report{}, err
 	}
 
-	slices.SortFunc(report.Drops, func(one, other Drop) int {
+	slices.SortStableFunc(report.Drops, func(one, other Drop) int {
 		if one.Spec != other.Spec {
 			return strings.Compare(one.Spec, other.Spec)
 		}
@@ -141,6 +142,8 @@ func comparison(root, delta string) (Report, error) {
 		relative = delta
 	}
 
+	ahead := renamesAlreadyPromoted(promoted, scenarioRenames)
+
 	var report Report
 	for _, one := range proposed {
 		drop := Drop{Change: change, Spec: relative, Requirement: one.heading}
@@ -165,10 +168,17 @@ func comparison(root, delta string) (Report, error) {
 				report.Drops = append(report.Drops, drop)
 				continue
 			}
+			if carried := alsoCarried(ahead, one.scenarios); len(carried) > 0 {
+				unreadable := drop
+				unreadable.Condition = PromotedAhead
+				unreadable.Scenarios = carried
+				report.Drops = append(report.Drops, unreadable)
+			}
 			if missing := absent(held.scenarios, one.scenarios, scenarioRenames); len(missing) > 0 {
-				drop.Condition = ScenariosDropped
-				drop.Scenarios = missing
-				report.Drops = append(report.Drops, drop)
+				dropped := drop
+				dropped.Condition = ScenariosDropped
+				dropped.Scenarios = missing
+				report.Drops = append(report.Drops, dropped)
 			}
 		}
 	}
@@ -278,4 +288,41 @@ func absent(held, carried []string, renames map[string]string) []string {
 		}
 	}
 	return missing
+}
+
+func renamesAlreadyPromoted(promoted map[string]requirement, renames map[string]string) []string {
+	holds := func(name string) bool {
+		for _, one := range promoted {
+			if slices.ContainsFunc(one.scenarios, func(scenario string) bool {
+				return coverage.Normalise(scenario) == coverage.Normalise(name)
+			}) {
+				return true
+			}
+		}
+		return false
+	}
+
+	var ahead []string
+	for from, to := range renames {
+		if coverage.Normalise(from) == coverage.Normalise(to) {
+			continue
+		}
+		if holds(to) && !holds(from) {
+			ahead = append(ahead, to)
+		}
+	}
+	slices.Sort(ahead)
+	return ahead
+}
+
+func alsoCarried(ahead, carried []string) []string {
+	var named []string
+	for _, one := range ahead {
+		if slices.ContainsFunc(carried, func(scenario string) bool {
+			return coverage.Normalise(scenario) == coverage.Normalise(one)
+		}) {
+			named = append(named, one)
+		}
+	}
+	return named
 }

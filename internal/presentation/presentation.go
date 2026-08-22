@@ -58,6 +58,8 @@ func sentence(event runlog.Event) string {
 		return fmt.Sprintf(agentFailedSentence, event.Subject, stated(held, reasonField))
 	case unexpectedToolsKind:
 		return fmt.Sprintf(unexpectedToolsSentence, stated(held, toolsField))
+	case toolsUnreportedKind:
+		return fmt.Sprintf(toolsUnreportedSentence, stated(held, askedForField))
 	default:
 		return unrecognised(event)
 	}

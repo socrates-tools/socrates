@@ -13,6 +13,7 @@ const (
 	agentCompletedKind  = "agent-completed"
 	agentFailedKind     = "agent-failed"
 	unexpectedToolsKind = "agent-unexpected-tools"
+	toolsUnreportedKind = "agent-tools-unreported"
 	rotatedKind         = "log-rotated"
 
 	repositoryField   = "repository"
@@ -28,6 +29,7 @@ const (
 	outputTokensField = "output_tokens"
 	patchableField    = "patchable"
 	toolsField        = "tools"
+	askedForField     = "asked_for"
 	aPersonField      = "needing_a_person"
 	findingField      = "finding"
 	resolutionField   = "resolution"
@@ -44,6 +46,7 @@ const (
 	agentCompletedSentence  = "the %s answered: %s, %d tokens in and %d out"
 	agentFailedSentence     = "the %s failed: %s"
 	unexpectedToolsSentence = "the reviewer held tools socrates did not ask for: %s, and nothing here bounds what those reach outside the snapshot worktree"
+	toolsUnreportedSentence = "the reviewer's session never said what tools it held, so what it had is not known: socrates asked for %s"
 	rotationNotice          = "earlier events were discarded when the log reached its ceiling, so this rendering does not begin where the run did"
 
 	unknownSentence = "%s on %s"

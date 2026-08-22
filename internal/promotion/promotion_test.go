@@ -3,6 +3,7 @@ package promotion_test
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -294,8 +295,14 @@ Something SHALL be proposed.
 func repositoryWith(t *testing.T, change, delta string) string {
 	t.Helper()
 
+	return repositoryPromoting(t, change, baseline, delta)
+}
+
+func repositoryPromoting(t *testing.T, change, promoted, delta string) string {
+	t.Helper()
+
 	root := t.TempDir()
-	write(t, filepath.Join(root, "openspec", "specs", "run-store", "spec.md"), baseline)
+	write(t, filepath.Join(root, "openspec", "specs", "run-store", "spec.md"), promoted)
 	write(t, filepath.Join(root, "openspec", "changes", change, "specs", "run-store", "spec.md"), delta)
 	write(t, filepath.Join(root, "openspec", "changes", change, "tasks.md"), "- [ ] 1.1 do it\n")
 	return root
@@ -309,5 +316,182 @@ func write(t *testing.T, path, content string) {
 	}
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatalf("writing %s: %v", path, err)
+	}
+}
+
+func TestARenameTheGateCannotCheck(t *testing.T) {
+	renamed := strings.Replace(baseline, "#### Scenario: A terminal run does not move", "#### Scenario: A terminal run stays where it ended", 1)
+	delta := `## RENAMED Requirements
+
+- FROM: ` + "`#### Scenario: A terminal run does not move`" + `
+- TO: ` + "`#### Scenario: A terminal run stays where it ended`" + `
+
+## MODIFIED Requirements
+
+### Requirement: A run holds one of six states
+
+A run SHALL be in exactly one of six states.
+
+#### Scenario: A terminal run stays where it ended
+
+- **WHEN** a run has reached a terminal state
+- **THEN** no later write changes it
+
+#### Scenario: A failed run reports no findings
+
+- **WHEN** a run ends as failed
+- **THEN** its verdict is the failure
+`
+
+	t.Run("A rename the promoted specification already holds is reported", func(t *testing.T) {
+		drops := found(t, repositoryPromoting(t, "promoted-ahead", renamed, delta))
+		if len(drops) != 1 || drops[0].Condition != promotion.PromotedAhead {
+			t.Fatalf("a rename against a specification that already holds the new name reports %+v", drops)
+		}
+		if len(drops[0].Scenarios) != 1 || drops[0].Scenarios[0] != "A terminal run stays where it ended" {
+			t.Errorf("the report names %v, and the new name is what the promoted specification already holds", drops[0].Scenarios)
+		}
+	})
+
+	t.Run("A rename with a before-state to read is still followed", func(t *testing.T) {
+		if drops := found(t, repositoryPromoting(t, "renames-it", baseline, delta)); len(drops) != 0 {
+			t.Errorf("a rename the promoted specification can be compared against reports %+v", drops)
+		}
+	})
+
+	t.Run("A rename that declares the same name on both sides is left alone", func(t *testing.T) {
+		same := `## RENAMED Requirements
+
+- FROM: ` + "`#### Scenario: A terminal run does not move`" + `
+- TO: ` + "`#### Scenario: A terminal run does not move`" + `
+
+## MODIFIED Requirements
+
+### Requirement: A run holds one of six states
+
+A run SHALL be in exactly one of six states.
+
+#### Scenario: A terminal run does not move
+
+- **WHEN** a run has reached a terminal state
+- **THEN** no later write changes it
+
+#### Scenario: A failed run reports no findings
+
+- **WHEN** a run ends as failed
+- **THEN** its verdict is the failure
+`
+		if drops := found(t, repositoryPromoting(t, "renames-nothing", baseline, same)); len(drops) != 0 {
+			t.Errorf("a rename declaring one name on both sides reports %+v", drops)
+		}
+	})
+}
+
+func TestARenameBelongingToAnotherRequirementIsNotReported(t *testing.T) {
+	promoted := `# run-store Specification
+
+## Purpose
+What a run is.
+
+## Requirements
+
+### Requirement: A response names its resolution
+
+Every response SHALL name one resolution.
+
+#### Scenario: It is rejected
+
+- **WHEN** a response rejects a finding
+- **THEN** the reason is required
+
+### Requirement: A refusal names the condition
+
+Every refusal SHALL name the condition.
+
+#### Scenario: It is refused
+
+- **WHEN** a run is already under way
+- **THEN** the second one is refused
+`
+	delta := `## RENAMED Requirements
+
+- FROM: ` + "`#### Scenario: It is rejected`" + `
+- TO: ` + "`#### Scenario: It is refused`" + `
+
+## MODIFIED Requirements
+
+### Requirement: A response names its resolution
+
+Every response SHALL name one resolution, again.
+
+#### Scenario: It is refused
+
+- **WHEN** a response rejects a finding
+- **THEN** the reason is required
+
+### Requirement: A refusal names the condition
+
+Every refusal SHALL name the condition, again.
+
+#### Scenario: It is refused
+
+- **WHEN** a run is already under way
+- **THEN** the second one is refused
+`
+
+	if drops := found(t, repositoryPromoting(t, "renames-one-of-two", promoted, delta)); len(drops) != 0 {
+		t.Errorf("a rename the promoted specification can still be compared against reports %+v, and the name it moves to belongs to another requirement", drops)
+	}
+}
+
+func TestARequirementBothAheadAndShortReportsBoth(t *testing.T) {
+	promoted := strings.Replace(baseline,
+		`#### Scenario: A terminal run does not move`,
+		`#### Scenario: A terminal run stays where it ended`, 1)
+	promoted = strings.Replace(promoted,
+		`### Requirement: A run is a directory`,
+		`#### Scenario: A cancelled run keeps its worktree
+
+- **WHEN** a run is cancelled
+- **THEN** the worktree is kept
+
+### Requirement: A run is a directory`, 1)
+
+	delta := `## RENAMED Requirements
+
+- FROM: ` + "`#### Scenario: A terminal run does not move`" + `
+- TO: ` + "`#### Scenario: A terminal run stays where it ended`" + `
+
+## MODIFIED Requirements
+
+### Requirement: A run holds one of six states
+
+A run SHALL be in exactly one of six states.
+
+#### Scenario: A terminal run stays where it ended
+
+- **WHEN** a run has reached a terminal state
+- **THEN** no later write changes it
+
+#### Scenario: A failed run reports no findings
+
+- **WHEN** a run ends as failed
+- **THEN** its verdict is the failure
+`
+
+	drops := found(t, repositoryPromoting(t, "ahead-and-short", promoted, delta))
+	if len(drops) != 2 {
+		t.Fatalf("a requirement whose rename cannot be checked and which also drops a scenario reports %+v, want both", drops)
+	}
+
+	reported := map[promotion.Condition][]string{}
+	for _, drop := range drops {
+		reported[drop.Condition] = drop.Scenarios
+	}
+	if named := reported[promotion.PromotedAhead]; len(named) != 1 || named[0] != "A terminal run stays where it ended" {
+		t.Errorf("the rename it cannot check is reported as %v", named)
+	}
+	if named := reported[promotion.ScenariosDropped]; len(named) != 1 || named[0] != "A cancelled run keeps its worktree" {
+		t.Errorf("the scenario the promotion would lose is reported as %v", named)
 	}
 }
