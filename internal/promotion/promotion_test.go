@@ -144,6 +144,61 @@ A run SHALL be in exactly one of seven states.
 		}
 	})
 
+	t.Run("A renamed scenario is followed rather than reported as dropped", func(t *testing.T) {
+		root := repositoryWith(t, "renames-a-scenario", `## RENAMED Requirements
+
+- FROM: `+"`#### Scenario: A terminal run does not move`"+`
+- TO: `+"`#### Scenario: A terminal run stays where it ended`"+`
+
+## MODIFIED Requirements
+
+### Requirement: A run holds one of six states
+
+A run SHALL be in exactly one of six states.
+
+#### Scenario: A terminal run stays where it ended
+
+- **WHEN** a run has reached a terminal state
+- **THEN** no later write changes it
+
+#### Scenario: A failed run reports no findings
+
+- **WHEN** a run ends as failed
+- **THEN** its verdict is the failure
+`)
+
+		if drops := found(t, root); len(drops) != 0 {
+			t.Errorf("a scenario the delta renames deliberately reports %+v", drops)
+		}
+	})
+
+	t.Run("A scenario dropped without a rename is still named", func(t *testing.T) {
+		root := repositoryWith(t, "drops-a-scenario", `## MODIFIED Requirements
+
+### Requirement: A run holds one of six states
+
+A run SHALL be in exactly one of six states.
+
+#### Scenario: A terminal run stays where it ended
+
+- **WHEN** a run has reached a terminal state
+- **THEN** no later write changes it
+
+#### Scenario: A failed run reports no findings
+
+- **WHEN** a run ends as failed
+- **THEN** its verdict is the failure
+`)
+
+		drops := found(t, root)
+		if len(drops) != 1 || drops[0].Condition != promotion.ScenariosDropped {
+			t.Fatalf("renaming a scenario without declaring it reports %+v", drops)
+		}
+		if len(drops[0].Scenarios) != 1 || drops[0].Scenarios[0] != "A terminal run does not move" {
+			t.Errorf("the report names %v", drops[0].Scenarios)
+		}
+	})
+
 	t.Run("A requirement added beside one that exists is named", func(t *testing.T) {
 		root := repositoryWith(t, "adds-what-exists", `## ADDED Requirements
 

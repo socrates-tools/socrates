@@ -127,7 +127,7 @@ func comparison(root, delta string) (Report, error) {
 	capability := filepath.Base(filepath.Dir(delta))
 	change := filepath.Base(filepath.Dir(filepath.Dir(filepath.Dir(delta))))
 
-	proposed, renames, err := requirementsIn(delta)
+	proposed, renames, scenarioRenames, err := requirementsIn(delta)
 	if err != nil {
 		return Report{}, err
 	}
@@ -165,7 +165,7 @@ func comparison(root, delta string) (Report, error) {
 				report.Drops = append(report.Drops, drop)
 				continue
 			}
-			if missing := absent(held.scenarios, one.scenarios); len(missing) > 0 {
+			if missing := absent(held.scenarios, one.scenarios, scenarioRenames); len(missing) > 0 {
 				drop.Condition = ScenariosDropped
 				drop.Scenarios = missing
 				report.Drops = append(report.Drops, drop)
@@ -177,7 +177,7 @@ func comparison(root, delta string) (Report, error) {
 
 func promotedRequirements(root, capability string) (map[string]requirement, error) {
 	path := filepath.Join(root, openspecDirectory, "specs", capability, specFile)
-	held, _, err := requirementsIn(path)
+	held, _, _, err := requirementsIn(path)
 	if err != nil {
 		return nil, err
 	}
@@ -189,19 +189,21 @@ func promotedRequirements(root, capability string) (map[string]requirement, erro
 	return promoted, nil
 }
 
-func requirementsIn(path string) ([]requirement, map[string]string, error) {
+func requirementsIn(path string) ([]requirement, map[string]string, map[string]string, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, nil, nil
+			return nil, nil, nil, nil
 		}
-		return nil, nil, fmt.Errorf(readingASpecification, path, err)
+		return nil, nil, nil, fmt.Errorf(readingASpecification, path, err)
 	}
 
 	var held []requirement
 	renames := map[string]string{}
+	scenarioRenames := map[string]string{}
 	section := ""
 	from := ""
+	fromScenario := ""
 
 	for line := range strings.SplitSeq(string(content), "\n") {
 		trimmed := strings.TrimSpace(line)
@@ -225,14 +227,32 @@ func requirementsIn(path string) ([]requirement, map[string]string, error) {
 			continue
 		}
 		if named, marked := strings.CutPrefix(trimmed, renameFrom); marked {
-			from = renamedRequirement(named)
+			if scenario, isScenario := renamedScenario(named); isScenario {
+				fromScenario = scenario
+			} else {
+				from = renamedRequirement(named)
+			}
 		}
-		if named, marked := strings.CutPrefix(trimmed, renameTo); marked && from != "" {
-			renames[coverage.Normalise(renamedRequirement(named))] = from
-			from = ""
+		if named, marked := strings.CutPrefix(trimmed, renameTo); marked {
+			if scenario, isScenario := renamedScenario(named); isScenario && fromScenario != "" {
+				scenarioRenames[coverage.Normalise(fromScenario)] = scenario
+				fromScenario = ""
+			} else if !isScenario && from != "" {
+				renames[coverage.Normalise(renamedRequirement(named))] = from
+				from = ""
+			}
 		}
 	}
-	return held, renames, nil
+	return held, renames, scenarioRenames, nil
+}
+
+func renamedScenario(line string) (string, bool) {
+	quoted := strings.Trim(strings.TrimSpace(line), "`")
+	named, headed := strings.CutPrefix(strings.TrimSpace(quoted), scenarioHeading)
+	if !headed {
+		return "", false
+	}
+	return strings.TrimSpace(named), true
 }
 
 func renamedRequirement(line string) string {
@@ -244,11 +264,15 @@ func renamedRequirement(line string) string {
 	return strings.TrimSpace(named)
 }
 
-func absent(held, carried []string) []string {
+func absent(held, carried []string, renames map[string]string) []string {
 	var missing []string
 	for _, scenario := range held {
+		wanted := scenario
+		if renamed, was := renames[coverage.Normalise(scenario)]; was {
+			wanted = renamed
+		}
 		if !slices.ContainsFunc(carried, func(one string) bool {
-			return coverage.Normalise(one) == coverage.Normalise(scenario)
+			return coverage.Normalise(one) == coverage.Normalise(wanted)
 		}) {
 			missing = append(missing, scenario)
 		}
