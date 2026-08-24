@@ -23,6 +23,8 @@ const (
 	awaitingAPersonLine = "of those, needing a person rather than a patch: %d"
 	readyLine           = "ready to continue: run scrat continue to start the next round"
 
+	readByAPersonLine = "read by a person: this round holds what only a person can act on, so put it in front of them"
+
 	rulesHeading = "How to answer these findings:"
 	ruleLine     = "  - %s"
 )

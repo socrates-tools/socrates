@@ -19,7 +19,7 @@ const (
 )
 
 func Document() string {
-	return strings.Join([]string{frontMatter, purpose, rules(), theLoop, prohibitions}, "\n\n") + "\n"
+	return strings.Join([]string{frontMatter, purpose, rules(), thePage, theLoop, prohibitions}, "\n\n") + "\n"
 }
 
 func rules() string {

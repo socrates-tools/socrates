@@ -18,6 +18,39 @@ What the reviewer says while it works is not for you: if the person wants to see
 - A finding that asks a person is the person's to answer and not yours: take it to them, and record what they decided with scrat respond --decided and a reason.
 - Do not resolve a finding by weakening or deleting behaviour you added on purpose. Where the finding is right about a symptom and wrong about the cause, say so and fix the cause.
 
+## The page a person reads
+
+Some rounds hold something only a person can act on.
+scrat findings says which: it prints a line beginning "read by a person" on exactly those rounds and on no others.
+That line is what decides it. Do not work it out for yourself from the state or from any count, because a round you decide wrongly about is a round nobody renders and nobody notices was not rendered.
+
+Where it says so, do not paste the findings into the terminal.
+Render them as an HTML page with the artifact-design skill and give the person the link, then say briefly what it holds.
+
+The page collects nothing.
+There is nothing behind it, so a form, a button, a checkbox or a stored answer would take a decision that reaches no run while the person believed they had made it, and it would cost the tokens and the time the page exists to save.
+Declare no capabilities.
+The person reads the page, decides, and tells you here, and the terminal is where you record it.
+
+The page and this terminal have to be matchable in both directions.
+Every finding keeps the identifier, the severity and the audience scrat findings gave it, so the person can say f3 and you know which finding they mean.
+Each decision on the page names its finding and says what answering it looks like here.
+A page that renamed a finding to something more readable hands the person a search problem in exchange for a nicer sentence.
+
+Hold the page to this:
+
+- Get to the point.
+  Length is not thoroughness, and a person who has to search the page for their own decision has been handed the terminal output again.
+- Say in plain English what the finding means for the change.
+  Do not restate the reviewer's technical prose in a nicer typeface.
+- Where a finding is purely technical, show a small example of it going wrong.
+  A reader should not have to work out for themselves what the term costs them.
+- Draw a diagram only where a workflow is what makes a finding hard to follow, and not otherwise.
+- Spend tokens as though they were the person's, because they are.
+
+The findings a person answers go on the page in full.
+The ones you are patching yourself go on it as a short list, so the person can see the whole round without reading it.
+
 ## The loop
 
 1. Implement what the person asked for.
@@ -48,7 +81,8 @@ Report the change as unreviewed, and offer to start another review.
 
 ### escalated
 
-Read scrat findings, hand every finding to the person, and stop.
+Read scrat findings and hand every finding to the person, as a page.
+Draft it here, in this session: the run is over, so nothing follows that would re-read the drafting, and a subagent would cost its own start-up for no benefit.
 These are theirs to decide, and socrates has nothing further it can do about them.
 A run escalates for one of two reasons, and scrat status prints which: a finding holds the change while its own action asks for nothing, so no answer of yours addresses it, or the last permitted round still found something blocking.
 No further round is possible. A run has two rounds at most, and no flag gives it a third.
@@ -64,9 +98,13 @@ A finding it reports as one that can be patched is yours. Patch it, or say why i
        scrat respond --finding f1 --fixed --note "an empty document now answers minus one"
        scrat respond --finding f2 --rejected --reason "there is no retry loop in this function at all"
 
-A finding it reports as needing a person is the person's. Put it in front of them, wait for them, and record what they decided:
+A finding it reports as needing a person is the person's. Put it in front of them as a page, wait for them, and record what they decided:
 
        scrat respond --finding f3 --decided --reason "Vic decided the endpoint stays, because the migration reads it"
+
+Delegate that page to a subagent rather than drafting it here.
+You are about to patch, record one answer per finding, continue, and read another round, and everything you add to this session now is read again on every one of those turns.
+Give the subagent the run identifier and let it read scrat findings --json itself, so what comes back to you is the link and a sentence.
 
 You do not answer such a finding on your own behalf. It asks what the change is for, you are the one who wrote the change, and a recorded decision that no person made is a claim a later reader will find and a reviewer will judge.
 

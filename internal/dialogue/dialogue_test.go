@@ -172,6 +172,104 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 	})
 }
 
+func TestWhichRoundsAPersonReads(t *testing.T) {
+	t.Run("An escalated round is one a person reads", func(t *testing.T) {
+		beyondAnswering := classify(finding("f1", findings.Error, findings.NoOp))
+		if !dialogue.APersonReads(beyondAnswering, dialogue.After(beyondAnswering, 1)) {
+			t.Error("a round escalating for a finding that holds the change while asking for nothing is not one a person reads, and nobody else can act on it")
+		}
+
+		atTheCap := classify(finding("f1", findings.Error, findings.AutoFix))
+		if !dialogue.APersonReads(atTheCap, dialogue.After(atTheCap, dialogue.Cap)) {
+			t.Error("a round escalating at the cap is not one a person reads, and no round remains in which anything else could act on it")
+		}
+	})
+
+	t.Run("A parked round holding a question is one a person reads", func(t *testing.T) {
+		alone := classify(finding("f1", findings.Error, findings.AskUser))
+		if !dialogue.APersonReads(alone, dialogue.After(alone, 1)) {
+			t.Error("a parked round holding one question about intent is not one a person reads, and only a person closes it")
+		}
+
+		alongside := classify(
+			finding("f1", findings.Error, findings.AskUser),
+			finding("f2", findings.Error, findings.AutoFix),
+			finding("f3", findings.Warning, findings.AutoFix),
+		)
+		if !dialogue.APersonReads(alongside, dialogue.After(alongside, 1)) {
+			t.Error("a parked round holding a question beside mechanical defects is not one a person reads, and the question is still the person's")
+		}
+	})
+
+	t.Run("A parked round the author answers alone is not one a person reads", func(t *testing.T) {
+		classified := classify(finding("f1", findings.Error, findings.AutoFix), finding("f2", findings.Warning, findings.AutoFix))
+		if dialogue.APersonReads(classified, dialogue.After(classified, 1)) {
+			t.Error("a parked round whose findings the author patches is one a person reads, so the person is asked to read a round that asks them nothing")
+		}
+	})
+
+	t.Run("A clean round is not one a person reads", func(t *testing.T) {
+		for _, classified := range []findings.Classification{
+			classify(),
+			classify(finding("f1", findings.Info, findings.NoOp)),
+			classify(finding("f1", findings.Info, findings.AskUser)),
+			classify(finding("f1", findings.Info, findings.AutoFix)),
+		} {
+			for _, round := range []int{1, dialogue.Cap} {
+				if dialogue.APersonReads(classified, dialogue.After(classified, round)) {
+					t.Errorf("round %d blocks nothing and is one a person reads, and nothing is being asked of anybody", round)
+				}
+			}
+		}
+	})
+
+	t.Run("The rule is decided over its whole input space", func(t *testing.T) {
+		kinds := everyKind()
+
+		for selection := range 1 << len(kinds) {
+			held := selected(kinds, selection)
+			classified := classify(held...)
+
+			for _, state := range runstate.States() {
+				got := dialogue.APersonReads(classified, state)
+
+				want := false
+				switch state {
+				case runstate.Escalated:
+					want = true
+				case runstate.AwaitingResponse:
+					want = blocksAskingAPerson(held)
+				}
+				if got != want {
+					t.Fatalf("%v in state %q is read by a person: %t, want %t", describe(held), state, got, want)
+				}
+				if !state.Terminal() && state != runstate.AwaitingResponse && got {
+					t.Fatalf("%v in state %q is one a person reads, and no round has led anywhere yet", describe(held), state)
+				}
+			}
+
+			for round := range dialogue.Cap + 2 {
+				asked := round + 1
+				reached := dialogue.After(classified, asked)
+				got := dialogue.APersonReads(classified, reached)
+
+				want := false
+				switch {
+				case !blocks(held):
+					want = false
+				case blocksBeyondAnswering(held), asked >= dialogue.Cap:
+					want = true
+				default:
+					want = blocksAskingAPerson(held)
+				}
+				if got != want {
+					t.Fatalf("round %d of %v led to %q and is read by a person: %t, want %t", asked, describe(held), reached, got, want)
+				}
+			}
+		}
+	})
+}
+
 func TestTheRoundCapIsTwo(t *testing.T) {
 	if dialogue.Cap != 2 {
 		t.Fatalf("the round cap is %d, want 2", dialogue.Cap)
@@ -282,6 +380,15 @@ func blocks(held []findings.Finding) bool {
 func blocksBeyondAnswering(held []findings.Finding) bool {
 	for _, one := range held {
 		if slices.Contains([]string{"error", "warning"}, string(one.Severity)) && string(one.Action) == "no-op" {
+			return true
+		}
+	}
+	return false
+}
+
+func blocksAskingAPerson(held []findings.Finding) bool {
+	for _, one := range held {
+		if slices.Contains([]string{"error", "warning"}, string(one.Severity)) && string(one.Action) == "ask-user" {
 			return true
 		}
 	}

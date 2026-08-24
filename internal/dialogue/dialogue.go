@@ -19,6 +19,17 @@ func After(classified findings.Classification, round int) runstate.State {
 	return runstate.AwaitingResponse
 }
 
+func APersonReads(classified findings.Classification, state runstate.State) bool {
+	switch state {
+	case runstate.Escalated:
+		return true
+	case runstate.AwaitingResponse:
+		return len(AnsweredByAPerson(classified)) > 0
+	default:
+		return false
+	}
+}
+
 func Answerable(classified findings.Classification) []findings.Finding {
 	return append(AnsweredByAPatch(classified), AnsweredByAPerson(classified)...)
 }

@@ -44,6 +44,7 @@ type Findings struct {
 	Findings      []Finding      `json:"findings"`
 	RiskLevel     findings.Risk  `json:"risk_level,omitempty"`
 	RiskRationale string         `json:"risk_rationale,omitempty"`
+	ReadByAPerson bool           `json:"read_by_a_person,omitempty"`
 	Reason        string         `json:"reason,omitempty"`
 	Guidance      []string       `json:"guidance,omitempty"`
 }
@@ -89,6 +90,7 @@ func FindingsOf(store runstore.Store, name string) (Findings, error) {
 		return reported, nil
 	}
 
+	reported.ReadByAPerson = dialogue.APersonReads(findings.Classify(document), run.State)
 	for _, finding := range document.Findings {
 		reported.Findings = append(reported.Findings, Finding{
 			ID:          finding.ID,
@@ -201,7 +203,15 @@ func (f Findings) Lines() []string {
 			fmt.Sprintf(descriptionLine, finding.Description))
 	}
 	lines = append(lines, fmt.Sprintf(riskLine, f.RiskLevel), fmt.Sprintf(rationaleLine, f.RiskRationale))
+	lines = append(lines, f.forAPerson()...)
 	return append(lines, f.rules()...)
+}
+
+func (f Findings) forAPerson() []string {
+	if !f.ReadByAPerson {
+		return nil
+	}
+	return []string{readByAPersonLine}
 }
 
 func (f Findings) rules() []string {
