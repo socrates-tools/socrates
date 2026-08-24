@@ -51,19 +51,19 @@ func TestNoChannelIsImpliedForTheAuthorsAccount(t *testing.T) {
 		"cancel":    "stops a run",
 		"logs":      "prints what a run recorded",
 		"skill":     "installs this skill",
-		"supervise": "conducts a review that scrat review started",
+		"supervise": "conducts a review that socrates review started",
 	}
 
 	for _, named := range skill.Named() {
 		if _, allowed := commands[named.Command]; !allowed {
-			t.Errorf("the skill names scrat %s, and nothing says why it is not a way to send the reviewer the session's own account of the change", named.Command)
+			t.Errorf("the skill names socrates %s, and nothing says why it is not a way to send the reviewer the session's own account of the change", named.Command)
 			continue
 		}
 		if named.Flag == "" {
 			continue
 		}
 		if _, allowed := permitted[named.Flag]; !allowed {
-			t.Errorf("the skill names scrat %s %s, and nothing says why it is not a way to send the reviewer the session's own account of the change", named.Command, named.Flag)
+			t.Errorf("the skill names socrates %s %s, and nothing says why it is not a way to send the reviewer the session's own account of the change", named.Command, named.Flag)
 		}
 	}
 }

@@ -17,20 +17,20 @@ import (
 func TestTheCommandSurfaceIsWhatItSays(t *testing.T) {
 	session := harness.Start(t)
 
-	printed, failures, code := session.Scrat("--help")
+	printed, failures, code := session.Socrates("--help")
 	if code != 0 {
-		t.Fatalf("scrat --help exited %d: %s", code, failures)
+		t.Fatalf("socrates --help exited %d: %s", code, failures)
 	}
 
 	listed := commandsIn(printed)
 	want := []string{"cancel", "continue", "findings", "help", "logs", "respond", "review", "skill", "status", "version", "watch"}
 	if !slices.Equal(listed, want) {
-		t.Errorf("scrat lists %v, want %v", listed, want)
+		t.Errorf("socrates lists %v, want %v", listed, want)
 	}
 
 	for _, forbidden := range []string{"commit", "push", "pr", "pull-request", "merge", "land", "ci", "test", "lint", "verify"} {
 		if slices.Contains(listed, forbidden) {
-			t.Errorf("scrat lists %q, which lands or verifies a change", forbidden)
+			t.Errorf("socrates lists %q, which lands or verifies a change", forbidden)
 		}
 	}
 }
@@ -62,24 +62,24 @@ func TestTheDefaultDoesNotBlock(t *testing.T) {
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	printed, failures, code := session.Scrat("review")
+	printed, failures, code := session.Socrates("review")
 	if code != 0 {
-		t.Fatalf("scrat review exited %d: %s", code, failures)
+		t.Fatalf("socrates review exited %d: %s", code, failures)
 	}
 
 	name := firstLine(printed)
-	if !strings.Contains(printed, "scrat status "+name) {
-		t.Errorf("scrat review does not say how to follow the run:\n%s", printed)
+	if !strings.Contains(printed, "socrates status "+name) {
+		t.Errorf("socrates review does not say how to follow the run:\n%s", printed)
 	}
 
 	run := session.WaitFor(name, runstate.Reviewing)
 	if run.State.Terminal() {
-		t.Fatalf("the run was already %s when scrat review returned", run.State)
+		t.Fatalf("the run was already %s when socrates review returned", run.State)
 	}
 
-	_, _, statusCode := session.Scrat("status", name)
+	_, _, statusCode := session.Socrates("status", name)
 	if statusCode != 4 {
-		t.Errorf("scrat status of a running review exited %d, want 4", statusCode)
+		t.Errorf("socrates status of a running review exited %d, want 4", statusCode)
 	}
 }
 
@@ -88,17 +88,17 @@ func TestWaitingReturnsTheVerdict(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	printed, failures, code := session.Scrat("review", "--wait")
+	printed, failures, code := session.Socrates("review", "--wait")
 	if code != 0 {
-		t.Fatalf("scrat review --wait exited %d: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates review --wait exited %d: %s\n%s", code, failures, printed)
 	}
 	if !strings.Contains(printed, string(runstate.Clean)) {
-		t.Errorf("scrat review --wait does not report the verdict:\n%s", printed)
+		t.Errorf("socrates review --wait does not report the verdict:\n%s", printed)
 	}
 
 	run := session.Run(firstLine(printed))
 	if run.State != runstate.Clean {
-		t.Errorf("the run is %s after scrat review --wait returned zero", run.State)
+		t.Errorf("the run is %s after socrates review --wait returned zero", run.State)
 	}
 }
 
@@ -107,9 +107,9 @@ func TestStartingIsNotAVerdict(t *testing.T) {
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	printed, failures, code := session.Scrat("review")
+	printed, failures, code := session.Socrates("review")
 	if code != 0 {
-		t.Fatalf("scrat review exited %d for a run that later escalates: %s", code, failures)
+		t.Fatalf("socrates review exited %d for a run that later escalates: %s", code, failures)
 	}
 
 	run := session.WaitForTerminal(firstLine(printed))
@@ -139,11 +139,11 @@ func TestEachVerdictHasItsOwnCodeFromTheCommand(t *testing.T) {
 				t.Fatalf("the run ended as %s, want %s: %s", run.State, verdict.state, reason(run))
 			}
 
-			if _, _, code := session.Scrat("status", name); code != verdict.code {
-				t.Errorf("scrat status of a %s run exited %d, want %d", verdict.state, code, verdict.code)
+			if _, _, code := session.Socrates("status", name); code != verdict.code {
+				t.Errorf("socrates status of a %s run exited %d, want %d", verdict.state, code, verdict.code)
 			}
-			if _, _, code := session.Scrat("findings", name); code != verdict.code {
-				t.Errorf("scrat findings of a %s run exited %d, want %d", verdict.state, code, verdict.code)
+			if _, _, code := session.Socrates("findings", name); code != verdict.code {
+				t.Errorf("socrates findings of a %s run exited %d, want %d", verdict.state, code, verdict.code)
 			}
 		})
 	}
@@ -152,9 +152,9 @@ func TestEachVerdictHasItsOwnCodeFromTheCommand(t *testing.T) {
 func TestAUsageErrorIsNotAVerdictFromTheCommand(t *testing.T) {
 	session := harness.Start(t)
 
-	printed, failures, code := session.Scrat("status", "20200101T000000Z-deadbeef")
+	printed, failures, code := session.Socrates("status", "20200101T000000Z-deadbeef")
 	if code != 3 {
-		t.Errorf("scrat status of a run that does not exist exited %d, want 3", code)
+		t.Errorf("socrates status of a run that does not exist exited %d, want 3", code)
 	}
 	if !strings.Contains(failures, "20200101T000000Z-deadbeef") {
 		t.Errorf("the refusal does not name the run asked for: %s", failures)
@@ -174,9 +174,9 @@ func TestMachineReadableOnRequest(t *testing.T) {
 	name := session.Review()
 	session.WaitForTerminal(name)
 
-	printed, failures, code := session.Scrat("status", "--json", name)
+	printed, failures, code := session.Socrates("status", "--json", name)
 	if code != 1 {
-		t.Fatalf("scrat status --json exited %d: %s", code, failures)
+		t.Fatalf("socrates status --json exited %d: %s", code, failures)
 	}
 
 	var status struct {
@@ -189,7 +189,7 @@ func TestMachineReadableOnRequest(t *testing.T) {
 		} `json:"findings"`
 	}
 	if err := json.Unmarshal([]byte(printed), &status); err != nil {
-		t.Fatalf("scrat status --json printed something other than one JSON object: %v:\n%s", err, printed)
+		t.Fatalf("socrates status --json printed something other than one JSON object: %v:\n%s", err, printed)
 	}
 	if status.Run != name || status.State != string(runstate.Escalated) || status.Round != 1 {
 		t.Errorf("the object reads %+v", status)
@@ -198,7 +198,7 @@ func TestMachineReadableOnRequest(t *testing.T) {
 		t.Errorf("the counts read %+v", status.Findings)
 	}
 	if strings.Count(strings.TrimSpace(printed), "\n") != 0 {
-		t.Errorf("scrat status --json printed more than one line:\n%s", printed)
+		t.Errorf("socrates status --json printed more than one line:\n%s", printed)
 	}
 }
 
@@ -210,9 +210,9 @@ func TestFindingsAreReadableFromTheCommand(t *testing.T) {
 	name := session.Review()
 	session.WaitForTerminal(name)
 
-	printed, failures, code := session.Scrat("findings", name)
+	printed, failures, code := session.Socrates("findings", name)
 	if code != 1 {
-		t.Fatalf("scrat findings exited %d: %s", code, failures)
+		t.Fatalf("socrates findings exited %d: %s", code, failures)
 	}
 	for _, needed := range []string{
 		"f1", "error", "internal/added.go:1", "The added file answers wrongly for an empty input.", "informational",
@@ -220,16 +220,16 @@ func TestFindingsAreReadableFromTheCommand(t *testing.T) {
 		"medium", "one changed path answers wrongly without erroring",
 	} {
 		if !strings.Contains(printed, needed) {
-			t.Errorf("scrat findings does not print %q:\n%s", needed, printed)
+			t.Errorf("socrates findings does not print %q:\n%s", needed, printed)
 		}
 	}
 
-	asJSON, _, _ := session.Scrat("findings", "--json", name)
+	asJSON, _, _ := session.Socrates("findings", "--json", name)
 	var reported struct {
 		Findings []map[string]any `json:"findings"`
 	}
 	if err := json.Unmarshal([]byte(asJSON), &reported); err != nil {
-		t.Fatalf("scrat findings --json printed something other than one JSON object: %v:\n%s", err, asJSON)
+		t.Fatalf("socrates findings --json printed something other than one JSON object: %v:\n%s", err, asJSON)
 	}
 	if reported.Findings[2]["action"] != "ask-user" {
 		t.Errorf("the finding that stated no action is reported as %v", reported.Findings[2]["action"])
@@ -250,24 +250,24 @@ func TestTheBareCommandFindsThisRepositorysRun(t *testing.T) {
 		t.Fatalf("both repositories produced the run %s", here)
 	}
 
-	printed, failures, code := session.ScratIn(elsewhere.Root, "status")
+	printed, failures, code := session.SocratesIn(elsewhere.Root, "status")
 	if code != 0 && code != 4 {
-		t.Fatalf("scrat status in the second repository exited %d: %s", code, failures)
+		t.Fatalf("socrates status in the second repository exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, there) {
-		t.Errorf("scrat status in the second repository reported %q, want the run %s", printed, there)
+		t.Errorf("socrates status in the second repository reported %q, want the run %s", printed, there)
 	}
 	if strings.Contains(printed, here) {
-		t.Errorf("scrat status in the second repository reported the first repository's run:\n%s", printed)
+		t.Errorf("socrates status in the second repository reported the first repository's run:\n%s", printed)
 	}
 }
 
 func mustReview(t *testing.T, session *harness.Session, directory string) string {
 	t.Helper()
 
-	printed, failures, code := session.ScratIn(directory, "review")
+	printed, failures, code := session.SocratesIn(directory, "review")
 	if code != 0 {
-		t.Fatalf("scrat review in %s exited %d: %s", directory, code, failures)
+		t.Fatalf("socrates review in %s exited %d: %s", directory, code, failures)
 	}
 	return printed
 }
@@ -276,15 +276,15 @@ func TestARepositoryWithNoRuns(t *testing.T) {
 	session := harness.Start(t)
 	untouched := gitrepo.New(t)
 
-	printed, failures, code := session.ScratIn(untouched.Root, "status")
+	printed, failures, code := session.SocratesIn(untouched.Root, "status")
 	if code != 3 {
-		t.Errorf("scrat status in a repository that has never been reviewed exited %d, want 3", code)
+		t.Errorf("socrates status in a repository that has never been reviewed exited %d, want 3", code)
 	}
 	if !strings.Contains(failures, untouched.Root) {
 		t.Errorf("the refusal does not name the repository: %s", failures)
 	}
 	if strings.TrimSpace(printed) != "" {
-		t.Errorf("scrat status printed a report for a repository with no runs:\n%s", printed)
+		t.Errorf("socrates status printed a report for a repository with no runs:\n%s", printed)
 	}
 }
 
@@ -297,12 +297,12 @@ func TestAnIdentifierWinsOverTheDefault(t *testing.T) {
 	session.WaitForTerminal(name)
 
 	elsewhere := gitrepo.New(t)
-	printed, failures, code := session.ScratIn(elsewhere.Root, "status", name)
+	printed, failures, code := session.SocratesIn(elsewhere.Root, "status", name)
 	if code != 0 {
-		t.Fatalf("scrat status of a named run exited %d from another repository: %s", code, failures)
+		t.Fatalf("socrates status of a named run exited %d from another repository: %s", code, failures)
 	}
 	if !strings.Contains(printed, name) {
-		t.Errorf("scrat status reported %q, want the run %s", printed, name)
+		t.Errorf("socrates status reported %q, want the run %s", printed, name)
 	}
 }
 
@@ -315,12 +315,12 @@ func TestCancellingStopsEverything(t *testing.T) {
 	session.WaitFor(name, runstate.Reviewing)
 	started := session.Recorded(name)
 
-	printed, failures, code := session.Scrat("cancel", name)
+	printed, failures, code := session.Socrates("cancel", name)
 	if code != 0 {
-		t.Fatalf("scrat cancel exited %d: %s", code, failures)
+		t.Fatalf("socrates cancel exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, name) {
-		t.Errorf("scrat cancel does not name the run it stopped:\n%s", printed)
+		t.Errorf("socrates cancel does not name the run it stopped:\n%s", printed)
 	}
 
 	run := session.Recorded(name)
@@ -341,12 +341,12 @@ func TestCancellingATerminalRunChangesNothing(t *testing.T) {
 	name := session.Review()
 	before := session.WaitForTerminal(name)
 
-	printed, failures, code := session.Scrat("cancel", name)
+	printed, failures, code := session.Socrates("cancel", name)
 	if code != 0 {
-		t.Fatalf("scrat cancel of a finished run exited %d: %s", code, failures)
+		t.Fatalf("socrates cancel of a finished run exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, string(before.State)) {
-		t.Errorf("scrat cancel does not say the run had already finished as %s:\n%s", before.State, printed)
+		t.Errorf("socrates cancel does not say the run had already finished as %s:\n%s", before.State, printed)
 	}
 
 	after := session.Recorded(name)
@@ -383,9 +383,9 @@ func TestAnUnreadableConfigurationFileIsARefusalFromTheCommand(t *testing.T) {
 		t.Fatalf("writing %s: %v", path, err)
 	}
 
-	_, failures, code := session.Scrat("review")
+	_, failures, code := session.Socrates("review")
 	if code != 3 {
-		t.Errorf("scrat review with a configuration file that does not parse exited %d, want 3", code)
+		t.Errorf("socrates review with a configuration file that does not parse exited %d, want 3", code)
 	}
 	if !strings.Contains(failures, path) {
 		t.Errorf("the refusal does not name the file: %s", failures)
@@ -441,7 +441,7 @@ func TestTheRepositoryIsNeverWrittenTo(t *testing.T) {
 		t.Errorf("the working tree changed:\nbefore: %v\nafter: %v", tracked, after)
 	}
 	for path := range workingTree(t, session.Repository.Root) {
-		if strings.Contains(strings.ToLower(path), "socrates") || strings.Contains(path, "scrat") {
+		if strings.Contains(strings.ToLower(path), "socrates") || strings.Contains(path, "socrates") {
 			t.Errorf("socrates left %s inside the repository", path)
 		}
 	}

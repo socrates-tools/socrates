@@ -19,15 +19,15 @@ func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	started := time.Now()
-	out, failures, code := session.Scrat("review", "--intent", "add a thing")
+	out, failures, code := session.Socrates("review", "--intent", "add a thing")
 	if code != 0 {
-		t.Fatalf("scrat review exited %d: %s", code, failures)
+		t.Fatalf("socrates review exited %d: %s", code, failures)
 	}
 	returned := time.Since(started)
 
 	name, _, _ := strings.Cut(strings.TrimSpace(out), "\n")
 	if name == "" {
-		t.Fatal("scrat review printed no run identifier")
+		t.Fatal("socrates review printed no run identifier")
 	}
 
 	run := session.WaitFor(name, runstate.Reviewing)
@@ -38,7 +38,7 @@ func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {
 		t.Errorf("the reviewer %d is not running, so the command did not return early", run.Reviewer)
 	}
 	if returned > 20*time.Second {
-		t.Errorf("scrat review took %s to return", returned)
+		t.Errorf("socrates review took %s to return", returned)
 	}
 
 	t.Run("the reviewer holds none of the invoking terminal's streams", func(t *testing.T) {

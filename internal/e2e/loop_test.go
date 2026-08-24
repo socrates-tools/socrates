@@ -51,7 +51,7 @@ func (j *journey) run(command string, arguments ...string) (string, string, int)
 			j.ran = append(j.ran, skill.Invocation{Command: command, Flag: argument})
 		}
 	}
-	return j.session.Scrat(append([]string{command}, arguments...)...)
+	return j.session.Socrates(append([]string{command}, arguments...)...)
 }
 
 func (j *journey) review(intent string) string {
@@ -59,7 +59,7 @@ func (j *journey) review(intent string) string {
 
 	printed, failures, code := j.run("review", "--intent", intent)
 	if code != 0 {
-		j.t.Fatalf("scrat review --intent exited %d: %s\n%s", code, failures, printed)
+		j.t.Fatalf("socrates review --intent exited %d: %s\n%s", code, failures, printed)
 	}
 	return firstLine(printed)
 }
@@ -74,7 +74,7 @@ func (j *journey) waitedFor(name string) (runstate.State, int) {
 		printed, failures, code := j.run("status", name)
 		state := stateIn(printed)
 		if state == "" {
-			j.t.Fatalf("scrat status printed no state for %s: %s%s", name, printed, failures)
+			j.t.Fatalf("socrates status printed no state for %s: %s%s", name, printed, failures)
 		}
 		if slices.Contains(stops, state) {
 			return state, code
@@ -82,7 +82,7 @@ func (j *journey) waitedFor(name string) (runstate.State, int) {
 		time.Sleep(20 * time.Millisecond)
 	}
 
-	j.t.Fatalf("polling scrat status for %s reported no state to act on within %s", name, loopPatience)
+	j.t.Fatalf("polling socrates status for %s reported no state to act on within %s", name, loopPatience)
 	return "", 0
 }
 
@@ -100,7 +100,7 @@ func (j *journey) findings(name string) string {
 
 	printed, failures, _ := j.run("findings", name)
 	if printed == "" {
-		j.t.Fatalf("scrat findings printed nothing for %s: %s", name, failures)
+		j.t.Fatalf("socrates findings printed nothing for %s: %s", name, failures)
 	}
 	return printed
 }
@@ -122,7 +122,7 @@ func (j *journey) namedNothingTheSkillDoesNot() {
 	named := skill.Named()
 	for _, ran := range j.ran {
 		if !slices.Contains(named, ran) {
-			j.t.Errorf("the journey ran scrat %s %s, which the skill does not name, so it is not the loop the skill describes", ran.Command, ran.Flag)
+			j.t.Errorf("the journey ran socrates %s %s, which the skill does not name, so it is not the loop the skill describes", ran.Command, ran.Flag)
 		}
 	}
 }
@@ -134,7 +134,7 @@ func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 
 		state, code := driven.waitedFor(name)
 		if state != runstate.Escalated || code != 1 {
-			t.Fatalf("the run is %s and scrat status exited %d, want escalated", state, code)
+			t.Fatalf("the run is %s and socrates status exited %d, want escalated", state, code)
 		}
 
 		reported := driven.findings(name)
@@ -157,7 +157,7 @@ func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 
 		state, code := driven.waitedFor(name)
 		if state != runstate.Failed || code != 2 {
-			t.Fatalf("the run is %s and scrat status exited %d, want failed", state, code)
+			t.Fatalf("the run is %s and socrates status exited %d, want failed", state, code)
 		}
 		if reported := driven.findings(name); !strings.Contains(reported, "no review completed") {
 			t.Errorf("what the loop reads about a failed run does not say that no review completed:\n%s", reported)
@@ -173,7 +173,7 @@ func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 
 		state, code := driven.waitedFor(name)
 		if state != runstate.AwaitingResponse || code != 4 {
-			t.Fatalf("the run is %s and scrat status exited %d, want a parked run", state, code)
+			t.Fatalf("the run is %s and socrates status exited %d, want a parked run", state, code)
 		}
 
 		if _, failures, refused := driven.run("continue", name); refused != 3 {
@@ -194,7 +194,7 @@ func TestTheLoopAnswersAQuestionAndReachesAVerdict(t *testing.T) {
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {
-		t.Fatalf("a round holding a question left the run %s and scrat status exited %d, want a parked run", state, code)
+		t.Fatalf("a round holding a question left the run %s and socrates status exited %d, want a parked run", state, code)
 	}
 	driven.wroteNothingItself()
 
@@ -221,12 +221,12 @@ func TestTheLoopAnswersAQuestionAndReachesAVerdict(t *testing.T) {
 		t.Fatalf("recording what a person decided exited %d: %s", code, failures)
 	}
 	if _, failures, code := driven.run("continue", name); code != 0 {
-		t.Fatalf("scrat continue with everything answered exited %d: %s", code, failures)
+		t.Fatalf("socrates continue with everything answered exited %d: %s", code, failures)
 	}
 
 	state, code = driven.waitedFor(name)
 	if state != runstate.Clean || code != 0 {
-		t.Fatalf("the round that judged the decision left the run %s and scrat status exited %d, want clean", state, code)
+		t.Fatalf("the round that judged the decision left the run %s and socrates status exited %d, want clean", state, code)
 	}
 
 	invocations := driven.session.Simulator.Invocations()
@@ -285,7 +285,7 @@ func TestAParkedRoundWaitsOnAQuestionAndOnAPatch(t *testing.T) {
 		t.Errorf("the status does not report zero unanswered once every finding has an answer:\n%s", answered)
 	}
 	if _, failures, code := driven.run("continue", name); code != 0 {
-		t.Fatalf("scrat continue with everything answered exited %d: %s", code, failures)
+		t.Fatalf("socrates continue with everything answered exited %d: %s", code, failures)
 	}
 
 	driven.wroteNothingItself()
@@ -309,12 +309,12 @@ func TestAQuestionThatReachesTheCapEscalatesWithEverythingKept(t *testing.T) {
 		t.Fatalf("recording a rejection exited %d: %s", code, failures)
 	}
 	if _, failures, code := driven.run("continue", name); code != 0 {
-		t.Fatalf("scrat continue exited %d: %s", code, failures)
+		t.Fatalf("socrates continue exited %d: %s", code, failures)
 	}
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.Escalated || code != 1 {
-		t.Fatalf("a question at the final permitted round left the run %s and scrat status exited %d, want escalated", state, code)
+		t.Fatalf("a question at the final permitted round left the run %s and socrates status exited %d, want escalated", state, code)
 	}
 
 	run := driven.session.Run(name)
@@ -357,7 +357,7 @@ func TestTheLoopTheSkillDescribesReachesAVerdict(t *testing.T) {
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {
-		t.Fatalf("the first round left the run %s and scrat status exited %d, want a parked run", state, code)
+		t.Fatalf("the first round left the run %s and socrates status exited %d, want a parked run", state, code)
 	}
 	driven.wroteNothingItself()
 
@@ -376,12 +376,12 @@ func TestTheLoopTheSkillDescribesReachesAVerdict(t *testing.T) {
 		t.Fatalf("recording a rejection exited %d: %s", code, failures)
 	}
 	if _, failures, code := driven.run("continue", name); code != 0 {
-		t.Fatalf("scrat continue exited %d: %s", code, failures)
+		t.Fatalf("socrates continue exited %d: %s", code, failures)
 	}
 
 	state, code = driven.waitedFor(name)
 	if state != runstate.Clean || code != 0 {
-		t.Fatalf("the second round left the run %s and scrat status exited %d, want clean", state, code)
+		t.Fatalf("the second round left the run %s and socrates status exited %d, want clean", state, code)
 	}
 
 	driven.wroteNothingItself()

@@ -21,7 +21,7 @@ func main() {
 
 func newRootCommand(code *int) *cobra.Command {
 	root := &cobra.Command{
-		Use:           "scrat",
+		Use:           "socrates",
 		Short:         rootShort,
 		Args:          cobra.ArbitraryArgs,
 		SilenceUsage:  true,

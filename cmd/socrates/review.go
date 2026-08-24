@@ -107,7 +107,7 @@ func awaitVerdict(ctx context.Context, store runstore.Store, name string) (repor
 func ownBinary() (string, error) {
 	binary, err := os.Executable()
 	if err != nil {
-		return "", fmt.Errorf(locatingScrat, err)
+		return "", fmt.Errorf(locatingSocrates, err)
 	}
 	return binary, nil
 }

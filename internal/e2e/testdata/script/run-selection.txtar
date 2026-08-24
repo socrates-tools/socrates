@@ -8,7 +8,7 @@ exec git -c init.defaultBranch=main init --quiet .
 exec git add -A
 exec git commit --quiet -m 'the first commit'
 cp $WORK/added.go added.go
-exec scrat review --wait
+exec socrates review --wait
 stdout 'state: clean'
 cp stdout $WORK/here.txt
 
@@ -17,12 +17,12 @@ exec git -c init.defaultBranch=main init --quiet .
 exec git add -A
 exec git commit --quiet -m 'the first commit'
 cp $WORK/added.go added.go
-exec scrat review --wait
+exec socrates review --wait
 stdout 'state: clean'
 cp stdout $WORK/there.txt
 
 # The bare command reports on the repository it is run in, and not on the other one.
-exec sh -c 'scrat status > status.txt'
+exec sh -c 'socrates status > status.txt'
 grep 'state: clean' status.txt
 exec sh -c 'grep -q "run: $(head -1 $WORK/there.txt)" status.txt'
 exec sh -c 'if grep -q "$(head -1 $WORK/here.txt)" status.txt; then exit 1; fi'
@@ -33,13 +33,13 @@ exec git add -A
 exec git commit --quiet -m 'the first commit'
 
 # A repository that has never been reviewed says so and exits with the usage code.
-exec sh -c 'scrat status; echo exit=$?'
+exec sh -c 'socrates status; echo exit=$?'
 stdout 'exit=3'
 stderr 'never been reviewed'
 
 # Outside a repository there is nothing to report on either.
 cd $WORK/elsewhere
-exec sh -c 'scrat status; echo exit=$?'
+exec sh -c 'socrates status; echo exit=$?'
 stdout 'exit=3'
 stderr 'not inside a git working tree'
 

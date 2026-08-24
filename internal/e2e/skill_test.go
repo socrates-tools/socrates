@@ -34,12 +34,12 @@ func TestInstallingNamesThePath(t *testing.T) {
 	session := harness.Start(t)
 	path := userLevelPath(t)
 
-	printed, failures, code := session.Scrat("skill")
+	printed, failures, code := session.Socrates("skill")
 	if code != 0 {
-		t.Fatalf("scrat skill exited %d: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates skill exited %d: %s\n%s", code, failures, printed)
 	}
 	if !strings.Contains(printed, path) {
-		t.Errorf("scrat skill does not say where it wrote, and %s is where it did:\n%s", path, printed)
+		t.Errorf("socrates skill does not say where it wrote, and %s is where it did:\n%s", path, printed)
 	}
 	if written := session.File(path); written != committedSkill(t, session) {
 		t.Errorf("what was installed at user level is not the skill this repository ships:\n%s", written)
@@ -50,14 +50,14 @@ func TestInstallingTwice(t *testing.T) {
 	session := harness.Start(t)
 	path := userLevelPath(t)
 
-	first, failures, code := session.Scrat("skill")
+	first, failures, code := session.Socrates("skill")
 	if code != 0 {
-		t.Fatalf("scrat skill exited %d: %s", code, failures)
+		t.Fatalf("socrates skill exited %d: %s", code, failures)
 	}
 
-	second, refused, again := session.Scrat("skill")
+	second, refused, again := session.Socrates("skill")
 	if again != 0 {
-		t.Fatalf("scrat skill run a second time exited %d: %s", again, refused)
+		t.Fatalf("socrates skill run a second time exited %d: %s", again, refused)
 	}
 	if second != first {
 		t.Errorf("the second installation says something else:\nfirst:\n%s\nsecond:\n%s", first, second)
@@ -71,20 +71,20 @@ func TestInstallingElsewhere(t *testing.T) {
 	session := harness.Start(t)
 	target := t.TempDir()
 
-	printed, failures, code := session.Scrat("skill", "--to", target)
+	printed, failures, code := session.Socrates("skill", "--to", target)
 	if code != 0 {
-		t.Fatalf("scrat skill --to exited %d: %s", code, failures)
+		t.Fatalf("socrates skill --to exited %d: %s", code, failures)
 	}
 
 	elsewhere := filepath.Join(target, skill.Name, skill.FileName)
 	if !strings.Contains(printed, elsewhere) {
-		t.Errorf("scrat skill --to does not say it wrote to %s:\n%s", elsewhere, printed)
+		t.Errorf("socrates skill --to does not say it wrote to %s:\n%s", elsewhere, printed)
 	}
 	if written := session.File(elsewhere); written != committedSkill(t, session) {
 		t.Errorf("what was written to the named directory is not the skill:\n%s", written)
 	}
 	if _, err := os.Stat(userLevelPath(t)); !os.IsNotExist(err) {
-		t.Errorf("scrat skill --to also wrote %s", userLevelPath(t))
+		t.Errorf("socrates skill --to also wrote %s", userLevelPath(t))
 	}
 }
 
@@ -95,9 +95,9 @@ func TestInstallingTheSkillWritesNothingInTheRepository(t *testing.T) {
 	before := session.Repository.Status()
 	tracked := workingTree(t, session.Repository.Root)
 
-	printed, failures, code := session.Scrat("skill")
+	printed, failures, code := session.Socrates("skill")
 	if code != 0 {
-		t.Fatalf("scrat skill exited %d: %s", code, failures)
+		t.Fatalf("socrates skill exited %d: %s", code, failures)
 	}
 
 	if after := session.Repository.Status(); after != before {
@@ -107,7 +107,7 @@ func TestInstallingTheSkillWritesNothingInTheRepository(t *testing.T) {
 		t.Errorf("the working tree changed:\nbefore: %v\nafter: %v", tracked, after)
 	}
 	if strings.Contains(printed, session.Repository.Root) {
-		t.Errorf("scrat skill wrote inside the repository under review:\n%s", printed)
+		t.Errorf("socrates skill wrote inside the repository under review:\n%s", printed)
 	}
 }
 
@@ -120,9 +120,9 @@ func TestADirectoryThatCannotBeWritten(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = os.Chmod(sealed, 0o700) })
 
-	printed, failures, code := session.Scrat("skill", "--to", sealed)
+	printed, failures, code := session.Socrates("skill", "--to", sealed)
 	if code != 3 {
-		t.Fatalf("scrat skill --to a directory it cannot write exited %d, want 3: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates skill --to a directory it cannot write exited %d, want 3: %s\n%s", code, failures, printed)
 	}
 	if !strings.Contains(failures, sealed) {
 		t.Errorf("the refusal does not name the directory: %s", failures)
@@ -138,16 +138,16 @@ func TestADirectoryThatCannotBeWritten(t *testing.T) {
 func surfaceOf(t *testing.T, session *harness.Session) map[string][]string {
 	t.Helper()
 
-	printed, failures, code := session.Scrat("--help")
+	printed, failures, code := session.Socrates("--help")
 	if code != 0 {
-		t.Fatalf("scrat --help exited %d: %s", code, failures)
+		t.Fatalf("socrates --help exited %d: %s", code, failures)
 	}
 
 	offered := map[string][]string{}
 	for _, command := range commandsIn(printed) {
-		help, refused, exit := session.Scrat(command, "--help")
+		help, refused, exit := session.Socrates(command, "--help")
 		if exit != 0 {
-			t.Fatalf("scrat %s --help exited %d: %s", command, exit, refused)
+			t.Fatalf("socrates %s --help exited %d: %s", command, exit, refused)
 		}
 		offered[command] = flagsIn(help)
 	}
@@ -184,7 +184,7 @@ func TestARemovedFlagFailsTheSuite(t *testing.T) {
 
 			absent := skill.Unavailable(without)
 			if len(absent) == 0 {
-				t.Fatalf("the check passes with %s removed from scrat %s", named.Flag, named.Command)
+				t.Fatalf("the check passes with %s removed from socrates %s", named.Flag, named.Command)
 			}
 			for _, reported := range absent {
 				if !strings.Contains(reported, named.Flag) || !strings.Contains(reported, "skill") {
@@ -203,15 +203,15 @@ func TestOneSourceTwoSurfaces(t *testing.T) {
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
-	printed, failures, code := session.Scrat("findings", name)
+	printed, failures, code := session.Socrates("findings", name)
 	if code != 4 {
-		t.Fatalf("scrat findings of a parked run exited %d: %s", code, failures)
+		t.Fatalf("socrates findings of a parked run exited %d: %s", code, failures)
 	}
 
 	document := skill.Document()
 	for _, rule := range report.ResponseRules() {
 		if !strings.Contains(printed, rule) {
-			t.Errorf("scrat findings does not print the rule %q:\n%s", rule, printed)
+			t.Errorf("socrates findings does not print the rule %q:\n%s", rule, printed)
 		}
 		if !strings.Contains(document, rule) {
 			t.Errorf("the skill does not state the rule %q in the same words:\n%s", rule, document)
@@ -223,9 +223,9 @@ func TestRegeneratingIsOneCommand(t *testing.T) {
 	session := harness.Start(t)
 	target := t.TempDir()
 
-	printed, failures, code := session.Scrat("skill", "--to", target)
+	printed, failures, code := session.Socrates("skill", "--to", target)
 	if code != 0 {
-		t.Fatalf("scrat skill --to exited %d: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates skill --to exited %d: %s\n%s", code, failures, printed)
 	}
 
 	written := session.File(filepath.Join(target, skill.Name, skill.FileName))

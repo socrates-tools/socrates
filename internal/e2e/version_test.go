@@ -22,13 +22,13 @@ func TestTheBuildSaysWhichCommitItCameFrom(t *testing.T) {
 
 	printed := versionOf(t, made(t, root))
 	if !strings.Contains(printed, commit) {
-		t.Errorf("scrat version says %q, which does not name the commit %s it was built from", printed, commit)
+		t.Errorf("socrates version says %q, which does not name the commit %s it was built from", printed, commit)
 	}
 	if said := strings.Contains(printed, saysUncommitted); said != uncommitted {
-		t.Errorf("scrat version says the tree held uncommitted changes: %t, want %t: %q", said, uncommitted, printed)
+		t.Errorf("socrates version says the tree held uncommitted changes: %t, want %t: %q", said, uncommitted, printed)
 	}
 	if strings.Count(printed, "\n") != 0 {
-		t.Errorf("scrat version printed more than one line:\n%s", printed)
+		t.Errorf("socrates version printed more than one line:\n%s", printed)
 	}
 }
 
@@ -64,15 +64,15 @@ func TestABuildThatRecordedNoCommitSaysSo(t *testing.T) {
 func TestScratVersionTakesNoArguments(t *testing.T) {
 	session := harness.Start(t)
 
-	printed, failures, code := session.Scrat("version", "the one I installed on Tuesday")
+	printed, failures, code := session.Socrates("version", "the one I installed on Tuesday")
 	if code != 3 {
-		t.Errorf("scrat version with an argument exited %d, want 3: %s", code, failures)
+		t.Errorf("socrates version with an argument exited %d, want 3: %s", code, failures)
 	}
 	if !strings.Contains(failures, "the one I installed on Tuesday") {
 		t.Errorf("the refusal does not name the argument: %s", failures)
 	}
 	if strings.TrimSpace(printed) != "" {
-		t.Errorf("scrat version printed a version for a usage error:\n%s", printed)
+		t.Errorf("socrates version printed a version for a usage error:\n%s", printed)
 	}
 }
 
@@ -88,7 +88,7 @@ func requireMake(t *testing.T) string {
 func made(t *testing.T, root string, overrides ...string) string {
 	t.Helper()
 
-	binary := filepath.Join(t.TempDir(), "scrat")
+	binary := filepath.Join(t.TempDir(), "socrates")
 	arguments := append([]string{"build", "BINARY=" + binary}, overrides...)
 
 	command := exec.Command("make", arguments...)

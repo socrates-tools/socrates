@@ -1,7 +1,7 @@
 package reviewer
 
 const (
-	aReviewInsideAReview    = "this process is already the reviewer for run %s, and a review inside a review spawns without end: run scrat review from your own session instead"
+	aReviewInsideAReview    = "this process is already the reviewer for run %s, and a review inside a review spawns without end: run socrates review from your own session instead"
 	checkingOutTheSnapshot  = "checking out the snapshot: %w"
 	clearingTheLastRound    = "clearing what the last round left where this round's worktree goes: %w"
 	storedAndUnreadable     = "the answer was appended to %s and the document could not be read back afterwards (%w), so the answer is recorded and what is still unanswered is not: read the last lines of that file and remove any partial one"
@@ -25,10 +25,10 @@ const (
 	cancelledReason      = "the person stopped it"
 	noRoundToReview      = "the run has no round to review, so nothing was given to a reviewer"
 
-	notAwaitingResponses     = "run %s is %s rather than awaiting responses, so there is nothing to answer: read what it found with scrat findings"
-	noRoundToRespondTo       = "run %s has no round to answer: start a review with scrat review"
-	noFindingsToRespondTo    = "round %d of run %s reported no findings to answer: read what it concluded with scrat status"
-	noSuchFinding            = "round %d of run %s reported no finding named %s: name one of the identifiers scrat findings prints"
-	stillUnanswered          = "%d findings of this round have no response yet, and silence is neither a fix nor a rejection: run scrat respond for %s first"
-	stillUnansweredByAPerson = "%d findings of this round have no response yet (%s), and %d of them ask a person rather than asking for a patch (%s): ask them, and record what they decided with scrat respond --decided and a reason"
+	notAwaitingResponses     = "run %s is %s rather than awaiting responses, so there is nothing to answer: read what it found with socrates findings"
+	noRoundToRespondTo       = "run %s has no round to answer: start a review with socrates review"
+	noFindingsToRespondTo    = "round %d of run %s reported no findings to answer: read what it concluded with socrates status"
+	noSuchFinding            = "round %d of run %s reported no finding named %s: name one of the identifiers socrates findings prints"
+	stillUnanswered          = "%d findings of this round have no response yet, and silence is neither a fix nor a rejection: run socrates respond for %s first"
+	stillUnansweredByAPerson = "%d findings of this round have no response yet (%s), and %d of them ask a person rather than asking for a patch (%s): ask them, and record what they decided with socrates respond --decided and a reason"
 )

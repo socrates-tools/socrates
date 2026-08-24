@@ -11,7 +11,7 @@ const (
 	pageHeading      = "## The page a person reads"
 	escalatedHeading = "### escalated"
 	parkedHeading    = "### awaiting-response"
-	waitingStep      = "poll scrat status"
+	waitingStep      = "poll " + inlineCode + "socrates status"
 )
 
 func TestTheBarIsStatedOnceAndRenderedFromThere(t *testing.T) {
@@ -102,7 +102,7 @@ func TestBothBranchesSayToRenderThePage(t *testing.T) {
 
 	t.Run("The parked branch delegates", func(t *testing.T) {
 		parked := strings.ToLower(sectionOf(t, document, parkedHeading))
-		for _, said := range []string{"delegate", "subagent", "read again on every one of those turns", "scrat findings --json"} {
+		for _, said := range []string{"delegate", "subagent", "read again on every one of those turns", "socrates findings --json"} {
 			if !strings.Contains(parked, said) {
 				t.Errorf("the parked branch does not say %q, so the drafting lands in the context that is about to patch:\n%s", said, parked)
 			}
@@ -133,7 +133,7 @@ func TestARoundTheAuthorAnswersAloneGetsNoPage(t *testing.T) {
 	if strings.Contains(strings.ToLower(patching), "page") {
 		t.Errorf("the half of the parked branch a session answers alone names a page:\n%s", patching)
 	}
-	for _, said := range []string{"scrat respond", "scrat continue"} {
+	for _, said := range []string{"socrates respond", "socrates continue"} {
 		if !strings.Contains(parked, said) {
 			t.Errorf("the parked branch no longer says %q", said)
 		}
@@ -147,8 +147,8 @@ func TestThePageIsNotInThePollingLoop(t *testing.T) {
 	if strings.Contains(strings.ToLower(step), "page") {
 		t.Errorf("the step a session runs in a loop names a page, and a page is made once after the run has stopped moving:\n%s", step)
 	}
-	if counted := strings.Count(document, "scrat watch"); counted != 1 {
-		t.Errorf("the skill names scrat watch %d times, want once", counted)
+	if counted := strings.Count(document, "socrates watch"); counted != 1 {
+		t.Errorf("the skill names socrates watch %d times, want once", counted)
 	}
 }
 

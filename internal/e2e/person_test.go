@@ -56,11 +56,11 @@ func TestTheSurfaceDoesNotGrow(t *testing.T) {
 	for command, flags := range surfaceOf(t, session) {
 		for _, flag := range flags {
 			if namesAPage(flag) {
-				t.Errorf("scrat %s offers %s, and socrates renders, publishes and stores nothing", command, flag)
+				t.Errorf("socrates %s offers %s, and socrates renders, publishes and stores nothing", command, flag)
 			}
 		}
 		if namesAPage(command) {
-			t.Errorf("scrat offers %s, and socrates renders, publishes and stores nothing", command)
+			t.Errorf("socrates offers %s, and socrates renders, publishes and stores nothing", command)
 		}
 	}
 

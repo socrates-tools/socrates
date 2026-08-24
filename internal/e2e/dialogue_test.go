@@ -53,9 +53,9 @@ func parkedRun(t *testing.T, session *harness.Session, scenario string) string {
 func respond(t *testing.T, session *harness.Session, arguments ...string) string {
 	t.Helper()
 
-	printed, failures, code := session.Scrat(append([]string{"respond"}, arguments...)...)
+	printed, failures, code := session.Socrates(append([]string{"respond"}, arguments...)...)
 	if code != 4 {
-		t.Fatalf("scrat respond %s exited %d: %s\n%s", strings.Join(arguments, " "), code, failures, printed)
+		t.Fatalf("socrates respond %s exited %d: %s\n%s", strings.Join(arguments, " "), code, failures, printed)
 	}
 	return printed
 }
@@ -66,13 +66,13 @@ func TestTheDialogueJourney(t *testing.T) {
 
 	t.Run("A parked run is not finished", func(t *testing.T) {
 		for _, command := range []string{"status", "findings"} {
-			printed, failures, code := session.Scrat(command, name)
+			printed, failures, code := session.Socrates(command, name)
 			if code != 4 {
-				t.Errorf("scrat %s of a parked run exited %d, want 4: %s", command, code, failures)
+				t.Errorf("socrates %s of a parked run exited %d, want 4: %s", command, code, failures)
 			}
 			for _, verdict := range []string{string(runstate.Clean), string(runstate.Escalated), string(runstate.Failed)} {
 				if strings.Contains(printed, "verdict: "+verdict) {
-					t.Errorf("scrat %s of a parked run printed a verdict:\n%s", command, printed)
+					t.Errorf("socrates %s of a parked run printed a verdict:\n%s", command, printed)
 				}
 			}
 		}
@@ -80,7 +80,7 @@ func TestTheDialogueJourney(t *testing.T) {
 
 	t.Run("A parked run has nothing left to tear down", func(t *testing.T) {
 		if _, err := os.Stat(snapshotWorktree(session, name)); !os.IsNotExist(err) {
-			t.Errorf("the round's worktree is still at %s when the run reads parked: the next round checks out that exact path, and scrat continue races the teardown", snapshotWorktree(session, name))
+			t.Errorf("the round's worktree is still at %s when the run reads parked: the next round checks out that exact path, and socrates continue races the teardown", snapshotWorktree(session, name))
 		}
 	})
 
@@ -92,10 +92,10 @@ func TestTheDialogueJourney(t *testing.T) {
 	})
 
 	t.Run("The rules arrive with the findings", func(t *testing.T) {
-		printed, _, _ := session.Scrat("findings", name)
+		printed, _, _ := session.Socrates("findings", name)
 		for _, rule := range report.ResponseRules() {
 			if !strings.Contains(printed, rule) {
-				t.Errorf("scrat findings does not carry the rule %q:\n%s", rule, printed)
+				t.Errorf("socrates findings does not carry the rule %q:\n%s", rule, printed)
 			}
 		}
 	})
@@ -105,13 +105,13 @@ func TestTheDialogueJourney(t *testing.T) {
 	printed := respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all")
 
 	if !strings.Contains(printed, "a response can address") {
-		t.Errorf("scrat respond does not say the round is answered:\n%s", printed)
+		t.Errorf("socrates respond does not say the round is answered:\n%s", printed)
 	}
 
 	t.Run("Continuing when everything is answered", func(t *testing.T) {
-		out, failures, code := session.Scrat("continue", name, "--wait")
+		out, failures, code := session.Socrates("continue", name, "--wait")
 		if code != 0 {
-			t.Fatalf("scrat continue --wait exited %d: %s\n%s", code, failures, out)
+			t.Fatalf("socrates continue --wait exited %d: %s\n%s", code, failures, out)
 		}
 		if !strings.Contains(out, string(runstate.Clean)) {
 			t.Errorf("the second round did not end the run clean:\n%s", out)
@@ -162,12 +162,12 @@ func TestWaitingReturnsWhenTheRunParks(t *testing.T) {
 	session.Simulator.Scenario(dialogueScenario(patchableFindings, nothingFoundAgain))
 	session.Repository.Write("internal/added.go", answeredWrongly)
 
-	printed, failures, code := session.Scrat("review", "--wait")
+	printed, failures, code := session.Socrates("review", "--wait")
 	if code != 4 {
-		t.Fatalf("scrat review --wait exited %d for a run that parks: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates review --wait exited %d for a run that parks: %s\n%s", code, failures, printed)
 	}
 	if !strings.Contains(printed, string(runstate.AwaitingResponse)) {
-		t.Errorf("scrat review --wait does not say the run is awaiting responses:\n%s", printed)
+		t.Errorf("socrates review --wait does not say the run is awaiting responses:\n%s", printed)
 	}
 	for _, verdict := range []string{string(runstate.Clean), string(runstate.Escalated), string(runstate.Failed)} {
 		if strings.Contains(printed, "verdict: "+verdict) {
@@ -183,9 +183,9 @@ func TestTheRejectionAcceptedJourney(t *testing.T) {
 	respond(t, session, name, "--finding", "f1", "--rejected", "--reason", "an empty document is length zero, and zero is the right answer for it")
 	respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all")
 
-	out, failures, code := session.Scrat("continue", name, "--wait")
+	out, failures, code := session.Socrates("continue", name, "--wait")
 	if code != 0 {
-		t.Fatalf("scrat continue --wait exited %d after two rejections: %s\n%s", code, failures, out)
+		t.Fatalf("socrates continue --wait exited %d after two rejections: %s\n%s", code, failures, out)
 	}
 
 	run := session.Run(name)
@@ -214,9 +214,9 @@ func TestTheRejectionRefusedJourney(t *testing.T) {
 	respond(t, session, name, "--finding", "f1", "--fixed")
 	respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "the retry loop is bounded by the caller's deadline")
 
-	out, failures, code := session.Scrat("continue", name, "--wait")
+	out, failures, code := session.Socrates("continue", name, "--wait")
 	if code != 1 {
-		t.Fatalf("scrat continue --wait exited %d where the second round found something blocking: %s\n%s", code, failures, out)
+		t.Fatalf("socrates continue --wait exited %d where the second round found something blocking: %s\n%s", code, failures, out)
 	}
 
 	run := session.Run(name)
@@ -274,7 +274,7 @@ func TestTheIntentQuestionJourney(t *testing.T) {
 	session.Simulator.Scenario(dialogueScenario(questionOfIntent, nothingFoundAgain))
 	session.Repository.Write("internal/added.go", answeredWrongly)
 
-	printed, failures, code := session.Scrat("review", "--wait")
+	printed, failures, code := session.Socrates("review", "--wait")
 	if code != 4 {
 		t.Fatalf("a round holding a question of intent exited %d: %s\n%s", code, failures, printed)
 	}
@@ -285,7 +285,7 @@ func TestTheIntentQuestionJourney(t *testing.T) {
 		t.Fatalf("a round holding a question of intent left the run %s: %s", run.State, reason(run))
 	}
 
-	readable, _, _ := session.Scrat("findings", name)
+	readable, _, _ := session.Socrates("findings", name)
 	for _, handed := range []string{"f1", "f2", "f3"} {
 		if !strings.Contains(readable, handed) {
 			t.Errorf("the person was not handed %s:\n%s", handed, readable)
@@ -297,7 +297,7 @@ func TestTheIntentQuestionJourney(t *testing.T) {
 		}
 	}
 
-	_, refused, respondCode := session.Scrat("respond", name, "--finding", "f1", "--fixed")
+	_, refused, respondCode := session.Socrates("respond", name, "--finding", "f1", "--fixed")
 	if respondCode != 3 {
 		t.Errorf("answering the question with a claimed patch exited %d, want 3", respondCode)
 	}
@@ -328,9 +328,9 @@ func TestAnEscalatedRunSaysWhichOfTheTwoReasonsItWas(t *testing.T) {
 			t.Errorf("a run that escalated at its first round names the round cap: %q", reason(run))
 		}
 
-		printed, _, _ := session.Scrat("status", name)
+		printed, _, _ := session.Socrates("status", name)
 		if !strings.Contains(printed, "asking for nothing") {
-			t.Errorf("scrat status does not print which of the two reasons it was:\n%s", printed)
+			t.Errorf("socrates status does not print which of the two reasons it was:\n%s", printed)
 		}
 	})
 
@@ -340,7 +340,7 @@ func TestAnEscalatedRunSaysWhichOfTheTwoReasonsItWas(t *testing.T) {
 
 		respond(t, session, name, "--finding", "f1", "--fixed")
 		respond(t, session, name, "--finding", "f2", "--fixed")
-		if _, failures, code := session.Scrat("continue", name, "--wait"); code != 1 {
+		if _, failures, code := session.Socrates("continue", name, "--wait"); code != 1 {
 			t.Fatalf("a second round that still found something blocking exited %d: %s", code, failures)
 		}
 
@@ -366,9 +366,9 @@ func TestAnEscalatedRunTakesNoResponse(t *testing.T) {
 		t.Fatalf("a round holding a finding no response addresses left the run %s: %s", run.State, reason(run))
 	}
 
-	readable, _, findingsCode := session.Scrat("findings", name)
+	readable, _, findingsCode := session.Socrates("findings", name)
 	if findingsCode != 1 {
-		t.Errorf("scrat findings of an escalated run exited %d, want 1", findingsCode)
+		t.Errorf("socrates findings of an escalated run exited %d, want 1", findingsCode)
 	}
 	for _, rule := range report.ResponseRules() {
 		if strings.Contains(readable, rule) {
@@ -376,9 +376,9 @@ func TestAnEscalatedRunTakesNoResponse(t *testing.T) {
 		}
 	}
 
-	_, refused, respondCode := session.Scrat("respond", name, "--finding", "f2", "--fixed")
+	_, refused, respondCode := session.Socrates("respond", name, "--finding", "f2", "--fixed")
 	if respondCode != 3 {
-		t.Errorf("scrat respond against an escalated run exited %d, want 3", respondCode)
+		t.Errorf("socrates respond against an escalated run exited %d, want 3", respondCode)
 	}
 	if !strings.Contains(refused, string(runstate.Escalated)) {
 		t.Errorf("the refusal does not name the run's state: %s", refused)
@@ -400,8 +400,8 @@ func TestTheAuthorEditsBetweenRounds(t *testing.T) {
 	respond(t, session, name, "--finding", "f1", "--fixed", "--note", "an empty document now answers minus one")
 	respond(t, session, name, "--finding", "f2", "--fixed", "--note", "there was no loop, so nothing to back off")
 
-	if _, failures, code := session.Scrat("continue", name, "--wait"); code != 0 {
-		t.Fatalf("scrat continue --wait exited %d: %s", code, failures)
+	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
+		t.Fatalf("socrates continue --wait exited %d: %s", code, failures)
 	}
 
 	run := session.Recorded(name)
@@ -476,8 +476,8 @@ func TestARoundWithNothingPatchedStillSnapshots(t *testing.T) {
 	respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all")
 
 	before := session.Repository.Status()
-	if _, failures, code := session.Scrat("continue", name, "--wait"); code != 0 {
-		t.Fatalf("scrat continue --wait exited %d with nothing patched: %s", code, failures)
+	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
+		t.Fatalf("socrates continue --wait exited %d with nothing patched: %s", code, failures)
 	}
 	if after := session.Repository.Status(); after != before {
 		t.Errorf("the repository changed:\nbefore:\n%s\nafter:\n%s", before, after)
@@ -514,7 +514,7 @@ func TestALeftoverWorktreeDoesNotStopTheNextRound(t *testing.T) {
 		t.Fatalf("leaving a worktree behind: %v", err)
 	}
 
-	printed, failures, code := session.Scrat("continue", name, "--wait")
+	printed, failures, code := session.Socrates("continue", name, "--wait")
 	if code != 0 {
 		t.Fatalf("a round whose predecessor could not be torn down exited %d: %s\n%s", code, failures, printed)
 	}
@@ -533,7 +533,7 @@ func TestACleanSecondRoundDoesNotNameTheCap(t *testing.T) {
 	respond(t, session, name, "--finding", "f1", "--fixed", "--note", "an empty document now answers minus one")
 	respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all")
 
-	if _, failures, code := session.Scrat("continue", name, "--wait"); code != 0 {
+	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
 		t.Fatalf("a second round that found nothing blocking exited %d: %s", code, failures)
 	}
 
@@ -554,7 +554,7 @@ func TestNothingLeftToReviewEndsTheRun(t *testing.T) {
 	respond(t, session, name, "--finding", "f2", "--fixed", "--note", "it went with the function")
 	session.Repository.Delete("internal/added.go")
 
-	printed, failures, code := session.Scrat("continue", name, "--wait")
+	printed, failures, code := session.Socrates("continue", name, "--wait")
 	if code != 0 {
 		t.Fatalf("continuing with the change reverted exited %d, want 0: %s\n%s", code, failures, printed)
 	}
@@ -585,8 +585,8 @@ func TestTheBaseStillExistsWhenThePersonHasMovedOn(t *testing.T) {
 		t.Fatal("the person's commit did not move HEAD")
 	}
 
-	if _, failures, code := session.Scrat("continue", name, "--wait"); code != 0 {
-		t.Fatalf("scrat continue --wait exited %d after the person committed: %s", code, failures)
+	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
+		t.Fatalf("socrates continue --wait exited %d after the person committed: %s", code, failures)
 	}
 
 	second, present := session.Recorded(name).Reviewed(2)
@@ -621,9 +621,9 @@ func TestABaseThatHasGoneFailsTheRound(t *testing.T) {
 		t.Skipf("the base %s is still in the repository, so there is nothing to report as gone", base)
 	}
 
-	_, failures, code := session.Scrat("continue", name)
+	_, failures, code := session.Socrates("continue", name)
 	if code != 2 {
-		t.Errorf("scrat continue with a base that has gone exited %d, want 2: %s", code, failures)
+		t.Errorf("socrates continue with a base that has gone exited %d, want 2: %s", code, failures)
 	}
 	if !strings.Contains(failures, base) {
 		t.Errorf("the failure does not name the base that has gone: %s", failures)
@@ -651,8 +651,8 @@ func TestNoSessionIsCarried(t *testing.T) {
 
 	respond(t, session, name, "--finding", "f1", "--fixed")
 	respond(t, session, name, "--finding", "f2", "--fixed")
-	if _, failures, code := session.Scrat("continue", name, "--wait"); code != 0 {
-		t.Fatalf("scrat continue --wait exited %d: %s", code, failures)
+	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
+		t.Fatalf("socrates continue --wait exited %d: %s", code, failures)
 	}
 
 	invocations := session.Simulator.Invocations()
@@ -713,9 +713,9 @@ func TestRespondingIsOneFindingAtATime(t *testing.T) {
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
 	t.Run("One finding per invocation", func(t *testing.T) {
-		documented, _, code := session.Scrat("respond", "--help")
+		documented, _, code := session.Socrates("respond", "--help")
 		if code != 0 {
-			t.Fatalf("scrat respond --help exited %d", code)
+			t.Fatalf("socrates respond --help exited %d", code)
 		}
 		for line := range strings.SplitSeq(documented, "\n") {
 			fields := strings.Fields(line)
@@ -724,7 +724,7 @@ func TestRespondingIsOneFindingAtATime(t *testing.T) {
 					continue
 				}
 				if fields[position+1] == "stringArray" || fields[position+1] == "stringSlice" {
-					t.Errorf("scrat respond takes several values for %s: %s", field, line)
+					t.Errorf("socrates respond takes several values for %s: %s", field, line)
 				}
 			}
 		}
@@ -734,9 +734,9 @@ func TestRespondingIsOneFindingAtATime(t *testing.T) {
 			t.Errorf("naming two findings in one invocation recorded %d responses: %+v", len(recorded.Recorded), recorded)
 		}
 
-		_, failures, refused := session.Scrat("respond", "f1", "f2", "--fixed")
+		_, failures, refused := session.Socrates("respond", "f1", "f2", "--fixed")
 		if refused != 3 {
-			t.Errorf("scrat respond took findings as arguments and exited %d, want 3", refused)
+			t.Errorf("socrates respond took findings as arguments and exited %d, want 3", refused)
 		}
 		if !strings.Contains(failures, "--finding") {
 			t.Errorf("the refusal does not say that the one finding is named with a flag: %s", failures)
@@ -746,9 +746,9 @@ func TestRespondingIsOneFindingAtATime(t *testing.T) {
 	t.Run("A reason from standard input", func(t *testing.T) {
 		const reason = "The first line of why this finding is wrong.\nThe second line, which a shell would have eaten.\n"
 
-		printed, failures, code := session.ScratReading(reason, "respond", name, "--finding", "f1", "--rejected", "--reason", "-")
+		printed, failures, code := session.SocratesReading(reason, "respond", name, "--finding", "f1", "--rejected", "--reason", "-")
 		if code != 4 {
-			t.Fatalf("scrat respond reading its reason from standard input exited %d: %s\n%s", code, failures, printed)
+			t.Fatalf("socrates respond reading its reason from standard input exited %d: %s\n%s", code, failures, printed)
 		}
 
 		recorded := readResponses(t, session, name)
@@ -768,9 +768,9 @@ func TestADecisionsReasonFromStandardInput(t *testing.T) {
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(questionOfIntent, nothingFoundAgain))
 
-	printed, failures, code := session.ScratReading(decided, "respond", name, "--finding", "f1", "--decided", "--reason", "-")
+	printed, failures, code := session.SocratesReading(decided, "respond", name, "--finding", "f1", "--decided", "--reason", "-")
 	if code != 4 {
-		t.Fatalf("scrat respond --decided reading its reason from standard input exited %d: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates respond --decided reading its reason from standard input exited %d: %s\n%s", code, failures, printed)
 	}
 
 	recorded := readResponses(t, session, name)
@@ -786,7 +786,7 @@ func TestADecisionsReasonFromStandardInput(t *testing.T) {
 	}
 
 	t.Run("A reason is read only where it is asked for", func(t *testing.T) {
-		_, failures, code := session.ScratReading("bytes nobody meant as a reason", "respond", name, "--finding", "f1", "--decided")
+		_, failures, code := session.SocratesReading("bytes nobody meant as a reason", "respond", name, "--finding", "f1", "--decided")
 		if code != 3 {
 			t.Fatalf("a decision with no reason and a pipe on standard input exited %d, want 3: %s", code, failures)
 		}
@@ -804,13 +804,13 @@ func TestARunParkedOnAQuestionIsNotAVerdictEither(t *testing.T) {
 	name := parkedRun(t, session, dialogueScenario(questionOfIntent, nothingFoundAgain))
 
 	for _, command := range []string{"status", "findings"} {
-		printed, failures, code := session.Scrat(command, name)
+		printed, failures, code := session.Socrates(command, name)
 		if code != 4 {
-			t.Errorf("scrat %s of a run parked on a question exited %d, want 4: %s", command, code, failures)
+			t.Errorf("socrates %s of a run parked on a question exited %d, want 4: %s", command, code, failures)
 		}
 		for _, verdict := range []string{string(runstate.Clean), string(runstate.Escalated), string(runstate.Failed)} {
 			if strings.Contains(printed, "verdict: "+verdict) {
-				t.Errorf("scrat %s of a run parked on a question printed a verdict:\n%s", command, printed)
+				t.Errorf("socrates %s of a run parked on a question printed a verdict:\n%s", command, printed)
 			}
 		}
 	}
@@ -819,7 +819,7 @@ func TestARunParkedOnAQuestionIsNotAVerdictEither(t *testing.T) {
 		t.Errorf("a run parked on a question carries the verdict %+v", *recorded.Verdict)
 	}
 
-	printed, _, _ := session.Scrat("status", name)
+	printed, _, _ := session.Socrates("status", name)
 	if !strings.Contains(printed, "needing a person rather than a patch: 1") {
 		t.Errorf("the status of a run parked on a question does not say how many of what it waits on need a person:\n%s", printed)
 	}
@@ -834,7 +834,7 @@ func TestChangingADecisionKeepsWhatWasSaidFirst(t *testing.T) {
 	printed := respond(t, session, name, "--finding", "f1", "--decided", "--reason", "Vic changed their mind, and the function stays")
 
 	if !strings.Contains(printed, "replaced") {
-		t.Errorf("scrat respond does not say that an earlier decision was replaced:\n%s", printed)
+		t.Errorf("socrates respond does not say that an earlier decision was replaced:\n%s", printed)
 	}
 
 	recorded := readResponses(t, session, name)
@@ -856,7 +856,7 @@ func TestRespondRefusesWhatItCannotRecord(t *testing.T) {
 
 	t.Run("A rejection with no reason", func(t *testing.T) {
 		for _, blank := range []string{"", "   "} {
-			_, failures, code := session.Scrat("respond", name, "--finding", "f1", "--rejected", "--reason", blank)
+			_, failures, code := session.Socrates("respond", name, "--finding", "f1", "--rejected", "--reason", blank)
 			if code != 3 {
 				t.Errorf("a rejection reasoned %q exited %d, want 3", blank, code)
 			}
@@ -881,7 +881,7 @@ func TestRespondRefusesWhatItCannotRecord(t *testing.T) {
 			{named: "a fix and a decision at once", arguments: []string{"--fixed", "--decided", "--reason", "Vic said to leave it"}, names: "--decided"},
 			{named: "no answer at all", arguments: []string{"--reason", "Vic said to leave it"}, names: "--decided"},
 		} {
-			_, failures, code := session.Scrat(append([]string{"respond", name, "--finding", "f1"}, attempt.arguments...)...)
+			_, failures, code := session.Socrates(append([]string{"respond", name, "--finding", "f1"}, attempt.arguments...)...)
 			if code != 3 {
 				t.Errorf("%s exited %d, want 3: what the author said would have been dropped without a word", attempt.named, code)
 			}
@@ -895,7 +895,7 @@ func TestRespondRefusesWhatItCannotRecord(t *testing.T) {
 	})
 
 	t.Run("A reason is read only where it is asked for", func(t *testing.T) {
-		_, failures, code := session.ScratReading("bytes nobody meant as a reason", "respond", name, "--finding", "f1", "--rejected")
+		_, failures, code := session.SocratesReading("bytes nobody meant as a reason", "respond", name, "--finding", "f1", "--rejected")
 		if code != 3 {
 			t.Fatalf("a rejection with no reason and a pipe on standard input exited %d, want 3: %s", code, failures)
 		}
@@ -908,7 +908,7 @@ func TestRespondRefusesWhatItCannotRecord(t *testing.T) {
 	})
 
 	t.Run("A response to a finding that does not exist", func(t *testing.T) {
-		_, failures, code := session.Scrat("respond", name, "--finding", "f9", "--fixed")
+		_, failures, code := session.Socrates("respond", name, "--finding", "f9", "--fixed")
 		if code != 3 {
 			t.Errorf("responding to a finding the round never produced exited %d, want 3", code)
 		}
@@ -925,7 +925,7 @@ func TestRespondRefusesWhatItCannotRecord(t *testing.T) {
 		printed := respond(t, session, name, "--finding", "f1", "--fixed", "--note", "on reflection the reviewer was right")
 
 		if !strings.Contains(printed, "replaced") {
-			t.Errorf("scrat respond does not say that an earlier response was replaced:\n%s", printed)
+			t.Errorf("socrates respond does not say that an earlier response was replaced:\n%s", printed)
 		}
 
 		recorded := readResponses(t, session, name)
@@ -950,9 +950,9 @@ func TestRespondingToARunThatIsNotAwaitingResponses(t *testing.T) {
 	name := session.Review()
 	session.WaitForTerminal(name)
 
-	_, failures, code := session.Scrat("respond", name, "--finding", "f1", "--fixed")
+	_, failures, code := session.Socrates("respond", name, "--finding", "f1", "--fixed")
 	if code != 3 {
-		t.Errorf("scrat respond against a clean run exited %d, want 3", code)
+		t.Errorf("socrates respond against a clean run exited %d, want 3", code)
 	}
 	if !strings.Contains(failures, string(runstate.Clean)) {
 		t.Errorf("the refusal does not name the run's state: %s", failures)
@@ -966,9 +966,9 @@ func TestContinuingTooEarly(t *testing.T) {
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
-	_, failures, code := session.Scrat("continue", name)
+	_, failures, code := session.Socrates("continue", name)
 	if code != 3 {
-		t.Errorf("scrat continue with nothing answered exited %d, want 3: %s", code, failures)
+		t.Errorf("socrates continue with nothing answered exited %d, want 3: %s", code, failures)
 	}
 	for _, named := range []string{"f1", "f2"} {
 		if !strings.Contains(failures, named) {
@@ -986,8 +986,8 @@ func TestContinuingTooEarly(t *testing.T) {
 		respond(t, session, name, "--finding", "f1", "--fixed")
 		respond(t, session, name, "--finding", "f2", "--fixed")
 
-		if _, failures, code := session.Scrat("continue", name, "--wait"); code != 0 {
-			t.Fatalf("scrat continue with only the blocking findings answered exited %d: %s", code, failures)
+		if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
+			t.Fatalf("socrates continue with only the blocking findings answered exited %d: %s", code, failures)
 		}
 		if recorded := readResponses(t, session, name); len(recorded.Recorded) != 2 {
 			t.Errorf("the informational finding was made to wait for a response: %+v", recorded)
@@ -1003,7 +1003,7 @@ func TestContinuingWithAQuestionUnanswered(t *testing.T) {
 	respond(t, session, name, "--finding", "f2", "--fixed", "--note", "the guard is above the loop now")
 	respond(t, session, name, "--finding", "f3", "--rejected", "--reason", "there is no retry loop in this function at all")
 
-	_, failures, code := session.Scrat("continue", name)
+	_, failures, code := session.Socrates("continue", name)
 	if code != 3 {
 		t.Fatalf("continuing with the question unanswered exited %d, want 3: %s", code, failures)
 	}
@@ -1021,7 +1021,7 @@ func TestContinuingWithAQuestionUnanswered(t *testing.T) {
 	}
 
 	respond(t, session, name, "--finding", "f1", "--decided", "--reason", "Vic decided the function stays, because the migration reads it")
-	if _, failures, code := session.Scrat("continue", name, "--wait"); code != 0 {
+	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
 		t.Fatalf("continuing with the question answered exited %d: %s", code, failures)
 	}
 	if run := session.Run(name); run.State != runstate.Clean {
@@ -1034,12 +1034,12 @@ func TestAParkedRunCanStillBeCancelled(t *testing.T) {
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 	respond(t, session, name, "--finding", "f1", "--fixed")
 
-	printed, failures, code := session.Scrat("cancel", name)
+	printed, failures, code := session.Socrates("cancel", name)
 	if code != 0 {
-		t.Fatalf("scrat cancel of a parked run exited %d: %s", code, failures)
+		t.Fatalf("socrates cancel of a parked run exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, name) {
-		t.Errorf("scrat cancel does not name the run it stopped:\n%s", printed)
+		t.Errorf("socrates cancel does not name the run it stopped:\n%s", printed)
 	}
 
 	run := session.Recorded(name)
@@ -1073,8 +1073,8 @@ func TestRecordingAResponseWritesNothingInTheRepository(t *testing.T) {
 
 	respond(t, session, name, "--finding", "f1", "--fixed")
 	respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all")
-	if _, failures, code := session.Scrat("continue", name, "--wait"); code != 0 {
-		t.Fatalf("scrat continue --wait exited %d: %s", code, failures)
+	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
+		t.Fatalf("socrates continue --wait exited %d: %s", code, failures)
 	}
 
 	if after := session.Repository.Status(); after != before {
@@ -1084,7 +1084,7 @@ func TestRecordingAResponseWritesNothingInTheRepository(t *testing.T) {
 		t.Errorf("the working tree changed:\nbefore: %v\nafter: %v", tracked, after)
 	}
 	for path := range workingTree(t, session.Repository.Root) {
-		if strings.Contains(strings.ToLower(path), "socrates") || strings.Contains(path, "scrat") {
+		if strings.Contains(strings.ToLower(path), "socrates") || strings.Contains(path, "socrates") {
 			t.Errorf("socrates left %s inside the repository", path)
 		}
 	}
@@ -1097,9 +1097,9 @@ func TestTheStoredRecordIsNotNeutralised(t *testing.T) {
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
 	respond(t, session, name, "--finding", "f1", "--fixed")
-	printed, failures, code := session.ScratReading(messy, "respond", name, "--finding", "f2", "--rejected", "--reason", "-")
+	printed, failures, code := session.SocratesReading(messy, "respond", name, "--finding", "f2", "--rejected", "--reason", "-")
 	if code != 4 {
-		t.Fatalf("scrat respond exited %d: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates respond exited %d: %s\n%s", code, failures, printed)
 	}
 
 	recorded := readResponses(t, session, name)
@@ -1111,8 +1111,8 @@ func TestTheStoredRecordIsNotNeutralised(t *testing.T) {
 		t.Errorf("the stored reason reads %q, want %q verbatim", answer.Reason, messy)
 	}
 
-	if _, _, continueCode := session.Scrat("continue", name, "--wait"); continueCode != 0 {
-		t.Fatalf("scrat continue --wait exited %d", continueCode)
+	if _, _, continueCode := session.Socrates("continue", name, "--wait"); continueCode != 0 {
+		t.Fatalf("socrates continue --wait exited %d", continueCode)
 	}
 
 	delivered := session.Simulator.Invocations()[1].Prompt

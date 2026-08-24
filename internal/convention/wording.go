@@ -16,6 +16,8 @@ const RegistryFile = "messages.go"
 
 var EmDash = string(rune(0x2014))
 
+var ShortName = string([]rune{'s', 'c', 'r', 'a', 't'})
+
 var packagesWithoutAMessageRegistry = []string{
 	filepath.Join("cmd", "claudesim"),
 	filepath.Join("internal", "claudesim"),
@@ -43,6 +45,7 @@ type Wording struct {
 	Inline     []string
 	EmDashes   []string
 	Actionless []string
+	ShortNamed []string
 }
 
 func UserFacingStrings(root string) (Wording, error) {
@@ -68,12 +71,14 @@ func UserFacingStrings(root string) (Wording, error) {
 			wording.Inline = append(wording.Inline, read.Inline...)
 			wording.EmDashes = append(wording.EmDashes, read.EmDashes...)
 			wording.Actionless = append(wording.Actionless, read.Actionless...)
+			wording.ShortNamed = append(wording.ShortNamed, read.ShortNamed...)
 		}
 	}
 
 	slices.Sort(wording.Inline)
 	slices.Sort(wording.EmDashes)
 	slices.Sort(wording.Actionless)
+	slices.Sort(wording.ShortNamed)
 	return wording, nil
 }
 
@@ -196,8 +201,12 @@ func readWording(root, path string, registered map[string]string, enforced bool)
 
 	ast.Inspect(parsed, func(node ast.Node) bool {
 		if literal, isLiteral := node.(*ast.BasicLit); isLiteral {
-			if text, quoted := stringLiteral(literal); quoted && strings.Contains(text, EmDash) {
+			text, quoted := stringLiteral(literal)
+			if quoted && strings.Contains(text, EmDash) {
 				wording.EmDashes = append(wording.EmDashes, at(literal.Pos()))
+			}
+			if quoted && strings.Contains(text, ShortName) {
+				wording.ShortNamed = append(wording.ShortNamed, at(literal.Pos()))
 			}
 			return true
 		}

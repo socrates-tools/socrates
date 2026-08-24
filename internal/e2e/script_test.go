@@ -13,7 +13,7 @@ import (
 
 func TestTheCommandLineBehavesAsItsScriptsSay(t *testing.T) {
 	binaries := t.TempDir()
-	source.Build(t, "./cmd/scrat", filepath.Join(binaries, "scrat"))
+	source.Build(t, "./cmd/socrates", filepath.Join(binaries, "socrates"))
 	source.Build(t, "./cmd/claudesim", filepath.Join(binaries, "claudesim"))
 	if err := os.Symlink(filepath.Join(binaries, "claudesim"), filepath.Join(binaries, "claude")); err != nil {
 		t.Fatalf("linking the simulator as claude: %v", err)

@@ -42,7 +42,7 @@ func TestEveryRecordedBuildHasItsOwnLine(t *testing.T) {
 			if strings.TrimSpace(line) == "" {
 				t.Fatalf("%s is described by nothing at all", described.named)
 			}
-			if !strings.Contains(line, "scrat") {
+			if !strings.Contains(line, "socrates") {
 				t.Errorf("%s is described without naming the binary: %q", described.named, line)
 			}
 			if strings.Count(line, "\n") != 0 {

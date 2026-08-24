@@ -31,16 +31,16 @@ func TestASealThatDoesNotHoldIsARefusal(t *testing.T) {
 	home := filepath.Join(stated, "socrates-e2e-"+strconv.Itoa(os.Getpid()))
 	t.Cleanup(func() { _ = os.RemoveAll(home) })
 
-	out, failures, code := session.ScratWith(session.Repository.Root, []string{state.HomeVariable + "=" + home}, "review")
+	out, failures, code := session.SocratesWith(session.Repository.Root, []string{state.HomeVariable + "=" + home}, "review")
 
 	if code != exit.Usage {
-		t.Fatalf("scrat review exited %d on a filesystem that enforces nothing, want the usage code %d: %s%s", code, exit.Usage, out, failures)
+		t.Fatalf("socrates review exited %d on a filesystem that enforces nothing, want the usage code %d: %s%s", code, exit.Usage, out, failures)
 	}
 	if !strings.Contains(failures, "worktree") || !strings.Contains(failures, "filesystem") {
 		t.Errorf("the refusal reads %q, without naming the worktree and the filesystem", failures)
 	}
 	if strings.TrimSpace(out) != "" {
-		t.Errorf("scrat review printed %q, so a person is following a run that never started", out)
+		t.Errorf("socrates review printed %q, so a person is following a run that never started", out)
 	}
 
 	runs, err := os.ReadDir(filepath.Join(home, "runs"))
@@ -75,8 +75,8 @@ func TestCancellingARunWhoseReviewerWentAwayLiftsTheSeal(t *testing.T) {
 		t.Fatal("the run reads as ended on disk, so nothing here is the abandoned case")
 	}
 
-	if _, failures, code := session.Scrat("cancel", name); code != 0 {
-		t.Fatalf("scrat cancel exited %d: %s", code, failures)
+	if _, failures, code := session.Socrates("cancel", name); code != 0 {
+		t.Fatalf("socrates cancel exited %d: %s", code, failures)
 	}
 
 	if recorded := session.Recorded(name).State; recorded != runstate.Failed {

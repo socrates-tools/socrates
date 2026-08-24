@@ -134,7 +134,7 @@ One abandoned run with a sealed worktree would otherwise make the retention swee
 ## Testing
 
 **One journey needs a filesystem that ignores permission bits, and skips without one.**
-`TestASealThatDoesNotHoldIsARefusal` in `internal/e2e` is the only test of what `scrat review` does where the seal cannot be enforced, and no test can manufacture such a filesystem.
+`TestASealThatDoesNotHoldIsARefusal` in `internal/e2e` is the only test of what `socrates review` does where the seal cannot be enforced, and no test can manufacture such a filesystem.
 Name one and it runs:
 
 ```sh
@@ -163,5 +163,5 @@ The check is one-directional: every field the simulator produces must exist in t
 The other direction would fail permanently and be turned off within a week.
 
 **`testscript` scripts assert exit codes through `sh`.**
-`exec` fails a script on any non-zero status and there is no assertion for a specific code, so `exec sh -c 'scrat status; echo exit=$?'` plus `stdout 'exit=3'` is how the contract gets checked.
+`exec` fails a script on any non-zero status and there is no assertion for a specific code, so `exec sh -c 'socrates status; echo exit=$?'` plus `stdout 'exit=3'` is how the contract gets checked.
 `cp stdout file` is how you keep output for a later assertion, and `$WORK` is expanded inside single quotes.

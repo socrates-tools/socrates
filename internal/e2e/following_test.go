@@ -15,13 +15,13 @@ func TestFollowingAReviewToACleanVerdict(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	name := session.Review()
-	printed, failures, code := session.Scrat("watch", name)
+	printed, failures, code := session.Socrates("watch", name)
 	if code != 0 {
-		t.Fatalf("scrat watch of a clean review exited %d: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates watch of a clean review exited %d: %s\n%s", code, failures, printed)
 	}
 	for _, needed := range []string{"the run started", "the reviewer answered", string(runstate.Clean)} {
 		if !strings.Contains(printed, needed) {
-			t.Errorf("scrat watch does not report %q:\n%s", needed, printed)
+			t.Errorf("socrates watch does not report %q:\n%s", needed, printed)
 		}
 	}
 }
@@ -32,13 +32,13 @@ func TestFollowingAReviewToAnEscalation(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	name := session.Review()
-	printed, failures, code := session.Scrat("watch", name)
+	printed, failures, code := session.Socrates("watch", name)
 	if code != 1 {
-		t.Fatalf("scrat watch of an escalating review exited %d, want 1: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates watch of an escalating review exited %d, want 1: %s\n%s", code, failures, printed)
 	}
 	for _, needed := range []string{string(runstate.Escalated), "for the person"} {
 		if !strings.Contains(printed, needed) {
-			t.Errorf("scrat watch does not report %q:\n%s", needed, printed)
+			t.Errorf("socrates watch does not report %q:\n%s", needed, printed)
 		}
 	}
 }
@@ -66,7 +66,7 @@ func TestEveryVerdictIsFollowedToItsOwnCode(t *testing.T) {
 				t.Fatalf("the run ended as %s, want %s: %s", run.State, verdict.state, reason(run))
 			}
 
-			_, _, reported := session.Scrat("status", name)
+			_, _, reported := session.Socrates("status", name)
 			if followed != reported {
 				t.Errorf("the follower of a %s run exited %d and its own status exited %d: %s\n%s", run.State, followed, reported, failures, printed)
 			}
@@ -123,16 +123,16 @@ func TestCancellingWhileFollowing(t *testing.T) {
 	session.WaitFor(name, runstate.Reviewing)
 	following := session.Starting("watch", name)
 
-	if _, failures, code := session.Scrat("cancel", name); code != 0 {
-		t.Fatalf("scrat cancel exited %d: %s", code, failures)
+	if _, failures, code := session.Socrates("cancel", name); code != 0 {
+		t.Fatalf("socrates cancel exited %d: %s", code, failures)
 	}
 
 	printed, failures, code := following.Wait()
 	if code != 2 {
-		t.Fatalf("scrat watch of a cancelled run exited %d, want 2: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates watch of a cancelled run exited %d, want 2: %s\n%s", code, failures, printed)
 	}
 	if !strings.Contains(printed, string(runstate.Cancelled)) {
-		t.Errorf("scrat watch does not say the run was cancelled:\n%s", printed)
+		t.Errorf("socrates watch does not say the run was cancelled:\n%s", printed)
 	}
 }
 
@@ -140,13 +140,13 @@ func TestAFollowerStopsWhereTheRoundStops(t *testing.T) {
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
-	printed, failures, code := session.Scrat("watch", name)
+	printed, failures, code := session.Socrates("watch", name)
 	if code != 4 {
-		t.Fatalf("scrat watch of a parked round exited %d, want 4: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates watch of a parked round exited %d, want 4: %s\n%s", code, failures, printed)
 	}
 	for _, needed := range []string{string(runstate.AwaitingResponse), "is waiting on you", "unanswered"} {
 		if !strings.Contains(printed, needed) {
-			t.Errorf("scrat watch does not report %q for a parked round:\n%s", needed, printed)
+			t.Errorf("socrates watch does not report %q for a parked round:\n%s", needed, printed)
 		}
 	}
 	if parked := lineSaying(printed, "is waiting on you"); strings.Contains(parked, "person") {
@@ -167,13 +167,13 @@ func TestAFollowerSaysAQuestionIsWhatTheRoundWaitsOn(t *testing.T) {
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(questionOnly, nothingFoundAgain))
 
-	printed, failures, code := session.Scrat("watch", name)
+	printed, failures, code := session.Socrates("watch", name)
 	if code != 4 {
-		t.Fatalf("scrat watch of a round parked on a question exited %d, want 4: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates watch of a round parked on a question exited %d, want 4: %s\n%s", code, failures, printed)
 	}
 	parked := lineSaying(printed, "is waiting on you")
 	if parked == "" {
-		t.Fatalf("scrat watch reports no parked round:\n%s", printed)
+		t.Fatalf("socrates watch reports no parked round:\n%s", printed)
 	}
 	if !strings.Contains(parked, "1 need a person") {
 		t.Errorf("the one line a follower prints for a round parked on a question alone does not say what it waits on: %q", parked)
@@ -188,9 +188,9 @@ func TestReadingAFinishedRun(t *testing.T) {
 	name := session.Review()
 	session.WaitForTerminal(name)
 
-	printed, failures, code := session.Scrat("logs", name)
+	printed, failures, code := session.Socrates("logs", name)
 	if code != 1 {
-		t.Fatalf("scrat logs of an escalated run exited %d, want 1: %s", code, failures)
+		t.Fatalf("socrates logs of an escalated run exited %d, want 1: %s", code, failures)
 	}
 
 	events := session.Events(name)
@@ -198,10 +198,10 @@ func TestReadingAFinishedRun(t *testing.T) {
 		t.Fatalf("the log holds %d events, and this test needs a run that recorded several", len(events))
 	}
 	if lines := strings.Count(strings.TrimSpace(printed), "\n") + 1; lines < len(events) {
-		t.Errorf("scrat logs printed %d lines for %d events:\n%s", lines, len(events), printed)
+		t.Errorf("socrates logs printed %d lines for %d events:\n%s", lines, len(events), printed)
 	}
 	if !strings.Contains(printed, string(runstate.Escalated)) {
-		t.Errorf("scrat logs does not report the verdict:\n%s", printed)
+		t.Errorf("socrates logs does not report the verdict:\n%s", printed)
 	}
 }
 
@@ -214,14 +214,14 @@ func TestReadingARunStillInProgress(t *testing.T) {
 	session.WaitFor(name, runstate.Reviewing)
 
 	started := time.Now()
-	printed, failures, code := session.Scrat("logs", name)
+	printed, failures, code := session.Socrates("logs", name)
 	if code != 4 {
-		t.Fatalf("scrat logs of a run still reviewing exited %d, want 4: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates logs of a run still reviewing exited %d, want 4: %s\n%s", code, failures, printed)
 	}
 	if waited := time.Since(started); waited > 5*time.Second {
-		t.Errorf("scrat logs waited %s for a run that had not finished", waited)
+		t.Errorf("socrates logs waited %s for a run that had not finished", waited)
 	}
 	if !strings.Contains(printed, string(runstate.Reviewing)) {
-		t.Errorf("scrat logs does not say the run is still working:\n%s", printed)
+		t.Errorf("socrates logs does not say the run is still working:\n%s", printed)
 	}
 }

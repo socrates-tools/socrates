@@ -31,8 +31,8 @@ func TestCancellingStopsTheReviewerThatIsAnswering(t *testing.T) {
 		t.Errorf("the run records the process %d and the reviewer that is answering is %d", started.Agent, answering.Process)
 	}
 
-	if _, failures, code := session.Scrat("cancel", name); code != 0 {
-		t.Fatalf("scrat cancel exited %d: %s", code, failures)
+	if _, failures, code := session.Socrates("cancel", name); code != 0 {
+		t.Fatalf("socrates cancel exited %d: %s", code, failures)
 	}
 
 	run := session.Recorded(name)
@@ -131,7 +131,7 @@ func TestAReviewThatReallyFailedStillReadsAsOne(t *testing.T) {
 		t.Fatalf("a reviewer that returned no result ended the run as %s", run.State)
 	}
 
-	printed, _, _ := session.Scrat("logs", name)
+	printed, _, _ := session.Socrates("logs", name)
 	if !strings.Contains(printed, "the reviewer failed") {
 		t.Errorf("a review that failed does not read as one:\n%s", printed)
 	}

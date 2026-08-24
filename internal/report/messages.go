@@ -21,7 +21,7 @@ const (
 	awaitingLine        = "awaiting responses: socrates is waiting for the author, or for a person the author asks, and no process of this run is running"
 	unansweredLine      = "unanswered: %d"
 	awaitingAPersonLine = "of those, needing a person rather than a patch: %d"
-	readyLine           = "ready to continue: run scrat continue to start the next round"
+	readyLine           = "ready to continue: run socrates continue to start the next round"
 
 	readByAPersonLine = "read by a person: this round holds what only a person can act on, so put it in front of them"
 

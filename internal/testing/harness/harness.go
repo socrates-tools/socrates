@@ -50,7 +50,7 @@ func Start(t *testing.T) *Session {
 
 	session := &Session{
 		t:          t,
-		Binary:     buildScrat(t),
+		Binary:     buildSocrates(t),
 		Repository: repository,
 		Simulator:  simulated,
 		StateHome:  home,
@@ -61,35 +61,35 @@ func Start(t *testing.T) *Session {
 	return session
 }
 
-func buildScrat(t *testing.T) string {
+func buildSocrates(t *testing.T) string {
 	t.Helper()
 
-	binary := filepath.Join(t.TempDir(), "scrat")
-	source.Build(t, "./cmd/scrat", binary)
+	binary := filepath.Join(t.TempDir(), "socrates")
+	source.Build(t, "./cmd/socrates", binary)
 	return binary
 }
 
-func (s *Session) Scrat(arguments ...string) (string, string, int) {
+func (s *Session) Socrates(arguments ...string) (string, string, int) {
 	s.t.Helper()
-	return s.ScratIn(s.Repository.Root, arguments...)
+	return s.SocratesIn(s.Repository.Root, arguments...)
 }
 
-func (s *Session) ScratIn(directory string, arguments ...string) (string, string, int) {
+func (s *Session) SocratesIn(directory string, arguments ...string) (string, string, int) {
 	s.t.Helper()
-	return s.ScratWith(directory, nil, arguments...)
+	return s.SocratesWith(directory, nil, arguments...)
 }
 
-func (s *Session) ScratReading(input string, arguments ...string) (string, string, int) {
+func (s *Session) SocratesReading(input string, arguments ...string) (string, string, int) {
 	s.t.Helper()
-	return s.scrat(s.Repository.Root, nil, strings.NewReader(input), arguments...)
+	return s.socrates(s.Repository.Root, nil, strings.NewReader(input), arguments...)
 }
 
-func (s *Session) ScratWith(directory string, environment []string, arguments ...string) (string, string, int) {
+func (s *Session) SocratesWith(directory string, environment []string, arguments ...string) (string, string, int) {
 	s.t.Helper()
-	return s.scrat(directory, environment, nil, arguments...)
+	return s.socrates(directory, environment, nil, arguments...)
 }
 
-func (s *Session) scrat(directory string, environment []string, input io.Reader, arguments ...string) (string, string, int) {
+func (s *Session) socrates(directory string, environment []string, input io.Reader, arguments ...string) (string, string, int) {
 	s.t.Helper()
 
 	command := exec.Command(s.Binary, arguments...)
@@ -107,7 +107,7 @@ func (s *Session) scrat(directory string, environment []string, input io.Reader,
 	if err := command.Run(); err != nil {
 		var exited *exec.ExitError
 		if !errors.As(err, &exited) {
-			s.t.Fatalf("running scrat %s: %v", strings.Join(arguments, " "), err)
+			s.t.Fatalf("running socrates %s: %v", strings.Join(arguments, " "), err)
 		}
 		code = exited.ExitCode()
 	}
@@ -135,7 +135,7 @@ func (s *Session) Starting(arguments ...string) *Running {
 	command.Stderr = running.failures
 
 	if err := command.Start(); err != nil {
-		s.t.Fatalf("starting scrat %s: %v", strings.Join(arguments, " "), err)
+		s.t.Fatalf("starting socrates %s: %v", strings.Join(arguments, " "), err)
 	}
 	go func() { running.finished <- command.Wait() }()
 	s.t.Cleanup(running.stop)
@@ -151,13 +151,13 @@ func (r *Running) Wait() (string, string, int) {
 		if err != nil {
 			var exited *exec.ExitError
 			if !errors.As(err, &exited) {
-				r.t.Fatalf("running scrat %s: %v", strings.Join(r.arguments, " "), err)
+				r.t.Fatalf("running socrates %s: %v", strings.Join(r.arguments, " "), err)
 			}
 			code = exited.ExitCode()
 		}
 		return r.out.String(), r.failures.String(), code
 	case <-time.After(terminalWait):
-		r.t.Fatalf("scrat %s is still running after %s", strings.Join(r.arguments, " "), terminalWait)
+		r.t.Fatalf("socrates %s is still running after %s", strings.Join(r.arguments, " "), terminalWait)
 		return "", "", 0
 	}
 }
@@ -174,14 +174,14 @@ func (r *Running) stop() {
 func (s *Session) Review(arguments ...string) string {
 	s.t.Helper()
 
-	out, failures, code := s.Scrat(append([]string{"review"}, arguments...)...)
+	out, failures, code := s.Socrates(append([]string{"review"}, arguments...)...)
 	if code != 0 {
-		s.t.Fatalf("scrat review exited %d: %s", code, failures)
+		s.t.Fatalf("socrates review exited %d: %s", code, failures)
 	}
 
 	name, _, _ := strings.Cut(strings.TrimSpace(out), "\n")
 	if name == "" {
-		s.t.Fatal("scrat review printed no run identifier")
+		s.t.Fatal("socrates review printed no run identifier")
 	}
 	return name
 }

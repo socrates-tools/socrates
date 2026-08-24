@@ -1,5 +1,8 @@
-BINARY := bin/scrat
+BINARY := bin/socrates
 MODULE := github.com/rui-ktei/socrates
+SHORT_NAME := scrat
+
+INSTALL_DIR = $(firstword $(shell go env GOBIN) $(shell go env GOPATH)/bin)
 
 COMMIT = $(shell git rev-parse --short=7 HEAD 2>/dev/null)
 UNCOMMITTED = $(if $(shell git status --porcelain 2>/dev/null),yes,)
@@ -8,10 +11,11 @@ STAMP = -X $(MODULE)/internal/version.commit=$(COMMIT) -X $(MODULE)/internal/ver
 .PHONY: build install test lint fmt skill scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
 
 build:
-	go build -ldflags '$(STAMP)' -o $(BINARY) ./cmd/scrat
+	go build -ldflags '$(STAMP)' -o $(BINARY) ./cmd/socrates
 
 install:
-	go install -ldflags '$(STAMP)' ./cmd/scrat
+	go install -ldflags '$(STAMP)' ./cmd/socrates
+	ln -sf socrates $(INSTALL_DIR)/$(SHORT_NAME)
 
 test:
 	go test -race ./...
@@ -27,7 +31,7 @@ fmt:
 	gofmt -w .
 
 skill:
-	go run ./cmd/scrat skill --to .claude/skills
+	go run ./cmd/socrates skill --to .claude/skills
 
 scenario-coverage:
 	./scripts/scenario-coverage

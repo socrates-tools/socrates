@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	Name     = "scrat"
+	Name     = "socrates"
 	FileName = "SKILL.md"
 
 	vendorDirectory = ".claude"
@@ -19,7 +19,8 @@ const (
 )
 
 func Document() string {
-	return strings.Join([]string{frontMatter, purpose, rules(), thePage, theLoop, prohibitions}, "\n\n") + "\n"
+	assembled := strings.Join([]string{frontMatter, purpose, rules(), thePage, theLoop, prohibitions}, "\n\n") + "\n"
+	return strings.ReplaceAll(assembled, inlineCodeMarker, codeMarker)
 }
 
 func rules() string {

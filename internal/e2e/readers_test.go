@@ -16,7 +16,7 @@ func TestStatusStaysSmallWhenTheReviewerIsLoud(t *testing.T) {
 	loud := lineCountOfStatus(t, loudScenario)
 
 	if loud != quiet {
-		t.Errorf("scrat status printed %d lines for a loud reviewer and %d for a quiet one", loud, quiet)
+		t.Errorf("socrates status printed %d lines for a loud reviewer and %d for a quiet one", loud, quiet)
 	}
 }
 
@@ -33,9 +33,9 @@ func lineCountOfStatus(t *testing.T, scenario string) int {
 		t.Fatalf("the run ended as %s, and this comparison needs two runs that ended alike: %s", run.State, reason(run))
 	}
 
-	printed, failures, code := session.Scrat("status", name)
+	printed, failures, code := session.Socrates("status", name)
 	if code != 0 {
-		t.Fatalf("scrat status exited %d: %s", code, failures)
+		t.Fatalf("socrates status exited %d: %s", code, failures)
 	}
 	return strings.Count(strings.TrimSpace(printed), "\n") + 1
 }
@@ -48,12 +48,12 @@ func TestNeitherCommandGrowsTheOthersFlag(t *testing.T) {
 		"watch":  {"--help"},
 		"logs":   {"--help"},
 	} {
-		printed, failures, code := session.Scrat(command, "--help")
+		printed, failures, code := session.Socrates(command, "--help")
 		if code != 0 {
-			t.Fatalf("scrat %s --help exited %d: %s", command, code, failures)
+			t.Fatalf("socrates %s --help exited %d: %s", command, code, failures)
 		}
 		if offered := flagsIn(printed); !slices.Equal(offered, want) {
-			t.Errorf("scrat %s offers %v, want %v", command, offered, want)
+			t.Errorf("socrates %s offers %v, want %v", command, offered, want)
 		}
 	}
 }
@@ -98,10 +98,10 @@ func TestAllThreeAgreeAboutTheRun(t *testing.T) {
 
 	codes := map[string]int{}
 	for _, command := range []string{"status", "watch", "logs"} {
-		printed, failures, code := session.Scrat(command, name)
+		printed, failures, code := session.Socrates(command, name)
 		codes[command] = code
 		if !strings.Contains(printed, string(run.State)) {
-			t.Errorf("scrat %s does not report the run as %s: %s\n%s", command, run.State, failures, printed)
+			t.Errorf("socrates %s does not report the run as %s: %s\n%s", command, run.State, failures, printed)
 		}
 	}
 

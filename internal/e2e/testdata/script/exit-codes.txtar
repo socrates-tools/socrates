@@ -10,24 +10,24 @@ exec git commit --quiet -m 'the first commit'
 
 # A clean review exits zero, and so do the commands that report on it.
 cp $WORK/added.go added.go
-exec sh -c 'scrat review --wait; echo exit=$?'
+exec sh -c 'socrates review --wait; echo exit=$?'
 stdout 'exit=0'
 stdout 'state: clean'
-exec sh -c 'scrat status; echo exit=$?'
+exec sh -c 'socrates status; echo exit=$?'
 stdout 'exit=0'
-exec sh -c 'scrat findings; echo exit=$?'
+exec sh -c 'socrates findings; echo exit=$?'
 stdout 'exit=0'
 
 # A review that finds something blocking exits one.
 env CLAUDESIM_SCENARIO=$WORK/escalating.yaml
 exec sleep 1
 cp $WORK/other.go other.go
-exec sh -c 'scrat review --wait; echo exit=$?'
+exec sh -c 'socrates review --wait; echo exit=$?'
 stdout 'exit=1'
-exec sh -c 'scrat status; echo exit=$?'
+exec sh -c 'socrates status; echo exit=$?'
 stdout 'exit=1'
 stdout 'asking for nothing'
-exec sh -c 'scrat findings; echo exit=$?'
+exec sh -c 'socrates findings; echo exit=$?'
 stdout 'exit=1'
 stdout 'other.go:1'
 
@@ -35,9 +35,9 @@ stdout 'other.go:1'
 env CLAUDESIM_SCENARIO=$WORK/broken.yaml
 exec sleep 1
 cp $WORK/third.go third.go
-exec sh -c 'scrat review --wait; echo exit=$?'
+exec sh -c 'socrates review --wait; echo exit=$?'
 stdout 'exit=2'
-exec sh -c 'scrat findings; echo exit=$?'
+exec sh -c 'socrates findings; echo exit=$?'
 stdout 'exit=2'
 stdout 'no review completed'
 

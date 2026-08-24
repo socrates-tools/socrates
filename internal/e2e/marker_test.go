@@ -30,14 +30,14 @@ func TestARoundInsideAReviewIsRefused(t *testing.T) {
 	respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all")
 
 	const outer = "20260819T041530Z-ee66fe34"
-	out, failures, code := session.ScratWith(
+	out, failures, code := session.SocratesWith(
 		session.Repository.Root,
 		[]string{reviewer.RunMarker + "=" + outer},
 		"continue", name,
 	)
 
 	if code != 3 {
-		t.Fatalf("scrat continue exited %d, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates continue exited %d, want the usage code: %s%s", code, out, failures)
 	}
 	if !strings.Contains(failures, outer) {
 		t.Errorf("the refusal reads %q, without naming the outer run", failures)
@@ -55,14 +55,14 @@ func TestAReviewInsideAReviewIsRefused(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	const outer = "20260819T041530Z-ee66fe34"
-	out, failures, code := session.ScratWith(
+	out, failures, code := session.SocratesWith(
 		session.Repository.Root,
 		[]string{reviewer.RunMarker + "=" + outer},
 		"review",
 	)
 
 	if code != 3 {
-		t.Fatalf("scrat review exited %d, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates review exited %d, want the usage code: %s%s", code, out, failures)
 	}
 	if !strings.Contains(failures, outer) {
 		t.Errorf("the refusal reads %q, without naming the outer run", failures)

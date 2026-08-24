@@ -78,9 +78,9 @@ default:
 func eventNaming(t *testing.T, session *harness.Session, name, said string) string {
 	t.Helper()
 
-	printed, failures, _ := session.Scrat("logs", name)
+	printed, failures, _ := session.Socrates("logs", name)
 	if printed == "" {
-		t.Fatalf("scrat logs printed nothing for %s: %s", name, failures)
+		t.Fatalf("socrates logs printed nothing for %s: %s", name, failures)
 	}
 	return lineSaying(printed, said)
 }

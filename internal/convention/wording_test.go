@@ -30,6 +30,35 @@ func TestNoEmDashReachesAPerson(t *testing.T) {
 	}
 }
 
+func TestNothingSocratesPrintsNamesTheShortName(t *testing.T) {
+	wording, err := UserFacingStrings(source.Root(t))
+	if err != nil {
+		t.Fatalf("reading what socrates says: %v", err)
+	}
+
+	for _, named := range wording.ShortNamed {
+		t.Errorf("%s names the short name, and what socrates prints names socrates", named)
+	}
+}
+
+func TestAStringNamingTheShortNameIsReported(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, filepath.Join("internal", "thing", "messages.go"), `package thing
+
+const named = "run `+ShortName+` --help to see what it does"
+`)
+
+	wording, err := UserFacingStrings(root)
+	if err != nil {
+		t.Fatalf("reading the fabricated package: %v", err)
+	}
+
+	want := []string{filepath.Join("internal", "thing", "messages.go") + ":3"}
+	if diff := cmp.Diff(want, wording.ShortNamed); diff != "" {
+		t.Errorf("the reported uses of the short name differ (-want +got):\n%s", diff)
+	}
+}
+
 func TestEveryUserFacingStringIsInItsPackagesRegistry(t *testing.T) {
 	wording, err := UserFacingStrings(source.Root(t))
 	if err != nil {

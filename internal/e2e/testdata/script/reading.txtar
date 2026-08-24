@@ -10,30 +10,30 @@ exec git commit --quiet -m 'the first commit'
 
 # Following a review to its verdict exits with the verdict's code and renders what happened.
 cp $WORK/added.go added.go
-exec sh -c 'scrat review > /dev/null; scrat watch; echo exit=$?'
+exec sh -c 'socrates review > /dev/null; socrates watch; echo exit=$?'
 stdout 'exit=0'
 stdout 'the run started on'
 stdout 'the reviewer answered'
 stdout 'state: clean'
 
 # Reading the finished run says the same thing, without following anything.
-exec sh -c 'scrat logs; echo exit=$?'
+exec sh -c 'socrates logs; echo exit=$?'
 stdout 'exit=0'
 stdout 'the run started on'
 stdout 'state: clean'
 
 # Neither command starts a pager where its output is not a terminal.
 env PAGER=$WORK/loud-pager
-exec sh -c 'scrat logs | cat; echo exit=$?'
+exec sh -c 'socrates logs | cat; echo exit=$?'
 stdout 'exit=0'
 stdout 'state: clean'
 ! stdout 'PAGED'
 
 # A run identifier no run has is refused at once, naming it, rather than waited for.
-exec sh -c 'scrat watch 20200101T000000Z-deadbeef; echo exit=$?'
+exec sh -c 'socrates watch 20200101T000000Z-deadbeef; echo exit=$?'
 stdout 'exit=3'
 stderr '20200101T000000Z-deadbeef'
-exec sh -c 'scrat logs 20200101T000000Z-deadbeef; echo exit=$?'
+exec sh -c 'socrates logs 20200101T000000Z-deadbeef; echo exit=$?'
 stdout 'exit=3'
 stderr '20200101T000000Z-deadbeef'
 
@@ -41,7 +41,7 @@ stderr '20200101T000000Z-deadbeef'
 env CLAUDESIM_SCENARIO=$WORK/escalating.yaml
 exec sleep 1
 cp $WORK/other.go other.go
-exec sh -c 'scrat review > /dev/null; scrat watch; echo exit=$?'
+exec sh -c 'socrates review > /dev/null; socrates watch; echo exit=$?'
 stdout 'exit=1'
 stdout 'state: escalated'
 stdout 'asking for nothing'

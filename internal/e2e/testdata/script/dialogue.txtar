@@ -12,14 +12,14 @@ env CLAUDESIM_SCENARIO=$WORK/dialogue.yaml
 cp $WORK/added.go added.go
 
 # A round that found only mechanical defects parks, and parking is not a verdict.
-exec sh -c 'scrat review --wait; echo exit=$?'
+exec sh -c 'socrates review --wait; echo exit=$?'
 stdout 'exit=4'
 stdout 'state: awaiting-response'
 stdout 'unanswered: 2'
 ! stdout 'verdict:'
 
 # The findings arrive with the rules the author is being asked to work under.
-exec sh -c 'scrat findings; echo exit=$?'
+exec sh -c 'socrates findings; echo exit=$?'
 stdout 'exit=4'
 stdout 'You did not review this code'
 stdout 'A rejection is a claim'
@@ -27,67 +27,67 @@ stdout 'is the person.s to answer'
 stdout 'weakening or deleting behaviour'
 
 # A rejection with no reason is refused, and nothing is stored.
-exec sh -c 'scrat respond --finding f1 --rejected --reason ""; echo exit=$?'
+exec sh -c 'socrates respond --finding f1 --rejected --reason ""; echo exit=$?'
 stdout 'exit=3'
 stderr 'a rejection is a claim'
 exec sh -c 'ls $WORK/state/runs/*/r1/'
 ! stdout 'responses.jsonl'
 
 # A finding the round did not produce is refused, naming it.
-exec sh -c 'scrat respond --finding f9 --fixed; echo exit=$?'
+exec sh -c 'socrates respond --finding f9 --fixed; echo exit=$?'
 stdout 'exit=3'
 stderr 'f9'
 
 # Naming no finding at all is refused, and says how one is named.
-exec sh -c 'scrat respond --fixed; echo exit=$?'
+exec sh -c 'socrates respond --fixed; echo exit=$?'
 stdout 'exit=3'
 stderr '--finding'
 
 # A flag belonging to the other answer is refused rather than dropped.
-exec sh -c 'scrat respond --finding f1 --fixed --reason "I moved the guard above the loop"; echo exit=$?'
+exec sh -c 'socrates respond --finding f1 --fixed --reason "I moved the guard above the loop"; echo exit=$?'
 stdout 'exit=3'
 stderr '--note'
-exec sh -c 'scrat respond --finding f1 --rejected --note "the deadline bounds it"; echo exit=$?'
+exec sh -c 'socrates respond --finding f1 --rejected --note "the deadline bounds it"; echo exit=$?'
 stdout 'exit=3'
 stderr '--reason'
 
 # A rejection with no reason is refused even where something is on standard input.
 stdin $WORK/reason.txt
-exec sh -c 'scrat respond --finding f1 --rejected; echo exit=$?'
+exec sh -c 'socrates respond --finding f1 --rejected; echo exit=$?'
 stdout 'exit=3'
 stderr 'a rejection is a claim'
 
 # An answer is a fix, a rejection or a decision, and never two of them and never none.
-exec sh -c 'scrat respond --finding f1 --fixed --rejected; echo exit=$?'
+exec sh -c 'socrates respond --finding f1 --fixed --rejected; echo exit=$?'
 stdout 'exit=3'
 stderr 'exactly one'
-exec sh -c 'scrat respond --finding f1; echo exit=$?'
+exec sh -c 'socrates respond --finding f1; echo exit=$?'
 stdout 'exit=3'
 stderr 'exactly one'
 
 # A decision is refused for a finding whose action asks for a patch, naming what does apply.
-exec sh -c 'scrat respond --finding f1 --decided --reason "Vic decided the guard stays"; echo exit=$?'
+exec sh -c 'socrates respond --finding f1 --decided --reason "Vic decided the guard stays"; echo exit=$?'
 stdout 'exit=3'
 stderr 'asks for a patch'
 exec sh -c 'ls $WORK/state/runs/*/r1/'
 ! stdout 'responses.jsonl'
 
 # Continuing while a blocking finding has no response is refused, naming what is unanswered.
-exec sh -c 'scrat continue; echo exit=$?'
+exec sh -c 'socrates continue; echo exit=$?'
 stdout 'exit=3'
 stderr 'f1'
 stderr 'f2'
 
 # A reason can arrive on standard input, so a long one does not have to survive a shell.
 stdin $WORK/reason.txt
-exec sh -c 'scrat respond --finding f1 --rejected --reason -; echo exit=$?'
+exec sh -c 'socrates respond --finding f1 --rejected --reason -; echo exit=$?'
 stdout 'exit=4'
 exec sh -c 'cat $WORK/state/runs/*/r1/responses.jsonl'
 stdout 'the first line of the reason'
 stdout 'the second line of the reason'
 
 # Answering again replaces the earlier answer, and both are kept.
-exec sh -c 'scrat respond --finding f1 --fixed --note "on reflection the reviewer was right"; echo exit=$?'
+exec sh -c 'socrates respond --finding f1 --fixed --note "on reflection the reviewer was right"; echo exit=$?'
 stdout 'exit=4'
 stdout 'replaced'
 exec sh -c 'cat $WORK/state/runs/*/r1/responses.jsonl'
@@ -95,15 +95,15 @@ stdout 'the first line of the reason'
 stdout 'on reflection the reviewer was right'
 
 # With every answerable finding answered the run says it is ready, and the informational one was never waited on.
-exec sh -c 'scrat respond --finding f2 --rejected --reason "the loop is bounded by the caller deadline"; echo exit=$?'
+exec sh -c 'socrates respond --finding f2 --rejected --reason "the loop is bounded by the caller deadline"; echo exit=$?'
 stdout 'exit=4'
-exec sh -c 'scrat status; echo exit=$?'
+exec sh -c 'socrates status; echo exit=$?'
 stdout 'exit=4'
 stdout 'unanswered: 0'
-stdout 'scrat continue'
+stdout 'socrates continue'
 
 # The next round is a fresh reviewer that judges the answers.
-exec sh -c 'scrat continue --wait; echo exit=$?'
+exec sh -c 'socrates continue --wait; echo exit=$?'
 stdout 'exit=0'
 stdout 'state: clean'
 exists $WORK/state/runs
@@ -112,10 +112,10 @@ stdout 'r1'
 stdout 'r2'
 
 # A run that has concluded has nothing to answer and nowhere to go.
-exec sh -c 'scrat respond --finding f1 --fixed; echo exit=$?'
+exec sh -c 'socrates respond --finding f1 --fixed; echo exit=$?'
 stdout 'exit=3'
 stderr 'clean'
-exec sh -c 'scrat continue; echo exit=$?'
+exec sh -c 'socrates continue; echo exit=$?'
 stdout 'exit=3'
 stderr 'clean'
 
