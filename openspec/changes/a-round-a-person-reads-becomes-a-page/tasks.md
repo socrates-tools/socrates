@@ -73,4 +73,18 @@
 - [x] 9.2 `make scenario-coverage` naming every scenario this change adds
 - [x] 9.3 `make scenario-drop`, which has only added requirements to read
 - [x] 9.4 `make corpus-outcomes` read, because the routing rule is untouched and the corpus should not move
-- [ ] 9.5 A live run reaching a round a person reads, confirming from the recorded stream that socrates reported the fact and that the session was told to make a page. Require the run, the reporting and the routing, and require no severity, action or count
+- [x] 9.5 A live run reaching a round a person reads, confirming from the recorded stream that socrates reported the fact and that the session was told to make a page. Require the run, the reporting and the routing, and require no severity, action or count
+
+## What the live run recorded
+
+Run `20260824T032636Z-7034b716`, against `charon-test` on a working tree nobody had reviewed, with `--intent "add an endpoint that returns every item without the page-size cap"`.
+
+The reviewer answered, the round parked, and the run recorded `round-parked` after `agent-completed`.
+`scrat findings` printed the line, `scrat findings --json` carried `read_by_a_person`, and `scrat status` carried neither.
+What the reviewer found is the reviewer's and is not what this task required.
+
+The delivered invocation carried `--safe-mode`, `--setting-sources user` and the four tools socrates asks for.
+The opening event named those four and `StructuredOutput`, so the subtraction was empty and no unexpected tool was recorded.
+`git status` in the reviewed repository was byte-identical afterwards, and `run.json` carried no field naming a page.
+
+The first attempt read the wrong binary: `make install` writes to `$GOPATH/bin`, which `~/.local/bin/scrat` shadows on this machine, so the run was read with a build from two days earlier and reported nothing.
