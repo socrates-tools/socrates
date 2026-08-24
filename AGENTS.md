@@ -16,7 +16,7 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 
 ## Layout
 
-- `cmd/scrat` - the one binary a person runs: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, and the hidden `supervise` that a review spawns.
+- `cmd/scrat` - the one binary a person runs: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, `version`, and the hidden `supervise` that a review spawns.
 - `cmd/claudesim` - the simulator, which speaks the vendor CLI's wire contract and is symlinked as `claude` onto `PATH` by the test harness.
 - `cmd/scenario-coverage` - the coverage gate behind `scripts/scenario-coverage`.
 - `cmd/scenario-drop` - the promotion gate behind `scripts/scenario-drop`.
@@ -38,6 +38,7 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 - `internal/terminal` - whether the output is a terminal, what `PAGER` says, and the plain fallback where a pager will not start.
 - `internal/skill` - the skill a coding session reads to drive the loop itself: its text as the one source, what the committed copy is generated from, the commands and flags it names, the bar a page a person reads is held to, and installing it at user level.
 - `internal/exit` - the exit-code table.
+- `internal/version` - the commit the linker recorded, and one pure rule from it to the line `scrat version` prints. It reaches nothing at run time.
 - `internal/config` - the one optional configuration file under the user's configuration directory.
 - `internal/runlog` - the JSONL event log, its byte ceiling and its in-place rotation.
 - `internal/convention` - the repository's own conventions as executable checks: no commentary, the test-quality rule, the message registry, what socrates reaches and what is compiled out of the ordinary suite.
@@ -134,6 +135,7 @@ None of them is a matter of care.
 - **Snapshot commits are content-addressed.** Author and committer dates are pinned to the epoch, so the same worktree and base always produce the same commit, and therefore a byte-identical prompt.
 - **Every user-facing string lives in its package's `messages.go`.** A refusal names the condition and what the person can do about it, and no message carries an em dash.
 - **The exit codes are a table one function owns.** `internal/exit` is it: `0` clean, `1` escalated, `2` failed, `3` usage, `4` still working.
+- **What the binary says about itself was recorded when it was linked, and is never read where it is run.** The Makefile stamps the short commit and whether the tree held uncommitted changes, `build` and `install` take both from one variable so they cannot disagree about what they produced, and `internal/version` reaches no filesystem and no process, so nothing in the line can have come from the repository `scrat` is standing in. A binary that ran `git rev-parse` at run time would answer the stale-binary question with the commit of somebody else's repository, confidently. Go's own build stamping is not the mechanism, because it records nothing in a linked git worktree, which is where this repository is developed, and that is measured rather than assumed. A binary carrying no stamp says so and says what to build it with, because a version line nobody can trust is worse than one that admits it is missing.
 - **The source carries no commentary.** A directive a tool parses and a `// scenario:` marker are the only comments the check allows.
 - **Every scenario under way is named by a test.** A test function name, a subtest name or a `// scenario:` marker naming the scenario is what counts.
 - **socrates holds itself to the test-quality rule it hands the reviewer.** A test may not prove behaviour by reading implementation source. Where a test reads a Go file legitimately, the contract it reads is named in `convention.ContractsTestsRead`.

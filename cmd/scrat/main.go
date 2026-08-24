@@ -47,6 +47,7 @@ func newRootCommand(code *int) *cobra.Command {
 		newLogsCommand(code),
 		newCancelCommand(),
 		newSkillCommand(),
+		newVersionCommand(),
 		newSuperviseCommand(),
 	)
 	return root

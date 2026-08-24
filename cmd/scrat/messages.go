@@ -13,6 +13,7 @@ const (
 	logsShort      = "Print what a review recorded, for a person to read afterwards"
 	cancelShort    = "Stop a review and say that nothing was decided"
 	skillShort     = "Install the skill that teaches a coding session to drive a review"
+	versionShort   = "Say which build this is, by the commit it was built from"
 	superviseShort = "Conduct a review that scrat review started"
 
 	intentUsage   = "what the person asked for, in their words"
@@ -26,10 +27,11 @@ const (
 	noteUsage     = "what was done about the fixed finding, or - to read it from standard input"
 	toUsage       = "the skills directory to write to, instead of the one under your home directory"
 
-	notACommand            = "%q is not a scrat command: run scrat --help to see what scrat does"
-	unusableFlag           = "%s: run scrat --help to see what scrat accepts"
-	reviewTakesNoArguments = "scrat review takes no arguments, and %q is one: pass what the person asked for with --intent"
-	oneRunAtATime          = "%s names a second run, and a command reports on one: name one run or none at all"
+	notACommand             = "%q is not a scrat command: run scrat --help to see what scrat does"
+	unusableFlag            = "%s: run scrat --help to see what scrat accepts"
+	reviewTakesNoArguments  = "scrat review takes no arguments, and %q is one: pass what the person asked for with --intent"
+	versionTakesNoArguments = "scrat version takes no arguments, and %q is one: run scrat version on its own to see which build this is"
+	oneRunAtATime           = "%s names a second run, and a command reports on one: name one run or none at all"
 
 	nameTheFinding        = "scrat respond answers one finding, and none was named: pass --finding with an identifier scrat findings printed"
 	oneAnswerAtATime      = "scrat respond records one answer, and it is a fix, a rejection or a decision: pass exactly one of --%s, --%s or --%s"

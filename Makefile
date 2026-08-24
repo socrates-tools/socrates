@@ -1,12 +1,17 @@
 BINARY := bin/scrat
+MODULE := github.com/rui-ktei/socrates
+
+COMMIT = $(shell git rev-parse --short=7 HEAD 2>/dev/null)
+UNCOMMITTED = $(if $(shell git status --porcelain 2>/dev/null),yes,)
+STAMP = -X $(MODULE)/internal/version.commit=$(COMMIT) -X $(MODULE)/internal/version.uncommitted=$(UNCOMMITTED)
 
 .PHONY: build install test lint fmt skill scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
 
 build:
-	go build -o $(BINARY) ./cmd/scrat
+	go build -ldflags '$(STAMP)' -o $(BINARY) ./cmd/scrat
 
 install:
-	go install ./cmd/scrat
+	go install -ldflags '$(STAMP)' ./cmd/scrat
 
 test:
 	go test -race ./...

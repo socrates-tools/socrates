@@ -24,6 +24,7 @@ var ContractsTestsRead = map[string]string{
 	filepath.Join("internal", "findings", "classify_test.go"):     "the rule that one function decides a finding's effective action, which is a structural invariant of this module",
 	filepath.Join("internal", "findings", "verdict_test.go"):      "the direction the findings package may import in, which is a structural invariant of this module",
 	filepath.Join("internal", "presentation", "boundary_test.go"): "what the renderer may import and call, which is what makes it a function of the events and nothing else",
+	filepath.Join("internal", "version", "boundary_test.go"):      "the rule that what the binary says about itself is read from nothing at run time, which is a structural invariant of this module",
 }
 
 var sourceListingCalls = map[string][]string{"source": {"Files", "Imports", "DirectImports", "PackagesCalled"}}
