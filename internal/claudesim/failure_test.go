@@ -101,6 +101,42 @@ func TestTheSimulatorProducesAFailureOnDemand(t *testing.T) {
 		}
 	})
 
+	t.Run("a result reporting an error", func(t *testing.T) {
+		out, failures, code := scripted(t, "behaviour: error-result\ntext: \"API Error: 529 Overloaded\"")
+
+		if code == 0 {
+			t.Fatal("the simulator exited zero, and the recorded live shape exits non-zero")
+		}
+		if failures != "" {
+			t.Errorf("the error stream reads %q, and the live shape said everything in the result event", failures)
+		}
+
+		result := lastEvent(t, out)
+		if result["is_error"] != true {
+			t.Errorf("the result event reports is_error %v, want the error the account belongs to", result["is_error"])
+		}
+		if result["subtype"] != "success" {
+			t.Errorf("the result event carries the subtype %v, and the live shape carried success beside the error", result["subtype"])
+		}
+		if result["result"] != "API Error: 529 Overloaded" {
+			t.Errorf("the result event carries the account %v, want what the scenario asked for", result["result"])
+		}
+		if _, present := result["structured_output"]; present {
+			t.Error("the result event carries structured output, and a call that reported an error answered nothing")
+		}
+	})
+
+	t.Run("a result reporting an error and exiting zero", func(t *testing.T) {
+		out, _, code := scripted(t, "behaviour: error-result\nexit: 0")
+
+		if code != 0 {
+			t.Fatalf("the simulator exited %d, and a scenario asking for a zero exit drives the branch a non-zero exit masks", code)
+		}
+		if lastEvent(t, out)["is_error"] != true {
+			t.Error("the result event does not report an error, so nothing distinguishes this from an answer")
+		}
+	})
+
 	t.Run("silence", func(t *testing.T) {
 		out, _, code := scripted(t, "behaviour: silence\nhold: 20ms")
 

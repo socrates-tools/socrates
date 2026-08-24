@@ -21,6 +21,7 @@ const (
 	OmitStructured  Behaviour = "no-structured-output"
 	ViolateSchema   Behaviour = "schema-violation"
 	ExitNonZero     Behaviour = "non-zero-exit"
+	ReportAnError   Behaviour = "error-result"
 	SayNothingAtAll Behaviour = "silence"
 	RejectAtStartup Behaviour = "rejected-at-startup"
 	OmitToolList    Behaviour = "no-tool-list"
@@ -32,6 +33,7 @@ const (
 	defaultSession          = "00000000-0000-4000-8000-000000000000"
 	defaultHold             = 10 * time.Minute
 	defaultStderr           = "error: the model provider answered 529"
+	defaultAccount          = "API Error: 529 Overloaded. This is a server-side issue, usually temporary."
 	defaultRejection        = "error: unknown option '--settings'"
 	defaultViolation        = `{"findings":"none that matter","risk_level":"low","risk_rationale":"r"}`
 	defaultStructuredOutput = `{"findings":[],"risk_level":"low","risk_rationale":"nothing in this change needs attention"}`
@@ -46,6 +48,7 @@ var behaviours = []Behaviour{
 	OmitStructured,
 	ViolateSchema,
 	ExitNonZero,
+	ReportAnError,
 	SayNothingAtAll,
 	OmitToolList,
 }
@@ -64,7 +67,7 @@ type Response struct {
 	Text         string    `yaml:"text"`
 	Model        string    `yaml:"model"`
 	SessionID    string    `yaml:"session_id"`
-	Exit         int       `yaml:"exit"`
+	Exit         *int      `yaml:"exit"`
 	Stderr       string    `yaml:"stderr"`
 	InputTokens  int       `yaml:"input_tokens"`
 	OutputTokens int       `yaml:"output_tokens"`
@@ -165,7 +168,11 @@ func (r Response) withDefaults() Response {
 		r.Behaviour = ReportFindings
 	}
 	if r.Text == "" {
-		r.Text = defaultText
+		if r.Behaviour == ReportAnError {
+			r.Text = defaultAccount
+		} else {
+			r.Text = defaultText
+		}
 	}
 	if r.Model == "" {
 		r.Model = defaultModel
@@ -186,21 +193,33 @@ func (r Response) withDefaults() Response {
 		switch r.Behaviour {
 		case ViolateSchema:
 			r.Structured = defaultViolation
-		case OmitStructured:
+		case OmitStructured, ReportAnError:
 			r.Structured = ""
 		default:
 			r.Structured = defaultStructuredOutput
 		}
 	}
-	if r.Behaviour == ExitNonZero {
-		if r.Exit == 0 {
-			r.Exit = 1
-		}
-		if r.Stderr == "" {
-			r.Stderr = defaultStderr
+	if r.Behaviour == ExitNonZero || r.Behaviour == ReportAnError {
+		if r.Exit == nil {
+			failing := exitUsage
+			r.Exit = &failing
 		}
 	}
+	if r.Behaviour == ExitNonZero && r.Stderr == "" {
+		r.Stderr = defaultStderr
+	}
 	return r
+}
+
+func (r Response) exitCode() int {
+	if r.Exit == nil {
+		return exitSuccess
+	}
+	return *r.Exit
+}
+
+func (r Response) reportsAnError() bool {
+	return r.Behaviour == ReportAnError
 }
 
 func (r Response) interval() time.Duration {

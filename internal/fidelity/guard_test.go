@@ -115,9 +115,38 @@ func TestTheRecordingsCarryWhatSocratesReadsFromTheOpeningEvent(t *testing.T) {
 	}
 }
 
+func TestTheRecordingsCarryWhatSocratesReadsFromTheResultEvent(t *testing.T) {
+	// scenario: A non-zero exit after the agent said why
+	recordings, err := fidelity.Recordings(fidelity.RecordingsDirectory)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	if len(recordings) == 0 {
+		t.Fatal("there are no recordings, so nothing pins the fields socrates depends on")
+	}
+
+	for _, recording := range recordings {
+		terminal, found := shapeNamed(recording.Shapes, "result")
+		if !found {
+			t.Errorf("%s records no result event", recording.Path)
+			continue
+		}
+		if !slices.Contains(terminal.Fields, "is_error") {
+			t.Errorf("%s does not record whether the result reports an error, and socrates reads it to know a failed call from an answered one: a recording taken without it would let the field disappear unnoticed", recording.Path)
+		}
+		if !slices.Contains(terminal.Fields, "result") {
+			t.Errorf("%s does not record the account the agent gives of its own failure, and socrates carries it as the reason a call failed: a recording taken without it would leave the reason silently falling back to the subtype", recording.Path)
+		}
+	}
+}
+
 func systemShape(shapes []fidelity.Shape) (fidelity.Shape, bool) {
+	return shapeNamed(shapes, "system")
+}
+
+func shapeNamed(shapes []fidelity.Shape, kind string) (fidelity.Shape, bool) {
 	for _, shape := range shapes {
-		if shape.Type == "system" {
+		if shape.Type == kind {
 			return shape, true
 		}
 	}

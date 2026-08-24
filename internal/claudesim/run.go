@@ -90,12 +90,11 @@ func Run(arguments []string, input io.Reader, out, failures io.Writer, environme
 		return exitUsage
 	}
 
-	if response.Behaviour == ExitNonZero {
+	if response.Stderr != "" {
 		fmt.Fprintln(failures, response.Stderr)
-		return response.Exit
 	}
 
-	return exitSuccess
+	return response.exitCode()
 }
 
 func attemptWrites(directory string, response Response) []string {

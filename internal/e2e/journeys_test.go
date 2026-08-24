@@ -135,6 +135,7 @@ func TestNoFailureJourneyReportsClean(t *testing.T) {
 		{behaviour: "no-structured-output", names: "structured output"},
 		{behaviour: "schema-violation", names: "schema"},
 		{behaviour: "non-zero-exit", names: "exited"},
+		{behaviour: "error-result", names: "529"},
 	} {
 		t.Run(failure.behaviour, func(t *testing.T) {
 			session := harness.Start(t)
@@ -159,6 +160,41 @@ func TestNoFailureJourneyReportsClean(t *testing.T) {
 				t.Errorf("socrates findings does not say that no review completed:\n%s", printed)
 			}
 		})
+	}
+}
+
+func TestNothingBranchesOnWhatTheAgentSaidWentWrong(t *testing.T) {
+	accounts := []string{
+		"API Error: 529 Overloaded",
+		"Prompt is too long for the context window",
+	}
+
+	reported := make([]string, 0, len(accounts))
+	for _, account := range accounts {
+		session := harness.Start(t)
+		session.Simulator.Scenario("default:\n  behaviour: error-result\n  text: \"" + account + "\"\n")
+		session.Repository.Write("internal/added.go", "package internal\n")
+
+		name := session.Review()
+		run := session.WaitForTerminal(name)
+
+		if run.State != runstate.Failed {
+			t.Fatalf("the account %q ended the run as %s, and a failure is a failure whatever the agent said", account, run.State)
+		}
+		if !strings.Contains(reason(run), account) {
+			t.Errorf("the run's reason is %q, without the account the agent gave", reason(run))
+		}
+
+		_, _, findingsCode := session.Socrates("findings", name)
+		_, _, statusCode := session.Socrates("status", name)
+		if findingsCode != 2 || statusCode != 2 {
+			t.Errorf("the account %q exited findings %d and status %d, want 2 for both", account, findingsCode, statusCode)
+		}
+		reported = append(reported, strings.Replace(reason(run), account, "the account", 1))
+	}
+
+	if reported[0] != reported[1] {
+		t.Errorf("two failures differing only in what the agent said read as %q and %q, so something branched on the account", reported[0], reported[1])
 	}
 }
 

@@ -198,7 +198,11 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 		return reached, parseErr
 	}
 	if waitErr != nil {
-		return reached, fmt.Errorf(theAgentExited, a.binary, waitErr, failures.String())
+		said := accountsGiven(read.accountGiven(), failures.String())
+		if said == "" {
+			return reached, fmt.Errorf(theAgentExitedSayingNothing, a.binary, waitErr)
+		}
+		return reached, fmt.Errorf(theAgentExited, a.binary, waitErr, said)
 	}
 
 	answer := Response{
@@ -214,7 +218,10 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 	if read.result == nil {
 		return reached, fmt.Errorf(noResultEvent, a.binary)
 	}
-	if read.result.IsError || read.result.Subtype != "success" {
+	if read.result.reportsAnError() {
+		if said := read.accountGiven(); said != "" {
+			return reached, fmt.Errorf(theResultReportedSaying, a.binary, said)
+		}
 		return reached, fmt.Errorf(theResultReported, a.binary, read.result.Subtype)
 	}
 
@@ -300,6 +307,16 @@ func (a *claudeAgent) record(event runlog.Event) {
 		return
 	}
 	_ = a.recorder.Record(event)
+}
+
+func accountsGiven(given ...string) string {
+	var said []string
+	for _, account := range given {
+		if trimmed := strings.TrimSpace(account); trimmed != "" {
+			said = append(said, trimmed)
+		}
+	}
+	return strings.Join(said, "; ")
 }
 
 type head struct {

@@ -61,6 +61,19 @@ type streamed struct {
 	toolSources []string
 }
 
+func (e *wireEvent) reportsAnError() bool {
+	return e.IsError || e.Subtype != "success"
+}
+
+func (s streamed) accountGiven() string {
+	if s.result == nil || !s.result.reportsAnError() {
+		return ""
+	}
+	bounded := &head{limit: failureTailBytes}
+	_, _ = io.WriteString(bounded, s.result.Result)
+	return bounded.String()
+}
+
 func parseStream(input io.Reader) (streamed, error) {
 	watched := &lastByteReader{inner: input}
 	scanner := bufio.NewScanner(watched)

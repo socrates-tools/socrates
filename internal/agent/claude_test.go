@@ -267,6 +267,82 @@ func TestANonZeroExitAfterACompleteStream(t *testing.T) {
 	}
 }
 
+func TestANonZeroExitAfterTheAgentSaidWhy(t *testing.T) {
+	failure := refuse(t, "behaviour: error-result\ntext: \"API Error: 529 Overloaded\"")
+
+	if !strings.Contains(failure, "API Error: 529 Overloaded") {
+		t.Errorf("the failure reads %q, without the account the agent gave of its own failure", failure)
+	}
+	if !strings.Contains(failure, "exit") {
+		t.Errorf("the failure reads %q, without naming the exit status", failure)
+	}
+	if strings.HasSuffix(failure, ": ") {
+		t.Errorf("the failure reads %q, which trails a colon onto nothing", failure)
+	}
+}
+
+func TestAResultThatReportsAnErrorCarriesWhatItSaid(t *testing.T) {
+	failure := refuse(t, "behaviour: error-result\nexit: 0\ntext: \"API Error: 529 Overloaded\"")
+
+	if !strings.Contains(failure, "API Error: 529 Overloaded") {
+		t.Errorf("the failure reads %q, without the account the result event carried", failure)
+	}
+	if strings.Contains(failure, "success") {
+		t.Errorf("the failure reads %q, and the subtype beside the account said success on a failure", failure)
+	}
+}
+
+func TestAResultThatReportsAnErrorAndSaysNothing(t *testing.T) {
+	failure := refuse(t, "behaviour: error-result\nexit: 0\ntext: \" \"")
+
+	if strings.Contains(failure, `""`) {
+		t.Errorf("the failure reads %q, quoting an empty account", failure)
+	}
+	if !strings.Contains(failure, "success") {
+		t.Errorf("the failure reads %q, without what the event did say about itself", failure)
+	}
+}
+
+func TestAFailureTheAgentSaidNothingAbout(t *testing.T) {
+	failure := refuse(t, "behaviour: non-zero-exit\nexit: 3\nstderr: \" \"")
+
+	if !strings.Contains(failure, "exit status 3") {
+		t.Errorf("the failure reads %q, without naming the exit status", failure)
+	}
+	if !strings.Contains(failure, "said nothing") {
+		t.Errorf("the failure reads %q, without stating that the agent said nothing about why", failure)
+	}
+	if strings.HasSuffix(failure, ": ") || strings.Contains(failure, ": :") {
+		t.Errorf("the failure reads %q, which trails a colon onto nothing", failure)
+	}
+}
+
+func TestAnAccountTooLongToCarryIsShortened(t *testing.T) {
+	sprawling := strings.Repeat("overloaded ", 4000)
+	failure := refuse(t, "behaviour: error-result\ntext: \""+sprawling+"\"")
+
+	if len(failure) > 12*1024 {
+		t.Errorf("the failure runs to %d bytes, and a vendor is free to make its account arbitrarily long", len(failure))
+	}
+	if !strings.Contains(failure, "overloaded") {
+		t.Errorf("the failure reads %q, without the beginning of the account", failure)
+	}
+	if !strings.Contains(failure, "...") {
+		t.Errorf("the failure reads %q, without marking that the account was shortened", failure)
+	}
+}
+
+func TestBothAccountsOfOneFailureAreCarried(t *testing.T) {
+	failure := refuse(t, "behaviour: error-result\ntext: \"API Error: 529 Overloaded\"\nstderr: the launcher could not resolve the model")
+
+	if !strings.Contains(failure, "API Error: 529 Overloaded") {
+		t.Errorf("the failure reads %q, without what the result event said", failure)
+	}
+	if !strings.Contains(failure, "the launcher could not resolve the model") {
+		t.Errorf("the failure reads %q, without what the agent wrote to its error stream", failure)
+	}
+}
+
 func TestAnAgentThatWasNeverThereFails(t *testing.T) {
 	simulated := simulator.Install(t)
 	recorded := &collector{}

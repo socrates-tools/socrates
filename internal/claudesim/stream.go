@@ -114,7 +114,7 @@ func writeStream(out io.Writer, response Response, invocation Invocation) error 
 		return err
 	}
 
-	failed := false
+	failed := response.reportsAnError()
 	result := event{
 		Type:         "result",
 		Subtype:      "success",
