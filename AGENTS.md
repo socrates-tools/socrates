@@ -41,11 +41,11 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 - `internal/version` - the commit the linker recorded, and one pure rule from it to the line `socrates version` prints. It reaches nothing at run time.
 - `internal/config` - the one optional configuration file under the user's configuration directory.
 - `internal/runlog` - the JSONL event log, its byte ceiling and its in-place rotation.
-- `internal/convention` - the repository's own conventions as executable checks: no commentary, the test-quality rule, the message registry, what socrates reaches and what is compiled out of the ordinary suite.
+- `internal/convention` - the repository's own conventions as executable checks: no commentary, the test-quality rule, the message registry, what socrates reaches and what is compiled out of the ordinary suite, and what the workflows reach.
 - `internal/coverage` - scenario coverage: what `openspec/specs` and the changes under way promise against what the tests name. An archived change is skipped, because its specification was promoted.
 - `internal/promotion` - what archiving a change would do to the promoted specifications: a `MODIFIED` requirement that carries fewer scenarios than the one it substitutes, one that substitutes nothing, one added beside a requirement that already exists, and a declared scenario rename the promoted specification already holds the new name of.
 - `internal/corpus` - what real reviewers answered, stored verbatim beside the circumstances it was answered in, embedded so replay needs no path. `runs` takes an answer out of a completed run; `outcomes` classifies the corpus through the routing rule and says which outcomes only fixtures reach.
-- `internal/fidelity` - the recorded shapes of the real CLI, the drift check, and the live smoke check. Everything that reaches the network is behind a build tag.
+- `internal/fidelity` - the recorded shapes of the real CLI, where a stream is kept once the run either answered or did not, the drift check, and the live smoke check. Everything that reaches the network is behind a build tag.
 - `internal/e2e` - the end-to-end suite: the real binary, a real repository, real git, real processes, the simulator on `PATH`.
 - `internal/testing` - the harness, the temporary repository, the simulator installer, and source helpers. Test support only.
 
@@ -75,15 +75,18 @@ It is a statement rather than a gate and never fails for an outcome no reviewer 
 Rewrite that distribution with `scripts/corpus-outcomes -write` once the move is deliberate.
 Neither gate reads prose: a delta that rewrites a requirement's sentences from a stale copy is still something only a reader catches.
 
-These reach the network and are not part of the ordinary sequence:
+`make fixtures-diff` compares the simulator against the recordings and reaches nothing: it builds `cmd/claudesim` and reads the shapes committed under `internal/fidelity/testdata/recordings`.
+The workflow in `.github/workflows/ci.yml` runs the sequence above and that comparison on every push and pull request.
+
+These two reach the real CLI, and nothing in continuous integration runs them:
 
 ```sh
-make fixtures       # record what the real claude CLI answers, as shapes
-make fixtures-diff  # compare the simulator against those recordings
-make live-smoke     # one real review against the real binary
+make fixtures    # record what the real claude CLI answers, as shapes
+make live-smoke  # one real review against the real binary
 ```
 
-The scheduled workflow in `.github/workflows/fidelity.yml` runs them weekly rather than per commit, because a failure there means the vendor's CLI changed rather than that a change here broke something.
+A person runs them at a terminal against their own authenticated CLI, so a vendor change surfaces on the next recording somebody makes rather than weekly.
+A credential in a repository secret, spent by a schedule nobody watches, buys a weekly answer to a question the person recording the fixtures is already asking.
 
 ## Load-bearing invariants
 
@@ -118,6 +121,8 @@ None of them is a matter of care.
 - **A review inside a review is refused.** The reviewer's environment carries `SOCRATES_RUN`, and `socrates review` refuses when it is already set.
 - **What a real reviewer answered is kept, verbatim, and replayed rather than invented.** `internal/corpus` holds every live answer beside the model, effort, round, base, snapshot, run and subject it was an answer to, and a scenario naming one is answered with those bytes and no others: the simulator does not adapt a recorded document to the prompt, renumber its findings or supply a field it lacks. Recording refuses any repository that is not socrates, because a findings document quotes the code it was written about.
 - **The suite says which outcomes only fixtures have reached.** The corpus is classified by `dialogue.After` rather than by a second reading of the rule, the report names any outcome no recorded answer reaches, and it never fails for one. The distribution is checked in, so an entry that disappears and a routing change that moves the corpus are both a diff somebody reads.
+- **A recording is only ever made from a run that answered.** `fidelity.Keep` picks the directory from whether the run answered and the writer beneath it is unexported, so the recorder behind the build tag has no destination left to choose. What a run that did not answer wrote is kept under `internal/fidelity/testdata/failures`, because the stream a refusal produced is the evidence a vendor change is read from and dropping it answers nothing. Writing it among the recordings is what replaces the pinned shapes with the shape of a refusal, silently, and leaves `make fixtures-diff` comparing the simulator against an error and passing.
+- **Nothing in continuous integration reaches the real CLI.** `make fixtures` and `make live-smoke` spend a real credential, and a scheduled workflow spending one is a cost nobody is watching and a long-lived key in a repository secret. Every workflow is read for an invocation of either target and for a credential the CLI reads, and the check distinguishes `make fixtures-diff`, which reaches nothing and runs on every push. What continuous integration therefore cannot answer is whether the vendor's CLI changed, which the next `make fixtures` a person runs answers instead.
 - **A verification task may not require a particular answer.** A task about a live run may require that the run happened, that its answer was recorded and that socrates routed whatever came back. It may not require a severity, an action, a count or a shape: what a reviewer finds is the reviewer's, and four live reviews that closed no such task are what this rule exists to prevent repeating.
 - **One place turns an event into a line a person reads.** `internal/presentation` is it, and a check fails when any other package names an event kind, unless that package is named in `convention.EventKindsNamed` with why it reads the log as data rather than rendering it. The renderer imports nothing beyond the event type and text formatting, so it cannot reach the filesystem, the clock or a terminal even by accident.
 - **A follower stops on the run's record and on the log, and either is enough.** Waiting only for a terminal event is the version that hangs, because a run that failed before its reviewer wrote anything has a terminal state and an empty log. A parked round stops a follower too: nothing of that run is running, and only the author ends it.

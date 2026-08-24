@@ -1,0 +1,35 @@
+name: verification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - name: Fail on anything gofmt would rewrite
+        run: make lint
+
+      - name: Run the suite
+        run: make test
+
+      - name: Check every scenario under way is named by a test
+        run: make scenario-coverage
+
+      - name: Check archiving would take no scenario out of the specifications
+        run: make scenario-drop
+
+      - name: Report which outcomes only fixtures reach
+        run: make corpus-outcomes
+
+      - name: Compare the simulator against the recordings
+        run: make fixtures-diff

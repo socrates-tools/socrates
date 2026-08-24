@@ -1,2 +1,3 @@
 bin/
 .serena/
+internal/fidelity/testdata/failures/

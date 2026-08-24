@@ -10,9 +10,14 @@ import (
 )
 
 const (
-	RecordingsDirectory = "testdata/recordings"
-	RecordingExtension  = ".json"
+	TestdataDirectory  = "testdata"
+	RecordingExtension = ".json"
+
+	recordingsFolder = "recordings"
+	failuresFolder   = "failures"
 )
+
+var RecordingsDirectory = filepath.Join(TestdataDirectory, recordingsFolder)
 
 type Recording struct {
 	Name   string
@@ -50,7 +55,22 @@ func Recordings(directory string) ([]Recording, error) {
 	return recordings, nil
 }
 
-func Record(directory, name string, shapes []Shape) (string, error) {
+func Keep(root, name, stream string, answered error) (string, error) {
+	shapes, err := ShapesOf(stream)
+	if err != nil {
+		return "", err
+	}
+	return record(filepath.Join(root, folderFor(answered)), name, shapes)
+}
+
+func folderFor(answered error) string {
+	if answered != nil {
+		return failuresFolder
+	}
+	return recordingsFolder
+}
+
+func record(directory, name string, shapes []Shape) (string, error) {
 	if err := os.MkdirAll(directory, 0o755); err != nil {
 		return "", fmt.Errorf(writingARecording, directory, err)
 	}

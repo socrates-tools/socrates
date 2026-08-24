@@ -17,8 +17,6 @@ import (
 const recordingDeadline = 10 * time.Minute
 
 func TestRecordWhatTheRealCLIAnswers(t *testing.T) {
-	directory := fidelity.RecordingsDirectory
-
 	for _, request := range fidelity.Requests() {
 		t.Run(request.Name, func(t *testing.T) {
 			asking, err := agent.NewClaude(agent.Options{Deadline: recordingDeadline})
@@ -39,20 +37,15 @@ func TestRecordWhatTheRealCLIAnswers(t *testing.T) {
 				t.Fatalf("the real CLI wrote nothing to record: %v", runErr)
 			}
 
-			shapes, err := fidelity.ShapesOf(stream.String())
+			path, err := fidelity.Keep(fidelity.TestdataDirectory, request.Name, stream.String(), runErr)
 			if err != nil {
-				t.Fatalf("reading what the real CLI wrote: %v", err)
+				t.Fatalf("keeping what the real CLI wrote: %v", err)
 			}
-
-			path, err := fidelity.Record(directory, request.Name, shapes)
-			if err != nil {
-				t.Fatalf("recording: %v", err)
-			}
-			t.Logf("recorded %s", path)
 
 			if runErr != nil {
-				t.Errorf("the real CLI answered %s, and the stream was recorded anyway: %v", request.Name, runErr)
+				t.Fatalf("the real CLI did not answer %s: %v: what it wrote is under %s, and the recordings were left alone", request.Name, runErr, path)
 			}
+			t.Logf("recorded %s", path)
 		})
 	}
 }
