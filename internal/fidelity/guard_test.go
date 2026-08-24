@@ -109,6 +109,9 @@ func TestTheRecordingsCarryWhatSocratesReadsFromTheOpeningEvent(t *testing.T) {
 		if !slices.Contains(opening.Fields, "tools") {
 			t.Errorf("%s does not record the session's tool list, and socrates reads it to know what the reviewer held: a recording taken without it would let the field disappear unnoticed", recording.Path)
 		}
+		if !slices.Contains(opening.Fields, "mcp_servers") {
+			t.Errorf("%s does not record the sources of tools the session had connected, and socrates reads them because a source is named before its tools reach the list beside it: a recording taken without it would let the field disappear unnoticed", recording.Path)
+		}
 	}
 }
 

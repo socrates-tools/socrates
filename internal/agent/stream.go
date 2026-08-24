@@ -33,26 +33,32 @@ type wireMessage struct {
 	Content []wireContent `json:"content"`
 }
 
+type wireToolSource struct {
+	Name string `json:"name"`
+}
+
 type wireEvent struct {
-	Type             string          `json:"type"`
-	Subtype          string          `json:"subtype"`
-	Tools            []string        `json:"tools"`
-	SessionID        string          `json:"session_id"`
-	Model            string          `json:"model"`
-	Message          json.RawMessage `json:"message"`
-	IsError          bool            `json:"is_error"`
-	Result           string          `json:"result"`
-	StructuredOutput json.RawMessage `json:"structured_output"`
-	Usage            *wireUsage      `json:"usage"`
+	Type             string           `json:"type"`
+	Subtype          string           `json:"subtype"`
+	Tools            []string         `json:"tools"`
+	ToolSources      []wireToolSource `json:"mcp_servers"`
+	SessionID        string           `json:"session_id"`
+	Model            string           `json:"model"`
+	Message          json.RawMessage  `json:"message"`
+	IsError          bool             `json:"is_error"`
+	Result           string           `json:"result"`
+	StructuredOutput json.RawMessage  `json:"structured_output"`
+	Usage            *wireUsage       `json:"usage"`
 }
 
 type streamed struct {
-	result    *wireEvent
-	text      string
-	model     string
-	sessionID string
-	usage     Usage
-	tools     []string
+	result      *wireEvent
+	text        string
+	model       string
+	sessionID   string
+	usage       Usage
+	tools       []string
+	toolSources []string
 }
 
 func parseStream(input io.Reader) (streamed, error) {
@@ -91,6 +97,10 @@ func parseStream(input io.Reader) (streamed, error) {
 				break
 			}
 			read.tools = event.Tools
+			read.toolSources = nil
+			for _, source := range event.ToolSources {
+				read.toolSources = append(read.toolSources, source.Name)
+			}
 		case "assistant":
 			var message wireMessage
 			if err := json.Unmarshal(event.Message, &message); err != nil {

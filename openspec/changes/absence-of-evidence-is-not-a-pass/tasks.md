@@ -20,14 +20,23 @@
 - [x] 2.2 Confirm a legitimate rename is still followed, and that an identical FROM/TO pair is left alone
 - [x] 2.3 Fail the gate on it, and give the printed scenario line the wording its condition needs
 
-## 3. What the documents say
+## 3. A source named before its tools arrive
 
-- [x] 3.1 State both guards as invariants, and correct nothing else
+- [x] 3.1 Teach the simulator to name sources in the opening event, and assert from the delivered stream that they are there while none of their tools is in the tool list
+- [x] 3.2 Read them, and record them under their own event kind. Covers `A source named before its tools arrive`
+- [x] 3.3 Confirm the round is not failed for it, that an ordinary run records no source, and that a round which failed records the source it named anyway
+- [x] 3.4 Render it as one sentence in the one place that renders an event
+- [x] 3.5 Pin the field against the recordings, and mutate the guard to prove it fails without it
 
-## 4. Verification
+## 4. What the documents say
 
-- [x] 4.1 `make fmt && make lint test` clean
-- [x] 4.2 `make scenario-coverage` naming the scenario this change adds
-- [x] 4.3 `make scenario-drop` before archiving, on a tree where it has a before-state to read
-- [x] 4.4 `make corpus-outcomes` read, because the routing rule is untouched
-- [ ] 4.5 A live run confirming from the recorded stream what the session reported and what the run recorded about it. Require the run, the recording and the routing, and require no severity, action or count
+- [x] 4.1 State both guards as invariants, and correct nothing else
+- [x] 4.2 State the third, and correct the account of the tool list that said the source list was not worth reading
+
+## 5. Verification
+
+- [x] 5.1 `make fmt && make lint test` clean
+- [x] 5.2 `make scenario-coverage` naming the scenario this change adds
+- [x] 5.3 `make scenario-drop` before archiving, on a tree where it has a before-state to read
+- [x] 5.4 `make corpus-outcomes` read, because the routing rule is untouched
+- [ ] 5.5 A live run confirming from the recorded stream what the session reported and what the run recorded about it. Require the run, the recording and the routing, and require no severity, action or count

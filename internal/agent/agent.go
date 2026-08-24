@@ -55,13 +55,14 @@ type Request struct {
 }
 
 type Response struct {
-	Structured json.RawMessage
-	Text       string
-	Model      string
-	Effort     string
-	SessionID  string
-	Usage      Usage
-	Tools      []string
+	Structured  json.RawMessage
+	Text        string
+	Model       string
+	Effort      string
+	SessionID   string
+	Usage       Usage
+	Tools       []string
+	ToolSources []string
 }
 
 type Agent interface {

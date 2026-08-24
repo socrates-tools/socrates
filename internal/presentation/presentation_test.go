@@ -70,6 +70,7 @@ func TestEveryKindTheCoreWritesIsRendered(t *testing.T) {
 		agent.EventCompleted,
 		agent.EventFailed,
 		agent.EventUnexpectedTools,
+		agent.EventUnexpectedSources,
 		agent.EventToolsUnreported,
 	} {
 		t.Run(kind, func(t *testing.T) {
@@ -210,10 +211,29 @@ func fields() map[string]any {
 		"state":         string(runstate.Failed),
 		"patchable":     float64(2),
 		"tools":         "Bash, browser_run_code_unsafe",
+		"sources":       "serena, playwright",
 		"asked_for":     "Read, Grep, Glob, WebSearch, WebFetch, StructuredOutput",
 		"finding":       "f1",
 		"resolution":    "fixed",
 		"unanswered":    float64(1),
+	}
+}
+
+func TestASourceTheSessionNamedIsRenderedWithItsName(t *testing.T) {
+	line := presentation.Lines([]runlog.Event{{
+		At:      at,
+		Kind:    agent.EventUnexpectedSources,
+		Subject: string(agent.Reviewer),
+		Fields:  map[string]any{"sources": "serena, playwright"},
+	}})
+
+	if len(line) != 1 {
+		t.Fatalf("one event rendered as %d lines: %v", len(line), line)
+	}
+	for _, named := range []string{"serena", "playwright"} {
+		if !strings.Contains(line[0], named) {
+			t.Errorf("the line does not name the source %s the session had connected: %q", named, line[0])
+		}
 	}
 }
 

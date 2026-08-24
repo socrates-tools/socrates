@@ -36,7 +36,14 @@ The set socrates asked for SHALL be derived from what the invocation carries rat
 A vendor release that adds a built-in outside that set therefore records an unexpected tool on every run until somebody looks, which is the direction to be wrong in.
 Deriving the answer from a vendor's error message instead is a rule that stops working when the prose is edited, and it stops working by failing every review rather than by reporting the truth.
 The list is what the reviewer could use at the point socrates read it rather than a proof that nothing arrived later, because a source that connects after the opening event can contribute a tool that event did not name.
-What covers later is those customisations not loading at all, and the comparison after the round.
+
+socrates SHALL therefore also take the external sources of tools the same opening event names, and SHALL record every one it names, because socrates asked for none.
+That event names a source the session connected whether or not that source's tools had reached the tool list beside it, which is what makes the two readings incomplete in different places: the tool list misses a source whose tools are still arriving, and the source list misses a built-in the vendor added.
+socrates measured the gap rather than assuming it, on an opening event that named four sources while the tool list held none of their tools.
+That field SHALL be read where the same event's inventory of what is installed on the machine SHALL NOT, and what separates them is also measured: the sources named went from four to none under the one mechanism, while the inventory beside them did not move.
+Recording a source SHALL NOT fail the round, for the reason recording an absent tool list does not: the observation bounds nothing, and a machine whose policy is set by somebody entitled to set it should still get reviews.
+Unlike an absence, a source SHALL be recorded whether or not the round completed, because it is something the session said rather than something it failed to say.
+What covers a source that connects after socrates has read the event is those customisations not loading at all, and the comparison after the round.
 
 An opening event that reports no tools at all is not a session that held only what socrates asked for, and socrates SHALL NOT record it as one.
 Where a round completes and the stream reported no tool list, the run SHALL record that it did not, distinctly from a session holding a tool socrates did not ask for, because a person reading the run needs to know which of the two happened.
@@ -77,6 +84,11 @@ Neither this requirement nor the seal removes the comparison after the round, wh
 
 - **WHEN** a round completes and the stream's opening event reports no tools at all
 - **THEN** the run records that the session did not say what it held, the round is not failed for it, and nothing records the session as holding only what socrates asked for
+
+#### Scenario: A source named before its tools arrive
+
+- **WHEN** the stream's opening event names an external source of tools and the session's tool list holds none of that source's tools
+- **THEN** the run records the source socrates asked for none of, the round is not failed for it, and a tool list holding nothing unexpected does not leave the run reading as a session that held only what socrates asked for
 
 #### Scenario: A tool that writes cannot reach the change under review
 

@@ -84,22 +84,30 @@ An empty `allowedMcpServers` supplied through `--settings` is evaluated before a
 It took a reviewer's session from 74 externally contributed tools to none.
 `--safe-mode` replaced it because it covers hooks and plugins too, and because it needs no vendor feature named in socrates' own vocabulary.
 
-**The session's tool list is the only thing worth reading, and it is read rather than trusted.**
+**The session's tool list is read rather than trusted.**
 socrates takes `tools` from the stream's opening event, subtracts what it asked for, and records the remainder.
 Anything a customisation contributes lands in that list, so one check covers every source rather than one of them.
 An externally contributed tool is recognisable in that list by an `mcp__` prefix, which is how the live run that found this was diagnosed.
 
-**The opening event still enumerates the customisations the flag disabled.**
-Under `--safe-mode` its `skills`, `plugins`, `slash_commands` and `agents` fields name everything installed on the machine, and its `tools` field holds only what socrates asked for.
-Those fields are an inventory of the machine rather than a statement about the session, so a check that read them instead of `tools` would report a customisation on every run of every machine that has one.
+**Two of the opening event's fields are about the session and the rest are an inventory of the machine.**
+Under `--safe-mode` its `skills`, `plugins`, `slash_commands` and `agents` fields name everything installed on the machine, and a check that read them would report a customisation on every run of every machine that has one.
+`tools` and `mcp_servers` are the two that answer for the session: the tool list holds only what socrates asked for, and the source list is empty.
+The measurement is what separates them, not the field names: with the flag the sources named went from four to none while the plugin inventory beside them did not move.
 
 **The opening event is not always the first line of the stream.**
 Without `--safe-mode` a `SessionStart` hook fires first on this machine and its `hook_started` event arrives before `system`/`init`; with the flag no hook of this machine's own runs and the init event is first, though a machine whose policy configures one would still see it fire.
 socrates matches the event by type and subtype wherever it appears, so this is one more thing the flag makes true rather than something to rely on.
 
-**A tool list at the opening event can be incomplete.**
+**A tool list at the opening event can be incomplete, so the source list is read beside it.**
 External sources connect asynchronously, so a probe on this machine reported four of them in the opening event while the tool list held none of their tools yet.
-The list is what the reviewer can use, and it is what socrates checks; the guarantee that nothing arrives later is `--safe-mode` not loading them at all, and the comparison after the round is what catches a write from anything that got in regardless.
+Reading only the list would leave a machine that loaded a source anyway recording nothing at all, which is indistinguishable from a clean session.
+Both fields are read, and they are blind in different places: the list misses a source whose tools are still arriving, the source list misses a built-in the vendor added.
+Neither reading fails a round, and what covers a source that connects after socrates has read the event is `--safe-mode` not loading it and the comparison after the round.
+
+**Pinning `mcp_servers` against the recordings survives a re-record, and pinning `mcp_servers[].name` would not.**
+Under socrates' own invocation the field comes back as an empty array, so no `[].name` is derived from it and a guard requiring one fails reading as though the vendor had removed a field.
+`fidelity.ShapesOf` records the key before it walks the value, so an empty array still yields the field itself.
+That is the same trap the earlier guard fell into, one field along.
 
 **A sealed worktree is fully usable by the vendor's CLI.**
 Clearing every write bit in the worktree does not disturb a reviewer: `git status`, `git grep` and every read work, because a worktree's index and administrative state live under the main repository's `.git/worktrees/<name>/` rather than in the worktree.

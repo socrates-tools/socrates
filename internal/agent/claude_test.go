@@ -376,6 +376,94 @@ func TestASessionThatNeverSaidWhatItHeld(t *testing.T) {
 	})
 }
 
+func TestASourceNamedBeforeItsToolsArrive(t *testing.T) {
+	// scenario: A source named before its tools arrive
+	simulated := simulator.Install(t)
+	simulated.Scenario("default:\n  tool_sources: [serena, playwright]\n")
+
+	recorded := &collector{}
+	var stream bytes.Buffer
+	asked := request()
+	asked.Transcript = &stream
+
+	answer, err := build(t, agent.Options{Recorder: recorded}).Run(context.Background(), asked)
+	if err != nil {
+		t.Fatalf("a session that had connected a source ended the review: %v", err)
+	}
+
+	for _, named := range []string{"serena", "playwright"} {
+		if !strings.Contains(stream.String(), named) {
+			t.Fatalf("the delivered stream never names %s, so this test is not reading the case it names", named)
+		}
+	}
+	if unexpected := agent.UnexpectedTools(answer.Tools); len(unexpected) != 0 {
+		t.Fatalf("the session held %v, and this test is about a source whose tools have not arrived", unexpected)
+	}
+
+	if diff := cmp.Diff([]string{"serena", "playwright"}, answer.ToolSources); diff != "" {
+		t.Errorf("what the session reported having connected differs (-want +got):\n%s", diff)
+	}
+
+	named := recorded.events(agent.EventUnexpectedSources)
+	if len(named) != 1 {
+		t.Fatalf("%d events record the sources the session named, want one: the tool list beside them holds nothing socrates did not ask for", len(named))
+	}
+	for _, source := range []string{"serena", "playwright"} {
+		if !strings.Contains(fmt.Sprint(named[0].Fields["sources"]), source) {
+			t.Errorf("the recorded event does not name %s: %v", source, named[0].Fields)
+		}
+	}
+
+	t.Run("and the round is not failed for it", func(t *testing.T) {
+		if failures := recorded.events(agent.EventFailed); len(failures) != 0 {
+			t.Errorf("the round failed for a source the session named: %v", failures)
+		}
+		if completed := recorded.events(agent.EventCompleted); len(completed) != 1 {
+			t.Errorf("%d events record the round completing, want one", len(completed))
+		}
+	})
+}
+
+func TestASessionThatNamedNoSourceRecordsNone(t *testing.T) {
+	simulated := simulator.Install(t)
+	simulated.Scenario("default:\n")
+
+	recorded := &collector{}
+	answer, err := build(t, agent.Options{Recorder: recorded}).Run(context.Background(), request())
+	if err != nil {
+		t.Fatalf("running the reviewer: %v", err)
+	}
+
+	if len(answer.ToolSources) != 0 {
+		t.Errorf("the session reported having connected %v", answer.ToolSources)
+	}
+	if named := recorded.events(agent.EventUnexpectedSources); len(named) != 0 {
+		t.Errorf("%d events record a source on a session that named none", len(named))
+	}
+}
+
+func TestARoundThatFailedNamingASourceRecordsTheSource(t *testing.T) {
+	// scenario: A source named before its tools arrive
+	simulated := simulator.Install(t)
+	simulated.Scenario("default:\n  behaviour: no-result\n  tool_sources: [serena]\n")
+
+	recorded := &collector{}
+	if _, err := build(t, agent.Options{Recorder: recorded}).Run(context.Background(), request()); err == nil {
+		t.Fatal("a stream with no result event answered the request")
+	}
+
+	if failures := recorded.events(agent.EventFailed); len(failures) != 1 {
+		t.Fatalf("%d events record the failure, want one", len(failures))
+	}
+	named := recorded.events(agent.EventUnexpectedSources)
+	if len(named) != 1 {
+		t.Fatalf("%d events record the source the session named, want one: a source is something the session said, and the round dying does not unsay it", len(named))
+	}
+	if !strings.Contains(fmt.Sprint(named[0].Fields["sources"]), "serena") {
+		t.Errorf("the recorded event does not name the source: %v", named[0].Fields)
+	}
+}
+
 func TestARoundThatFailedBeforeAnsweringRecordsTheFailure(t *testing.T) {
 	simulated := simulator.Install(t)
 	simulated.Scenario("default:\n  behaviour: rejected-at-startup\n")

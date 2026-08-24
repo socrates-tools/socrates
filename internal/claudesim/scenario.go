@@ -35,6 +35,7 @@ const (
 	defaultRejection        = "error: unknown option '--settings'"
 	defaultViolation        = `{"findings":"none that matter","risk_level":"low","risk_rationale":"r"}`
 	defaultStructuredOutput = `{"findings":[],"risk_level":"low","risk_rationale":"nothing in this change needs attention"}`
+	connectedSource         = "connected"
 )
 
 var behaviours = []Behaviour{
@@ -73,6 +74,7 @@ type Response struct {
 	Writes       []Write   `yaml:"writes"`
 	ChildCommand []string  `yaml:"child_command"`
 	ExtraTools   []string  `yaml:"extra_tools"`
+	ToolSources  []string  `yaml:"tool_sources"`
 }
 
 type Scenario struct {

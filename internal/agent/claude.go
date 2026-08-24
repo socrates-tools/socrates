@@ -29,11 +29,12 @@ const (
 )
 
 const (
-	EventStarted         = "agent-started"
-	EventCompleted       = "agent-completed"
-	EventFailed          = "agent-failed"
-	EventUnexpectedTools = "agent-unexpected-tools"
-	EventToolsUnreported = "agent-tools-unreported"
+	EventStarted           = "agent-started"
+	EventCompleted         = "agent-completed"
+	EventFailed            = "agent-failed"
+	EventUnexpectedTools   = "agent-unexpected-tools"
+	EventUnexpectedSources = "agent-unexpected-sources"
+	EventToolsUnreported   = "agent-tools-unreported"
 )
 
 type Options struct {
@@ -82,14 +83,24 @@ func (a *claudeAgent) Run(ctx context.Context, request Request) (Response, error
 
 	answer, err := a.attempt(bounded, ctx, request, routing)
 
-	a.recordToolsHeld(request, answer, err == nil)
+	a.recordToolSurface(request, answer, err == nil)
 	if err != nil {
 		return answer, a.failed(request, routing, err)
 	}
 	return answer, nil
 }
 
-func (a *claudeAgent) recordToolsHeld(request Request, answer Response, completed bool) {
+func (a *claudeAgent) recordToolSurface(request Request, answer Response, completed bool) {
+	if len(answer.ToolSources) > 0 {
+		a.record(runlog.Event{
+			Kind:    EventUnexpectedSources,
+			Subject: string(request.Role),
+			Fields: map[string]any{
+				"sources": strings.Join(answer.ToolSources, ", "),
+			},
+		})
+	}
+
 	if len(answer.Tools) == 0 {
 		if completed {
 			a.record(runlog.Event{
@@ -178,7 +189,7 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 	}
 	waitErr := command.Wait()
 
-	reached := Response{Tools: read.tools}
+	reached := Response{Tools: read.tools, ToolSources: read.toolSources}
 
 	if deadlineErr := a.deadlineReached(bounded, parent); deadlineErr != nil {
 		return reached, deadlineErr
@@ -191,12 +202,13 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 	}
 
 	answer := Response{
-		Text:      read.text,
-		Model:     read.model,
-		Effort:    routing.Effort,
-		SessionID: read.sessionID,
-		Usage:     read.usage,
-		Tools:     read.tools,
+		Text:        read.text,
+		Model:       read.model,
+		Effort:      routing.Effort,
+		SessionID:   read.sessionID,
+		Usage:       read.usage,
+		Tools:       read.tools,
+		ToolSources: read.toolSources,
 	}
 
 	if read.result == nil {
