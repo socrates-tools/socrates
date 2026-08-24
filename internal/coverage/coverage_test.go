@@ -88,6 +88,73 @@ func TestAGapNamesWhereTheScenarioIs(t *testing.T) {
 	}
 }
 
+func TestAPromotedScenarioAChangeRenamesIsReadUnderItsNewName(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, filepath.Join("openspec", "specs", "thing", "spec.md"), "#### Scenario: The old name nobody will keep\n")
+	writeFile(t, root, filepath.Join("openspec", "changes", "now", "tasks.md"), "- [x] 1.1 Did the thing\n")
+	writeFile(t, root, filepath.Join("openspec", "changes", "now", "specs", "thing", "spec.md"),
+		"## RENAMED Requirements\n\n- FROM: `#### Scenario: The old name nobody will keep`\n- TO: `#### Scenario: The name a test actually claims`\n\n## MODIFIED Requirements\n\n#### Scenario: The name a test actually claims\n")
+
+	scenarios, err := coverage.Scenarios(root)
+	if err != nil {
+		t.Fatalf("reading the specifications: %v", err)
+	}
+
+	for _, scenario := range scenarios {
+		if scenario.Text == "The old name nobody will keep" {
+			t.Errorf("%s:%d is still read under the name the change renames away, so a test naming the new one reads as a gap", scenario.Spec, scenario.Line)
+		}
+	}
+
+	named := 0
+	for _, scenario := range scenarios {
+		if scenario.Text == "The name a test actually claims" {
+			named++
+		}
+	}
+	if named != 2 {
+		t.Errorf("%d scenarios read under the new name, want the promoted one and the delta's own", named)
+	}
+}
+
+func TestAChangeNobodyHasStartedRenamesNothing(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, filepath.Join("openspec", "specs", "thing", "spec.md"), "#### Scenario: The old name nobody will keep\n")
+	writeFile(t, root, filepath.Join("openspec", "changes", "later", "tasks.md"), "- [ ] 1.1 Not started\n")
+	writeFile(t, root, filepath.Join("openspec", "changes", "later", "specs", "thing", "spec.md"),
+		"## RENAMED Requirements\n\n- FROM: `#### Scenario: The old name nobody will keep`\n- TO: `#### Scenario: A name no test claims`\n")
+
+	scenarios, err := coverage.Scenarios(root)
+	if err != nil {
+		t.Fatalf("reading the specifications: %v", err)
+	}
+
+	for _, scenario := range scenarios {
+		if scenario.Spec == filepath.Join("openspec", "specs", "thing", "spec.md") && scenario.Text != "The old name nobody will keep" {
+			t.Errorf("a change nobody has started renamed a promoted scenario to %q, which hides whether a test names the promoted one", scenario.Text)
+		}
+	}
+}
+
+func TestAPromotedScenarioNoChangeRenamesKeepsItsName(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, filepath.Join("openspec", "specs", "thing", "spec.md"), "#### Scenario: The old name nobody will keep\n")
+	writeFile(t, root, filepath.Join("openspec", "changes", "now", "tasks.md"), "- [x] 1.1 Did the thing\n")
+	writeFile(t, root, filepath.Join("openspec", "changes", "now", "specs", "thing", "spec.md"),
+		"## MODIFIED Requirements\n\n#### Scenario: The name a test actually claims\n")
+
+	scenarios, err := coverage.Scenarios(root)
+	if err != nil {
+		t.Fatalf("reading the specifications: %v", err)
+	}
+
+	for _, scenario := range scenarios {
+		if scenario.Spec == filepath.Join("openspec", "specs", "thing", "spec.md") && scenario.Text != "The old name nobody will keep" {
+			t.Errorf("a promoted scenario no change renames reads as %q", scenario.Text)
+		}
+	}
+}
+
 func TestAChangeNobodyHasStartedIsNotUnderWay(t *testing.T) {
 	root := t.TempDir()
 	writeFile(t, root, filepath.Join("openspec", "changes", "later", "tasks.md"), "- [ ] 1.1 Do the thing\n")

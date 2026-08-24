@@ -69,6 +69,10 @@ What nothing socrates holds bounds is where that command reaches outside the wor
 Measured on this machine, which deploys a managed configuration: without it the opening event named four external sources, with it none, and the plugin-contributed `LSP` tool disappeared from the session's tool list at the same time.
 It is not refused by a managed configuration, which is the trap the flags below fall into.
 
+**`--safe-mode` arrived in 2.1.169, and socrates keeps no fallback.**
+An older CLI dies at startup on an unknown option, every round of every run.
+Recognising that text to say something better is the pattern this repository deleted for being fragile, so the floor is stated in the README prerequisites instead and the CLI's own message is what a person reads.
+
 **The flags that ask to replace a managed set are refused at startup.**
 `You cannot use --strict-mcp-config when an enterprise MCP config is present`, exit status 1, and the refusal is deliberate rather than a bug: a managed configuration is a managed set and that flag asks to replace it.
 The file lives outside the person's control, at `/etc/claude-code/managed-mcp.json` on Linux.

@@ -23,6 +23,11 @@ const (
 	doneTask         = "- [x]"
 	changesDirectory = "changes"
 	archiveDirectory = "archive"
+
+	renamedSection = "## RENAMED"
+	sectionHeading = "## "
+	renameFrom     = "- FROM:"
+	renameTo       = "- TO:"
 )
 
 var specificationDirectories = []string{
@@ -41,6 +46,11 @@ type Scenario struct {
 
 func Scenarios(root string) ([]Scenario, error) {
 	var found []Scenario
+
+	renames, err := renamedScenarios(root)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, directory := range specificationDirectories {
 		walked := filepath.Join(root, directory)
@@ -82,7 +92,11 @@ func Scenarios(root string) ([]Scenario, error) {
 				if !headed {
 					continue
 				}
-				found = append(found, Scenario{Spec: relative, Line: number + 1, Text: strings.TrimSpace(stated), Underway: underway})
+				text := strings.TrimSpace(stated)
+				if renamed, was := renames[Normalise(text)]; was && !strings.Contains(relative, changesDirectory) {
+					text = renamed
+				}
+				found = append(found, Scenario{Spec: relative, Line: number + 1, Text: text, Underway: underway})
 			}
 			return nil
 		})
@@ -98,6 +112,81 @@ func Scenarios(root string) ([]Scenario, error) {
 		return one.Line - other.Line
 	})
 	return found, nil
+}
+
+func renamedScenarios(root string) (map[string]string, error) {
+	renames := map[string]string{}
+	changes := filepath.Join(root, "openspec", changesDirectory)
+
+	err := filepath.WalkDir(changes, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			if os.IsNotExist(err) {
+				return nil
+			}
+			return err
+		}
+		if entry.IsDir() {
+			if entry.Name() == archiveDirectory {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if filepath.Base(path) != specFile {
+			return nil
+		}
+
+		relative, relErr := filepath.Rel(root, path)
+		if relErr != nil {
+			relative = path
+		}
+		started, err := underway(root, relative)
+		if err != nil {
+			return err
+		}
+		if !started {
+			return nil
+		}
+
+		content, readErr := os.ReadFile(path)
+		if readErr != nil {
+			return fmt.Errorf(readingASpecification, path, readErr)
+		}
+
+		section, from := "", ""
+		for line := range strings.SplitSeq(string(content), "\n") {
+			trimmed := strings.TrimSpace(line)
+			if strings.HasPrefix(trimmed, sectionHeading) && !strings.HasPrefix(trimmed, scenarioHeading) {
+				section = trimmed
+				continue
+			}
+			if !strings.HasPrefix(section, renamedSection) {
+				continue
+			}
+			if named, marked := strings.CutPrefix(trimmed, renameFrom); marked {
+				from = scenarioNamed(named)
+			}
+			if named, marked := strings.CutPrefix(trimmed, renameTo); marked && from != "" {
+				if to := scenarioNamed(named); to != "" {
+					renames[Normalise(from)] = to
+				}
+				from = ""
+			}
+		}
+		return nil
+	})
+	if err != nil && !os.IsNotExist(err) {
+		return nil, err
+	}
+	return renames, nil
+}
+
+func scenarioNamed(line string) string {
+	quoted := strings.Trim(strings.TrimSpace(line), "`")
+	named, headed := strings.CutPrefix(strings.TrimSpace(quoted), scenarioHeading)
+	if !headed {
+		return ""
+	}
+	return strings.TrimSpace(named)
 }
 
 func underway(root, spec string) (bool, error) {

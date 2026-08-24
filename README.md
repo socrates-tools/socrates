@@ -15,7 +15,8 @@ The reviewer has independence and has written none of it.
 
 ## The first run
 
-socrates needs Go 1.25 or later, `git`, and the `claude` CLI on your `PATH`.
+socrates needs Go 1.25 or later, `git`, and the `claude` CLI 2.1.169 or later on your `PATH`.
+That floor is where `--safe-mode` arrived, which is the one mechanism keeping your machine's customisations out of a reviewer, and socrates keeps no fallback for a CLI that does not know it.
 
 ```sh
 make build                     # bin/scrat
