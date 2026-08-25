@@ -16,6 +16,7 @@ build:
 install:
 	go install -ldflags '$(STAMP)' ./cmd/socrates
 	ln -sf socrates $(INSTALL_DIR)/$(SHORT_NAME)
+	$(INSTALL_DIR)/socrates skill
 
 test:
 	go test -race ./...
