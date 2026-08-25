@@ -5,11 +5,11 @@
 }
 
 :root {
-  --text-floor: 15px;
-  --text-body: 17px;
-  --text-lead: 20px;
-  --text-title: 27px;
-  --text-code: 15px;
+  --text-floor: 14px;
+  --text-body: 16px;
+  --text-lead: 18px;
+  --text-title: 24px;
+  --text-code: 14px;
 
   --paper: #f1f2f0;
   --card: #fbfcfb;
@@ -98,6 +98,7 @@ pre,
 .location {
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: var(--text-code);
+  tab-size: 4;
 }
 
 .surface {
@@ -259,6 +260,7 @@ pre,
 
 .hunk .line {
   white-space: pre;
+  tab-size: 4;
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: var(--text-code);
 }
