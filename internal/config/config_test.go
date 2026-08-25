@@ -146,3 +146,28 @@ func write(t *testing.T, content string) string {
 	}
 	return path
 }
+
+func TestTheConfigurationLivesWhereXDGConfigHomeSaysOnEveryPlatform(t *testing.T) {
+	stated := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", stated)
+
+	path, err := config.Path()
+	if err != nil {
+		t.Fatalf("resolving the configuration path: %v", err)
+	}
+	if want := filepath.Join(stated, "socrates", "config.yaml"); path != want {
+		t.Errorf("socrates reads %s, and XDG_CONFIG_HOME says %s", path, want)
+	}
+}
+
+func TestARelativeXDGConfigHomeIsIgnored(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", "relative/config")
+
+	path, err := config.Path()
+	if err != nil {
+		t.Fatalf("resolving the configuration path: %v", err)
+	}
+	if !filepath.IsAbs(path) {
+		t.Errorf("socrates reads %s, and a configuration path that is not absolute depends on where the command was run", path)
+	}
+}

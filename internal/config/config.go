@@ -29,11 +29,18 @@ type Config struct {
 }
 
 func Path() (string, error) {
-	directory, err := os.UserConfigDir()
+	directory, err := configurationDirectory()
 	if err != nil {
 		return "", refusal.New(noConfigurationDirectory, err)
 	}
 	return filepath.Join(directory, directoryName, fileName), nil
+}
+
+func configurationDirectory() (string, error) {
+	if stated := os.Getenv("XDG_CONFIG_HOME"); filepath.IsAbs(stated) {
+		return stated, nil
+	}
+	return os.UserConfigDir()
 }
 
 func Load() (Config, error) {
