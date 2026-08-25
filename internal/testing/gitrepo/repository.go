@@ -62,7 +62,12 @@ func Empty(t *testing.T) *Repository {
 
 func At(t *testing.T, root string) *Repository {
 	t.Helper()
-	return &Repository{t: t, Root: root}
+
+	resolved, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		t.Fatalf("resolving %s: %v", root, err)
+	}
+	return &Repository{t: t, Root: resolved}
 }
 
 func (r *Repository) Git(args ...string) string {
