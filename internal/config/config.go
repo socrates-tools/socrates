@@ -16,8 +16,10 @@ import (
 )
 
 const (
-	directoryName = "socrates"
-	fileName      = "config.yaml"
+	directoryName             = "socrates"
+	fileName                  = "config.yaml"
+	configurationHomeVariable = "XDG_CONFIG_HOME"
+	underHomeDirectory        = ".config"
 )
 
 type Config struct {
@@ -37,10 +39,19 @@ func Path() (string, error) {
 }
 
 func configurationDirectory() (string, error) {
-	if stated := os.Getenv("XDG_CONFIG_HOME"); filepath.IsAbs(stated) {
+	if stated := os.Getenv(configurationHomeVariable); filepath.IsAbs(stated) {
 		return stated, nil
 	}
-	return os.UserConfigDir()
+
+	platform, unusable := os.UserConfigDir()
+	if unusable == nil {
+		return platform, nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", unusable
+	}
+	return filepath.Join(home, underHomeDirectory), nil
 }
 
 func Load() (Config, error) {
