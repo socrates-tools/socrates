@@ -39,4 +39,12 @@
 - [x] 5.2 `make scenario-coverage` naming the scenario this change adds
 - [x] 5.3 `make scenario-drop` before archiving, on a tree where it has a before-state to read
 - [x] 5.4 `make corpus-outcomes` read, because the routing rule is untouched
-- [ ] 5.5 A live run confirming from the recorded stream what the session reported and what the run recorded about it. Require the run, the recording and the routing, and require no severity, action or count
+- [x] 5.5 A live run confirming from the recorded stream what the session reported and what the run recorded about it. Require the run, the recording and the routing, and require no severity, action or count
+
+## What the live run recorded
+
+Run `20260825T005521Z-7034b716`, against `charon-test` on a working tree nobody had reviewed, with `--intent "add an endpoint that returns the oldest items"`.
+
+The stream's opening event reported `tools` as the six socrates asked for and `mcp_servers` as empty, so on this machine there was nothing to record beyond what socrates asked for: no unexpected tool, no absent tool list, and no external source named.
+The reviewer answered, the round parked, and the run recorded `round-parked` after `agent-completed`, with 2 findings needing a person and 0 patchable.
+What the reviewer found is the reviewer's and is not what this task required.
