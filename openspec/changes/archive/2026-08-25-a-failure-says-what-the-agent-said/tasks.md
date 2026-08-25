@@ -33,4 +33,15 @@
 - [x] 5.2 `make scenario-coverage` naming the scenarios this change adds
 - [x] 5.3 `make scenario-drop` read, on a tree where it has a before-state
 - [x] 5.4 `make corpus-outcomes` read, because the routing rule is untouched
-- [ ] 5.5 A live run whose recorded stream is read for the fields this reading depends on, and whose answer socrates routed. Require the run, the recording and the routing; require no severity, action, count, and no failure, because whether a live run fails is not this repository's to arrange
+- [x] 5.5 A live run whose recorded stream is read for the fields this reading depends on, and whose answer socrates routed. Require the run, the recording and the routing; require no severity, action, count, and no failure, because whether a live run fails is not this repository's to arrange
+
+## What the live run recorded
+
+Run `20260825T005107Z-7034b716`, against `charon-test` on a working tree nobody had reviewed, with `--intent "add an endpoint that returns the most recent items"`.
+
+The reviewer answered, the round parked, and the run recorded `round-parked` after `agent-completed`.
+The result event this reading depends on carried `is_error: false` and `subtype: "success"`, so `reportsAnError` read false and the account this change reads was correctly left unread on a call that did not fail.
+`scrat findings` reported one finding needing a patch and one needing a person, and `scrat status` reported the run `awaiting-response` with the same two counts.
+What the reviewer found is the reviewer's and is not what this task required.
+
+The delivered invocation carried the four tools socrates asks for and no external source.

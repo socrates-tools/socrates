@@ -43,6 +43,24 @@ The implementation shipped SHALL invoke the `claude` binary in print mode with a
 
 It SHALL load user-level settings only, and SHALL NOT load the reviewed repository's own project or local settings, because those are authored by the thing under review.
 
+A call that failed SHALL carry the account the agent gave of its own failure, where the agent gave one.
+That terminal event is where the CLI says why the work did not happen, and the agent's error stream is where a process complains about its arguments, its environment and its own startup.
+The account SHALL therefore be preferred to the error stream, and both SHALL be carried where both are there.
+socrates read the exit status first and returned on it, so a live review that died on the provider being overloaded reported an exit status and an empty error stream, while the message naming the provider sat parsed and unread in the same stream socrates had already finished reading.
+A reason answers one question, which is whether to run the review again or to fix something, and an exit status answers it either way.
+
+The subtype beside that account SHALL NOT be the reason where the account is there.
+On the same live stream the subtype was `success`, on the event whose error flag was true and whose message named the provider, so of that event's three fields socrates named the only one that said nothing.
+It SHALL remain what is said where the event reports an error and carries no account, because a failure has to be reported as something.
+
+Where the agent said nothing on either channel the failure SHALL say that it said nothing, rather than quoting an empty one.
+
+The reason SHALL be bounded, on the ceiling and the mechanism the error stream already has rather than a second one, because it reaches a run's record and it reaches the context of a session that polls `socrates status` while waiting to patch, and the agent's text on some failures is a whole turn.
+
+socrates SHALL NOT decide anything from that account.
+It is not parsed, not matched and not compared, no state, verdict or exit code depends on a word in it, and the call had already failed before it was read.
+Deriving a decision from a vendor's prose is refused below for the reason it is refused: quoting prose to a person fails by being less useful, and branching on it fails by failing every review.
+
 The reviewer SHALL hold the tools socrates asked for and no others.
 It asks on the vendor's own mechanism for tools that do not write, and that mechanism covers the built-in tools the model may call and nothing else.
 A tool from any other source is therefore not covered by it: an external tool server contributes tools, so does a plugin, and so does a built-in the vendor adds in a release nobody read.
@@ -73,7 +91,19 @@ The set socrates asked for SHALL be derived from what the invocation carries rat
 A vendor release that adds a built-in outside that set therefore records an unexpected tool on every run until somebody looks, which is the direction to be wrong in.
 Deriving the answer from a vendor's error message instead is a rule that stops working when the prose is edited, and it stops working by failing every review rather than by reporting the truth.
 The list is what the reviewer could use at the point socrates read it rather than a proof that nothing arrived later, because a source that connects after the opening event can contribute a tool that event did not name.
-What covers later is those customisations not loading at all, and the comparison after the round.
+
+socrates SHALL therefore also take the external sources of tools the same opening event names, and SHALL record every one it names, because socrates asked for none.
+That event names a source the session connected whether or not that source's tools had reached the tool list beside it, which is what makes the two readings incomplete in different places: the tool list misses a source whose tools are still arriving, and the source list misses a built-in the vendor added.
+socrates measured the gap rather than assuming it, on an opening event that named four sources while the tool list held none of their tools.
+That field SHALL be read where the same event's inventory of what is installed on the machine SHALL NOT, and what separates them is also measured: the sources named went from four to none under the one mechanism, while the inventory beside them did not move.
+Recording a source SHALL NOT fail the round, for the reason recording an absent tool list does not: the observation bounds nothing, and a machine whose policy is set by somebody entitled to set it should still get reviews.
+Unlike an absence, a source SHALL be recorded whether or not the round completed, because it is something the session said rather than something it failed to say.
+What covers a source that connects after socrates has read the event is those customisations not loading at all, and the comparison after the round.
+
+An opening event that reports no tools at all is not a session that held only what socrates asked for, and socrates SHALL NOT record it as one.
+Where a round completes and the stream reported no tool list, the run SHALL record that it did not, distinctly from a session holding a tool socrates did not ask for, because a person reading the run needs to know which of the two happened.
+That SHALL NOT fail the round: a release that stops emitting the field should report the truth rather than fail every review, which is the same direction the built-in above is wrong in.
+A round that failed before the reviewer answered has no tool list either, and the failure is what there is to read, so the absence is recorded only where the round otherwise completed.
 
 Where such a tool is in the session anyway, socrates SHALL run the review rather than not at all, and the run SHALL record the tools it did not ask for.
 A machine whose policy is set by somebody entitled to set it should still get reviews.
@@ -104,6 +134,16 @@ Neither this requirement nor the seal removes the comparison after the round, wh
 
 - **WHEN** a review completes and the stream's opening event names the session's tools
 - **THEN** what the run records about the reviewer's tools is what that event reported, and no part of the decision reads the text of a vendor error
+
+#### Scenario: A session that never said what it held
+
+- **WHEN** a round completes and the stream's opening event reports no tools at all
+- **THEN** the run records that the session did not say what it held, the round is not failed for it, and nothing records the session as holding only what socrates asked for
+
+#### Scenario: A source named before its tools arrive
+
+- **WHEN** the stream's opening event names an external source of tools and the session's tool list holds none of that source's tools
+- **THEN** the run records the source socrates asked for none of, the round is not failed for it, and a tool list holding nothing unexpected does not leave the run reading as a session that held only what socrates asked for
 
 #### Scenario: A tool that writes cannot reach the change under review
 
@@ -139,6 +179,31 @@ Neither this requirement nor the seal removes the comparison after the round, wh
 
 - **WHEN** the agent emits a complete stream carrying structured output and then exits non-zero
 - **THEN** the call fails, naming the exit status and carrying whatever the agent wrote to its error stream
+
+#### Scenario: A non-zero exit after the agent said why
+
+- **WHEN** the agent's result event reports an error carrying its own account of the failure and the agent then exits non-zero
+- **THEN** the call fails naming the exit status and carrying that account, rather than the exit status beside an empty error stream
+
+#### Scenario: A result that reports an error carries what it said
+
+- **WHEN** the agent's result event reports an error carrying its own account of the failure and the agent exits zero
+- **THEN** the call fails carrying that account, and the subtype beside it is not what is reported
+
+#### Scenario: A result that reports an error and says nothing
+
+- **WHEN** the agent's result event reports an error carrying no account of it
+- **THEN** the call fails naming what that event did say about itself, rather than an empty quotation
+
+#### Scenario: A failure the agent said nothing about
+
+- **WHEN** the agent exits non-zero having written nothing to its error stream and reported nothing in its result event
+- **THEN** the failure names the exit status and states that the agent said nothing about why, and carries no empty quotation
+
+#### Scenario: An account too long to carry is shortened
+
+- **WHEN** the account a failed call carries is longer than a failure reason will hold
+- **THEN** the reason carries the beginning of it, marks that it was shortened, and does so on the same ceiling the agent's error stream is held to
 
 #### Scenario: What the agent cost is recorded
 
