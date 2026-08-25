@@ -1,0 +1,73 @@
+{
+  "title": "two things to settle before this lands",
+  "preamble": "Each card below states what was seen and what answering it does in the terminal.",
+  "source": [
+    {
+      "id": "c-1",
+      "severity": "error",
+      "audience": "a person",
+      "location": "internal/cache/read.go:41"
+    },
+    {
+      "id": "c-2",
+      "severity": "warning",
+      "audience": "the author",
+      "location": "internal/cache/write.go:12"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "c-1",
+      "question": "should the cache be read before the lock is taken",
+      "meaning": "two callers arriving together read the same stale entry and both write it back.",
+      "mode": "single-choice",
+      "options": [
+        {
+          "label": "take the lock first",
+          "meaning": "correctness over the extra wait",
+          "command": "patch c-1"
+        },
+        {
+          "label": "leave it",
+          "meaning": "the staleness is acceptable here",
+          "command": "agree c-1 --reason \"the staleness is acceptable here\""
+        }
+      ],
+      "evidence": {
+        "language": "go",
+        "code": "entry, held := cache.Read(key)\nif held {\n\treturn entry\n}\n",
+        "patch": ""
+      },
+      "fragment": ""
+    },
+    {
+      "id": "c-2",
+      "question": "which of these should the write path keep",
+      "meaning": "the write path does three things and only one of them is what the caller asked for.",
+      "mode": "multiple-choice",
+      "options": [
+        {
+          "label": "the write itself",
+          "meaning": "what the caller asked for",
+          "command": "keep c-2 write"
+        },
+        {
+          "label": "the metric",
+          "meaning": "counted nowhere else",
+          "command": "keep c-2 metric"
+        },
+        {
+          "label": "the log line",
+          "meaning": "one line per write",
+          "command": "keep c-2 log"
+        }
+      ],
+      "evidence": {
+        "language": "",
+        "code": "",
+        "patch": "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -10,4 +10,5 @@\n func Write(key string, entry Entry) {\n-\tstore[key] = entry\n+\tmu.Lock()\n+\tstore[key] = entry\n+\tmu.Unlock()\n }\n"
+      },
+      "fragment": ""
+    }
+  ]
+}

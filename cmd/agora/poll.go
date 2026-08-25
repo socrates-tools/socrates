@@ -1,0 +1,74 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+
+	"github.com/rui-ktei/socrates/internal/surface"
+	"github.com/spf13/cobra"
+)
+
+func newPollCommand(code *int) *cobra.Command {
+	return &cobra.Command{
+		Use:   "poll",
+		Short: pollShort,
+		Args:  cobra.NoArgs,
+		RunE: func(command *cobra.Command, _ []string) error {
+			open, err := surface.ReadSession()
+			if err != nil {
+				return err
+			}
+
+			read, arrived, err := surface.Reach(open).Await(command.Context(), surface.PollDeadline)
+			if err != nil {
+				return err
+			}
+			if !arrived {
+				fmt.Fprintln(command.OutOrStdout(), nobodyAnswered)
+				*code = unanswered
+				return nil
+			}
+
+			written, err := json.MarshalIndent(read, "", "  ")
+			if err != nil {
+				return fmt.Errorf(writingTheAnswer, err)
+			}
+			fmt.Fprintln(command.OutOrStdout(), string(bytes.TrimSpace(written)))
+			return nil
+		},
+	}
+}
+
+func newEndCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "end",
+		Short: endShort,
+		Args:  cobra.NoArgs,
+		RunE: func(command *cobra.Command, _ []string) error {
+			open, err := surface.ReadSession()
+			if err != nil {
+				return err
+			}
+			return surface.Reach(open).End(command.Context())
+		},
+	}
+}
+
+func newStopCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "stop",
+		Short: stopShort,
+		Args:  cobra.NoArgs,
+		RunE: func(command *cobra.Command, _ []string) error {
+			open, err := surface.ReadSession()
+			if err != nil {
+				return err
+			}
+			if err := surface.Reach(open).Stop(command.Context()); err != nil {
+				return err
+			}
+			return surface.ForgetSession()
+		},
+	}
+}

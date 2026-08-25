@@ -1,3 +1,4 @@
 bin/
 .serena/
 internal/fidelity/testdata/failures/
+web/node_modules/

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'">
+<title>{{.Title}}</title>
+<link rel="stylesheet" href="/assets/surface.css">
+</head>
+<body data-token="{{.Token}}" data-revision="{{.Revision}}">
+<main class="surface">
+<header class="heading">
+<h1>{{.Title}}</h1>
+{{if .Preamble}}<p class="preamble">{{.Preamble}}</p>{{end}}
+</header>
+
+<ol class="decisions">
+{{range .Decisions}}
+<li class="decision" id="decision-{{.ID}}" data-decision="{{.ID}}" data-mode="{{.Mode}}" data-state="open">
+<div class="attribution">
+<span class="identifier">{{.ID}}</span>
+{{if .Severity}}<span class="severity" data-severity="{{.Severity}}">{{.Severity}}</span>{{end}}
+{{if .Audience}}<span class="audience">{{.Audience}}</span>{{end}}
+{{if .Location}}<span class="location">{{.Location}}</span>{{end}}
+</div>
+<h2 class="question">{{.Question}}</h2>
+{{if .Meaning}}<p class="meaning">{{.Meaning}}</p>{{end}}
+
+{{if .Code}}
+<div class="evidence code">
+<pre><code class="language-{{.Language}}">{{.Code}}</code></pre>
+</div>
+{{end}}
+
+{{if .Diff}}
+<div class="evidence diff" data-layout="split">
+<div class="diff-heading"><span class="diff-from">{{.Diff.From}}</span><span class="diff-to">{{.Diff.To}}</span></div>
+{{range .Diff.Hunks}}
+<table class="hunk">
+{{if .Heading}}<caption>{{.Heading}}</caption>{{end}}
+<tbody>
+{{range .Rows}}
+<tr class="row">
+<td class="number" data-side="left">{{.Left.Numbered}}</td>
+<td class="line" data-side="left" data-kind="{{.Left.Kind}}"><span class="marker">{{.Left.Marker}}</span><code>{{.Left.Text}}</code></td>
+<td class="number" data-side="right">{{.Right.Numbered}}</td>
+<td class="line" data-side="right" data-kind="{{.Right.Kind}}"><span class="marker">{{.Right.Marker}}</span><code>{{.Right.Text}}</code></td>
+</tr>
+{{end}}
+</tbody>
+</table>
+{{end}}
+</div>
+{{end}}
+
+{{if .Fragment}}
+<div class="evidence illustration">{{.Fragment}}</div>
+{{end}}
+
+<fieldset class="options">
+<legend>{{if .Multiple}}Choose as many as apply{{else}}Choose one{{end}}</legend>
+{{$decision := .}}
+{{range .Options}}
+<label class="option">
+<input class="choice" data-part="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}" data-command="{{.Command}}">
+<span class="option-label">{{.Label}}</span>
+{{if .Meaning}}<span class="option-meaning">{{.Meaning}}</span>{{end}}
+<span class="option-command"><code>{{.Command}}</code></span>
+</label>
+{{end}}
+</fieldset>
+
+<label class="words">
+<span class="words-label">In your own words</span>
+<textarea class="words-field" data-part="answering" name="words-{{.ID}}" data-decision="{{.ID}}" rows="3" placeholder="Answering here alone is a complete answer."></textarea>
+</label>
+
+<div class="commitment">
+<button class="commit" data-part="answering" type="button" data-decision="{{.ID}}">Commit this answer</button>
+<button class="reopen" data-part="answering" type="button" data-decision="{{.ID}}" hidden>Take this answer back</button>
+<p class="committed" hidden><span class="committed-said"></span><code class="committed-command"></code></p>
+</div>
+</li>
+{{end}}
+</ol>
+
+<section class="composer">
+<label class="message">
+<span class="message-label">Anything to say to whoever asked</span>
+<textarea class="message-field" data-part="sending" name="message" rows="3"></textarea>
+</label>
+<div class="sends">
+<button class="send" data-part="sending" type="button" data-ends="no">Send and wait for a reply</button>
+<button class="finish" data-part="sending" type="button" data-ends="yes">Send and finish</button>
+</div>
+<p class="sends-meaning">Sending waits for a reply on this page. Finishing sends and closes the exchange.</p>
+<p class="state" role="status" aria-live="polite"></p>
+</section>
+</main>
+<script src="/assets/surface.js"></script>
+</body>
+</html>

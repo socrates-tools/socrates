@@ -16,6 +16,16 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Name the browser that drives the page
+        run: |
+          browser="$(command -v google-chrome || command -v chromium || true)"
+          if [ -z "$browser" ]; then
+            echo 'no browser is installed, and the surface page is driven by a real one' >&2
+            exit 1
+          fi
+          "$browser" --version
+          echo "AGORA_BROWSER=$browser" >> "$GITHUB_ENV"
+
       - name: Fail on anything gofmt would rewrite
         run: make lint
 
@@ -33,3 +43,13 @@ jobs:
 
       - name: Compare the simulator against the recordings
         run: make fixtures-diff
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: web/.node-version
+
+      - name: Check the committed bundle is what its source builds
+        run: |
+          corepack enable
+          make assets
+          git diff --exit-code -- internal/assets

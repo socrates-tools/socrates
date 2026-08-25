@@ -3,6 +3,7 @@ package convention_test
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -10,12 +11,31 @@ import (
 	"github.com/rui-ktei/socrates/internal/testing/source"
 )
 
+var socratesOwn = []string{
+	filepath.Join("cmd", "socrates"),
+	filepath.Join("internal", "agent"),
+	filepath.Join("internal", "dialogue"),
+	filepath.Join("internal", "findings"),
+	filepath.Join("internal", "prompt"),
+	filepath.Join("internal", "report"),
+	filepath.Join("internal", "reviewer"),
+	filepath.Join("internal", "runstore"),
+	filepath.Join("internal", "skill"),
+	filepath.Join("internal", "snapshot"),
+}
+
 func TestSocratesReachesNothingNew(t *testing.T) {
 	root := source.Root(t)
 
-	reach, err := convention.NetworkReach(root, convention.BuildConstrainedFiles)
+	reach, err := convention.NetworkReach(root, convention.Socrates, convention.BuildConstrainedFiles)
 	if err != nil {
 		t.Fatalf("reading what socrates reaches: %v", err)
+	}
+
+	for _, own := range socratesOwn {
+		if !slices.Contains(reach.Measured, own) {
+			t.Errorf("%s is socrates' own and is not measured, so what socrates reaches is going unread", own)
+		}
 	}
 
 	for _, reaching := range reach.Reaching {
@@ -33,11 +53,63 @@ func TestSocratesReachesNothingNew(t *testing.T) {
 	}
 }
 
+func TestASecondBinaryInTheModuleIsNotSocratesReachingFurther(t *testing.T) {
+	root := t.TempDir()
+	scope := convention.Scope{Module: "example.com/two", From: []string{filepath.Join("cmd", "socrates")}}
+
+	mkdir(t, filepath.Join(root, "cmd", "socrates"))
+	mkdir(t, filepath.Join(root, "cmd", "other"))
+	mkdir(t, filepath.Join(root, "internal", "reviewer"))
+
+	write(t, filepath.Join(root, "cmd", "socrates", "main.go"), "package main\n\nimport \"example.com/two/internal/reviewer\"\n\nvar _ = reviewer.Begin\n")
+	write(t, filepath.Join(root, "internal", "reviewer", "reviewer.go"), "package reviewer\n\nfunc Begin() {}\n")
+
+	before, err := convention.NetworkReach(root, scope, nil)
+	if err != nil {
+		t.Fatalf("reading what a fabricated tree reaches: %v", err)
+	}
+
+	write(t, filepath.Join(root, "cmd", "other", "main.go"), "package main\n\nimport \"net/http\"\n\nvar server = &http.Server{}\n")
+
+	after, err := convention.NetworkReach(root, scope, nil)
+	if err != nil {
+		t.Fatalf("reading what a fabricated tree reaches once a second binary is there: %v", err)
+	}
+
+	if len(after.Reaching) != 0 {
+		t.Errorf("a second binary importing the network is reported as socrates reaching it: %v", after.Reaching)
+	}
+	if diff := cmp.Diff(before.Measured, after.Measured); diff != "" {
+		t.Errorf("what socrates reaches changed when a second binary appeared (-before +after):\n%s", diff)
+	}
+}
+
+func TestSomethingSocratesReachesImportingTheNetworkIsReported(t *testing.T) {
+	root := t.TempDir()
+	scope := convention.Scope{Module: "example.com/two", From: []string{filepath.Join("cmd", "socrates")}}
+
+	mkdir(t, filepath.Join(root, "cmd", "socrates"))
+	mkdir(t, filepath.Join(root, "internal", "reviewer"))
+
+	write(t, filepath.Join(root, "cmd", "socrates", "main.go"), "package main\n\nimport \"example.com/two/internal/reviewer\"\n\nvar _ = reviewer.Begin\n")
+	write(t, filepath.Join(root, "internal", "reviewer", "reviewer.go"), "package reviewer\n\nimport \"net/http\"\n\nvar client = http.DefaultClient\n\nfunc Begin() {}\n")
+
+	reach, err := convention.NetworkReach(root, scope, nil)
+	if err != nil {
+		t.Fatalf("reading what a fabricated tree reaches: %v", err)
+	}
+
+	want := []string{filepath.Join("internal", "reviewer", "reviewer.go") + " imports net/http"}
+	if diff := cmp.Diff(want, reach.Reaching); diff != "" {
+		t.Errorf("what a package socrates reaches reports differs (-want +got):\n%s", diff)
+	}
+}
+
 func TestAFileReachingTheNetworkIsReported(t *testing.T) {
 	root := t.TempDir()
 	write(t, filepath.Join(root, "reaching.go"), "package reaching\n\nimport \"net/http\"\n\nvar client = http.DefaultClient\n")
 
-	reach, err := convention.NetworkReach(root, nil)
+	reach, err := convention.NetworkReach(root, convention.Scope{From: []string{"."}}, nil)
 	if err != nil {
 		t.Fatalf("reading what a fabricated tree reaches: %v", err)
 	}
@@ -50,7 +122,7 @@ func TestAFileReachingTheNetworkBehindABuildTagIsDeclaredRatherThanReported(t *t
 	root := t.TempDir()
 	write(t, filepath.Join(root, "live.go"), "//go:build live\n\npackage live\n\nimport \"net/http\"\n\nvar client = http.DefaultClient\n")
 
-	reach, err := convention.NetworkReach(root, map[string]string{"live.go": "one real call against the real thing"})
+	reach, err := convention.NetworkReach(root, convention.Scope{From: []string{"."}}, map[string]string{"live.go": "one real call against the real thing"})
 	if err != nil {
 		t.Fatalf("reading what a fabricated tree reaches: %v", err)
 	}
@@ -69,7 +141,7 @@ func TestABuildTagNothingDeclaresIsReported(t *testing.T) {
 	root := t.TempDir()
 	write(t, filepath.Join(root, "quiet.go"), "//go:build quiet\n\npackage quiet\n")
 
-	reach, err := convention.NetworkReach(root, map[string]string{"gone.go": "a file that is not there"})
+	reach, err := convention.NetworkReach(root, convention.Scope{From: []string{"."}}, map[string]string{"gone.go": "a file that is not there"})
 	if err != nil {
 		t.Fatalf("reading what a fabricated tree reaches: %v", err)
 	}
@@ -78,6 +150,14 @@ func TestABuildTagNothingDeclaresIsReported(t *testing.T) {
 	}
 	if diff := cmp.Diff([]string{"gone.go"}, reach.Stale); diff != "" {
 		t.Errorf("a declaration for a file that is not there differs (-want +got):\n%s", diff)
+	}
+}
+
+func mkdir(t *testing.T, path string) {
+	t.Helper()
+
+	if err := os.MkdirAll(path, 0o755); err != nil {
+		t.Fatalf("making %s: %v", path, err)
 	}
 }
 

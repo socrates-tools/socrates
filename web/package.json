@@ -1,0 +1,15 @@
+{
+  "name": "agora-surface",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.5.0",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "dependencies": {
+    "highlight.js": "^11.11.1"
+  }
+}

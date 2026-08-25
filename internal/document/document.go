@@ -1,0 +1,172 @@
+package document
+
+import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"slices"
+	"strings"
+)
+
+type Mode string
+
+const (
+	One  Mode = "single-choice"
+	Many Mode = "multiple-choice"
+)
+
+var modes = []Mode{One, Many}
+
+func Modes() []Mode {
+	return slices.Clone(modes)
+}
+
+type Document struct {
+	Title     string     `json:"title"`
+	Preamble  string     `json:"preamble"`
+	Decisions []Decision `json:"decisions"`
+	Source    []Entry    `json:"source"`
+}
+
+type Entry struct {
+	ID       string `json:"id"`
+	Severity string `json:"severity"`
+	Audience string `json:"audience"`
+	Location string `json:"location"`
+}
+
+type Decision struct {
+	ID       string   `json:"id"`
+	Severity string   `json:"severity"`
+	Audience string   `json:"audience"`
+	Location string   `json:"location"`
+	Question string   `json:"question"`
+	Meaning  string   `json:"meaning"`
+	Mode     Mode     `json:"mode"`
+	Options  []Option `json:"options"`
+	Evidence Evidence `json:"evidence"`
+	Fragment string   `json:"fragment"`
+}
+
+type Option struct {
+	Label   string `json:"label"`
+	Meaning string `json:"meaning"`
+	Command string `json:"command"`
+}
+
+type Evidence struct {
+	Language string `json:"language"`
+	Code     string `json:"code"`
+	Patch    string `json:"patch"`
+}
+
+func Read(raw []byte) (Document, error) {
+	var read Document
+
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&read); err != nil {
+		return Document{}, fmt.Errorf(readingTheDocument, err)
+	}
+	if decoder.More() {
+		return Document{}, errors.New(moreThanOneDocument)
+	}
+
+	if err := Validate(read); err != nil {
+		return Document{}, err
+	}
+	return read.copiedFromSource(), nil
+}
+
+func Validate(read Document) error {
+	if strings.TrimSpace(read.Title) == "" {
+		return fmt.Errorf(theDocumentStatesNothingFor, "title")
+	}
+	if len(read.Decisions) == 0 {
+		return errors.New(noDecisions)
+	}
+
+	cited, err := read.citedByIdentifier()
+	if err != nil {
+		return err
+	}
+
+	seen := map[string]bool{}
+	for position, decision := range read.Decisions {
+		named := fmt.Sprintf(decisionAt, position+1)
+		if decision.ID != "" {
+			named = fmt.Sprintf(decisionNamed, decision.ID)
+		}
+
+		if decision.ID == "" {
+			return fmt.Errorf(noIdentifier, named)
+		}
+		if seen[decision.ID] {
+			return fmt.Errorf(repeatedIdentifier, decision.ID)
+		}
+		seen[decision.ID] = true
+
+		if strings.TrimSpace(decision.Question) == "" {
+			return fmt.Errorf(statesNothingFor, named, "question")
+		}
+		if !slices.Contains(modes, decision.Mode) {
+			return fmt.Errorf(unknownMode, named, decision.Mode, modes)
+		}
+		if len(decision.Options) == 0 {
+			return fmt.Errorf(noOptions, named)
+		}
+		for offered, option := range decision.Options {
+			if strings.TrimSpace(option.Label) == "" {
+				return fmt.Errorf(optionStatesNothingFor, offered+1, named, "label")
+			}
+			if strings.TrimSpace(option.Command) == "" {
+				return fmt.Errorf(optionCarriesNoCommand, option.Label, named)
+			}
+		}
+
+		if len(cited) > 0 {
+			if _, citing := cited[decision.ID]; !citing {
+				return fmt.Errorf(namesNothingInTheSource, named)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (d Document) citedByIdentifier() (map[string]Entry, error) {
+	if len(d.Source) == 0 {
+		return nil, nil
+	}
+
+	cited := map[string]Entry{}
+	for position, entry := range d.Source {
+		if entry.ID == "" {
+			return nil, fmt.Errorf(sourceEntryCarriesNoIdentifier, position+1)
+		}
+		if _, twice := cited[entry.ID]; twice {
+			return nil, fmt.Errorf(repeatedSourceIdentifier, entry.ID)
+		}
+		cited[entry.ID] = entry
+	}
+	return cited, nil
+}
+
+func (d Document) copiedFromSource() Document {
+	cited, err := d.citedByIdentifier()
+	if err != nil || len(cited) == 0 {
+		return d
+	}
+
+	copied := d
+	copied.Decisions = slices.Clone(d.Decisions)
+	for position, decision := range copied.Decisions {
+		entry := cited[decision.ID]
+		decision.Severity = entry.Severity
+		decision.Audience = entry.Audience
+		decision.Location = entry.Location
+		copied.Decisions[position] = decision
+	}
+	return copied
+}

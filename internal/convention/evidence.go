@@ -17,14 +17,18 @@ var ContractsTestsRead = map[string]string{
 	filepath.Join("internal", "claudesim", "failure_test.go"):     "the file the simulator wrote into a temporary directory, which is the observable side effect that scenario asks for",
 	filepath.Join("internal", "convention", "comments_test.go"):   "this repository's no-commentary convention, where the source is the subject of the check and not a proxy for anything else",
 	filepath.Join("internal", "convention", "evidence_test.go"):   "this convention itself, which is a property of the test suite",
+	filepath.Join("internal", "convention", "ignorance_test.go"):  "the rule that the surface names nothing of the other tool, which is a property of this repository's source rather than a proxy for behaviour",
 	filepath.Join("internal", "convention", "reach_test.go"):      "what socrates itself reaches and what is compiled out of the ordinary suite, which is a structural invariant of this module",
 	filepath.Join("internal", "convention", "rendering_test.go"):  "the rule that one place alone turns an event into a line, which is a structural invariant of this module",
 	filepath.Join("internal", "convention", "wording_test.go"):    "the wording convention itself, where the source is the subject of the check and not a proxy for anything else",
 	filepath.Join("internal", "convention", "workflows_test.go"):  "what this repository's workflows reach, which is a property of its continuous integration and reads no Go file at all",
 	filepath.Join("internal", "dialogue", "dialogue_test.go"):     "the direction the dialogue package may import in, which is a structural invariant of this module",
+	filepath.Join("internal", "document", "boundary_test.go"):     "the direction the document contract may import in, which is a structural invariant of this module",
 	filepath.Join("internal", "findings", "classify_test.go"):     "the rule that one function decides a finding's effective action, which is a structural invariant of this module",
 	filepath.Join("internal", "findings", "verdict_test.go"):      "the direction the findings package may import in, which is a structural invariant of this module",
 	filepath.Join("internal", "presentation", "boundary_test.go"): "what the renderer may import and call, which is what makes it a function of the events and nothing else",
+	filepath.Join("internal", "render", "boundary_test.go"):       "what the page renderer may import, which is what keeps it a function of the document and nothing else",
+	filepath.Join("internal", "surface", "boundary_test.go"):      "the rule that the surface starts no process, which is a structural invariant of this module",
 	filepath.Join("internal", "version", "boundary_test.go"):      "the rule that what the binary says about itself is read from nothing at run time, which is a structural invariant of this module",
 }
 
