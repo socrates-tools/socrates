@@ -242,8 +242,22 @@ func (s Store) Load(name string) (*Run, error) {
 	if err != nil {
 		return nil, err
 	}
-	observe(run)
-	return run, nil
+	if !reviewerGone(run) {
+		return run, nil
+	}
+
+	settled, err := s.recorded(name)
+	if err != nil {
+		return nil, err
+	}
+	if reviewerGone(settled) {
+		settled.State = runstate.Failed
+		settled.Verdict = &Verdict{
+			Outcome: runstate.Failed,
+			Reason:  reviewerWentAway,
+		}
+	}
+	return settled, nil
 }
 
 func (s Store) recorded(name string) (*Run, error) {
@@ -264,16 +278,11 @@ func (s Store) recorded(name string) (*Run, error) {
 	return &run, nil
 }
 
-func observe(run *Run) {
-	if run.State.Terminal() || run.State == runstate.AwaitingResponse || run.Reviewer == 0 || process.Alive(run.Reviewer) {
-		return
+func reviewerGone(run *Run) bool {
+	if run.State.Terminal() || run.State == runstate.AwaitingResponse || run.Reviewer == 0 {
+		return false
 	}
-
-	run.State = runstate.Failed
-	run.Verdict = &Verdict{
-		Outcome: runstate.Failed,
-		Reason:  reviewerWentAway,
-	}
+	return !process.Alive(run.Reviewer)
 }
 
 func (s Store) Save(run *Run) error {
