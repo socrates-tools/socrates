@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -28,6 +29,11 @@ var browserCandidates = []string{
 	"chromium-browser",
 }
 
+var installedBrowsers = []string{
+	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+	"/Applications/Chromium.app/Contents/MacOS/Chromium",
+}
+
 var foundBrowser = locateBrowser()
 
 func locateBrowser() string {
@@ -39,6 +45,11 @@ func locateBrowser() string {
 			return found
 		}
 	}
+	for _, path := range installedBrowsers {
+		if executable(path) {
+			return path
+		}
+	}
 
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -47,12 +58,24 @@ func locateBrowser() string {
 	for _, pattern := range []string{
 		filepath.Join(home, ".cache", "ms-playwright", "chromium-*", "chrome-linux64", "chrome"),
 		filepath.Join(home, ".cache", "ms-playwright", "chromium-*", "chrome-linux", "chrome"),
+		filepath.Join(home, "Library", "Caches", "ms-playwright", "chromium-*", "chrome-mac*", "Google Chrome for Testing.app", "Contents", "MacOS", "Google Chrome for Testing"),
+		filepath.Join(home, "Library", "Caches", "ms-playwright", "chromium-*", "chrome-mac*", "Chromium.app", "Contents", "MacOS", "Chromium"),
+		filepath.Join(home, "Applications", "Google Chrome.app", "Contents", "MacOS", "Google Chrome"),
+		filepath.Join(home, "Applications", "Chromium.app", "Contents", "MacOS", "Chromium"),
 	} {
-		if matched, _ := filepath.Glob(pattern); len(matched) > 0 {
-			return matched[len(matched)-1]
+		matched, _ := filepath.Glob(pattern)
+		for _, path := range slices.Backward(matched) {
+			if executable(path) {
+				return path
+			}
 		}
 	}
 	return ""
+}
+
+func executable(path string) bool {
+	stated, err := os.Stat(path)
+	return err == nil && !stated.IsDir() && stated.Mode().Perm()&0o111 != 0
 }
 
 func browserPath(t *testing.T) string {
