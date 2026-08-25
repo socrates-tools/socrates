@@ -18,7 +18,7 @@
 {{range .Decisions}}
 <li class="decision" id="decision-{{.ID}}" data-decision="{{.ID}}" data-mode="{{.Mode}}" data-state="open">
 <div class="attribution">
-<span class="identifier">{{.ID}}</span>
+<span class="name">{{.Name}}</span>
 {{if .Severity}}<span class="severity" data-severity="{{.Severity}}">{{.Severity}}</span>{{end}}
 {{if .Audience}}<span class="audience">{{.Audience}}</span>{{end}}
 {{if .Location}}<span class="location">{{.Location}}</span>{{end}}
@@ -34,7 +34,7 @@
 
 {{if .Diff}}
 <div class="evidence diff" data-layout="split">
-<div class="diff-heading"><span class="diff-from">{{.Diff.From}}</span><span class="diff-to">{{.Diff.To}}</span></div>
+<div class="diff-heading">{{if eq .Diff.From .Diff.To}}<span class="diff-file">{{.Diff.From}}</span>{{else}}<span class="diff-from">{{.Diff.From}}</span><span class="diff-to">{{.Diff.To}}</span>{{end}}</div>
 {{range .Diff.Hunks}}
 <table class="hunk">
 {{if .Heading}}<caption>{{.Heading}}</caption>{{end}}
@@ -62,10 +62,9 @@
 {{$decision := .}}
 {{range .Options}}
 <label class="option">
-<input class="choice" data-part="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}" data-command="{{.Command}}">
+<input class="choice" data-part="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}">
 <span class="option-label">{{.Label}}</span>
 {{if .Meaning}}<span class="option-meaning">{{.Meaning}}</span>{{end}}
-<span class="option-command"><code>{{.Command}}</code></span>
 </label>
 {{end}}
 </fieldset>
@@ -78,7 +77,7 @@
 <div class="commitment">
 <button class="commit" data-part="answering" type="button" data-decision="{{.ID}}">Commit this answer</button>
 <button class="reopen" data-part="answering" type="button" data-decision="{{.ID}}" hidden>Take this answer back</button>
-<p class="committed" hidden><span class="committed-said"></span><code class="committed-command"></code></p>
+<p class="committed" hidden><span class="committed-said"></span></p>
 </div>
 </li>
 {{end}}

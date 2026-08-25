@@ -1,5 +1,9 @@
 @import './fonts.css';
 
+[hidden] {
+  display: none !important;
+}
+
 :root {
   --text-floor: 15px;
   --text-body: 17px;
@@ -7,60 +11,60 @@
   --text-title: 27px;
   --text-code: 15px;
 
-  --paper: #f7f2ea;
-  --card: #fffdf9;
-  --card-quiet: #f3ece1;
-  --ink: #2b2620;
-  --ink-soft: #5f564a;
-  --ink-faint: #857a6b;
-  --rule: #e2d8c8;
-  --rule-strong: #cbbda6;
-  --accent: #8c552a;
+  --paper: #f1f2f0;
+  --card: #fbfcfb;
+  --card-quiet: #e7eae8;
+  --ink: #1b2529;
+  --ink-soft: #465156;
+  --ink-faint: #59656a;
+  --rule: #d3d8d6;
+  --rule-strong: #b3bbb8;
+  --accent: #12586f;
   --accent-ink: #ffffff;
-  --accent-quiet: #f0e2d1;
-  --added: #e9f2e4;
-  --added-rule: #b6d4ac;
-  --removed: #fbe9e5;
-  --removed-rule: #e2b3a8;
-  --settled: #edf2e9;
-  --settled-rule: #a9c39c;
-  --shadow: 0 1px 2px rgba(64, 48, 30, 0.08), 0 6px 18px rgba(64, 48, 30, 0.06);
+  --accent-quiet: #dbe9ef;
+  --added: #e2eddf;
+  --added-rule: #9ab98c;
+  --removed: #f4e2de;
+  --removed-rule: #d7a99e;
+  --settled: #e8eee0;
+  --settled-rule: #9aad7e;
+  --shadow: 0 1px 2px rgba(27, 37, 41, 0.07), 0 6px 18px rgba(27, 37, 41, 0.06);
 
-  --token-keyword: #8a3d7a;
-  --token-string: #4a6d2c;
-  --token-number: #8a5a12;
-  --token-comment: #8b8172;
-  --token-name: #2f5d86;
+  --token-keyword: #0f5a75;
+  --token-string: #41611c;
+  --token-number: #8a4b12;
+  --token-comment: #5c6a6f;
+  --token-name: #1f4f6b;
 
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #191512;
-    --card: #221d19;
-    --card-quiet: #2a2420;
-    --ink: #f0e7da;
-    --ink-soft: #bcae9b;
-    --ink-faint: #92826f;
-    --rule: #3a322b;
-    --rule-strong: #4e443a;
-    --accent: #e2a86c;
-    --accent-ink: #241a10;
-    --accent-quiet: #392c1f;
-    --added: #1f2b1c;
-    --added-rule: #3f5c37;
-    --removed: #2f1e1a;
-    --removed-rule: #6b3a2e;
-    --settled: #232c20;
-    --settled-rule: #4b6640;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.3);
+    --paper: #12181b;
+    --card: #1a2226;
+    --card-quiet: #222b2f;
+    --ink: #e8eeef;
+    --ink-soft: #b3c0c4;
+    --ink-faint: #93a2a7;
+    --rule: #2f3a3f;
+    --rule-strong: #46545a;
+    --accent: #7cc4dd;
+    --accent-ink: #08222c;
+    --accent-quiet: #1c3b47;
+    --added: #16261c;
+    --added-rule: #3d6042;
+    --removed: #2b1c19;
+    --removed-rule: #6d3a2f;
+    --settled: #1e2a1d;
+    --settled-rule: #4a6338;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 6px 18px rgba(0, 0, 0, 0.35);
 
-    --token-keyword: #d79ac8;
-    --token-string: #a9c97f;
+    --token-keyword: #9ed0e8;
+    --token-string: #b6cf8a;
     --token-number: #e0b070;
-    --token-comment: #8d8272;
-    --token-name: #8fbde4;
+    --token-comment: #93a2a7;
+    --token-name: #d3aee2;
   }
 }
 
@@ -72,6 +76,11 @@
 
 html {
   background: var(--paper);
+}
+
+::placeholder {
+  color: var(--ink-faint);
+  opacity: 1;
 }
 
 body {
@@ -86,10 +95,7 @@ body {
 
 code,
 pre,
-.identifier,
-.location,
-.option-command,
-.committed-command {
+.location {
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: var(--text-code);
 }
@@ -100,11 +106,16 @@ pre,
   padding: 2.5rem 1.25rem 6rem;
 }
 
+.heading {
+  border-bottom: 1px solid var(--rule-strong);
+  padding-bottom: 1.25rem;
+}
+
 .heading h1 {
   margin: 0 0 0.5rem;
   font-size: var(--text-title);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
 }
 
 .preamble {
@@ -150,16 +161,16 @@ pre,
   color: var(--ink-faint);
 }
 
-.identifier {
-  background: var(--card-quiet);
-  border: 1px solid var(--rule);
-  border-radius: 5px;
-  padding: 0.1rem 0.4rem;
+.name {
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--ink-soft);
 }
 
 .severity {
-  text-transform: lowercase;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   border-radius: 5px;
   padding: 0.1rem 0.45rem;
   border: 1px solid var(--rule-strong);
@@ -278,10 +289,14 @@ pre,
   gap: 0.5rem;
 }
 
-.options legend {
+.options legend,
+.words-label,
+.message-label {
   padding: 0;
   color: var(--ink-faint);
   font-size: var(--text-floor);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
 }
 
 .option {
@@ -307,7 +322,7 @@ pre,
 }
 
 .choice {
-  grid-row: 1 / span 3;
+  grid-row: 1 / span 2;
   margin: 0;
   width: 1.05rem;
   height: 1.05rem;
@@ -318,8 +333,7 @@ pre,
   font-weight: 600;
 }
 
-.option-meaning,
-.option-command {
+.option-meaning {
   grid-column: 2;
   min-width: 0;
   overflow-wrap: anywhere;
@@ -327,21 +341,10 @@ pre,
   font-size: var(--text-floor);
 }
 
-.option-command code {
-  font-size: var(--text-floor);
-  color: var(--ink-faint);
-}
-
 .words {
   display: grid;
   gap: 0.35rem;
   margin-bottom: 1rem;
-}
-
-.words-label,
-.message-label {
-  color: var(--ink-faint);
-  font-size: var(--text-floor);
 }
 
 .words-field,
@@ -405,14 +408,6 @@ button:disabled {
   gap: 0.2rem;
   color: var(--ink-soft);
   font-size: var(--text-floor);
-}
-
-.committed-command {
-  background: var(--card-quiet);
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-  padding: 0.3rem 0.5rem;
-  overflow-x: auto;
 }
 
 .composer {

@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -248,4 +249,120 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
 	}
 
 	nothingLeftTheMachine(t, address, page.requests.all())
+}
+
+const whatIsHidden = `(() => {
+  const painted = [];
+  const held = document.querySelectorAll('[hidden]');
+  for (const element of held) {
+    const style = getComputedStyle(element);
+    const box = element.getBoundingClientRect();
+    if (style.display !== 'none' || box.width > 0 || box.height > 0) {
+      painted.push(element.tagName + '.' + element.className + ' displays as ' + style.display + ' at ' + Math.round(box.width) + 'x' + Math.round(box.height));
+    }
+  }
+  return { painted, hidden: held.length };
+})()`
+
+type hiding struct {
+	Painted []string `json:"painted"`
+	Hidden  int      `json:"hidden"`
+}
+
+func TestNothingHiddenIsPainted(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+
+	var read hiding
+	page.evaluate(whatIsHidden, &read)
+
+	if read.Hidden == 0 {
+		t.Fatal("the page hides nothing at all, and a check that saw nothing would pass forever")
+	}
+	for _, painted := range read.Painted {
+		t.Errorf("%s, and a person clicks what they can see", painted)
+	}
+}
+
+const contrastFloor = 4.5
+
+var measuringTheContrast = `(() => {
+  const parse = (colour) => {
+    const held = colour.match(/[\d.]+/g);
+    if (!held) return null;
+    const [r, g, b, a] = held.map(Number);
+    return { r, g, b, a: a === undefined ? 1 : a };
+  };
+  const luminance = ({ r, g, b }) => {
+    const channel = (held) => {
+      const scaled = held / 255;
+      return scaled <= 0.03928 ? scaled / 12.92 : Math.pow((scaled + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  };
+  const ratio = (one, other) => {
+    const first = luminance(one);
+    const second = luminance(other);
+    return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
+  };
+  const behind = (element) => {
+    for (let held = element; held; held = held.parentElement) {
+      const colour = parse(getComputedStyle(held).backgroundColor);
+      if (colour && colour.a === 1) return colour;
+    }
+    const root = parse(getComputedStyle(document.documentElement).backgroundColor);
+    return root && root.a === 1 ? root : { r: 255, g: 255, b: 255, a: 1 };
+  };
+  const named = (element) => element.tagName + '.' + String(element.className);
+
+  const failing = [];
+  let measured = 0;
+  const weigh = (element, colour, what) => {
+    const painted = parse(colour);
+    if (!painted || painted.a < 1) return;
+    measured += 1;
+    const held = ratio(painted, behind(element));
+    if (held < ` + strconv.FormatFloat(contrastFloor, 'f', -1, 64) + `) {
+      failing.push(named(element) + what + ' at ' + held.toFixed(2));
+    }
+  };
+
+  for (const element of document.querySelectorAll('body *')) {
+    if (element.namespaceURI !== 'http://www.w3.org/1999/xhtml') continue;
+    if (element.closest('.illustration')) continue;
+    const style = getComputedStyle(element);
+    if (style.display === 'none' || style.visibility === 'hidden') continue;
+
+    const owns = Array.from(element.childNodes).some((node) => node.nodeType === 3 && node.textContent.trim());
+    if (owns) weigh(element, style.color, '');
+    if (element.matches('textarea, input')) {
+      weigh(element, getComputedStyle(element, '::placeholder').color, ' placeholder');
+    }
+  }
+  return { failing, measured };
+})()`
+
+type weighed struct {
+	Failing  []string `json:"failing"`
+	Measured int      `json:"measured"`
+}
+
+func TestEveryTextMeetsTheContrastFloor(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.click(within("c-1", ".commit"))
+
+	for _, preference := range []string{"light", "dark"} {
+		page.emulate(preference)
+
+		var read weighed
+		page.evaluate(measuringTheContrast, &read)
+
+		if read.Measured < 30 {
+			t.Fatalf("under a %s preference only %d texts were measured, and a check that saw almost nothing would pass forever", preference, read.Measured)
+		}
+		for _, failing := range read.Failing {
+			t.Errorf("under a %s preference %s, and the floor the page is held to is %v", preference, failing, contrastFloor)
+		}
+	}
 }

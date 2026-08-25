@@ -29,16 +29,27 @@ Write a document for the round and serve it: `agora serve --document ./round.jso
 Hand the person that address, then say briefly what it holds.
 The page is served on this machine and reaches nowhere beyond it. A findings document quotes the code it was written about, so it goes to no other machine and is put in front of nobody else.
 
+The document is one decision per finding, each citing the entry it came from:
+
+    {"title": "...", "preamble": "...",
+     "source":    [{"id": "f3", "name": "Finding 3", "severity": "error", "audience": "needs a person", "location": "src/api/windows.py:41"}],
+     "decisions": [{"id": "f3", "question": "...", "meaning": "...", "mode": "single-choice",
+                    "evidence": {"language": "python", "code": "...", "patch": "..."},
+                    "options": [{"label": "...", "meaning": "...", "command": "socrates respond --finding f3 --decided --reason \"...\""}]}]}
+
 The person answers on the page.
-Every control it carries names the command it becomes, and nothing is recorded until you run that command here.
-An option whose command you cannot name is one you do not offer, because a person choosing it would be deciding something whose destination they cannot see.
+Every control carries the command it becomes, `agora poll` hands that command back to you, and nothing is recorded until you run it here.
+The page shows that command to nobody: a person deciding is not at a prompt, a command under an option is the same choice again in a language they did not come here to read, and one they may believe they have to type.
+An option whose command you cannot name is one you do not offer, because you would be offering a decision you cannot honour.
 Wait for them with `agora poll`, which prints what they chose and anything they wrote, and record it with `socrates respond` in their own words rather than in yours.
 Do not ask them here for a decision they have already made there.
 
 The page and this terminal have to be matchable in both directions.
-Give the surface the round as `socrates findings --json` reported it, so every finding keeps the identifier, the severity and the audience socrates gave it and the person can say f3 and you know which finding they mean.
-Each decision on the page names its finding and says what answering it looks like here.
-A page that renamed a finding to something more readable hands the person a search problem in exchange for a nicer sentence.
+Give the surface the round as `socrates findings --json` reported it, so every finding keeps the severity and the audience socrates gave it.
+Name each decision from its identifier and never title it yourself: f3 is "Finding 3", so a person saying finding 3 and you running `socrates respond --finding f3` are naming one thing.
+The surface takes the name, the severity and the audience from the source you cite rather than from the decision you wrote, so a decision you titled yourself loses to it.
+A page that titled a finding something more readable hands the person a search problem in exchange for a nicer sentence.
+Each decision says what choosing each option means for the change, and nothing about what you will type.
 
 Hold the page to this:
 
@@ -46,6 +57,8 @@ Hold the page to this:
   Length is not thoroughness, and a person who has to search the page for their own decision has been handed the terminal output again.
 - Say in plain English what the finding means for the change.
   Do not restate the reviewer's technical prose in a nicer typeface.
+- Say what each option gets the person, in the words of the thing being built rather than the words of the code.
+  A sentence they could not act on without opening the code is not plain English, and a symbol, a constant or a test named as though they already know it is that sentence.
 - Where a finding is purely technical, show a small example of it going wrong.
   A reader should not have to work out for themselves what the term costs them.
 - Draw a diagram only where a workflow is what makes a finding hard to follow, and not otherwise.

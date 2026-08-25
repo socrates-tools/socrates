@@ -71,8 +71,8 @@ func TestAPatchIsReadIntoBothSidesWithTheirNumbers(t *testing.T) {
 	// scenario: A diff renders from a patch
 	read := render.ReadPatch(patched)
 
-	if read.From != "a/internal/cache/write.go" || read.To != "b/internal/cache/write.go" {
-		t.Errorf("the diff names %q and %q", read.From, read.To)
+	if read.From != "internal/cache/write.go" || read.To != "internal/cache/write.go" {
+		t.Errorf("the diff names %q and %q, and a person reads the path they know rather than the one the patch format prefixes", read.From, read.To)
 	}
 	if len(read.Hunks) != 1 {
 		t.Fatalf("the patch read into %d hunks, want one", len(read.Hunks))

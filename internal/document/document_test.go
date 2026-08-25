@@ -111,8 +111,10 @@ func TestACallerCannotRenameAnIdentifier(t *testing.T) {
 	written.Decisions[0].Severity = "info"
 	written.Decisions[0].Audience = "nobody in particular"
 	written.Decisions[0].Location = "somewhere friendlier.go"
+	written.Decisions[0].Name = "a heading of its own"
 	written.Source = []document.Entry{{
 		ID:       "d-1",
+		Name:     "the first thing",
 		Severity: "error",
 		Audience: "a person",
 		Location: "internal/cache/read.go:41",
@@ -126,6 +128,7 @@ func TestACallerCannotRenameAnIdentifier(t *testing.T) {
 	said := read.Decisions[0]
 	if diff := cmp.Diff(written.Source[0], document.Entry{
 		ID:       said.ID,
+		Name:     said.Name,
 		Severity: said.Severity,
 		Audience: said.Audience,
 		Location: said.Location,
@@ -167,7 +170,7 @@ func TestTheSourceShapeACallerWritesIsWhatIsRead(t *testing.T) {
 				cited = entry
 			}
 		}
-		if decision.Severity != cited.Severity || decision.Audience != cited.Audience || decision.Location != cited.Location {
+		if decision.Name != cited.Name || decision.Severity != cited.Severity || decision.Audience != cited.Audience || decision.Location != cited.Location {
 			t.Errorf("%s does not carry what the sample's source entry stated: %+v", decision.ID, decision)
 		}
 	}

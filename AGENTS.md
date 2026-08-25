@@ -131,7 +131,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - `internal/skill` is its one source, and the committed copy is generated from it.
 - It names nothing the binary does not offer, lists every state a run rests in, teaches polling at a stated cadence, names `socrates watch` once and outside the loop, and says whose a question is.
 - `dialogue.ResponseRules` and `skill.PageBar` are each stated once and rendered where they are needed.
-- It says the page collects nothing and that identifiers survive onto it, because nothing stands behind that page yet.
+- It says every control carries the command it becomes and that the page shows that command to nobody, and it names each decision from the finding's identifier rather than titling it.
 - The loop it describes is driven end to end through the real binary, not read.
 
 **The binaries**
@@ -144,13 +144,14 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 
 - It binds a loopback address; nothing widens it, and an address that is not one is refused before any server starts.
 - It turns away a request naming a host it did not bind, and every state-changing route carries the token the page was served with.
-- It composes a command and never runs one, and the command it hands back is the option's own string.
+- It composes a command and never runs one, the command it hands back is the option's own string, and no command is rendered on the page.
 - It writes only under the user's state directory.
-- A caller writes a document rather than a page, and the identifier, severity, audience and location come from the source a decision cites.
+- A caller writes a document rather than a page, and the name, severity, audience and location come from the source a decision cites.
 - Every decision carries a free-text field that no document field can remove.
 - A caller's fragment is reduced to a fixed allowlist before it is embedded.
 - Delivery happens once, waiting is bounded, and an idle server stops.
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.
+- An element it hides paints nothing, every colour it paints is a token stated once, and every text meets a contrast floor under both preferences.
 - Nothing in it names review, finding, verdict, round, or run as a noun.
 
 **The suite**

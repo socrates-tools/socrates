@@ -162,10 +162,10 @@ func TestACommittedAnswerIsDistinguishable(t *testing.T) {
 		t.Error("a decision merely selected in shows a committed answer")
 	}
 
-	var command string
-	page.evaluate(`document.querySelector('.decision[data-decision="c-1"] .committed-command').textContent`, &command)
-	if command != "patch c-1" {
-		t.Errorf("a committed decision shows the command %q, want %q", command, "patch c-1")
+	var said string
+	page.evaluate(`document.querySelector('.decision[data-decision="c-1"] .committed').textContent`, &said)
+	if !strings.Contains(said, "take the lock first") {
+		t.Errorf("a committed decision shows %q, and it does not say what was committed", said)
 	}
 }
 
@@ -302,5 +302,97 @@ func TestEndingClosesTheExchange(t *testing.T) {
 	page.evaluate(`Array.from(document.querySelectorAll('button, .choice, textarea')).some((held) => !held.disabled)`, &accepting)
 	if accepting {
 		t.Error("a closed exchange still accepts an answer")
+	}
+}
+
+var everyCommandTheDocumentCarries = []string{
+	"patch c-1",
+	"agree c-1",
+	"keep c-2 write",
+	"keep c-2 metric",
+	"keep c-2 log",
+}
+
+func TestNoCommandReachesThePage(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.click(within("c-1", ".commit"))
+
+	var written string
+	page.evaluate(`document.documentElement.outerHTML`, &written)
+	for _, command := range everyCommandTheDocumentCarries {
+		if strings.Contains(written, command) {
+			t.Errorf("the page carries the command %q, and the person reading it is not at a prompt", command)
+		}
+	}
+
+	page.click(".send")
+	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
+
+	delivered, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("a committed decision was sent and nothing was delivered")
+	}
+	if diff := cmp.Diff([]string{"patch c-1"}, delivered.Decisions[0].Commands); diff != "" {
+		t.Errorf("what the caller was handed back differs (-want +got):\n%s\nthe command is the caller's, and it still has to arrive", diff)
+	}
+}
+
+func TestACommittedAnswerIsShownInTheWordsThePersonRead(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-2", 0), nil)
+	page.evaluate(chose("c-2", 2), nil)
+	page.click(within("c-2", ".commit"))
+
+	var shown string
+	page.evaluate(`document.querySelector('.decision[data-decision="c-2"] .committed').textContent`, &shown)
+
+	for _, label := range []string{"the write", "the log line"} {
+		if !strings.Contains(shown, label) {
+			t.Errorf("what was committed is shown as %q, and it does not name the option %q the person read", shown, label)
+		}
+	}
+	if strings.Contains(shown, "the metric") {
+		t.Errorf("what was committed is shown as %q, and it names an option nobody chose", shown)
+	}
+}
+
+const namedAndUnnamed = `{
+  "title": "two things to settle",
+  "source": [
+    {"id": "c-1", "name": "Finding 1", "severity": "error", "audience": "needs a person", "location": "internal/cache/read.go:41"},
+    {"id": "c-2", "severity": "warning", "audience": "can be patched", "location": "internal/cache/write.go:12"}
+  ],
+  "decisions": [
+    {
+      "id": "c-1",
+      "name": "whatever the session felt like",
+      "question": "should the cache be read before the lock is taken",
+      "mode": "single-choice",
+      "options": [{"label": "take the lock first", "meaning": "correctness first", "command": "patch c-1"}]
+    },
+    {
+      "id": "c-2",
+      "question": "which of these should the write path keep",
+      "mode": "multiple-choice",
+      "options": [{"label": "the write", "meaning": "what the caller asked for", "command": "keep c-2 write"}]
+    }
+  ]
+}`
+
+func TestADecisionIsShownUnderTheNameItsSourceGivesIt(t *testing.T) {
+	_, page := read(t, namedAndUnnamed)
+
+	var named, unnamed string
+	page.evaluate(shownIn("c-1", ".name"), &named)
+	page.evaluate(shownIn("c-2", ".name"), &unnamed)
+
+	if strings.TrimSpace(named) != "Finding 1" {
+		t.Errorf("a decision whose source names it is shown as %q, and the source named it %q", named, "Finding 1")
+	}
+	if strings.TrimSpace(unnamed) != "c-2" {
+		t.Errorf("a decision whose source names it nothing is shown as %q, and it has only its identifier to be shown under", unnamed)
 	}
 }

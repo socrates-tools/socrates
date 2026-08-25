@@ -40,6 +40,7 @@ func TestTheBarNamesEachWayThePageFailsAPerson(t *testing.T) {
 	}{
 		{named: "getting to the point", stated: []string{"get to the point", "length is not thoroughness"}},
 		{named: "plain english about impact", stated: []string{"plain english", "what the finding means for the change"}},
+		{named: "an option said in the words of the thing being built", stated: []string{"what each option gets the person", "words of the thing being built", "without opening the code"}},
 		{named: "an example where a finding is purely technical", stated: []string{"purely technical", "example"}},
 		{named: "a diagram only where a workflow needs one", stated: []string{"diagram only where", "not otherwise"}},
 		{named: "restraint about tokens", stated: []string{"spend tokens"}},
@@ -166,17 +167,21 @@ func TestThePageIsNotInThePollingLoop(t *testing.T) {
 	}
 }
 
-func TestEveryControlNamesTheCommandItBecomes(t *testing.T) {
+func TestAControlCarriesItsCommandAndShowsItToNobody(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
 	for _, said := range []string{
-		"names the command it becomes",
-		"nothing is recorded until you run that command here",
+		"carries the command it becomes",
+		"nothing is recorded until you run it here",
+		"shows that command to nobody",
 		"an option whose command you cannot name is one you do not offer",
 	} {
 		if !strings.Contains(page, said) {
-			t.Errorf("the page section does not say %q, so a control can take a decision whose destination the person cannot see:\n%s", said, page)
+			t.Errorf("the page section does not say %q, so a control can take a decision whose destination nobody can see:\n%s", said, page)
 		}
+	}
+	if strings.Contains(page, "names the command it becomes") {
+		t.Errorf("the page section still says a control names the command it becomes, and the person reading it is not at a prompt:\n%s", page)
 	}
 }
 
@@ -232,12 +237,17 @@ func TestTheSkillSaysThePageAndTheTerminalUseTheSameIdentifiers(t *testing.T) {
 	}
 }
 
-func TestThePageSaysWhatThePersonDoesBackInTheTerminal(t *testing.T) {
+func TestThePageSaysWhatChoosingAnOptionMeansForTheChange(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
-	for _, said := range []string{"names its finding", "what answering it looks like here"} {
+	for _, said := range []string{
+		"name each decision from its identifier",
+		"never title it yourself",
+		"what choosing each option means for the change",
+		"nothing about what you will type",
+	} {
 		if !strings.Contains(page, said) {
-			t.Errorf("the page section does not say %q, so a person who has decided is left working out how to say so", said)
+			t.Errorf("the page section does not say %q, so the person is handed the reviewer's filing system and the session's typing:\n%s", said, page)
 		}
 	}
 }

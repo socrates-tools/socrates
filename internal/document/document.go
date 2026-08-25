@@ -31,6 +31,7 @@ type Document struct {
 
 type Entry struct {
 	ID       string `json:"id"`
+	Name     string `json:"name"`
 	Severity string `json:"severity"`
 	Audience string `json:"audience"`
 	Location string `json:"location"`
@@ -38,6 +39,7 @@ type Entry struct {
 
 type Decision struct {
 	ID       string   `json:"id"`
+	Name     string   `json:"name"`
 	Severity string   `json:"severity"`
 	Audience string   `json:"audience"`
 	Location string   `json:"location"`
@@ -163,6 +165,7 @@ func (d Document) copiedFromSource() Document {
 	copied.Decisions = slices.Clone(d.Decisions)
 	for position, decision := range copied.Decisions {
 		entry := cited[decision.ID]
+		decision.Name = entry.Name
 		decision.Severity = entry.Severity
 		decision.Audience = entry.Audience
 		decision.Location = entry.Location

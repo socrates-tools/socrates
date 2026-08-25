@@ -30,6 +30,7 @@ type view struct {
 
 type decisionView struct {
 	ID       string
+	Name     string
 	Severity string
 	Audience string
 	Location string
@@ -48,7 +49,6 @@ type optionView struct {
 	Position int
 	Label    string
 	Meaning  string
-	Command  string
 }
 
 func Page(read document.Document, frame Frame) (string, error) {
@@ -73,9 +73,17 @@ func viewOf(read document.Document, frame Frame) view {
 	return shown
 }
 
+func named(decision document.Decision) string {
+	if strings.TrimSpace(decision.Name) == "" {
+		return decision.ID
+	}
+	return decision.Name
+}
+
 func decisionViewOf(decision document.Decision) decisionView {
 	shown := decisionView{
 		ID:       decision.ID,
+		Name:     named(decision),
 		Severity: decision.Severity,
 		Audience: decision.Audience,
 		Location: decision.Location,
@@ -97,7 +105,6 @@ func decisionViewOf(decision document.Decision) decisionView {
 			Position: position,
 			Label:    option.Label,
 			Meaning:  option.Meaning,
-			Command:  option.Command,
 		})
 	}
 	return shown

@@ -72,10 +72,10 @@ func ReadPatch(patch string) Diff {
 		switch {
 		case strings.HasPrefix(line, "--- "):
 			end()
-			read.From = strings.TrimPrefix(line, "--- ")
+			read.From = pathShown(strings.TrimPrefix(line, "--- "))
 		case strings.HasPrefix(line, "+++ "):
 			end()
-			read.To = strings.TrimPrefix(line, "+++ ")
+			read.To = pathShown(strings.TrimPrefix(line, "+++ "))
 		case strings.HasPrefix(line, "@@"):
 			end()
 			heading, from, to := readHunkHeading(line)
@@ -149,6 +149,15 @@ func (s Side) Marker() string {
 	default:
 		return ""
 	}
+}
+
+func pathShown(named string) string {
+	for _, prefix := range []string{"a/", "b/"} {
+		if strings.HasPrefix(named, prefix) {
+			return strings.TrimPrefix(named, prefix)
+		}
+	}
+	return named
 }
 
 func (d Diff) Empty() bool {

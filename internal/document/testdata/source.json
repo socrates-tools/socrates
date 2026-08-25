@@ -1,15 +1,17 @@
 {
   "title": "two things to settle before this lands",
-  "preamble": "Each card below states what was seen and what answering it does in the terminal.",
+  "preamble": "Each card below states what was seen and what choosing an answer means for the change.",
   "source": [
     {
       "id": "c-1",
+      "name": "Finding 1",
       "severity": "error",
       "audience": "a person",
       "location": "internal/cache/read.go:41"
     },
     {
       "id": "c-2",
+      "name": "Finding 2",
       "severity": "warning",
       "audience": "the author",
       "location": "internal/cache/write.go:12"

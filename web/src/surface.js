@@ -66,9 +66,9 @@ function commit(named) {
   const answered = { id: named, chosen, words: wordsIn(card) }
   committed.set(named, answered)
 
-  const commands = Array.from(card.querySelectorAll('.choice'))
+  const labels = Array.from(card.querySelectorAll('.choice'))
     .filter((choice) => choice.checked)
-    .map((choice) => choice.dataset.command)
+    .map((choice) => choice.closest('.option').querySelector('.option-label').textContent.trim())
 
   card.dataset.state = 'committed'
   card.querySelectorAll('.choice, .words-field').forEach((control) => {
@@ -79,13 +79,10 @@ function commit(named) {
 
   const shown = card.querySelector('.committed')
   const said = card.querySelector('.committed-said')
-  const command = card.querySelector('.committed-command')
   shown.hidden = false
-  said.textContent = chosen.length
-    ? `Committed: ${commands.length} chosen`
+  said.textContent = labels.length
+    ? `Committed: ${labels.join(', ')}`
     : 'Committed: your words alone'
-  command.textContent = commands.join('\n')
-  command.hidden = commands.length === 0
   say('')
 }
 

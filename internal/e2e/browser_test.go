@@ -105,6 +105,8 @@ func opening(t *testing.T, address string, options ...chromedp.ExecAllocatorOpti
 		chromedp.DisableGPU,
 		chromedp.Flag("disable-dev-shm-usage", true),
 		chromedp.Flag("hide-scrollbars", false),
+		chromedp.Flag("use-mock-keychain", true),
+		chromedp.Flag("password-store", "basic"),
 	}, options...)
 
 	allocator, releaseAllocator := chromedp.NewExecAllocator(context.Background(), allocated...)

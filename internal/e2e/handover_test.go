@@ -33,6 +33,10 @@ func (f reportedFinding) audience() string {
 	return report.Audience(findings.Action(f.Action))
 }
 
+func (f reportedFinding) name() string {
+	return "Finding " + strings.TrimPrefix(f.ID, "f")
+}
+
 func (f reportedFinding) location() string {
 	return fmt.Sprintf("%s:%d", f.File, f.Line)
 }
@@ -98,6 +102,7 @@ func sourceOf(read reportedRound) []map[string]any {
 	for _, finding := range read.Findings {
 		entries = append(entries, map[string]any{
 			"id":       finding.ID,
+			"name":     finding.name(),
 			"severity": finding.Severity,
 			"audience": finding.audience(),
 			"location": finding.location(),
@@ -126,6 +131,7 @@ func everyFindingAsADecision(read reportedRound) []map[string]any {
 	for _, finding := range read.Findings {
 		decisions = append(decisions, map[string]any{
 			"id":       finding.ID,
+			"name":     "whatever the session felt like",
 			"severity": "whatever the session felt like",
 			"audience": "whoever the session felt like",
 			"location": "wherever the session felt like",
@@ -178,11 +184,15 @@ func TestARoundAPersonReadsIsHandedOverAsAPage(t *testing.T) {
 
 	t.Run("Every finding keeps the identifier socrates gave it", func(t *testing.T) {
 		for _, finding := range read.Findings {
-			var severity, audience, location string
+			var name, severity, audience, location string
+			page.evaluate(shownIn(finding.ID, ".name"), &name)
 			page.evaluate(shownIn(finding.ID, ".severity"), &severity)
 			page.evaluate(shownIn(finding.ID, ".audience"), &audience)
 			page.evaluate(shownIn(finding.ID, ".location"), &location)
 
+			if strings.TrimSpace(name) != finding.name() {
+				t.Errorf("%s is shown under the name %q, and the source the decision cites named it %q", finding.ID, name, finding.name())
+			}
 			if severity != finding.Severity {
 				t.Errorf("%s is shown with the severity %q, and socrates findings --json reported %q", finding.ID, severity, finding.Severity)
 			}
