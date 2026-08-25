@@ -58,5 +58,5 @@
 ## 7. Closing out
 
 - [x] 7.1 Correct the invariants in `CLAUDE.md` that this change makes wrong
-- [ ] 7.2 Run the full sequence: `make fmt`, `make lint`, `make test`, `make scenario-coverage`, `make scenario-drop`, `make corpus-outcomes`
+- [x] 7.2 Run the full sequence: `make fmt`, `make lint`, `make test`, `make scenario-coverage`, `make scenario-drop`, `make corpus-outcomes`
 - [ ] 7.3 Serve a page from a real round and read it, because every defect this change fixes was found that way and none of them by a test
