@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/rui-ktei/socrates/internal/claudesim"
 	"github.com/rui-ktei/socrates/internal/testing/source"
@@ -96,6 +97,22 @@ func (s *Simulator) Processes() []int {
 		processes = append(processes, invocation.Process)
 	}
 	return processes
+}
+
+func (s *Simulator) WaitForChild(within time.Duration) (claudesim.Invocation, bool) {
+	deadline := time.Now().Add(within)
+	for time.Now().Before(deadline) {
+		invocations, err := claudesim.ReadLog(s.LogPath)
+		if err == nil {
+			for _, invocation := range invocations {
+				if invocation.Child != 0 {
+					return invocation, true
+				}
+			}
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	return claudesim.Invocation{}, false
 }
 
 func (s *Simulator) OnlyInvocation() claudesim.Invocation {

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/rui-ktei/socrates/internal/agent"
+	"github.com/rui-ktei/socrates/internal/claudesim"
 	"github.com/rui-ktei/socrates/internal/testing/simulator"
 )
 
@@ -73,20 +74,24 @@ func TestACancelledCallStopsTheAgent(t *testing.T) {
 	claude := build(t, agent.Options{Deadline: time.Minute, Recorder: recorded})
 
 	ctx, stop := context.WithCancel(context.Background())
+	spawned := make(chan claudesim.Invocation, 1)
 	go func() {
-		time.Sleep(200 * time.Millisecond)
-		stop()
+		defer stop()
+		if invocation, found := simulated.WaitForChild(30 * time.Second); found {
+			spawned <- invocation
+		}
 	}()
 
 	if _, err := claude.Run(ctx, request()); err == nil {
 		t.Fatal("a cancelled call succeeded")
 	}
 
-	child := simulated.OnlyInvocation().Child
-	if child == 0 {
-		t.Fatal("the simulator started no child")
+	select {
+	case invocation := <-spawned:
+		waitUntilGone(t, invocation.Child, "the child the agent spawned")
+	default:
+		t.Fatal("the simulator started no child, so this test does not reach the process group")
 	}
-	waitUntilGone(t, child, "the child the agent spawned")
 }
 
 func waitUntilGone(t *testing.T, pid int, what string) {
