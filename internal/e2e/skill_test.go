@@ -154,6 +154,35 @@ func surfaceOf(t *testing.T, session *harness.Session) map[string][]string {
 	return offered
 }
 
+func surfaceOfTheSurface(t *testing.T) map[string][]string {
+	t.Helper()
+
+	held := servingSurface(t)
+	printed, failures, code := held.run("--help")
+	if code != 0 {
+		t.Fatalf("agora --help exited %d: %s", code, failures)
+	}
+
+	offered := map[string][]string{}
+	for _, command := range commandsIn(printed) {
+		help, refused, exit := held.run(command, "--help")
+		if exit != 0 {
+			t.Fatalf("agora %s --help exited %d: %s", command, exit, refused)
+		}
+		offered[command] = flagsIn(help)
+	}
+	return offered
+}
+
+func everySurface(t *testing.T, session *harness.Session) map[string]map[string][]string {
+	t.Helper()
+
+	return map[string]map[string][]string{
+		skill.Name:    surfaceOf(t, session),
+		skill.Surface: surfaceOfTheSurface(t),
+	}
+}
+
 func TestEveryCommandNamedIsReal(t *testing.T) {
 	session := harness.Start(t)
 
@@ -162,14 +191,24 @@ func TestEveryCommandNamedIsReal(t *testing.T) {
 		t.Fatalf("the skill names %d invocations, and a check that matched almost nothing would pass forever: %v", len(named), named)
 	}
 
-	for _, absent := range skill.Unavailable(surfaceOf(t, session)) {
+	attributed := map[string]int{}
+	for _, invocation := range named {
+		attributed[invocation.Binary]++
+	}
+	for _, binary := range skill.Binaries() {
+		if attributed[binary] == 0 {
+			t.Errorf("the skill names nothing of %s, and a binary nothing is attributed to is a binary this check never reads", binary)
+		}
+	}
+
+	for _, absent := range skill.Unavailable(everySurface(t, session)) {
 		t.Error(absent)
 	}
 }
 
 func TestARemovedFlagFailsTheSuite(t *testing.T) {
 	session := harness.Start(t)
-	offered := surfaceOf(t, session)
+	offered := everySurface(t, session)
 
 	flagged := 0
 	for _, named := range skill.Named() {
@@ -178,13 +217,12 @@ func TestARemovedFlagFailsTheSuite(t *testing.T) {
 		}
 		flagged++
 
-		t.Run(named.Command+" "+named.Flag, func(t *testing.T) {
-			without := maps.Clone(offered)
-			without[named.Command] = slices.DeleteFunc(slices.Clone(offered[named.Command]), func(flag string) bool { return flag == named.Flag })
+		t.Run(named.Binary+" "+named.Command+" "+named.Flag, func(t *testing.T) {
+			without := withoutTheFlag(offered, named)
 
 			absent := skill.Unavailable(without)
 			if len(absent) == 0 {
-				t.Fatalf("the check passes with %s removed from socrates %s", named.Flag, named.Command)
+				t.Fatalf("the check passes with %s removed from %s %s", named.Flag, named.Binary, named.Command)
 			}
 			for _, reported := range absent {
 				if !strings.Contains(reported, named.Flag) || !strings.Contains(reported, "skill") {
@@ -197,6 +235,52 @@ func TestARemovedFlagFailsTheSuite(t *testing.T) {
 	if flagged == 0 {
 		t.Fatal("the skill names no flag at all, so this check has nothing to remove")
 	}
+}
+
+func TestAFlagOfTheSecondBinaryIsCheckedToo(t *testing.T) {
+	session := harness.Start(t)
+	offered := everySurface(t, session)
+
+	surfaced := 0
+	for _, named := range skill.Named() {
+		if named.Binary != skill.Surface || named.Flag == "" {
+			continue
+		}
+		surfaced++
+
+		for _, reported := range skill.Unavailable(withoutTheFlag(offered, named)) {
+			if !strings.Contains(reported, named.Flag) || !strings.Contains(reported, "skill") {
+				t.Errorf("the check reports %q for a flag of %s, which names neither the flag nor the skill", reported, named.Binary)
+			}
+		}
+		if len(skill.Unavailable(withoutTheFlag(offered, named))) == 0 {
+			t.Errorf("the check passes with %s removed from %s %s", named.Flag, named.Binary, named.Command)
+		}
+	}
+
+	if surfaced == 0 {
+		t.Fatalf("the skill names no flag of %s, so this check reads nothing of the second binary", skill.Surface)
+	}
+
+	unrecognised := maps.Clone(offered)
+	delete(unrecognised, skill.Surface)
+	absent := skill.Unavailable(unrecognised)
+	if len(absent) == 0 {
+		t.Fatalf("the check passes with %s attributed to no binary at all, so an invocation it does not recognise is skipped rather than failed", skill.Surface)
+	}
+	for _, reported := range absent {
+		if !strings.Contains(reported, skill.Surface) {
+			t.Errorf("the check reports %q without naming the binary nothing is known about", reported)
+		}
+	}
+}
+
+func withoutTheFlag(offered map[string]map[string][]string, named skill.Invocation) map[string]map[string][]string {
+	without := maps.Clone(offered)
+	commands := maps.Clone(offered[named.Binary])
+	commands[named.Command] = slices.DeleteFunc(slices.Clone(offered[named.Binary][named.Command]), func(flag string) bool { return flag == named.Flag })
+	without[named.Binary] = commands
+	return without
 }
 
 func TestOneSourceTwoSurfaces(t *testing.T) {

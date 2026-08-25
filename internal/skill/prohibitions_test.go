@@ -30,6 +30,7 @@ func TestTheThreeProhibitionsArePresent(t *testing.T) {
 
 func TestNoChannelIsImpliedForTheAuthorsAccount(t *testing.T) {
 	permitted := map[string]string{
+		"--document": "which document the surface serves, and the surface reaches no reviewer at all",
 		"--intent":   "the one line the person stated, which is the only account of the change socrates carries to a first-round reviewer",
 		"--finding":  "which finding an answer is about",
 		"--fixed":    "that a finding was patched",
@@ -52,18 +53,22 @@ func TestNoChannelIsImpliedForTheAuthorsAccount(t *testing.T) {
 		"logs":      "prints what a run recorded",
 		"skill":     "installs this skill",
 		"supervise": "conducts a review that socrates review started",
+		"serve":     "puts a document in front of a person, and knows nothing of any run",
+		"poll":      "waits for what that person answered, and knows nothing of any run",
+		"end":       "closes the exchange",
+		"stop":      "stops the surface",
 	}
 
 	for _, named := range skill.Named() {
 		if _, allowed := commands[named.Command]; !allowed {
-			t.Errorf("the skill names socrates %s, and nothing says why it is not a way to send the reviewer the session's own account of the change", named.Command)
+			t.Errorf("the skill names %s %s, and nothing says why it is not a way to send the reviewer the session's own account of the change", named.Binary, named.Command)
 			continue
 		}
 		if named.Flag == "" {
 			continue
 		}
 		if _, allowed := permitted[named.Flag]; !allowed {
-			t.Errorf("the skill names socrates %s %s, and nothing says why it is not a way to send the reviewer the session's own account of the change", named.Command, named.Flag)
+			t.Errorf("the skill names %s %s %s, and nothing says why it is not a way to send the reviewer the session's own account of the change", named.Binary, named.Command, named.Flag)
 		}
 	}
 }

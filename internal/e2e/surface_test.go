@@ -48,6 +48,11 @@ func standing(t *testing.T) *surfaced {
 	t.Helper()
 
 	gitrepo.Hermetic(t)
+	return servingSurface(t)
+}
+
+func servingSurface(t *testing.T) *surfaced {
+	t.Helper()
 
 	binary := filepath.Join(t.TempDir(), "agora")
 	source.Build(t, "./cmd/agora", binary)

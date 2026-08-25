@@ -12,13 +12,23 @@ import (
 func TestProseNamingTheProductIsNotAnInvocation(t *testing.T) {
 	var commands []string
 	for _, named := range skill.Named() {
-		if !slices.Contains(commands, named.Command) {
-			commands = append(commands, named.Command)
+		attributed := named.Binary + " " + named.Command
+		if !slices.Contains(commands, attributed) {
+			commands = append(commands, attributed)
 		}
 	}
 	slices.Sort(commands)
 
-	want := []string{"continue", "findings", "respond", "review", "status", "watch"}
+	want := []string{
+		"agora poll",
+		"agora serve",
+		"socrates continue",
+		"socrates findings",
+		"socrates respond",
+		"socrates review",
+		"socrates status",
+		"socrates watch",
+	}
 	if diff := cmp.Diff(want, commands); diff != "" {
 		t.Errorf("the commands the skill is read to name differ (-want +got):\n%s\na prose sentence about socrates is not an invocation, and an invocation is written as code", diff)
 	}

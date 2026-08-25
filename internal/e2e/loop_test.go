@@ -18,6 +18,7 @@ const loopPatience = 30 * time.Second
 type journey struct {
 	t        *testing.T
 	session  *harness.Session
+	surface  *surfaced
 	ran      []skill.Invocation
 	status   string
 	contents map[string]string
@@ -45,13 +46,17 @@ func (j *journey) author(path, content string) {
 func (j *journey) run(command string, arguments ...string) (string, string, int) {
 	j.t.Helper()
 
-	j.ran = append(j.ran, skill.Invocation{Command: command})
+	j.noted(skill.Name, command, arguments)
+	return j.session.Socrates(append([]string{command}, arguments...)...)
+}
+
+func (j *journey) noted(binary, command string, arguments []string) {
+	j.ran = append(j.ran, skill.Invocation{Binary: binary, Command: command})
 	for _, argument := range arguments {
 		if strings.HasPrefix(argument, "--") {
-			j.ran = append(j.ran, skill.Invocation{Command: command, Flag: argument})
+			j.ran = append(j.ran, skill.Invocation{Binary: binary, Command: command, Flag: argument})
 		}
 	}
-	return j.session.Socrates(append([]string{command}, arguments...)...)
 }
 
 func (j *journey) review(intent string) string {
@@ -122,7 +127,7 @@ func (j *journey) namedNothingTheSkillDoesNot() {
 	named := skill.Named()
 	for _, ran := range j.ran {
 		if !slices.Contains(named, ran) {
-			j.t.Errorf("the journey ran socrates %s %s, which the skill does not name, so it is not the loop the skill describes", ran.Command, ran.Flag)
+			j.t.Errorf("the journey ran %s %s %s, which the skill does not name, so it is not the loop the skill describes", ran.Binary, ran.Command, ran.Flag)
 		}
 	}
 }

@@ -78,13 +78,18 @@ func TestTheBarIsStatedBeforeTheBranchesThatReferToIt(t *testing.T) {
 	}
 }
 
-func TestBothBranchesSayToRenderThePage(t *testing.T) {
+func TestBothBranchesSayToServeThePage(t *testing.T) {
 	document := skill.Document()
 
 	for _, branch := range []string{escalatedHeading, parkedHeading} {
 		section := strings.ToLower(sectionOf(t, document, branch))
 		if !strings.Contains(section, "page") {
 			t.Errorf("%s says nothing about a page, and it is a branch where a person is the reader:\n%s", branch, section)
+		}
+		for _, said := range []string{"agora serve", "address"} {
+			if !strings.Contains(section, said) {
+				t.Errorf("%s does not say %q, so the page it drafts is never put in front of anybody:\n%s", branch, said, section)
+			}
 		}
 	}
 
@@ -102,9 +107,18 @@ func TestBothBranchesSayToRenderThePage(t *testing.T) {
 
 	t.Run("The parked branch delegates", func(t *testing.T) {
 		parked := strings.ToLower(sectionOf(t, document, parkedHeading))
-		for _, said := range []string{"delegate", "subagent", "read again on every one of those turns", "socrates findings --json"} {
+		for _, said := range []string{"delegate", "subagent", "read again on every one of those turns", "socrates findings --json", "the document and a sentence"} {
 			if !strings.Contains(parked, said) {
 				t.Errorf("the parked branch does not say %q, so the drafting lands in the context that is about to patch:\n%s", said, parked)
+			}
+		}
+	})
+
+	t.Run("The driving session owns the surface", func(t *testing.T) {
+		parked := strings.ToLower(sectionOf(t, document, parkedHeading))
+		for _, said := range []string{"serve that document yourself", "agora poll", "would exit owning the surface"} {
+			if !strings.Contains(parked, said) {
+				t.Errorf("the parked branch does not say %q, so the delegate is left owning a surface it is about to exit:\n%s", said, parked)
 			}
 		}
 	})
@@ -152,27 +166,66 @@ func TestThePageIsNotInThePollingLoop(t *testing.T) {
 	}
 }
 
-func TestTheSkillSaysThePageIsReadOnly(t *testing.T) {
-	// scenario: The page carries no control that implies an action
+func TestEveryControlNamesTheCommandItBecomes(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
-	for _, said := range []string{"collects nothing", "declare no capabilities", "reaches no run", "tells you here"} {
+	for _, said := range []string{
+		"names the command it becomes",
+		"nothing is recorded until you run that command here",
+		"an option whose command you cannot name is one you do not offer",
+	} {
 		if !strings.Contains(page, said) {
-			t.Errorf("the page section does not say %q, and a control on the page takes a decision that goes nowhere", said)
+			t.Errorf("the page section does not say %q, so a control can take a decision whose destination the person cannot see:\n%s", said, page)
 		}
 	}
-	for _, control := range []string{"a form", "a button", "a checkbox", "a stored answer"} {
-		if !strings.Contains(page, control) {
-			t.Errorf("the page section does not name %q as something the page does not carry", control)
+}
+
+func TestTheSkillSaysHowAnAnswerReachesTheRun(t *testing.T) {
+	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+
+	for _, said := range []string{"the person answers on the page", "agora poll", "socrates respond", "their own words"} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so an answer given on the page reaches no run:\n%s", said, page)
+		}
+	}
+	if !strings.Contains(page, "do not ask them here for a decision they have already made there") {
+		t.Errorf("the page section does not forbid asking the person to say again here what they answered there:\n%s", page)
+	}
+}
+
+func TestThePageIsServedLocallyAndPublishedNowhere(t *testing.T) {
+	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+
+	if !strings.Contains(page, "agora serve") {
+		t.Errorf("the page section names no local surface to serve the page with:\n%s", page)
+	}
+	for _, elsewhere := range []string{"artifact", "upload", "publish", "host", "link", "claude.ai", "https://"} {
+		if strings.Contains(page, elsewhere) {
+			t.Errorf("the page section names %q, and a document quoting the code it was written about leaves this machine for nowhere:\n%s", elsewhere, page)
+		}
+	}
+}
+
+func TestADecisionIsStillThePersonsToMake(t *testing.T) {
+	document := skill.Document()
+	parked := sectionOf(t, document, parkedHeading)
+
+	if !strings.Contains(parked, "You do not answer such a finding on your own behalf.") {
+		t.Errorf("the branch holding a finding a person answers does not say the session answers none of them itself:\n%s", parked)
+	}
+
+	page := strings.ToLower(sectionOf(t, document, pageHeading))
+	for _, permitted := range []string{"answer it yourself", "decide it yourself", "on their behalf"} {
+		if strings.Contains(page, permitted) {
+			t.Errorf("the page section says %q, and a decision arriving through a surface is no more the session's than one arriving here:\n%s", permitted, page)
 		}
 	}
 }
 
 func TestTheSkillSaysThePageAndTheTerminalUseTheSameIdentifiers(t *testing.T) {
-	// scenario: Every finding keeps the identifier socrates gave it
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
-	for _, said := range []string{"identifier", "severity", "audience", "f3"} {
+	for _, said := range []string{"identifier", "severity", "audience", "f3", "socrates findings --json"} {
 		if !strings.Contains(page, said) {
 			t.Errorf("the page section does not say %q, so a person naming a finding leaves the session guessing which one", said)
 		}

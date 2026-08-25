@@ -25,15 +25,18 @@ Some rounds hold something only a person can act on.
 That line is what decides it. Do not work it out for yourself from the state or from any count, because a round you decide wrongly about is a round nobody renders and nobody notices was not rendered.
 
 Where it says so, do not paste the findings into the terminal.
-Render them as an HTML page with the artifact-design skill and give the person the link, then say briefly what it holds.
+Write a document for the round and serve it: `agora serve --document ./round.json` prints a loopback address.
+Hand the person that address, then say briefly what it holds.
+The page is served on this machine and reaches nowhere beyond it. A findings document quotes the code it was written about, so it goes to no other machine and is put in front of nobody else.
 
-The page collects nothing.
-There is nothing behind it, so a form, a button, a checkbox or a stored answer would take a decision that reaches no run while the person believed they had made it, and it would cost the tokens and the time the page exists to save.
-Declare no capabilities.
-The person reads the page, decides, and tells you here, and the terminal is where you record it.
+The person answers on the page.
+Every control it carries names the command it becomes, and nothing is recorded until you run that command here.
+An option whose command you cannot name is one you do not offer, because a person choosing it would be deciding something whose destination they cannot see.
+Wait for them with `agora poll`, which prints what they chose and anything they wrote, and record it with `socrates respond` in their own words rather than in yours.
+Do not ask them here for a decision they have already made there.
 
 The page and this terminal have to be matchable in both directions.
-Every finding keeps the identifier, the severity and the audience `socrates findings` gave it, so the person can say f3 and you know which finding they mean.
+Give the surface the round as `socrates findings --json` reported it, so every finding keeps the identifier, the severity and the audience socrates gave it and the person can say f3 and you know which finding they mean.
 Each decision on the page names its finding and says what answering it looks like here.
 A page that renamed a finding to something more readable hands the person a search problem in exchange for a nicer sentence.
 
@@ -82,7 +85,8 @@ Report the change as unreviewed, and offer to start another review.
 ### escalated
 
 Read `socrates findings` and hand every finding to the person, as a page.
-Draft it here, in this session: the run is over, so nothing follows that would re-read the drafting, and a subagent would cost its own start-up for no benefit.
+Draft it here, in this session: the run is over, so nothing follows that would re-read the drafting, and a fresh subagent would cost its own start-up for no benefit.
+Serve it with `agora serve`, hand the person the address it prints, and wait on `agora poll`.
 These are theirs to decide, and socrates has nothing further it can do about them.
 A run escalates for one of two reasons, and `socrates status` prints which: a finding holds the change while its own action asks for nothing, so no answer of yours addresses it, or the last permitted round still found something blocking.
 No further round is possible. A run has two rounds at most, and no flag gives it a third.
@@ -98,13 +102,15 @@ A finding it reports as one that can be patched is yours. Patch it, or say why i
        socrates respond --finding f1 --fixed --note "an empty document now answers minus one"
        socrates respond --finding f2 --rejected --reason "there is no retry loop in this function at all"
 
-A finding it reports as needing a person is the person's. Put it in front of them as a page, wait for them, and record what they decided:
+A finding it reports as needing a person is the person's. Put it in front of them as a page, wait for them, and record what they decided in the words they used:
 
-       socrates respond --finding f3 --decided --reason "Vic decided the endpoint stays, because the migration reads it"
+       socrates respond --finding f3 --decided --reason "the endpoint stays, because the migration reads it"
 
-Delegate that page to a subagent rather than drafting it here.
+Delegate the drafting of that document to a subagent rather than writing it here.
 You are about to patch, record one answer per finding, continue, and read another round, and everything you add to this session now is read again on every one of those turns.
-Give the subagent the run identifier and let it read `socrates findings --json` itself, so what comes back to you is the link and a sentence.
+Give the subagent the run identifier and let it read `socrates findings --json` itself, so what comes back to you is the document and a sentence.
+Serve that document yourself with `agora serve`, hand the person the address, and wait on `agora poll`.
+A subagent that served it would exit owning the surface you are the one waiting on.
 
 You do not answer such a finding on your own behalf. It asks what the change is for, you are the one who wrote the change, and a recorded decision that no person made is a claim a later reader will find and a reviewer will judge.
 

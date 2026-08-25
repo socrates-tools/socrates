@@ -8,12 +8,13 @@ import (
 	"testing"
 
 	"github.com/rui-ktei/socrates/internal/runstate"
+	"github.com/rui-ktei/socrates/internal/skill"
 	"github.com/rui-ktei/socrates/internal/testing/harness"
 )
 
 const readByAPerson = "read by a person"
 
-func TestARoundAPersonReadsIsHandedOverAsAPage(t *testing.T) {
+func TestSocratesSaysWhichRoundsAPersonReadsAndOnlyThose(t *testing.T) {
 	for _, driven := range []struct {
 		named    string
 		scenario string
@@ -98,7 +99,7 @@ func TestNoRoleSocratesSpawnsWritesForAReader(t *testing.T) {
 		t.Fatal("no reviewer was invoked, so there is no delivered prompt to read")
 	}
 	for _, invoked := range invocations {
-		for _, asked := range []string{"page", "artifact", "html", "diagram", "plain english", "for the person", "summarise for"} {
+		for _, asked := range []string{"page", "artifact", "html", "diagram", "plain english", "for the person", "summarise for", skill.Surface} {
 			if strings.Contains(strings.ToLower(invoked.Prompt), asked) {
 				t.Errorf("a prompt socrates delivered names %q, and nothing socrates spawns writes for a person:\n%s", asked, invoked.Prompt)
 			}

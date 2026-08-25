@@ -38,8 +38,8 @@ func TestOneConstantNamesTheSkillAndReadsItsInvocations(t *testing.T) {
 		t.Fatal("the skill is read to name no invocation at all, so this check reads nothing")
 	}
 	for _, invocation := range named {
-		if !strings.Contains(document, skill.Name+" "+invocation.Command) {
-			t.Errorf("the skill is read to name %q, which appears in it under no other name than %q", invocation.Command, skill.Name)
+		if !strings.Contains(document, invocation.Binary+" "+invocation.Command) {
+			t.Errorf("the skill is read to name %q, which appears in it under no other name than %q", invocation.Command, invocation.Binary)
 		}
 	}
 }

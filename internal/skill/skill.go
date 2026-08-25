@@ -12,6 +12,7 @@ import (
 
 const (
 	Name     = "socrates"
+	Surface  = "agora"
 	FileName = "SKILL.md"
 
 	vendorDirectory = ".claude"
