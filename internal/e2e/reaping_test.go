@@ -13,6 +13,11 @@ import (
 	"github.com/rui-ktei/socrates/internal/testing/harness"
 )
 
+const (
+	childOfTheReviewer = "child the reviewer spawned"
+	theReviewer        = "reviewer"
+)
+
 func TestAChildThatOutlivesTheAgentIsKilled(t *testing.T) {
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  child_command: [sleep, \"120\"]\n")
@@ -24,7 +29,7 @@ func TestAChildThatOutlivesTheAgentIsKilled(t *testing.T) {
 		t.Fatalf("the run ended as %s: %s", run.State, reason(run))
 	}
 
-	waitUntilReaped(t, session.Simulator.OnlyInvocation().Child)
+	waitUntilReaped(t, session.Simulator.OnlyInvocation().Child, childOfTheReviewer)
 }
 
 func TestReapingHappensOnErrorToo(t *testing.T) {
@@ -38,7 +43,7 @@ func TestReapingHappensOnErrorToo(t *testing.T) {
 		t.Fatalf("the run ended as %s, want %s", run.State, runstate.Failed)
 	}
 
-	waitUntilReaped(t, session.Simulator.OnlyInvocation().Child)
+	waitUntilReaped(t, session.Simulator.OnlyInvocation().Child, childOfTheReviewer)
 }
 
 func TestReapingHappensOnCancellation(t *testing.T) {
@@ -59,10 +64,8 @@ func TestReapingHappensOnCancellation(t *testing.T) {
 		t.Errorf("the cancelled run reads as %s", stopped.State)
 	}
 
-	waitUntilReaped(t, child)
-	if process.Alive(stopped.Reviewer) {
-		t.Errorf("the reviewer %d is still running after cancellation", stopped.Reviewer)
-	}
+	waitUntilReaped(t, child, childOfTheReviewer)
+	waitUntilReaped(t, stopped.Reviewer, theReviewer)
 }
 
 func TestTheWorktreeCanBeRemovedAfterTheRound(t *testing.T) {
@@ -110,11 +113,11 @@ func waitForChild(t *testing.T, session *harness.Session) int {
 	return 0
 }
 
-func waitUntilReaped(t *testing.T, pid int) {
+func waitUntilReaped(t *testing.T, pid int, named string) {
 	t.Helper()
 
 	if pid == 0 {
-		t.Fatal("the simulator recorded no child, so this test reaches no process group")
+		t.Fatalf("no %s was recorded, so this test reaches no process", named)
 	}
 
 	deadline := time.Now().Add(10 * time.Second)
@@ -124,5 +127,5 @@ func waitUntilReaped(t *testing.T, pid int) {
 		}
 		time.Sleep(20 * time.Millisecond)
 	}
-	t.Errorf("the child %d the reviewer spawned is still running", pid)
+	t.Errorf("the %s, %d, is still running", named, pid)
 }
