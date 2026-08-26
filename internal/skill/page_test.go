@@ -41,6 +41,7 @@ func TestTheBarNamesEachWayThePageFailsAPerson(t *testing.T) {
 		{named: "getting to the point", stated: []string{"get to the point", "length is not thoroughness"}},
 		{named: "plain english about impact", stated: []string{"plain english", "what the finding means for the change"}},
 		{named: "an option said in the words of the thing being built", stated: []string{"what each option gets the person", "words of the thing being built", "without opening the code"}},
+		{named: "saying which option you would take, and marking one and no other", stated: []string{"which option you would take", "marking that option and no other"}},
 		{named: "an example where a finding is purely technical", stated: []string{"purely technical", "example"}},
 		{named: "a diagram only where a workflow needs one", stated: []string{"diagram only where", "not otherwise"}},
 		{named: "restraint about tokens", stated: []string{"spend tokens"}},
@@ -248,6 +249,62 @@ func TestThePageSaysWhatChoosingAnOptionMeansForTheChange(t *testing.T) {
 	} {
 		if !strings.Contains(page, said) {
 			t.Errorf("the page section does not say %q, so the person is handed the reviewer's filing system and the session's typing:\n%s", said, page)
+		}
+	}
+}
+
+const recommendingLine = "Say which option you would take, where you would take one, by marking that option and no other."
+
+func TestTheSkillNamesTheMarkWhereItNamesTheDocument(t *testing.T) {
+	page := sectionOf(t, skill.Document(), pageHeading)
+
+	shape, _, found := strings.Cut(page, "The person answers on the page")
+	if !found {
+		t.Fatalf("the page section no longer shows the shape of a document before saying how it is answered:\n%s", page)
+	}
+	if !strings.Contains(shape, `"recommended": true`) {
+		t.Errorf("the shape a session copies carries no marked option, so nothing it copies recommends anything:\n%s", shape)
+	}
+}
+
+func TestTheSkillSaysOneOptionCarriesIt(t *testing.T) {
+	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+
+	for _, said := range []string{"at most one", "refused before anything is served"} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so a session may mark two options and learn that only from a failure:\n%s", said, page)
+		}
+	}
+}
+
+func TestTheSkillSaysMarkingIsNotAnswering(t *testing.T) {
+	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+
+	for _, said := range []string{"reads that option first", "in words", "selects nothing"} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so what marking an option does is left to be guessed:\n%s", said, page)
+		}
+	}
+	if !strings.Contains(page, "still theirs") {
+		t.Errorf("the page section does not say the decision remains the person's once an option is marked:\n%s", page)
+	}
+}
+
+func TestWhenToRecommendIsStatedOnce(t *testing.T) {
+	document := skill.Document()
+
+	if counted := strings.Count(document, recommendingLine); counted != 1 {
+		t.Fatalf("the skill states %q %d times, want once, and the bar is where it belongs", recommendingLine, counted)
+	}
+
+	beside := strings.Replace(sectionOf(t, document, pageHeading), skill.PageBar, "", 1)
+	for _, judged := range []string{
+		"which option you would take",
+		"looks equally likely",
+		"where you would take one",
+	} {
+		if strings.Contains(beside, judged) {
+			t.Errorf("the page section says %q beside the bar, and the judgement about when to recommend is the bar's:\n%s", judged, beside)
 		}
 	}
 }

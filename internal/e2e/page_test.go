@@ -37,7 +37,7 @@ const twoDecisionDocument = `{
       "options": [
         {"label": "the write", "meaning": "what the caller asked for", "command": "keep c-2 write"},
         {"label": "the metric", "meaning": "counted nowhere else", "command": "keep c-2 metric"},
-        {"label": "the log line", "meaning": "one line per write", "command": "keep c-2 log"}
+        {"label": "the log line", "meaning": "one line per write", "command": "keep c-2 log", "recommended": true}
       ],
       "fragment": "<figure><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 40\" width=\"120\" height=\"40\" role=\"img\" aria-label=\"the write path\"><rect x=\"1\" y=\"1\" width=\"40\" height=\"20\" fill=\"none\" stroke=\"#8a6d3b\"/><text x=\"6\" y=\"34\" font-size=\"11\">write</text></svg><figcaption>the write path</figcaption></figure>"
     }
@@ -380,6 +380,72 @@ func TestACommittedAnswerIsShownInTheWordsThePersonRead(t *testing.T) {
 	}
 	if strings.Contains(shown, "the metric") {
 		t.Errorf("what was committed is shown as %q, and it names an option nobody chose", shown)
+	}
+}
+
+const optionsRead = `Array.from(document.querySelectorAll('.decision[data-decision="c-2"] .option .option-label')).map((held) => held.textContent.trim())`
+
+func TestTheOptionTheCallerWouldTakeIsReadFirst(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+
+	var offered []string
+	page.evaluate(optionsRead, &offered)
+
+	want := []string{"the log line", "the write", "the metric"}
+	if diff := cmp.Diff(want, offered); diff != "" {
+		t.Errorf("the options a person meets differ (-want +got):\n%s", diff)
+	}
+
+	var marked []string
+	page.evaluate(`Array.from(document.querySelectorAll('.option[data-recommended="yes"] .option-label')).map((held) => held.textContent.trim())`, &marked)
+	if diff := cmp.Diff([]string{"the log line"}, marked); diff != "" {
+		t.Errorf("what the page marks as the option the caller would take differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestRearrangingTheOptionsDoesNotRearrangeTheAnswer(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-2", 2), nil)
+	page.click(within("c-2", ".commit"))
+	page.click(".send")
+	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
+
+	printed, failures, code := held.run("poll")
+	if code != 0 {
+		t.Fatalf("agora poll exited %d: %s", code, failures)
+	}
+	if !strings.Contains(printed, "keep c-2 log") {
+		t.Errorf("choosing the marked option handed the caller back:\n%s\nand the option carries the command %q", printed, "keep c-2 log")
+	}
+	for _, others := range []string{"keep c-2 write", "keep c-2 metric"} {
+		if strings.Contains(printed, others) {
+			t.Errorf("choosing the marked option handed back %q, which nobody chose:\n%s", others, printed)
+		}
+	}
+	if !strings.Contains(printed, "the log line") {
+		t.Errorf("what came back does not name the option in the words the person read:\n%s", printed)
+	}
+}
+
+func TestMarkingIsNotChoosing(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	var ticked int
+	page.evaluate(`document.querySelectorAll('.choice:checked').length`, &ticked)
+	if ticked != 0 {
+		t.Errorf("%d options arrive chosen, and a mark ranks an option rather than answering for the person", ticked)
+	}
+
+	page.click(".send")
+	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
+
+	delivered, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("sending delivered nothing at all")
+	}
+	for _, decided := range delivered.Decisions {
+		t.Errorf("a decision nobody touched was delivered: %+v", decided)
 	}
 }
 

@@ -61,9 +61,12 @@
 <legend>{{if .Multiple}}Choose as many as apply{{else}}Choose one{{end}}</legend>
 {{$decision := .}}
 {{range .Options}}
-<label class="option">
+<label class="option"{{if .Recommended}} data-recommended="yes"{{end}}>
 <input class="choice" data-part="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}"{{if $.Over}} disabled{{end}}>
+<span class="option-heading">
 <span class="option-label">{{.Label}}</span>
+{{if .Recommended}}<span class="option-mark">Recommended</span>{{end}}
+</span>
 {{if .Meaning}}<span class="option-meaning">{{.Meaning}}</span>{{end}}
 </label>
 {{end}}

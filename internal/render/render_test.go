@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/rui-ktei/socrates/internal/document"
 	"github.com/rui-ktei/socrates/internal/render"
 	"golang.org/x/net/html"
@@ -114,6 +115,114 @@ func TestADocumentRendersWithoutTheCallerWritingMarkup(t *testing.T) {
 	for _, choice := range elements(card, "input") {
 		if attribute(choice, "type") != "radio" {
 			t.Errorf("a single-choice decision renders a %q", attribute(choice, "type"))
+		}
+	}
+}
+
+func threeOptions() document.Document {
+	read := oneDecision(document.Many)
+	read.Decisions[0].Options = append(read.Decisions[0].Options, document.Option{
+		Label: "shard the map", Meaning: "contention matters", Command: "patch c-1 --shard",
+	})
+	return read
+}
+
+func optionsIn(page *html.Node) []*html.Node {
+	var found []*html.Node
+	for _, held := range elements(page, "label") {
+		if hasClass(held, "option") {
+			found = append(found, held)
+		}
+	}
+	return found
+}
+
+func labelsIn(page *html.Node) []string {
+	var read []string
+	for _, option := range optionsIn(page) {
+		for _, named := range elements(option, "span") {
+			if hasClass(named, "option-label") {
+				read = append(read, strings.TrimSpace(text(named)))
+			}
+		}
+	}
+	return read
+}
+
+func positionsIn(page *html.Node) map[string]string {
+	held := map[string]string{}
+	for _, option := range optionsIn(page) {
+		label := ""
+		for _, named := range elements(option, "span") {
+			if hasClass(named, "option-label") {
+				label = strings.TrimSpace(text(named))
+			}
+		}
+		for _, choice := range elements(option, "input") {
+			held[label] = attribute(choice, "value")
+		}
+	}
+	return held
+}
+
+func TestTheOptionTheCallerWouldTakeIsReadFirst(t *testing.T) {
+	read := threeOptions()
+	read.Decisions[0].Options[2].Recommended = true
+
+	page := rendered(t, read)
+
+	want := []string{"shard the map", "take the lock first", "leave it"}
+	if got := labelsIn(page); !slices.Equal(want, got) {
+		t.Errorf("the options are read in the order %v, want %v", got, want)
+	}
+
+	marked := 0
+	for _, option := range optionsIn(page) {
+		if attribute(option, "data-recommended") == "yes" {
+			marked++
+		}
+	}
+	if marked != 1 {
+		t.Errorf("%d options are marked as the one the caller would take, want the one the document marked", marked)
+	}
+}
+
+func TestRearrangingTheOptionsDoesNotRearrangeTheAnswer(t *testing.T) {
+	read := threeOptions()
+	read.Decisions[0].Options[2].Recommended = true
+
+	want := map[string]string{"take the lock first": "0", "leave it": "1", "shard the map": "2"}
+	if diff := cmp.Diff(want, positionsIn(rendered(t, read))); diff != "" {
+		t.Errorf("what each option posts back differs from the position the document gave it (-want +got):\n%s", diff)
+	}
+}
+
+func TestNothingArrivesChosen(t *testing.T) {
+	read := threeOptions()
+	read.Decisions[0].Options[2].Recommended = true
+
+	for _, choice := range elements(rendered(t, read), "input") {
+		if attribute(choice, "checked") != "" {
+			t.Errorf("the option %q arrives chosen, and an answer nobody gave is indistinguishable from one they did", attribute(choice, "value"))
+		}
+	}
+}
+
+func TestADocumentThatMarksNothingIsUnaffected(t *testing.T) {
+	page := rendered(t, threeOptions())
+
+	want := []string{"take the lock first", "leave it", "shard the map"}
+	if got := labelsIn(page); !slices.Equal(want, got) {
+		t.Errorf("a document that marks nothing renders its options as %v, want the order it listed them %v", got, want)
+	}
+	for _, option := range optionsIn(page) {
+		if attribute(option, "data-recommended") != "" {
+			t.Error("an option is marked, and the document marked nothing")
+		}
+		for _, named := range elements(option, "span") {
+			if hasClass(named, "option-mark") {
+				t.Error("the page carries a mark, and the document marked nothing")
+			}
 		}
 	}
 }

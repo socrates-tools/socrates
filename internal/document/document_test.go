@@ -96,6 +96,56 @@ func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
 	}
 }
 
+func TestADecisionNamesTheOptionTheCallerWouldTake(t *testing.T) {
+	written := whole()
+	written.Decisions[0].Options[1].Recommended = true
+
+	read, err := document.Read(raw(t, written))
+	if err != nil {
+		t.Fatalf("reading a document marking the option the caller would take: %v", err)
+	}
+	if diff := cmp.Diff(written.Decisions[0].Options, read.Decisions[0].Options); diff != "" {
+		t.Errorf("what the marked options come back as differs (-want +got):\n%s", diff)
+	}
+	if !read.Decisions[0].Options[1].Recommended {
+		t.Error("the option the document marked comes back unmarked")
+	}
+	if read.Decisions[0].Options[0].Recommended {
+		t.Error("an option the document did not mark comes back marked")
+	}
+}
+
+func TestADocumentMarkingTwoOptionsIsRefusedBeforeServing(t *testing.T) {
+	written := whole()
+	written.Decisions[0].Options[0].Recommended = true
+	written.Decisions[0].Options[1].Recommended = true
+
+	read, err := document.Read(raw(t, written))
+	if err == nil {
+		t.Fatalf("a document marking two options validated: %+v", read)
+	}
+	if !strings.Contains(err.Error(), "d-1") {
+		t.Errorf("refusing a document marking two options does not name the decision: %v", err)
+	}
+}
+
+func TestADocumentThatMarksNothingIsUnaffected(t *testing.T) {
+	written := whole()
+
+	read, err := document.Read(raw(t, written))
+	if err != nil {
+		t.Fatalf("reading a document that marks nothing: %v", err)
+	}
+	if diff := cmp.Diff(written, read); diff != "" {
+		t.Errorf("a document that marks nothing reads back differently (-want +got):\n%s", diff)
+	}
+	for _, option := range read.Decisions[0].Options {
+		if option.Recommended {
+			t.Errorf("the option %q comes back marked, and the document marked nothing", option.Label)
+		}
+	}
+}
+
 func TestAWholeDocumentIsRead(t *testing.T) {
 	read, err := document.Read(raw(t, whole()))
 	if err != nil {

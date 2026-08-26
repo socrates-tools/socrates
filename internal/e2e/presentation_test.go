@@ -283,6 +283,62 @@ func TestNothingHiddenIsPainted(t *testing.T) {
 	}
 }
 
+const readingTheMark = `(() => {
+  const option = document.querySelector('.decision[data-decision="c-2"] .option[data-recommended="yes"]');
+  if (!option) return { found: false };
+  const mark = option.querySelector('.option-mark');
+  const style = mark ? getComputedStyle(mark) : null;
+  return {
+    found: true,
+    name: option.textContent.replace(/\s+/g, ' ').trim(),
+    said: mark ? mark.textContent.trim() : '',
+    size: style ? parseFloat(style.fontSize) : 0,
+    shown: style ? style.display !== 'none' && style.visibility !== 'hidden' : false,
+    first: option === document.querySelector('.decision[data-decision="c-2"] .option'),
+  };
+})()`
+
+type marked struct {
+	Found bool    `json:"found"`
+	Name  string  `json:"name"`
+	Said  string  `json:"said"`
+	Size  float64 `json:"size"`
+	Shown bool    `json:"shown"`
+	First bool    `json:"first"`
+}
+
+func TestTheMarkIsSaidRatherThanPainted(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+
+	page.do(chromedp.Evaluate(`(() => {
+  const stripped = document.createElement('style');
+  stripped.textContent = '* { color: black !important; background: white !important; border-color: black !important; }';
+  document.head.appendChild(stripped);
+})()`, nil))
+
+	var read marked
+	page.evaluate(readingTheMark, &read)
+
+	if !read.Found {
+		t.Fatal("the page marks no option, and the document marks one")
+	}
+	if !read.Shown || read.Said == "" {
+		t.Errorf("with every colour discarded the mark says %q and is shown: %v", read.Said, read.Shown)
+	}
+	if !strings.Contains(strings.ToLower(read.Name), strings.ToLower(read.Said)) {
+		t.Errorf("the option is announced as %q, and the mark %q is not part of it", read.Name, read.Said)
+	}
+	if !strings.Contains(strings.ToLower(read.Said), "recommend") {
+		t.Errorf("the mark says %q, and it has to say that this is the option the caller would take", read.Said)
+	}
+	if !read.First {
+		t.Error("the marked option is not the first a person meets")
+	}
+	if read.Size < 14 {
+		t.Errorf("the mark renders at %vpx, below the floor the page states", read.Size)
+	}
+}
+
 const contrastFloor = 4.5
 
 var measuringTheContrast = `(() => {

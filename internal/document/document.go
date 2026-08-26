@@ -52,9 +52,10 @@ type Decision struct {
 }
 
 type Option struct {
-	Label   string `json:"label"`
-	Meaning string `json:"meaning"`
-	Command string `json:"command"`
+	Label       string `json:"label"`
+	Meaning     string `json:"meaning"`
+	Command     string `json:"command"`
+	Recommended bool   `json:"recommended"`
 }
 
 type Evidence struct {
@@ -118,6 +119,7 @@ func Validate(read Document) error {
 		if len(decision.Options) == 0 {
 			return fmt.Errorf(noOptions, named)
 		}
+		recommended := 0
 		for offered, option := range decision.Options {
 			if strings.TrimSpace(option.Label) == "" {
 				return fmt.Errorf(optionStatesNothingFor, offered+1, named, "label")
@@ -125,6 +127,12 @@ func Validate(read Document) error {
 			if strings.TrimSpace(option.Command) == "" {
 				return fmt.Errorf(optionCarriesNoCommand, option.Label, named)
 			}
+			if option.Recommended {
+				recommended++
+			}
+		}
+		if recommended > 1 {
+			return fmt.Errorf(moreThanOneRecommended, named, recommended)
 		}
 
 		if len(cited) > 0 {

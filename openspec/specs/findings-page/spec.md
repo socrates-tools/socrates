@@ -2,7 +2,9 @@
 
 ## Purpose
 TBD - created by archiving change a-round-a-person-reads-becomes-a-page. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: The page is what a round a person reads is handed over as
 
 Where a round is one a person reads, the session driving the loop SHALL hand it over as a page served locally by `agora`, give the person the address, and say briefly what it holds rather than pasting the findings.
@@ -45,6 +47,7 @@ It SHALL require each of the following, because each is a way the page fails a p
 - Get to the point. Length is not thoroughness, and a person who has to search the page for their decision has been handed the terminal output again.
 - Speak plain English about what the finding means for the change, rather than restating the reviewer's technical prose in a nicer typeface.
 - Say what each option gets the person, in the words of the thing being built rather than the words of the code. A sentence they could not act on without opening the code is not plain English, and a symbol, a constant or a test named as though they already know it is that sentence.
+- Say which option you would take, on every decision where you would take one, by marking that option and no other. You have read the finding and they have not, and a list where every option looks equally likely makes them work out what you already know.
 - Where a finding is purely technical, illustrate it with an example rather than leaving the reader to work out what the term costs them.
 - Use a diagram only where a workflow is what makes the finding hard to follow, and not otherwise.
 - Spend tokens as though they were the person's, because they are.
@@ -55,6 +58,9 @@ Plain English was already required, and a page shipped with an option meaning "t
 It passed because a session that has just read the findings believes the reviewer's vocabulary is plain.
 The bar therefore states a test the writer can fail rather than a standard they grade themselves against.
 
+Recommending is on the bar rather than left to the mechanism, because a field nothing calls for is a field the sessions that most need it leave empty.
+It is bounded to one option for the same reason it is asked for at all: a page that ranks everything has ranked nothing.
+
 #### Scenario: The bar is stated once and rendered from there
 
 - **WHEN** the bar the skill states is compared with its source
@@ -63,7 +69,7 @@ The bar therefore states a test the writer can fail rather than a standard they 
 #### Scenario: The bar names each way the page fails a person
 
 - **WHEN** the bar is rendered
-- **THEN** it requires getting to the point, plain English about impact, an option said in the words of the thing being built rather than the code, an example where a finding is purely technical, a diagram only where a workflow needs one, and restraint about tokens
+- **THEN** it requires getting to the point, plain English about impact, an option said in the words of the thing being built rather than the code, saying which option you would take by marking one and no other, an example where a finding is purely technical, a diagram only where a workflow needs one, and restraint about tokens
 
 ### Requirement: The page foregrounds what the person has to act on
 

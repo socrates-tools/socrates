@@ -331,7 +331,29 @@ pre,
   accent-color: var(--accent);
 }
 
+.option[data-recommended='yes'] {
+  border-color: var(--rule-strong);
+}
+
+.option-heading {
+  grid-column: 2;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.5rem;
+}
+
 .option-label {
+  font-weight: 600;
+}
+
+.option-mark {
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--text-floor);
   font-weight: 600;
 }
 

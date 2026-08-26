@@ -35,7 +35,12 @@ The document is one decision per finding, each citing the entry it came from:
      "source":    [{"id": "f3", "name": "Finding 3", "severity": "error", "audience": "needs a person", "location": "src/api/windows.py:41"}],
      "decisions": [{"id": "f3", "question": "...", "meaning": "...", "mode": "single-choice",
                     "evidence": {"language": "python", "code": "...", "patch": "..."},
-                    "options": [{"label": "...", "meaning": "...", "command": "socrates respond --finding f3 --decided --reason \"...\""}]}]}
+                    "options": [{"label": "...", "meaning": "...", "command": "socrates respond --finding f3 --decided --reason \"...\"",
+                                 "recommended": true}]}]}
+
+One option of a decision may carry `"recommended": true`, and at most one: a document marking two is refused before anything is served.
+The page reads that option first and says on it, in words, that it is the one you would take.
+It selects nothing, so a decision nobody touched comes back with nothing chosen, and what to do about the finding is still theirs.
 
 The person answers on the page.
 Every control carries the command it becomes, `agora poll` hands that command back to you, and nothing is recorded until you run it here.
@@ -59,6 +64,8 @@ Hold the page to this:
   Do not restate the reviewer's technical prose in a nicer typeface.
 - Say what each option gets the person, in the words of the thing being built rather than the words of the code.
   A sentence they could not act on without opening the code is not plain English, and a symbol, a constant or a test named as though they already know it is that sentence.
+- Say which option you would take, where you would take one, by marking that option and no other.
+  You have read the finding and the person has not, and a list where every option looks equally likely makes them work out what you already know.
 - Where a finding is purely technical, show a small example of it going wrong.
   A reader should not have to work out for themselves what the term costs them.
 - Draw a diagram only where a workflow is what makes a finding hard to follow, and not otherwise.

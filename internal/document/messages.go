@@ -14,6 +14,7 @@ const (
 	noOptions                      = "%s offers no option, and the field a person writes in is the surface's rather than the document's"
 	optionStatesNothingFor         = "option %d of %s states no %q"
 	optionCarriesNoCommand         = "option %q of %s carries no command, so what the page shows and what the terminal runs could not be the same string"
+	moreThanOneRecommended         = "%s recommends %d of its options, and a recommendation a person has to assemble is not one: mark the one option you would take"
 	namesNothingInTheSource        = "%s names nothing in the source it cites"
 	sourceEntryCarriesNoIdentifier = "source entry %d carries no identifier, so nothing could cite it"
 	repeatedSourceIdentifier       = "two source entries carry the identifier %q, so a decision citing it would be ambiguous"

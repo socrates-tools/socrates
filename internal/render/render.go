@@ -48,9 +48,10 @@ type decisionView struct {
 }
 
 type optionView struct {
-	Position int
-	Label    string
-	Meaning  string
+	Position    int
+	Label       string
+	Meaning     string
+	Recommended bool
 }
 
 func Page(read document.Document, frame Frame) (string, error) {
@@ -103,12 +104,25 @@ func decisionViewOf(decision document.Decision) decisionView {
 		shown.Diff = &patched
 	}
 
-	for position, option := range decision.Options {
-		shown.Options = append(shown.Options, optionView{
-			Position: position,
-			Label:    option.Label,
-			Meaning:  option.Meaning,
-		})
-	}
+	shown.Options = optionsRead(decision.Options)
 	return shown
+}
+
+func optionsRead(offered []document.Option) []optionView {
+	var recommended, rest []optionView
+
+	for position, option := range offered {
+		read := optionView{
+			Position:    position,
+			Label:       option.Label,
+			Meaning:     option.Meaning,
+			Recommended: option.Recommended,
+		}
+		if option.Recommended {
+			recommended = append(recommended, read)
+			continue
+		}
+		rest = append(rest, read)
+	}
+	return append(recommended, rest...)
 }

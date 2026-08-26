@@ -306,6 +306,67 @@ func TestAFragmentOutsideTheAllowlistStillServes(t *testing.T) {
 	}
 }
 
+const twoRecommendedDocument = `{
+  "title": "one thing to settle",
+  "decisions": [
+    {
+      "id": "c-1",
+      "question": "should the cache be read before the lock is taken",
+      "mode": "single-choice",
+      "options": [
+        {"label": "take the lock first", "command": "patch c-1", "recommended": true},
+        {"label": "leave it", "command": "agree c-1", "recommended": true}
+      ]
+    }
+  ]
+}`
+
+func TestServeRefusesADocumentMarkingTwoOptions(t *testing.T) {
+	// scenario: A document marking two options is refused before serving
+	held := standing(t)
+
+	printed, failures, code := held.reading(twoRecommendedDocument, "serve", "--document", "-")
+	if code == 0 {
+		t.Fatalf("a document marking two options was served at %q", printed)
+	}
+	if !strings.Contains(failures, "c-1") {
+		t.Errorf("refusing a document marking two options does not name the decision: %s", failures)
+	}
+	if _, err := os.Stat(filepath.Join(held.home, "session.json")); err == nil {
+		t.Error("a refused document left a session behind, and it starts no server")
+	}
+}
+
+func TestADocumentWrittenBeforeTheMarkStillServes(t *testing.T) {
+	// scenario: A document that marks nothing is unaffected
+	held := standing(t)
+
+	address := held.serve(oneDecisionDocument)
+
+	answered, err := http.Get("http://" + address + "/")
+	if err != nil {
+		t.Fatalf("reaching the surface: %v", err)
+	}
+	defer answered.Body.Close()
+
+	page, err := io.ReadAll(answered.Body)
+	if err != nil {
+		t.Fatalf("reading the page: %v", err)
+	}
+	if answered.StatusCode != http.StatusOK {
+		t.Fatalf("a document that marks nothing was served with %d", answered.StatusCode)
+	}
+	if strings.Contains(string(page), "option-mark") || strings.Contains(string(page), "data-recommended") {
+		t.Errorf("the page marks an option, and the document marked none:\n%s", page)
+	}
+
+	first := strings.Index(string(page), "take the lock first")
+	second := strings.Index(string(page), "leave it")
+	if first < 0 || second < 0 || first > second {
+		t.Errorf("the options are not read in the order the document listed them: %d then %d", first, second)
+	}
+}
+
 func TestTheRepositoryIsUntouched(t *testing.T) {
 	held := standing(t)
 
