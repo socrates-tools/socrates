@@ -188,7 +188,9 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 		"answering commit",
 		"answering reopen",
 		"answering words-field",
+		"sending discard",
 		"sending finish",
+		"sending keep",
 		"sending message-field",
 		"sending send",
 	}

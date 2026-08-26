@@ -87,6 +87,30 @@ func TestChoosingSendsNothing(t *testing.T) {
 	if delivered, arrived := held.awaiting(shortWindow); arrived {
 		t.Errorf("choosing delivered an answer: %+v", delivered)
 	}
+
+	page.click(".send")
+	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
+
+	sent, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("sending delivered nothing at all")
+	}
+	if len(sent.Decisions) != 0 {
+		t.Errorf("the send that waits for a reply carried a selection nobody committed: %+v", sent.Decisions)
+	}
+
+	page.click(".finish")
+	page.waitFor(`!document.querySelector('.discarding').hidden`)
+	page.click(".discard")
+	page.waitFor(`document.querySelector('.send').disabled === true`)
+
+	finished, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("finishing delivered nothing at all")
+	}
+	if len(finished.Decisions) != 0 {
+		t.Errorf("the send that ends carried a selection nobody committed: %+v", finished.Decisions)
+	}
 }
 
 func TestMultipleChoiceCarriesEveryTick(t *testing.T) {

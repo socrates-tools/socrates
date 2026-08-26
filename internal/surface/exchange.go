@@ -72,6 +72,7 @@ func (e *Exchange) Revise(read document.Document) int {
 
 	e.read = read
 	e.revision++
+	e.over = false
 	e.notify()
 	return e.revision
 }

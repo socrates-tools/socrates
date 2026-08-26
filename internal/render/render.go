@@ -18,6 +18,7 @@ var page = template.Must(template.New("page").Parse(pageSource))
 type Frame struct {
 	Token    string
 	Revision int
+	Over     bool
 }
 
 type view struct {
@@ -25,6 +26,7 @@ type view struct {
 	Preamble  string
 	Token     string
 	Revision  int
+	Over      bool
 	Decisions []decisionView
 }
 
@@ -65,6 +67,7 @@ func viewOf(read document.Document, frame Frame) view {
 		Preamble: read.Preamble,
 		Token:    frame.Token,
 		Revision: frame.Revision,
+		Over:     frame.Over,
 	}
 
 	for _, decision := range read.Decisions {

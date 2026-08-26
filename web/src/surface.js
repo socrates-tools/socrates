@@ -20,6 +20,7 @@ for (const [name, language] of Object.entries({
 }
 
 const committed = new Map()
+const exchangeIsOver = 'The exchange is over. Nothing further will be sent from this page.'
 let closed = false
 
 function token() {
@@ -56,11 +57,48 @@ function wordsIn(card) {
   return field ? field.value : ''
 }
 
+function uncommittedIn(card) {
+  return card.dataset.state !== 'committed' && (chosenIn(card).length > 0 || wordsIn(card).trim() !== '')
+}
+
+function nameOf(card) {
+  const named = card.querySelector('.name')
+  return named ? named.textContent.trim() : card.dataset.decision
+}
+
+function listed(names) {
+  if (names.length === 1) {
+    return names[0]
+  }
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
+}
+
+function ask(holding) {
+  const asking = document.querySelector('.discarding')
+  if (!asking) {
+    return
+  }
+
+  const names = holding.map(nameOf)
+  asking.querySelector('.discarding-said').textContent = names.length === 1
+    ? `${listed(names)} holds an answer that was never committed, and it will not reach whoever asked.`
+    : `${listed(names)} hold answers that were never committed, and they will not reach whoever asked.`
+  asking.hidden = false
+}
+
+function stopAsking() {
+  const asking = document.querySelector('.discarding')
+  if (asking) {
+    asking.hidden = true
+  }
+}
+
 function commit(named) {
   const card = cardFor(named)
   if (!card || closed) {
     return
   }
+  stopAsking()
 
   const chosen = chosenIn(card)
   const answered = { id: named, chosen, words: wordsIn(card) }
@@ -105,12 +143,21 @@ function reopen(named) {
 
 function close() {
   closed = true
+  stopAsking()
   document.querySelectorAll('.decision').forEach((card) => {
     card.dataset.state = 'closed'
   })
   document.querySelectorAll('button, .choice, textarea').forEach((control) => {
     control.disabled = true
   })
+}
+
+function takeUpWhetherItIsOver() {
+  if (document.body.dataset.over === 'yes') {
+    close()
+    return
+  }
+  closed = false
 }
 
 async function send(ends) {
@@ -141,10 +188,33 @@ async function send(ends) {
 
   if (ends) {
     close()
-    say('The exchange is over. Nothing further will be sent from this page.')
+    say(exchangeIsOver)
     return
   }
   say('Sent. Waiting for a reply on this page.')
+}
+
+function finish() {
+  if (closed) {
+    return
+  }
+
+  const holding = cards().filter(uncommittedIn)
+  if (holding.length) {
+    ask(holding)
+    return
+  }
+  send(true)
+}
+
+function discard() {
+  stopAsking()
+  send(true)
+}
+
+function keepAnswering() {
+  stopAsking()
+  say('Nothing was sent, and this page is still open.')
 }
 
 function bind() {
@@ -160,7 +230,15 @@ function bind() {
   }
   const finisher = document.querySelector('.finish')
   if (finisher) {
-    finisher.addEventListener('click', () => send(true))
+    finisher.addEventListener('click', finish)
+  }
+  const discarding = document.querySelector('.discard')
+  if (discarding) {
+    discarding.addEventListener('click', discard)
+  }
+  const keeping = document.querySelector('.keep')
+  if (keeping) {
+    keeping.addEventListener('click', keepAnswering)
   }
   document.querySelectorAll('pre code[class^="language-"]').forEach((block) => {
     if (block.textContent.trim()) {
@@ -185,6 +263,7 @@ async function take(revision) {
 
   standing.replaceWith(replacing)
   document.body.dataset.revision = String(revision)
+  document.body.dataset.over = read.body.dataset.over
   document.title = read.title
 
   const held = new Set(cards().map((card) => card.dataset.decision))
@@ -197,7 +276,8 @@ async function take(revision) {
   for (const named of committed.keys()) {
     restore(named)
   }
-  say('A reply arrived, and this page is showing it.')
+  takeUpWhetherItIsOver()
+  say(closed ? exchangeIsOver : 'A reply arrived, and this page is showing it.')
 }
 
 function restore(named) {
@@ -218,6 +298,10 @@ function restore(named) {
 }
 
 function follow() {
+  if (closed) {
+    return
+  }
+
   const live = new EventSource('/live')
   live.addEventListener('revision', (event) => {
     const revision = Number(event.data)
@@ -226,10 +310,12 @@ function follow() {
     }
   })
   live.addEventListener('closed', () => {
+    live.close()
     close()
-    say('The exchange is over.')
+    say(exchangeIsOver)
   })
 }
 
 bind()
+takeUpWhetherItIsOver()
 follow()

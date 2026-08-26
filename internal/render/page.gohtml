@@ -7,7 +7,7 @@
 <title>{{.Title}}</title>
 <link rel="stylesheet" href="/assets/surface.css">
 </head>
-<body data-token="{{.Token}}" data-revision="{{.Revision}}">
+<body data-token="{{.Token}}" data-revision="{{.Revision}}" data-over="{{if .Over}}yes{{else}}no{{end}}">
 <main class="surface">
 <header class="heading">
 <h1>{{.Title}}</h1>
@@ -16,7 +16,7 @@
 
 <ol class="decisions">
 {{range .Decisions}}
-<li class="decision" id="decision-{{.ID}}" data-decision="{{.ID}}" data-mode="{{.Mode}}" data-state="open">
+<li class="decision" id="decision-{{.ID}}" data-decision="{{.ID}}" data-mode="{{.Mode}}" data-state="{{if $.Over}}closed{{else}}open{{end}}">
 <div class="attribution">
 <span class="name">{{.Name}}</span>
 {{if .Severity}}<span class="severity" data-severity="{{.Severity}}">{{.Severity}}</span>{{end}}
@@ -62,7 +62,7 @@
 {{$decision := .}}
 {{range .Options}}
 <label class="option">
-<input class="choice" data-part="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}">
+<input class="choice" data-part="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}"{{if $.Over}} disabled{{end}}>
 <span class="option-label">{{.Label}}</span>
 {{if .Meaning}}<span class="option-meaning">{{.Meaning}}</span>{{end}}
 </label>
@@ -71,12 +71,12 @@
 
 <label class="words">
 <span class="words-label">In your own words</span>
-<textarea class="words-field" data-part="answering" name="words-{{.ID}}" data-decision="{{.ID}}" rows="3" placeholder="Answering here alone is a complete answer."></textarea>
+<textarea class="words-field" data-part="answering" name="words-{{.ID}}" data-decision="{{.ID}}" rows="3" placeholder="Answering here alone is a complete answer."{{if $.Over}} disabled{{end}}></textarea>
 </label>
 
 <div class="commitment">
-<button class="commit" data-part="answering" type="button" data-decision="{{.ID}}">Commit this answer</button>
-<button class="reopen" data-part="answering" type="button" data-decision="{{.ID}}" hidden>Take this answer back</button>
+<button class="commit" data-part="answering" type="button" data-decision="{{.ID}}"{{if $.Over}} disabled{{end}}>Commit this answer</button>
+<button class="reopen" data-part="answering" type="button" data-decision="{{.ID}}" hidden{{if $.Over}} disabled{{end}}>Take this answer back</button>
 <p class="committed" hidden><span class="committed-said"></span></p>
 </div>
 </li>
@@ -86,14 +86,21 @@
 <section class="composer">
 <label class="message">
 <span class="message-label">Anything to say to whoever asked</span>
-<textarea class="message-field" data-part="sending" name="message" rows="3"></textarea>
+<textarea class="message-field" data-part="sending" name="message" rows="3"{{if .Over}} disabled{{end}}></textarea>
 </label>
 <div class="sends">
-<button class="send" data-part="sending" type="button" data-ends="no">Send and wait for a reply</button>
-<button class="finish" data-part="sending" type="button" data-ends="yes">Send and finish</button>
+<button class="send" data-part="sending" type="button" data-ends="no"{{if .Over}} disabled{{end}}>Send and wait for a reply</button>
+<button class="finish" data-part="sending" type="button" data-ends="yes"{{if .Over}} disabled{{end}}>Send and finish</button>
 </div>
 <p class="sends-meaning">Sending waits for a reply on this page. Finishing sends and closes the exchange.</p>
-<p class="state" role="status" aria-live="polite"></p>
+<div class="discarding" hidden>
+<p class="discarding-said" role="status" aria-live="polite"></p>
+<div class="discarding-choices">
+<button class="discard" data-part="sending" type="button"{{if .Over}} disabled{{end}}>Finish anyway</button>
+<button class="keep" data-part="sending" type="button"{{if .Over}} disabled{{end}}>Keep answering</button>
+</div>
+</div>
+<p class="state" role="status" aria-live="polite">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
 </section>
 </main>
 <script src="/assets/surface.js"></script>

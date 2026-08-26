@@ -174,6 +174,17 @@ func (r *reader) settled() {
 	r.do(chromedp.Poll("!!document.querySelector('.commit') && !!window.getComputedStyle(document.body).backgroundColor", &bound))
 }
 
+func (r *reader) reload() {
+	r.t.Helper()
+
+	r.do(
+		chromedp.Reload(),
+		chromedp.WaitReady("body", chromedp.ByQuery),
+		chromedp.WaitReady(".send", chromedp.ByQuery),
+	)
+	r.settled()
+}
+
 func (r *reader) click(selector string) {
 	r.t.Helper()
 	r.do(chromedp.Click(selector, chromedp.ByQuery, chromedp.NodeVisible))

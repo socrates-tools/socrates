@@ -398,7 +398,8 @@ button:disabled {
 }
 
 .commit,
-.finish {
+.finish,
+.keep {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
@@ -438,6 +439,26 @@ button:disabled {
   margin: 0.75rem 0 0;
   color: var(--ink-faint);
   font-size: var(--text-floor);
+}
+
+.discarding {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--removed-rule);
+  border-radius: 8px;
+  background: var(--removed);
+}
+
+.discarding-said {
+  margin: 0 0 0.75rem;
+  color: var(--ink);
+  font-size: var(--text-body);
+}
+
+.discarding-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .state {

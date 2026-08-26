@@ -158,7 +158,7 @@ func (s *Server) guarded(next http.HandlerFunc) http.HandlerFunc {
 func (s *Server) page(writer http.ResponseWriter, request *http.Request) {
 	read, revision := s.exchange.Document()
 
-	written, err := render.Page(read, render.Frame{Token: s.token, Revision: revision})
+	written, err := render.Page(read, render.Frame{Token: s.token, Revision: revision, Over: s.exchange.Over()})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
@@ -186,10 +186,17 @@ func (s *Server) live(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("content-type", "text/event-stream")
 	writer.Header().Set("cache-control", "no-store")
 	writer.WriteHeader(http.StatusOK)
+
+	waiting := s.exchange.Changed()
 	flusher.Flush()
 
 	for {
-		waiting := s.exchange.Changed()
+		if s.exchange.Over() {
+			_, _ = io.WriteString(writer, "event: closed\ndata: yes\n\n")
+			flusher.Flush()
+			return
+		}
+
 		select {
 		case <-request.Context().Done():
 			return
@@ -197,11 +204,10 @@ func (s *Server) live(writer http.ResponseWriter, request *http.Request) {
 			return
 		case <-waiting:
 		}
+		waiting = s.exchange.Changed()
 
 		if s.exchange.Over() {
-			_, _ = io.WriteString(writer, "event: closed\ndata: yes\n\n")
-			flusher.Flush()
-			return
+			continue
 		}
 		_, revision := s.exchange.Document()
 		_, _ = io.WriteString(writer, "event: revision\ndata: "+strconv.Itoa(revision)+"\n\n")
