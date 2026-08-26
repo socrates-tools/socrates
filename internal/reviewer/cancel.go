@@ -21,17 +21,17 @@ func Cancel(ctx context.Context, store runstore.Store, name string) (*runstore.R
 		return run, liftTheSeal(run)
 	}
 
-	if err := process.KillGroup(run.Agent); err != nil {
-		return nil, err
-	}
-	if err := process.Kill(run.Reviewer); err != nil {
-		return nil, err
-	}
-
 	if err := run.End(runstate.Cancelled, cancelledReason); err != nil {
 		return nil, err
 	}
 	if err := store.Save(run); err != nil {
+		return nil, err
+	}
+
+	if err := process.KillGroup(run.Agent); err != nil {
+		return nil, err
+	}
+	if err := process.Kill(run.Reviewer); err != nil {
 		return nil, err
 	}
 
