@@ -19,6 +19,7 @@ import (
 const (
 	servingVariable = "AGORA_SERVING"
 	standardInput   = "-"
+	addressFlag     = "address"
 
 	reachInterval = 20 * time.Millisecond
 	reachDeadline = 20 * time.Second
@@ -44,19 +45,32 @@ func newServeCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
+			configured, err := surface.LoadConfiguration()
+			if err != nil {
+				return err
+			}
+			if !command.Flags().Changed(addressFlag) && configured.Bind != "" {
+				address = configured.Bind
+			}
 			if err := surface.CheckLoopback(address); err != nil {
 				return err
+			}
+			if configured.ReachedAt != "" {
+				if err := surface.CheckOpenable(configured.ReachedAt); err != nil {
+					return err
+				}
 			}
 
 			if inTheForeground() {
 				return hold(read, raw, address)
 			}
-			return start(command, raw, address)
+			return start(command, raw, address, configured.ReachedAt)
 		},
 	}
 
 	command.Flags().StringVar(&from, "document", "", documentUsage)
-	command.Flags().StringVar(&address, "address", surface.DefaultAddress, addressUsage)
+	command.Flags().StringVar(&address, addressFlag, surface.DefaultAddress, addressUsage)
 	return command
 }
 
@@ -106,7 +120,7 @@ func hold(read document.Document, raw []byte, address string) error {
 	return surface.ForgetSession()
 }
 
-func start(command *cobra.Command, raw []byte, address string) error {
+func start(command *cobra.Command, raw []byte, address, reachedAt string) error {
 	if open, err := surface.ReadSession(); err == nil {
 		reaching, cancel := context.WithTimeout(command.Context(), reachTimeout())
 		defer cancel()
@@ -116,7 +130,7 @@ func start(command *cobra.Command, raw []byte, address string) error {
 			if err := caller.Revise(reaching, raw); err != nil {
 				return err
 			}
-			fmt.Fprintln(command.OutOrStdout(), open.Address)
+			fmt.Fprintln(command.OutOrStdout(), whereItIsReachedAt(open, reachedAt))
 			return nil
 		}
 	}
@@ -146,8 +160,15 @@ func start(command *cobra.Command, raw []byte, address string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(command.OutOrStdout(), open.Address)
+	fmt.Fprintln(command.OutOrStdout(), whereItIsReachedAt(open, reachedAt))
 	return nil
+}
+
+func whereItIsReachedAt(open surface.Session, reachedAt string) string {
+	if reachedAt != "" {
+		return reachedAt
+	}
+	return open.Address
 }
 
 func waitUntilReachable(ctx context.Context) (surface.Session, error) {

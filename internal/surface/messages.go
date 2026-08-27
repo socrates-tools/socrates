@@ -3,12 +3,20 @@ package surface
 const (
 	noHomeDirectory = "agora keeps its session under your state directory, and it could not find your home directory: %s. Set XDG_STATE_HOME and run the command again"
 
+	noConfigurationDirectory = "agora reads its configuration from your configuration directory, and it could not find one: %s. Set XDG_CONFIG_HOME and run the command again"
+	unreadableConfiguration  = "%s exists and agora cannot read it: %s. Fix its permissions or move it aside and run the command again"
+	unparsableConfiguration  = "%s is not configuration agora can read: %s. Fix the file or move it aside, because agora will not quietly run on defaults while a configuration file says otherwise"
+
 	addressIsNotHostAndPort    = "the address %q is not a host and a port: %s. Give an address such as 127.0.0.1:0 and run the command again"
 	addressNamesNoPort         = "the address %q names no port. Give an address such as 127.0.0.1:0 and run the command again"
 	addressNamesEveryInterface = "the address %q names every interface, and the surface binds a loopback address only. Give an address such as 127.0.0.1:0 and run the command again"
 	addressIsNotAnAddress      = "the address %q names the host %q, and the surface binds a loopback address only. Give an address such as 127.0.0.1:0 and run the command again"
 	addressIsNotLoopback       = "the address %q is not a loopback address, and the surface binds a loopback address only. Give an address such as 127.0.0.1:0 and run the command again"
 	bindingTheAddress          = "binding %s: %w"
+
+	addressIsNotAURL     = "the address %q the surface is reached at is not an address a person can open: %s. Give one such as https://agora.example:8443/ and run the command again"
+	addressIsNotOpenable = "the address %q the surface is reached at names no http or https scheme, and it is handed to a person to open. Give one such as https://agora.example:8443/ and run the command again"
+	addressNamesNoHost   = "the address %q the surface is reached at names no host, and it is handed to a person to open. Give one such as https://agora.example:8443/ and run the command again"
 
 	requestNamesNoHost  = "a request naming no host cannot be the surface's own. Use the address agora serve printed and run the request again"
 	requestNamesTheHost = "a request naming the host %q did not reach the surface it was bound to. Use the address agora serve printed and run the request again"

@@ -2,6 +2,7 @@ package surface
 
 import (
 	"net"
+	"net/url"
 
 	"github.com/rui-ktei/socrates/internal/refusal"
 )
@@ -34,6 +35,20 @@ func CheckLoopback(address string) error {
 	}
 	if !stated.IsLoopback() {
 		return refusal.New(addressIsNotLoopback, address)
+	}
+	return nil
+}
+
+func CheckOpenable(address string) error {
+	read, err := url.Parse(address)
+	if err != nil {
+		return refusal.Wrapping(err, addressIsNotAURL, address, err)
+	}
+	if read.Scheme != "http" && read.Scheme != "https" {
+		return refusal.New(addressIsNotOpenable, address)
+	}
+	if read.Host == "" {
+		return refusal.New(addressNamesNoHost, address)
 	}
 	return nil
 }
