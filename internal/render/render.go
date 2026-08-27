@@ -1,14 +1,27 @@
 package render
 
 import (
+	"crypto/sha256"
 	_ "embed"
+	"encoding/base64"
 	"fmt"
 	"html/template"
 	"strings"
 
 	"github.com/rui-ktei/socrates/internal/document"
 	"github.com/rui-ktei/socrates/internal/sanitise"
+	"github.com/rui-ktei/socrates/internal/stylesheet"
 )
+
+const (
+	PaintedClass = "painted"
+	NamePrefix   = "drawn-"
+
+	policy         = "default-src 'none'; style-src 'self'%s; style-src-attr 'none'; script-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'"
+	admittedByHash = " 'sha256-%s'"
+)
+
+var Illustration = stylesheet.Scope{Selector: "." + PaintedClass, Prefix: NamePrefix}
 
 //go:embed page.gohtml
 var pageSource string
@@ -22,12 +35,14 @@ type Frame struct {
 }
 
 type view struct {
-	Title     string
-	Preamble  string
-	Token     string
-	Revision  int
-	Over      bool
-	Decisions []decisionView
+	Title      string
+	Preamble   string
+	Token      string
+	Revision   int
+	Over       bool
+	Policy     string
+	Stylesheet template.CSS
+	Decisions  []decisionView
 }
 
 type decisionView struct {
@@ -63,18 +78,31 @@ func Page(read document.Document, frame Frame) (string, error) {
 }
 
 func viewOf(read document.Document, frame Frame) view {
+	painted := stylesheet.Reduce(read.Stylesheet, Illustration)
+
 	shown := view{
-		Title:    read.Title,
-		Preamble: read.Preamble,
-		Token:    frame.Token,
-		Revision: frame.Revision,
-		Over:     frame.Over,
+		Title:      read.Title,
+		Preamble:   read.Preamble,
+		Token:      frame.Token,
+		Revision:   frame.Revision,
+		Over:       frame.Over,
+		Policy:     policyAdmitting(painted),
+		Stylesheet: template.CSS(painted),
 	}
 
 	for _, decision := range read.Decisions {
 		shown.Decisions = append(shown.Decisions, decisionViewOf(decision))
 	}
 	return shown
+}
+
+func policyAdmitting(painted string) string {
+	if painted == "" {
+		return fmt.Sprintf(policy, "")
+	}
+
+	digest := sha256.Sum256([]byte(painted))
+	return fmt.Sprintf(policy, fmt.Sprintf(admittedByHash, base64.StdEncoding.EncodeToString(digest[:])))
 }
 
 func named(decision document.Decision) string {
@@ -97,7 +125,7 @@ func decisionViewOf(decision document.Decision) decisionView {
 		Multiple: decision.Mode == document.Many,
 		Language: decision.Evidence.Language,
 		Code:     decision.Evidence.Code,
-		Fragment: template.HTML(sanitise.Fragment(decision.Fragment)),
+		Fragment: template.HTML(sanitise.Fragment(decision.Fragment.Markup, NamePrefix)),
 	}
 
 	if patched := ReadPatch(decision.Evidence.Patch); !patched.Empty() {

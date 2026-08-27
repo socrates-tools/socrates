@@ -16,6 +16,7 @@ var SurfaceDirectories = []string{
 	filepath.Join("internal", "document"),
 	filepath.Join("internal", "render"),
 	filepath.Join("internal", "sanitise"),
+	filepath.Join("internal", "stylesheet"),
 	filepath.Join("internal", "surface"),
 	filepath.Join("web", "src"),
 }

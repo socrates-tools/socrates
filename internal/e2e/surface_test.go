@@ -274,7 +274,9 @@ func TestAFragmentOutsideTheAllowlistStillServes(t *testing.T) {
 		t.Fatalf("reading the document: %v", err)
 	}
 	decisions := written["decisions"].([]any)
-	decisions[0].(map[string]any)["fragment"] = `<figure><script>fetch("https://elsewhere")</script><p onclick="steal()">drawn</p><form><input name="who"></form></figure>`
+	decisions[0].(map[string]any)["fragment"] = map[string]any{
+		"markup": `<figure><script>fetch("https://elsewhere")</script><p onclick="steal()">drawn</p><form><input name="who"></form></figure>`,
+	}
 
 	raw, err := json.Marshal(written)
 	if err != nil {

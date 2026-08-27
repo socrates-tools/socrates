@@ -40,6 +40,12 @@ var referencingAttributes = names(
 	"fill", "stroke", "clip-path", "mask", "marker-start", "marker-mid", "marker-end",
 )
 
+var namingAttributes = names(
+	"class", "id", "aria-labelledby", "aria-describedby",
+)
+
+const reference = "url("
+
 func names(listed ...string) map[string]bool {
 	held := make(map[string]bool, len(listed))
 	for _, one := range listed {

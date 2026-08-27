@@ -39,7 +39,7 @@ const twoDecisionDocument = `{
         {"label": "the metric", "meaning": "counted nowhere else", "command": "keep c-2 metric"},
         {"label": "the log line", "meaning": "one line per write", "command": "keep c-2 log", "recommended": true}
       ],
-      "fragment": "<figure><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 40\" width=\"120\" height=\"40\" role=\"img\" aria-label=\"the write path\"><rect x=\"1\" y=\"1\" width=\"40\" height=\"20\" fill=\"none\" stroke=\"#8a6d3b\"/><text x=\"6\" y=\"34\" font-size=\"11\">write</text></svg><figcaption>the write path</figcaption></figure>"
+      "fragment": {"markup": "<figure><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 40\" width=\"120\" height=\"40\" role=\"img\" aria-label=\"the write path\"><rect x=\"1\" y=\"1\" width=\"40\" height=\"20\" fill=\"none\" stroke=\"#8a6d3b\"/><text x=\"6\" y=\"34\" font-size=\"11\">write</text></svg><figcaption>the write path</figcaption></figure>"}
     }
   ]
 }`

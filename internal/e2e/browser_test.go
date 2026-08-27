@@ -13,13 +13,15 @@ import (
 	"time"
 
 	"github.com/chromedp/cdproto/emulation"
+	"github.com/chromedp/cdproto/log"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 )
 
 const (
-	browserVariable = "AGORA_BROWSER"
-	browserDeadline = 90 * time.Second
+	browserVariable    = "AGORA_BROWSER"
+	browserDeadline    = 90 * time.Second
+	blockedByThePolicy = "has been blocked"
 )
 
 var browserCandidates = []string{
@@ -91,6 +93,7 @@ type reader struct {
 	t        *testing.T
 	context  context.Context
 	requests *recorded
+	refused  *recorded
 }
 
 type recorded struct {
@@ -141,16 +144,22 @@ func opening(t *testing.T, address string, options ...chromedp.ExecAllocatorOpti
 	bounded, cancel := context.WithTimeout(driving, browserDeadline)
 	t.Cleanup(cancel)
 
-	requests := &recorded{}
+	requests, refused := &recorded{}, &recorded{}
 	chromedp.ListenTarget(bounded, func(event any) {
-		if sent, is := event.(*network.EventRequestWillBeSent); is {
-			requests.note(sent.Request.URL)
+		switch held := event.(type) {
+		case *network.EventRequestWillBeSent:
+			requests.note(held.Request.URL)
+		case *log.EventEntryAdded:
+			if held.Entry.Source == log.SourceSecurity {
+				refused.note(held.Entry.Text)
+			}
 		}
 	})
 
-	held := &reader{t: t, context: bounded, requests: requests}
+	held := &reader{t: t, context: bounded, requests: requests, refused: refused}
 	held.do(
 		network.Enable(),
+		log.Enable(),
 		chromedp.Navigate("http://"+address+"/"),
 		chromedp.WaitReady("body", chromedp.ByQuery),
 		chromedp.WaitReady(".send", chromedp.ByQuery),
@@ -207,6 +216,18 @@ func (r *reader) waitFor(expression string) {
 	if err := chromedp.Run(r.context, chromedp.Poll(expression, &held)); err != nil {
 		r.t.Fatalf("waiting for %s: %v", expression, err)
 	}
+}
+
+func (r *reader) violations() []string {
+	r.t.Helper()
+
+	var held []string
+	for _, said := range r.refused.all() {
+		if strings.Contains(said, blockedByThePolicy) {
+			held = append(held, said)
+		}
+	}
+	return held
 }
 
 func (r *reader) emulate(preference string) {

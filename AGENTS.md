@@ -47,7 +47,8 @@ What agora is:
 
 - `cmd/agora` - the binary: `serve`, `poll`, `end`, `stop`, `version`, and nothing else.
 - `internal/document` - what a caller writes for the surface to render, and what it copies rather than accepts.
-- `internal/sanitise` - a caller's HTML fragment reduced to a fixed allowlist.
+- `internal/sanitise` - a caller's HTML fragment reduced to a fixed allowlist, and every name it carries prefixed.
+- `internal/stylesheet` - a caller's stylesheet read as a parse, reduced to a fixed allowlist, and scoped to the illustration.
 - `internal/render` - a document to one HTML page, and a patch to the rows of a split diff.
 - `internal/assets` - the built client bundle and fonts, embedded, and the stamp of their source.
 - `internal/surface` - the loopback server and its guards, the session file, the exchange, and the bounds on waiting.
@@ -148,7 +149,9 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - It writes only under the user's state directory.
 - A caller writes a document rather than a page, and the name, severity, audience and location come from the source a decision cites.
 - Every decision carries a free-text field that no document field can remove.
-- A caller's fragment is reduced to a fixed allowlist before it is embedded.
+- A caller's fragment is reduced to a fixed allowlist before it is embedded, and every name it carries is prefixed by the surface.
+- A caller's stylesheet is reduced from a parse that reached the end of its input, every selector it keeps is scoped to the illustration, and the page admits it by a hash of exactly the bytes it embedded.
+- What a caller paints is contained by the illustration, so a rule inside one decides nothing about where the page's own controls land.
 - Delivery happens once, waiting is bounded, and an idle server stops.
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.
 - An element it hides paints nothing, every colour it paints is a token stated once, and every text meets a contrast floor under both preferences.

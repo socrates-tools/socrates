@@ -2,8 +2,10 @@ package document_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -13,7 +15,8 @@ import (
 
 func whole() document.Document {
 	return document.Document{
-		Title: "two things to settle",
+		Title:      "two things to settle",
+		Stylesheet: `.panel{border:1px solid #d8d2c4}`,
 		Decisions: []document.Decision{{
 			ID:       "d-1",
 			Question: "does the cache belong here",
@@ -23,6 +26,7 @@ func whole() document.Document {
 				{Label: "keep it", Meaning: "the staleness is acceptable", Command: `agree d-1 --reason "the staleness is acceptable"`},
 				{Label: "drop it", Meaning: "correctness first", Command: `patch d-1`},
 			},
+			Fragment: document.Fragment{Markup: `<div class="panel">one call, one read</div>`},
 		}},
 	}
 }
@@ -35,6 +39,11 @@ func raw(t *testing.T, written document.Document) []byte {
 		t.Fatalf("writing a document out: %v", err)
 	}
 	return encoded
+}
+
+func briefly(read document.Document) string {
+	return fmt.Sprintf("title %q, %d decisions, %+v, a stylesheet of %d bytes",
+		read.Title, len(read.Decisions), read.Decisions, len(read.Stylesheet))
 }
 
 func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
@@ -78,6 +87,13 @@ func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
 			broken: func(d *document.Document) { d.Decisions = nil },
 			names:  []string{"decision"},
 		},
+		{
+			named: "a stylesheet larger than the stated size",
+			broken: func(d *document.Document) {
+				d.Stylesheet = strings.Repeat(".p{color:#222}", document.StylesheetCeiling)
+			},
+			names: []string{"stylesheet", strconv.Itoa(document.StylesheetCeiling)},
+		},
 	} {
 		t.Run(refused.named, func(t *testing.T) {
 			written := whole()
@@ -85,7 +101,7 @@ func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
 
 			read, err := document.Read(raw(t, written))
 			if err == nil {
-				t.Fatalf("%s validated, and a document that does not validate is refused before serving: %+v", refused.named, read)
+				t.Fatalf("%s validated, and a document that does not validate is refused before serving: %s", refused.named, briefly(read))
 			}
 			for _, named := range refused.names {
 				if !strings.Contains(err.Error(), named) {
@@ -143,6 +159,33 @@ func TestADocumentThatMarksNothingIsUnaffected(t *testing.T) {
 		if option.Recommended {
 			t.Errorf("the option %q comes back marked, and the document marked nothing", option.Label)
 		}
+	}
+}
+
+func TestAnIllustrationWrittenAsABareStringIsRefusedByName(t *testing.T) {
+	// scenario: An illustration the stylesheet paints survives neutralising
+	written := map[string]any{
+		"title": "one thing to settle",
+		"decisions": []any{map[string]any{
+			"id":       "d-1",
+			"question": "does the cache belong here",
+			"mode":     string(document.One),
+			"options":  []any{map[string]any{"label": "keep it", "command": "agree d-1"}},
+			"fragment": `<div class="panel">one call, one read</div>`,
+		}},
+	}
+
+	raw, err := json.Marshal(written)
+	if err != nil {
+		t.Fatalf("writing a document out: %v", err)
+	}
+
+	read, err := document.Read(raw)
+	if err == nil {
+		t.Fatalf("an illustration written as a bare string was read, and the field says what it is made of: %+v", read)
+	}
+	if !strings.Contains(err.Error(), "fragment") {
+		t.Errorf("refusing an illustration written as a bare string does not name the field: %v", err)
 	}
 }
 

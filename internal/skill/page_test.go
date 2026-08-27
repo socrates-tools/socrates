@@ -43,6 +43,7 @@ func TestTheBarNamesEachWayThePageFailsAPerson(t *testing.T) {
 		{named: "an option said in the words of the thing being built", stated: []string{"what each option gets the person", "words of the thing being built", "without opening the code"}},
 		{named: "saying which option you would take, and marking one and no other", stated: []string{"which option you would take", "marking that option and no other"}},
 		{named: "an example where a finding is purely technical", stated: []string{"purely technical", "example"}},
+		{named: "showing what a finding costs where that is what a person sees", stated: []string{"what a person sees", "show them it rather than describing it"}},
 		{named: "a diagram only where a workflow needs one", stated: []string{"diagram only where", "not otherwise"}},
 		{named: "restraint about tokens", stated: []string{"spend tokens"}},
 	} {

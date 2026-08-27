@@ -12,16 +12,22 @@ func TestTheRendererOpensNoSocketAndReadsNoClock(t *testing.T) {
 	renderer := filepath.Join("internal", "render")
 	allowed := []string{
 		"bytes",
+		"crypto/sha256",
 		"embed",
+		"encoding/base64",
 		"encoding/json",
 		"errors",
 		"fmt",
 		"html/template",
+		"io",
 		"slices",
 		"strconv",
 		"strings",
+		"github.com/tdewolff/parse/v2",
+		"github.com/tdewolff/parse/v2/css",
 		source.ModulePath + "/internal/document",
 		source.ModulePath + "/internal/sanitise",
+		source.ModulePath + "/internal/stylesheet",
 		"golang.org/x/net/html",
 		"golang.org/x/net/html/atom",
 	}

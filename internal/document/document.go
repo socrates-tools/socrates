@@ -22,11 +22,14 @@ func Modes() []Mode {
 	return slices.Clone(modes)
 }
 
+const StylesheetCeiling = 64 * 1024
+
 type Document struct {
-	Title     string     `json:"title"`
-	Preamble  string     `json:"preamble"`
-	Decisions []Decision `json:"decisions"`
-	Source    []Entry    `json:"source"`
+	Title      string     `json:"title"`
+	Preamble   string     `json:"preamble"`
+	Stylesheet string     `json:"stylesheet"`
+	Decisions  []Decision `json:"decisions"`
+	Source     []Entry    `json:"source"`
 }
 
 type Entry struct {
@@ -48,7 +51,11 @@ type Decision struct {
 	Mode     Mode     `json:"mode"`
 	Options  []Option `json:"options"`
 	Evidence Evidence `json:"evidence"`
-	Fragment string   `json:"fragment"`
+	Fragment Fragment `json:"fragment"`
+}
+
+type Fragment struct {
+	Markup string `json:"markup"`
 }
 
 type Option struct {
@@ -88,6 +95,9 @@ func Validate(read Document) error {
 	}
 	if len(read.Decisions) == 0 {
 		return errors.New(noDecisions)
+	}
+	if len(read.Stylesheet) > StylesheetCeiling {
+		return fmt.Errorf(theStylesheetIsTooLarge, len(read.Stylesheet), StylesheetCeiling)
 	}
 
 	cited, err := read.citedByIdentifier()

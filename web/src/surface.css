@@ -212,10 +212,14 @@ pre,
 
 .evidence.illustration {
   padding: 1rem;
-  text-align: center;
+  max-height: 32rem;
+  overflow: auto;
+  contain: layout paint style;
 }
 
 .evidence.illustration svg {
+  display: block;
+  margin: 0 auto;
   max-width: 100%;
   height: auto;
 }

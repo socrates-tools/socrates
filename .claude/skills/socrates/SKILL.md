@@ -68,8 +68,32 @@ Hold the page to this:
   You have read the finding and the person has not, and a list where every option looks equally likely makes them work out what you already know.
 - Where a finding is purely technical, show a small example of it going wrong.
   A reader should not have to work out for themselves what the term costs them.
+- Where what a finding costs is what a person sees, show them it rather than describing it.
+  They already know the screen and are being asked to recognise it, and a panel retyped in a monospace block is the one form they cannot recognise it in.
 - Draw a diagram only where a workflow is what makes a finding hard to follow, and not otherwise.
 - Spend tokens as though they were the person's, because they are.
+
+A decision may also carry one illustration.
+It travels beside the evidence rather than inside it, in a field of its own:
+
+    "fragment": {"markup": "<div class=\"panel\"><div class=\"row\">...</div></div>"}
+
+An illustration takes one of two forms.
+A drawing you write yourself as inline SVG is for a workflow: the surface renders the drawing you supplied and lays out nothing of its own.
+Markup the document's stylesheet paints is for a screen the person already knows, because what makes them recognise a panel is its structure, its controls and the words actually on it.
+
+The look is stated once for the whole document rather than once per decision:
+
+    "stylesheet": ".panel{border:1px solid #d8d2c4;padding:0.75rem}.row{display:flex;justify-content:space-between}"
+
+One document is one product, and one stylesheet paints every illustration in it.
+
+Both the markup and the stylesheet are reduced to an allowlist before they are embedded, so do not write what will be dropped.
+Out of the markup go script, event handlers, remote references and form controls.
+Out of the stylesheet go imports, font faces, every property the allowlist does not name, and every value naming a resource.
+
+The surface scopes the stylesheet itself, and every selector it keeps is confined to the illustration.
+Write your selectors for the names your own markup carries, leave the scoping to the surface, and do not expect a rule you aimed at the page to reach the page.
 
 The findings a person answers go on the page in full.
 The ones you are patching yourself go on it as a short list, so the person can see the whole round without reading it.

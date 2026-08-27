@@ -1,6 +1,8 @@
 package render_test
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"reflect"
 	"slices"
 	"strings"
@@ -83,9 +85,144 @@ func text(node *html.Node) string {
 	return written.String()
 }
 
+func within(node *html.Node, named string) *html.Node {
+	for _, held := range elements(node, "div") {
+		if held != node && hasClass(held, named) {
+			return held
+		}
+	}
+	return nil
+}
+
+func policyOf(t *testing.T, page *html.Node) string {
+	t.Helper()
+
+	for _, stated := range elements(page, "meta") {
+		if strings.EqualFold(attribute(stated, "http-equiv"), "content-security-policy") {
+			return attribute(stated, "content")
+		}
+	}
+	t.Fatal("the page states no policy at all")
+	return ""
+}
+
+func embeddedStylesheet(t *testing.T, page *html.Node) string {
+	t.Helper()
+
+	embedded := elements(page, "style")
+	if len(embedded) != 1 {
+		t.Fatalf("the page carries %d embedded stylesheets, want the one the document stated", len(embedded))
+	}
+	return text(embedded[0])
+}
+
+func painted(read document.Document) document.Document {
+	read.Stylesheet = `:root{--panel-face:#fbf9f4}.panel{background:var(--panel-face);border:1px solid #d8d2c4}.chart rect{fill:url(#band)}`
+	for position := range read.Decisions {
+		read.Decisions[position].Fragment = document.Fragment{
+			Markup: `<div class="panel"><span class="value" id="total">$1,240.00</span></div>`,
+		}
+	}
+	return read
+}
+
+func TestThePolicyStatesTheHashOfTheBytesEmbedded(t *testing.T) {
+	// scenario: The embedded stylesheet paints
+	page := rendered(t, painted(oneDecision(document.One)))
+
+	embedded := embeddedStylesheet(t, page)
+	for _, stated := range []string{
+		".painted{--panel-face:#fbf9f4;}",
+		".painted .drawn-panel{background:var(--panel-face);border:1px solid #d8d2c4;}",
+		".painted .drawn-chart rect{fill:url(#drawn-band);}",
+	} {
+		if !strings.Contains(embedded, stated) {
+			t.Errorf("the page embedded no %q:\n%s", stated, embedded)
+		}
+	}
+
+	digest := sha256.Sum256([]byte(embedded))
+	stated := "'sha256-" + base64.StdEncoding.EncodeToString(digest[:]) + "'"
+	if policy := policyOf(t, page); !strings.Contains(policy, stated) {
+		t.Errorf("the policy does not admit the bytes the page embedded as %s:\n%s", stated, policy)
+	}
+}
+
+func TestInlineStyleIsNotAdmittedAsAClass(t *testing.T) {
+	policy := policyOf(t, rendered(t, painted(oneDecision(document.One))))
+
+	if !strings.Contains(policy, "style-src-attr 'none'") {
+		t.Errorf("the policy admits style carried on an element, and style on an element cannot be scoped:\n%s", policy)
+	}
+	for _, admitted := range []string{"unsafe-inline", "unsafe-hashes", "unsafe-eval", "*"} {
+		if strings.Contains(policy, admitted) {
+			t.Errorf("the policy admits %q, and the reduction stops being the only door:\n%s", admitted, policy)
+		}
+	}
+	if strings.Count(policy, "'sha256-") != 1 {
+		t.Errorf("the policy states %d hashes, want the one stylesheet the page embedded:\n%s", strings.Count(policy, "'sha256-"), policy)
+	}
+}
+
+func TestOneStylesheetPaintsEveryIllustrationInADocument(t *testing.T) {
+	read := painted(oneDecision(document.One))
+	second := read.Decisions[0]
+	second.ID = "c-2"
+	read.Decisions = append(read.Decisions, second)
+
+	page := rendered(t, read)
+
+	boxes := 0
+	for _, box := range elements(page, "div") {
+		if !hasClass(box, "illustration") {
+			continue
+		}
+		boxes++
+		inside := within(box, render.PaintedClass)
+		if inside == nil {
+			t.Errorf("an illustration renders outside the box a stylesheet paints in:\n%s", text(box))
+			continue
+		}
+		if !strings.Contains(text(inside), "$1,240.00") {
+			t.Errorf("the illustration's box holds none of what the caller supplied:\n%s", text(inside))
+		}
+	}
+
+	if boxes != 2 {
+		t.Fatalf("two decisions carrying an illustration rendered %d boxes", boxes)
+	}
+	if embedded := embeddedStylesheet(t, page); !strings.Contains(embedded, render.Illustration.Selector) {
+		t.Errorf("the one stylesheet the page embedded names no illustration:\n%s", embedded)
+	}
+}
+
+func TestADocumentThatCarriesNoStylesheetStillServes(t *testing.T) {
+	read := painted(oneDecision(document.One))
+	read.Stylesheet = ""
+
+	page := rendered(t, read)
+
+	if embedded := elements(page, "style"); len(embedded) != 0 {
+		t.Errorf("a document carrying no stylesheet embedded %d of them", len(embedded))
+	}
+	if policy := policyOf(t, page); strings.Contains(policy, "sha256-") {
+		t.Errorf("a document carrying no stylesheet states a hash for one:\n%s", policy)
+	}
+
+	unpainted := false
+	for _, box := range elements(page, "div") {
+		if hasClass(box, "illustration") && strings.Contains(text(box), "$1,240.00") {
+			unpainted = true
+		}
+	}
+	if !unpainted {
+		t.Error("a document carrying no stylesheet renders no illustration either")
+	}
+}
+
 func TestADocumentRendersWithoutTheCallerWritingMarkup(t *testing.T) {
 	read := oneDecision(document.One)
-	read.Decisions[0].Fragment = ""
+	read.Decisions[0].Fragment = document.Fragment{}
 
 	page := rendered(t, read)
 
@@ -275,7 +412,7 @@ func everyCardCarriesTheField(page *html.Node) bool {
 
 func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 	read := oneDecision(document.Many)
-	read.Decisions[0].Fragment = `<form><input name="smuggled"><button>publish</button></form>`
+	read.Decisions[0].Fragment = document.Fragment{Markup: `<form><input name="smuggled"><button>publish</button></form>`}
 	read.Decisions[0].Evidence = document.Evidence{Patch: "--- a/x\n+++ b/x\n@@ -1,2 +1,2 @@\n-old\n+new\n"}
 
 	page := rendered(t, read)
