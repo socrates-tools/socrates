@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/rui-ktei/socrates/internal/findings"
 	"github.com/rui-ktei/socrates/internal/prompt"
 	"github.com/rui-ktei/socrates/internal/testing/harness"
 	"github.com/rui-ktei/socrates/internal/testquality"
@@ -54,6 +55,7 @@ func TestEveryRuleReachesTheReviewer(t *testing.T) {
 		{rule: "emptiness", needle: "return an empty findings array"},
 		{rule: "the action definitions", needle: "When in doubt the action is"},
 		{rule: "the test-quality rule", needle: strings.TrimSpace(testquality.Rule)},
+		{rule: "whether the bug is still reachable", needle: "Ask whether the bug is still reachable"},
 	}
 
 	for _, required := range rules {
@@ -61,6 +63,53 @@ func TestEveryRuleReachesTheReviewer(t *testing.T) {
 			t.Errorf("the delivered prompt does not carry %s", required.rule)
 		}
 	}
+}
+
+func TestTheReviewerIsToldToReportWhatTheRuleForbids(t *testing.T) {
+	instruction := testQualityInstruction(t)
+
+	for _, required := range []string{"Report every test this change adds", "implementation source"} {
+		if !strings.Contains(instruction, required) {
+			t.Errorf("the instruction beside the test-quality rule does not carry %q:\n%s", required, instruction)
+		}
+	}
+}
+
+func TestTheReportingDutyIsBoundedToTheChange(t *testing.T) {
+	instruction := testQualityInstruction(t)
+
+	for _, required := range []string{"already in the repository", "where this change touches it", "repository-wide cleanup"} {
+		if !strings.Contains(instruction, required) {
+			t.Errorf("the instruction beside the test-quality rule does not carry %q:\n%s", required, instruction)
+		}
+	}
+}
+
+func testQualityInstruction(t *testing.T) string {
+	t.Helper()
+
+	session := harness.Start(t)
+	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
+
+	name := session.Review("--intent", "add a function")
+	session.WaitForTerminal(name)
+
+	sections := prompt.Sections(session.Simulator.OnlyInvocation().Prompt)
+	body, present := prompt.BodyOf(sections, prompt.TestQualityHeading)
+	if !present {
+		t.Fatalf("the delivered prompt has no %q section", prompt.TestQualityHeading)
+	}
+
+	rule := strings.TrimSpace(testquality.Rule)
+	if !strings.HasPrefix(body, rule) {
+		t.Fatalf("the test-quality section does not open with the shared rule:\n%s", body)
+	}
+
+	instruction := strings.TrimSpace(strings.TrimPrefix(body, rule))
+	if instruction == "" {
+		t.Fatal("the test-quality section carries the rule and nothing telling the reviewer to act on it")
+	}
+	return instruction
 }
 
 func TestIntentReachesTheReviewer(t *testing.T) {
@@ -79,6 +128,98 @@ func TestIntentReachesTheReviewer(t *testing.T) {
 	if !strings.Contains(stated, intent) {
 		t.Errorf("the intent section does not carry what the person stated:\n%s", stated)
 	}
+}
+
+func TestAContradictionIsReportedAndLeftToAPerson(t *testing.T) {
+	obligation := intentObligation(t)
+
+	for _, required := range []string{
+		"omits a behaviour the intent names",
+		"carries a behaviour the intent rules out",
+		"naming the part of the intent it contradicts and the code that contradicts it",
+		"not the author's to settle alone",
+	} {
+		if !strings.Contains(obligation, required) {
+			t.Errorf("the intent section does not carry %q:\n%s", required, obligation)
+		}
+	}
+
+	asking := actionNeedingAPerson(t)
+	if !strings.Contains(obligation, string(asking)) {
+		t.Errorf("the obligation does not ask for %q, which is the action the classifier reads as needing a person:\n%s", asking, obligation)
+	}
+}
+
+func TestAnOtherwiseCleanChangeIsNotAnExemption(t *testing.T) {
+	obligation := intentObligation(t)
+
+	if !strings.Contains(obligation, "even where nothing else about the change is wrong") {
+		t.Errorf("the obligation does not say a contradiction is reported from an otherwise clean change:\n%s", obligation)
+	}
+}
+
+func TestAnUnstatedThingIsNotAContradiction(t *testing.T) {
+	obligation := intentObligation(t)
+
+	for _, required := range []string{"What the intent does not mention is not something it ruled out", "not a contradiction"} {
+		if !strings.Contains(obligation, required) {
+			t.Errorf("the obligation does not carry %q:\n%s", required, obligation)
+		}
+	}
+}
+
+func TestNoIntentNoObligation(t *testing.T) {
+	session := harness.Start(t)
+	session.Repository.Write("internal/added.go", "package internal\n")
+
+	name := session.Review()
+	session.WaitForTerminal(name)
+
+	delivered := session.Simulator.OnlyInvocation().Prompt
+	if _, present := prompt.BodyOf(prompt.Sections(delivered), prompt.IntentHeading); present {
+		t.Errorf("a review with no stated intent delivered an intent section anyway:\n%s", delivered)
+	}
+	if strings.Contains(delivered, prompt.IntentHeading) {
+		t.Errorf("the intent heading reached the reviewer with nothing under it:\n%s", delivered)
+	}
+	for _, obliged := range []string{"omits a behaviour the intent names", "carries a behaviour the intent rules out"} {
+		if strings.Contains(delivered, obliged) {
+			t.Errorf("a review with no stated intent was obliged about an intent nobody stated: %q\n%s", obliged, delivered)
+		}
+	}
+}
+
+func intentObligation(t *testing.T) string {
+	t.Helper()
+
+	session := harness.Start(t)
+	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
+
+	name := session.Review("--intent", "add a function")
+	session.WaitForTerminal(name)
+
+	sections := prompt.Sections(session.Simulator.OnlyInvocation().Prompt)
+	stated, present := prompt.BodyOf(sections, prompt.IntentHeading)
+	if !present {
+		t.Fatalf("the delivered prompt has no %q section", prompt.IntentHeading)
+	}
+	return stated
+}
+
+func actionNeedingAPerson(t *testing.T) findings.Action {
+	t.Helper()
+
+	var asking []findings.Action
+	for _, action := range findings.Actions() {
+		document := findings.Document{Findings: []findings.Finding{{Action: action}}}
+		if document.NeedsAPerson() {
+			asking = append(asking, action)
+		}
+	}
+	if len(asking) != 1 {
+		t.Fatalf("the classifier reads %v as needing a person, and the obligation names one action", asking)
+	}
+	return asking[0]
 }
 
 func TestNoIntentIsStated(t *testing.T) {
@@ -147,6 +288,88 @@ func flagsTakingAValue(documented string) []string {
 	}
 
 	return taking
+}
+
+func TestTheReviewerIsAskedWhichClaimTheFixMakes(t *testing.T) {
+	rule := durableFixRule(t)
+
+	for _, required := range []string{"durable fix", "containment the author stated as a containment"} {
+		if !strings.Contains(rule, required) {
+			t.Errorf("the reviewing rule about a bug fix does not carry %q:\n%s", required, rule)
+		}
+	}
+}
+
+func TestADurableFixIsTracedPastTheSymptom(t *testing.T) {
+	rule := durableFixRule(t)
+
+	for _, required := range []string{"failing sequence", "invariant", "sibling paths", "shared state", "still reachable"} {
+		if !strings.Contains(rule, required) {
+			t.Errorf("the reviewing rule about a bug fix does not carry %q:\n%s", required, rule)
+		}
+	}
+}
+
+func TestTheEvidenceBarIsTheOneTheRestOfThePromptSets(t *testing.T) {
+	rule := durableFixRule(t)
+
+	for _, required := range []string{"the source shows", "not a defect for being a containment"} {
+		if !strings.Contains(rule, required) {
+			t.Errorf("the reviewing rule about a bug fix does not carry %q:\n%s", required, rule)
+		}
+	}
+}
+
+func TestTheClampIsReadFirst(t *testing.T) {
+	// scenario: Every rule reaches the reviewer
+	rules := reviewingRules(t)
+
+	const clamp = "Do not infer a systemic flaw from code shape, duplication or architectural preference alone. Report a design problem only where you can name a concrete reachable path, a violated invariant, or an immediately competing owner of the same meaning."
+	clamped, durable := -1, -1
+	for position, rule := range rules {
+		if strings.Contains(rule, clamp) {
+			clamped = position
+		}
+		if strings.Contains(rule, "still reachable") {
+			durable = position
+		}
+	}
+
+	if clamped < 0 {
+		t.Fatalf("the anti-astronaut clamp no longer reaches the reviewer:\n%s", strings.Join(rules, "\n\n"))
+	}
+	if durable >= 0 && clamped > durable {
+		t.Errorf("the clamp is delivered after the rule that asks about sibling paths, and it is there to be read first:\n%s", strings.Join(rules, "\n\n"))
+	}
+}
+
+func durableFixRule(t *testing.T) string {
+	t.Helper()
+
+	for _, rule := range reviewingRules(t) {
+		if strings.Contains(rule, "fixes a bug") {
+			return rule
+		}
+	}
+	t.Fatal("the reviewing section says nothing about a change that fixes a bug")
+	return ""
+}
+
+func reviewingRules(t *testing.T) []string {
+	t.Helper()
+
+	session := harness.Start(t)
+	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
+
+	name := session.Review("--intent", "add a function")
+	session.WaitForTerminal(name)
+
+	sections := prompt.Sections(session.Simulator.OnlyInvocation().Prompt)
+	body, present := prompt.BodyOf(sections, prompt.ReviewingHeading)
+	if !present {
+		t.Fatalf("the delivered prompt has no %q section", prompt.ReviewingHeading)
+	}
+	return strings.Split(body, "\n\n")
 }
 
 func TestASmallChangeCarriesItsDiff(t *testing.T) {

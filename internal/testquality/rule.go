@@ -8,3 +8,7 @@ Reading a file is legitimate where the file is itself generated public output, a
 Name the contract, and do not use its contents as a proxy for unrelated code working.
 
 Where a change claims to fix a bug, the test reproduces the reported failure: it fails before the fix and passes after it.`
+
+const ReportingDuty = `Report every test this change adds whose only evidence is implementation source, as a finding like any other.
+A test already in the repository that does the same is in scope where this change touches it.
+Do not turn this change into a repository-wide cleanup of tests it never went near.`

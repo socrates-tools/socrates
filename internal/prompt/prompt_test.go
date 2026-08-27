@@ -317,9 +317,10 @@ func TestOneBlockManyRoles(t *testing.T) {
 	if !present {
 		t.Fatalf("the prompt for %s carries no test-quality section", roles[0])
 	}
-	if body != strings.TrimSpace(testquality.Rule) {
+	shared := strings.TrimSpace(testquality.Rule)
+	if !strings.HasPrefix(body, shared) {
 		t.Errorf("the test-quality block delivered to %s is not the shared block (-shared +delivered):\n%s",
-			roles[0], cmp.Diff(strings.TrimSpace(testquality.Rule), body))
+			roles[0], cmp.Diff(shared, body))
 	}
 }
 

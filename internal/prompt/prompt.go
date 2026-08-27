@@ -74,7 +74,7 @@ func Build(request Request) Delivered {
 			{Heading: ProvenanceHeading, Body: request.provenance()},
 			{Heading: PriorHeading, Body: request.priorRounds()},
 			{Heading: ReviewingHeading, Body: reviewingRules},
-			{Heading: TestQualityHeading, Body: testquality.Rule},
+			{Heading: TestQualityHeading, Body: testQuality},
 			{Heading: ReportingHeading, Body: reporting()},
 		}),
 		Diff: delivery,
@@ -182,7 +182,11 @@ func (r Request) statedIntent() string {
 %s
 
 That is what they say they wanted. It is not a statement of what the change does, and nobody has checked one against the other.
-Where the code and the stated intent disagree, that disagreement is itself something to report.`, stated)
+Where the code and the stated intent disagree, that disagreement is itself something to report.
+
+A contradiction is one of two things, and only these two: the change omits a behaviour the intent names, or the change carries a behaviour the intent rules out. Where you find one, report it, naming the part of the intent it contradicts and the code that contradicts it, and report it even where nothing else about the change is wrong. Give it the action %q, because what a change is for is not the author's to settle alone by patching.
+
+What the intent does not mention is not something it ruled out. An intent is one line about what somebody wanted rather than a specification, and silence in it is not a contradiction.`, stated, findings.AskUser)
 }
 
 func (r Request) changedFiles() string {
@@ -271,11 +275,15 @@ Do a full pass. Review all of the changed code before you return, and do not sto
 
 Require a concrete path. Do not infer a systemic flaw from code shape, duplication or architectural preference alone. Report a design problem only where you can name a concrete reachable path, a violated invariant, or an immediately competing owner of the same meaning.
 
+Ask whether the bug is still reachable. Where the change fixes a bug, establish first which of two claims it makes: a durable fix, or a containment the author stated as a containment. For a claimed durable fix, reconstruct the failing sequence and the invariant the fix needs to hold, then read the sibling paths and the shared state the same failure travels through and ask whether it is still reachable. Where the source shows a path that still reaches it, report that concrete path, and name the earliest shared boundary at which the invariant would hold rather than prescribing another patch at the next symptom. A containment the author stated as one is not a defect for being a containment.
+
 Stay in lane. Do not run tests. Do not report styling, formatting, linting, compilation or type-checking issues. Deterministic tools own those, and every token spent on them is wasted.
 
 Anchor every finding to a file and a one-indexed line, so that a person can go straight to it.
 
 Where the change is clean, return an empty findings array. That is a complete answer, not a failure to find something.`
+
+var testQuality = strings.TrimSpace(testquality.Rule) + "\n\n" + strings.TrimSpace(testquality.ReportingDuty)
 
 type severityDefinition struct {
 	Value   findings.Severity
