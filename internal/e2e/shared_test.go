@@ -38,6 +38,17 @@ func firstLine(printed string) string {
 	return line
 }
 
+func waitUntilGone(pid int) bool {
+	deadline := time.Now().Add(10 * time.Second)
+	for time.Now().Before(deadline) {
+		if !process.Alive(pid) {
+			return true
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	return false
+}
+
 func waitForDeath(t *testing.T, name string, process1, process2 int) {
 	t.Helper()
 

@@ -71,6 +71,9 @@ func TestCancellingARunWhoseReviewerWentAwayLiftsTheSeal(t *testing.T) {
 	if err := process.Kill(started.Reviewer); err != nil {
 		t.Fatalf("killing the supervisor before it could lift the seal: %v", err)
 	}
+	if !waitUntilGone(started.Reviewer) {
+		t.Fatalf("the reviewer %d is still running after being killed, so nothing here is the abandoned case", started.Reviewer)
+	}
 	if session.Recorded(name).State != runstate.Reviewing {
 		t.Fatal("the run reads as ended on disk, so nothing here is the abandoned case")
 	}

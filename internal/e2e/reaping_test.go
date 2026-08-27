@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rui-ktei/socrates/internal/process"
 	"github.com/rui-ktei/socrates/internal/reviewer"
 	"github.com/rui-ktei/socrates/internal/runstate"
 	"github.com/rui-ktei/socrates/internal/testing/harness"
@@ -55,6 +54,7 @@ func TestReapingHappensOnCancellation(t *testing.T) {
 	session.WaitFor(name, runstate.Reviewing)
 
 	child := waitForChild(t, session)
+	waitUntilTheRunNamesItsAgent(t, session, name)
 
 	stopped, err := reviewer.Cancel(context.Background(), session.Store, name)
 	if err != nil {
@@ -113,19 +113,27 @@ func waitForChild(t *testing.T, session *harness.Session) int {
 	return 0
 }
 
+func waitUntilTheRunNamesItsAgent(t *testing.T, session *harness.Session, name string) {
+	t.Helper()
+
+	deadline := time.Now().Add(10 * time.Second)
+	for time.Now().Before(deadline) {
+		if session.Recorded(name).Agent != 0 {
+			return
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+
+	t.Fatalf("the run %s never named its agent, so cancelling it reaches no process", name)
+}
+
 func waitUntilReaped(t *testing.T, pid int, named string) {
 	t.Helper()
 
 	if pid == 0 {
 		t.Fatalf("no %s was recorded, so this test reaches no process", named)
 	}
-
-	deadline := time.Now().Add(10 * time.Second)
-	for time.Now().Before(deadline) {
-		if !process.Alive(pid) {
-			return
-		}
-		time.Sleep(20 * time.Millisecond)
+	if !waitUntilGone(pid) {
+		t.Errorf("the %s, %d, is still running", named, pid)
 	}
-	t.Errorf("the %s, %d, is still running", named, pid)
 }
