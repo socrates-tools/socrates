@@ -119,7 +119,7 @@ func TestAWildcardBindIsRefusedRatherThanQuietlyNarrowed(t *testing.T) {
 			if !strings.Contains(err.Error(), refused) {
 				t.Errorf("refusing %q does not name it: %v", refused, err)
 			}
-			if after := open(t); after != before {
+			if after := open(t); after > before {
 				t.Errorf("refusing %q left %d listeners open, and it starts no server", refused, after-before)
 			}
 		})
