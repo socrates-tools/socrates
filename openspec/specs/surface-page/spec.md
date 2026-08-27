@@ -112,6 +112,9 @@ The page SHALL render highlighted source, a diff in a split or unified layout, a
 Every asset needed SHALL be embedded in the binary.
 No diagram engine SHALL be embedded, because an illustration is written by the caller and a layout engine surrenders position and emphasis to a machine.
 
+An illustration the document's stylesheet paints SHALL be rendered in a box that holds it, and the page SHALL render such an illustration without the caller writing the machinery for the box either.
+An illustration that paints itself and an illustration a stylesheet paints are rendered in the same box, because the difference between them is what the caller supplied and not what the page owes it.
+
 #### Scenario: A diff renders from a patch
 
 - **WHEN** a decision carries a patch as evidence
@@ -126,6 +129,11 @@ No diagram engine SHALL be embedded, because an illustration is written by the c
 
 - **WHEN** the page is loaded with the machine's outbound network unavailable
 - **THEN** the highlighting, the diff, the fonts and the illustration all render
+
+#### Scenario: A painted illustration renders in the same box as one that paints itself
+
+- **WHEN** one decision carries a drawing and another carries markup the document's stylesheet paints
+- **THEN** both render in the illustration's box, and the caller wrote the machinery for neither
 
 ### Requirement: The page updates when the caller re-renders it
 
@@ -210,10 +218,10 @@ Every text the page renders SHALL meet a contrast ratio of at least 4.5 against 
 The palette is the product's own: cut marble for the page, the grey of the block for its rules, slate for the ink, and the blue of the sea between the islands for the one accent a decision carries.
 A page whose colours are the colours of the tool that composed the document tells the person they are reading that tool's output rather than their own decision, and the first person to see one said so within a minute.
 
-An illustration the caller supplied is the caller's own, and the floor is what the page paints rather than what a fragment carries.
-
-Which colours those are is a judgement and is recorded in this change.
-What is held mechanically is that they are stated in one place, so that replacing them is one edit, and that quiet never becomes unreadable, which is the direction a stone palette fails in.
+An illustration the caller supplied is the caller's own, and the floor is what the page paints rather than what a fragment carries or what a caller's stylesheet paints.
+The floor cannot reach a colour that arrives when the document does.
+It is measured against a stylesheet that is read, and a caller's colours are not read by anything before a person is looking at them, so a floor claimed over them would be a floor nothing holds.
+What is held instead is that the caller's colours land only inside the illustration, so a stylesheet that fails a person fails them in the box that was showing them something rather than in the decision they came to make.
 
 #### Scenario: Every colour is stated once
 
@@ -224,3 +232,8 @@ What is held mechanically is that they are stated in one place, so that replacin
 
 - **WHEN** each text the page renders is measured against the colour behind it, under a light preference and under a dark one
 - **THEN** each meets the stated ratio, and the measurement saw the whole page rather than a handful of elements
+
+#### Scenario: A caller's colours do not reach the decision
+
+- **WHEN** a document carries a stylesheet that paints its illustrations in colours of its own
+- **THEN** every text the page itself renders is painted in the stated palette and still meets the floor

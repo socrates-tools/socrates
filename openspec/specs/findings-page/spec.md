@@ -49,6 +49,7 @@ It SHALL require each of the following, because each is a way the page fails a p
 - Say what each option gets the person, in the words of the thing being built rather than the words of the code. A sentence they could not act on without opening the code is not plain English, and a symbol, a constant or a test named as though they already know it is that sentence.
 - Say which option you would take, on every decision where you would take one, by marking that option and no other. You have read the finding and they have not, and a list where every option looks equally likely makes them work out what you already know.
 - Where a finding is purely technical, illustrate it with an example rather than leaving the reader to work out what the term costs them.
+- Where what a finding costs is what a person sees, show them it rather than describing it.
 - Use a diagram only where a workflow is what makes the finding hard to follow, and not otherwise.
 - Spend tokens as though they were the person's, because they are.
 
@@ -61,6 +62,10 @@ The bar therefore states a test the writer can fail rather than a standard they 
 Recommending is on the bar rather than left to the mechanism, because a field nothing calls for is a field the sessions that most need it leave empty.
 It is bounded to one option for the same reason it is asked for at all: a page that ranks everything has ranked nothing.
 
+Showing is a separate line from the example beside it and from the diagram beneath it, and the reason is that the bar's other lines are about a reader who has to be taught something.
+A finding about what a person sees has a reader who already knows the thing and is being asked to recognise it, and a sketch of a panel retyped in a monospace block is the one form that reader cannot recognise it in.
+The line about diagrams says "and not otherwise", so without a line of its own a page that showed a person their own screen would be a page in breach of the bar.
+
 #### Scenario: The bar is stated once and rendered from there
 
 - **WHEN** the bar the skill states is compared with its source
@@ -69,7 +74,12 @@ It is bounded to one option for the same reason it is asked for at all: a page t
 #### Scenario: The bar names each way the page fails a person
 
 - **WHEN** the bar is rendered
-- **THEN** it requires getting to the point, plain English about impact, an option said in the words of the thing being built rather than the code, saying which option you would take by marking one and no other, an example where a finding is purely technical, a diagram only where a workflow needs one, and restraint about tokens
+- **THEN** it requires getting to the point, plain English about impact, an option said in the words of the thing being built rather than the code, saying which option you would take by marking one and no other, an example where a finding is purely technical, showing what a finding costs where that is what a person sees, a diagram only where a workflow needs one, and restraint about tokens
+
+#### Scenario: Showing and drawing are separate lines
+
+- **WHEN** the bar is rendered
+- **THEN** the line about what a person sees and the line about diagrams each appear once and neither restates the other
 
 ### Requirement: The page foregrounds what the person has to act on
 
