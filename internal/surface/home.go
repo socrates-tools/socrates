@@ -10,6 +10,7 @@ import (
 
 const (
 	RetiredHomeVariable = "AGORA_HOME"
+	ReachedAtField      = "surface.reached_at"
 
 	recordFile        = "surface.json"
 	sessionsDirectory = "sessions"

@@ -141,7 +141,35 @@ surface:
   reached_at: http://localhost:18018/
 ```
 
-The `surface` block is what an operator states about agora: the loopback address it binds, and the address a person is handed where that is not the one it bound.
+The `surface` block is what an operator states about the page a person reads: the loopback address it binds, and the address a person is handed where that is not the one it bound.
+
+## Reading the page from another machine
+
+The page is served on `127.0.0.1:18018` and can be opened from that machine and no other.
+That is the point: the document quotes the code it was written about, so nothing widens the bind and there is no tunnel and no share command.
+
+Where you run socrates in a devcontainer, over ssh, or anywhere else with a network namespace of its own, your browser is on another machine and the address you are handed will not open.
+You get a connection that opens and carries nothing, which a browser reports as an empty reply and which looks exactly like a port nobody forwarded.
+
+Forward the port once, and say where the page is then reached at.
+
+In a devcontainer, that is one line of `devcontainer.json`:
+
+```json
+{ "forwardPorts": [18018] }
+```
+
+Publishing the port in a compose file is not the same thing and does not work: it forwards to the container's own interface, and the surface is listening on loopback.
+A forwarder has to run inside the namespace the surface is in. Your editor's port forwarding does, `ssh -L 18018:127.0.0.1:18018 <host>` does, and a reverse proxy running alongside it does.
+
+Then state where a person reaches it, so the address printed is one that opens:
+
+```yaml
+surface:
+  reached_at: http://socrates.localhost/
+```
+
+Until you do, serving a page says so.
 
 ## What it deliberately is not
 

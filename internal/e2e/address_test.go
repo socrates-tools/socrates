@@ -8,11 +8,13 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/rui-ktei/socrates/internal/surface"
+	"github.com/rui-ktei/socrates/internal/testing/source"
 )
 
 func (s *surfaced) configure(stated string) {
@@ -267,6 +269,113 @@ func TestAConfiguredBindThatIsNotLoopbackIsRefusedToo(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
 		t.Error("a refused configured bind left a session behind, and it starts no server")
+	}
+}
+
+func TestThePortAnOperatorIsToldToForwardIsTheOneTheSurfaceBinds(t *testing.T) {
+	section := documentedForwarding(t)
+
+	_, port, err := net.SplitHostPort(surface.DefaultAddress)
+	if err != nil {
+		t.Fatalf("reading the port the surface binds from %q: %v", surface.DefaultAddress, err)
+	}
+
+	if !strings.Contains(section, surface.DefaultAddress) {
+		t.Errorf("what an operator is told to forward does not name %s, which is what the surface binds:\n%s", surface.DefaultAddress, section)
+	}
+	for _, named := range regexp.MustCompile(`\b\d{4,5}\b`).FindAllString(section, -1) {
+		if named != port {
+			t.Errorf("what an operator is told to forward names the port %s, and the surface binds %s", named, port)
+		}
+	}
+}
+
+func TestTheAddressAPersonOpensNamesTheToolTheyInstalled(t *testing.T) {
+	section := documentedForwarding(t)
+
+	for _, line := range strings.Split(section, "\n") {
+		if !strings.Contains(line, "reached_at") && !strings.Contains(line, "localhost/") {
+			continue
+		}
+		if strings.Contains(line, "agora") {
+			t.Errorf("the address a person is told to open is %q, and somebody who installed socrates has no reason to know what serves it", line)
+		}
+	}
+}
+
+func documentedForwarding(t *testing.T) string {
+	t.Helper()
+
+	const heading = "## Reading the page from another machine"
+
+	held, err := os.ReadFile(filepath.Join(source.Root(t), "README.md"))
+	if err != nil {
+		t.Fatalf("reading the README: %v", err)
+	}
+
+	at := strings.Index(string(held), heading)
+	if at < 0 {
+		t.Fatalf("the README does not say how a person on another machine reads the page")
+	}
+	rest := string(held)[at+len(heading):]
+	if end := strings.Index(rest, "\n## "); end >= 0 {
+		return rest[:end]
+	}
+	return rest
+}
+
+func TestAPageServedWithNothingStatedSaysWhereItCanBeOpenedFrom(t *testing.T) {
+	held := standing(t)
+
+	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", aPortTheOperatingSystemChooses)
+	if code != 0 {
+		t.Fatalf("agora serve exited %d: %s", code, failures)
+	}
+
+	for _, said := range []string{"this machine", surface.ReachedAtField} {
+		if !strings.Contains(failures, said) {
+			t.Errorf("what a person reads is %q, without saying %q, and a browser elsewhere gets an empty reply that names no cause", failures, said)
+		}
+	}
+
+	address := strings.TrimSpace(printed)
+	answered, err := http.Get(address)
+	if err != nil {
+		t.Fatalf("reaching the address agora serve printed: %v", err)
+	}
+	defer answered.Body.Close()
+	if answered.StatusCode != http.StatusOK {
+		t.Errorf("the page answered with %d, and what was said is a statement rather than a refusal", answered.StatusCode)
+	}
+}
+
+func TestWhatACallerReadsIsTheAddressAndNothingElse(t *testing.T) {
+	held := standing(t)
+
+	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", aPortTheOperatingSystemChooses)
+	if code != 0 {
+		t.Fatalf("agora serve exited %d: %s", code, failures)
+	}
+
+	lines := strings.Split(strings.TrimSpace(printed), "\n")
+	if len(lines) != 1 {
+		t.Fatalf("the stream a caller parses holds %d lines, and a caller reads it to learn where the page is:\n%s", len(lines), printed)
+	}
+	if theSessionIn(t, lines[0]) == "" {
+		t.Errorf("the one line a caller reads is %q, and it is the address of the page", lines[0])
+	}
+}
+
+func TestAStatedAddressIsAnOperatorWhoHasAlreadyAnswered(t *testing.T) {
+	held := standing(t)
+	held.configure("reached_at: http://socrates.example:8443/\n")
+
+	_, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", aPortTheOperatingSystemChooses)
+	if code != 0 {
+		t.Fatalf("agora serve exited %d: %s", code, failures)
+	}
+	if strings.Contains(failures, "this machine") || strings.Contains(failures, surface.ReachedAtField) {
+		t.Errorf("what a person reads is %q, and an operator who stated where the surface is reached at has answered that already", failures)
 	}
 }
 

@@ -66,7 +66,11 @@ func newServeCommand() *cobra.Command {
 			if _, err := document.Read(raw); err != nil {
 				return err
 			}
-			return start(command, raw, address, configured.ReachedAt, session)
+			file, err := config.Path()
+			if err != nil {
+				return err
+			}
+			return start(command, raw, address, stated{reachedAt: configured.ReachedAt, file: file}, session)
 		},
 	}
 
@@ -114,7 +118,7 @@ func hold(address string) error {
 	return surface.ForgetRecord()
 }
 
-func start(command *cobra.Command, raw []byte, address, reachedAt, session string) error {
+func start(command *cobra.Command, raw []byte, address string, said stated, session string) error {
 	if open, err := surface.ReadRecord(); err == nil {
 		reaching, cancel := context.WithTimeout(command.Context(), reachTimeout())
 		defer cancel()
@@ -125,7 +129,7 @@ func start(command *cobra.Command, raw []byte, address, reachedAt, session strin
 			if err != nil {
 				return err
 			}
-			fmt.Fprintln(command.OutOrStdout(), whereThePageIs(open, reachedAt, named))
+			handOver(command, open, said, named)
 			return nil
 		}
 	}
@@ -169,8 +173,21 @@ func start(command *cobra.Command, raw []byte, address, reachedAt, session strin
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(command.OutOrStdout(), whereThePageIs(open, reachedAt, opened.Session))
+	handOver(command, open, said, opened.Session)
 	return nil
+}
+
+type stated struct {
+	reachedAt string
+	file      string
+}
+
+func handOver(command *cobra.Command, open surface.Record, said stated, session string) {
+	fmt.Fprintln(command.OutOrStdout(), whereThePageIs(open, said.reachedAt, session))
+	if said.reachedAt != "" {
+		return
+	}
+	fmt.Fprintf(command.ErrOrStderr(), pageOpensOnThisMachineOnly+"\n", open.Address, surface.ReachedAtField, said.file)
 }
 
 func onTheSurfaceStanding(ctx context.Context, caller *surface.Caller, raw []byte, session string) (string, error) {

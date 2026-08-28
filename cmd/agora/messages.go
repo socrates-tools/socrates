@@ -23,6 +23,8 @@ const (
 	readingThisBinary         = "reading which binary agora is running as: %w"
 	startingTheSurface        = "starting the surface: %w"
 
+	pageOpensOnThisMachineOnly = "the page is served on this machine and can be opened from it only. Where the browser that will open it is somewhere else, forward %s to where that browser is and state %s in %s, so that the address printed is one that opens"
+
 	surfaceNeverAnswered = "the surface did not answer within %s, so nothing is being served. Run the command again"
 	nobodyAnswered       = "nobody answered"
 	writingTheAnswer     = "writing out what came back: %w"

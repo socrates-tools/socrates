@@ -10,9 +10,9 @@ const (
 	addressIsNotLoopback       = "the address %q is not a loopback address, and the surface binds a loopback address only. Give an address such as 127.0.0.1:0 and run the command again"
 	bindingTheAddress          = "binding %s: %w"
 
-	addressIsNotAURL     = "the address %q the surface is reached at is not an address a person can open: %s. Give one such as https://agora.example:8443/ and run the command again"
-	addressIsNotOpenable = "the address %q the surface is reached at names no http or https scheme, and it is handed to a person to open. Give one such as https://agora.example:8443/ and run the command again"
-	addressNamesNoHost   = "the address %q the surface is reached at names no host, and it is handed to a person to open. Give one such as https://agora.example:8443/ and run the command again"
+	addressIsNotAURL     = "the address %q the surface is reached at is not an address a person can open: %s. Give one such as https://socrates.example:8443/ and run the command again"
+	addressIsNotOpenable = "the address %q the surface is reached at names no http or https scheme, and it is handed to a person to open. Give one such as https://socrates.example:8443/ and run the command again"
+	addressNamesNoHost   = "the address %q the surface is reached at names no host, and it is handed to a person to open. Give one such as https://socrates.example:8443/ and run the command again"
 
 	requestNamesNoHost  = "a request naming no host cannot be the surface's own. Use the address agora serve printed and run the request again"
 	requestNamesTheHost = "a request naming the host %q did not reach the surface it was bound to. Use the address agora serve printed and run the request again"
