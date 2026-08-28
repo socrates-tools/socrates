@@ -225,14 +225,17 @@ A person who stopped a review knows nothing was decided, and a state that says o
 ### Requirement: Configuration is one optional user file
 
 socrates SHALL read one configuration file under its own home directory, and SHALL run with defaults where it is absent.
-It SHALL hold the per-role model and effort, the inlined-diff ceiling, the agent deadline, the log ceiling and the run retention age, and nothing else.
+It SHALL hold the per-role model and effort, the inlined-diff ceiling, the agent deadline, the log ceiling, the run retention age, and one block holding what an operator states about the surface, and nothing else.
 
-Everything socrates reads and everything it writes SHALL live under that one home directory.
-One environment variable SHALL move it, and where none is stated it SHALL be a directory named for socrates under the person's own home.
+That block SHALL hold the address the surface binds and the address it is reached at.
+The surface SHALL read it from the one file rather than parsing a file of its own, so that an operator configuring this tool opens one file.
+
+Everything socrates reads and everything it writes SHALL live under that one home directory, and so SHALL everything the surface reads and writes.
+One environment variable SHALL move all of it, and where none is stated it SHALL be a directory named for socrates under the person's own home.
 A stated home SHALL be refused unless it is absolute, rather than ignored in favour of the default.
 
 One directory rather than two is a question with one answer: where socrates keeps things.
-The answer is given to a stranger reading an issue that will not reproduce, and two paths resolved by two rules from three variables is an answer that has to be worked through rather than read.
+The answer is given to a stranger reading an issue that will not reproduce, and a second directory belonging to a second binary is that answer growing a second half for a program the stranger has never heard of.
 Refusing a relative home rather than ignoring it is the same argument: a stated home that silently does nothing is a person who believes their state moved and is looking in the wrong place.
 
 socrates SHALL NOT read configuration from the repository under review, SHALL NOT create a configuration file on its own, and SHALL NOT write anything at all inside a repository.
@@ -261,6 +264,16 @@ socrates SHALL NOT read configuration from the repository under review, SHALL NO
 
 - **WHEN** the configuration file exists and does not parse
 - **THEN** the command refuses naming the file and the parse error, and exits with the usage code, rather than silently running on defaults
+
+#### Scenario: What an operator states about the surface is read from the one file
+
+- **WHEN** the configuration file states the address the surface binds and the address it is reached at, and a surface is served
+- **THEN** the surface binds what was stated and prints what was stated, having read no file of its own
+
+#### Scenario: A surface block that names a field socrates does not know is refused
+
+- **WHEN** the surface block of the configuration file names a field that is not one of its own
+- **THEN** the command refuses naming the field, exactly as it does for a field of any other block
 
 ### Requirement: What a person reads is plain and says what to do next
 

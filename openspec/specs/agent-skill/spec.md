@@ -230,6 +230,9 @@ It SHALL say that the address `agora serve` prints holds the session that page b
 It SHALL say it once, where the loop is described, rather than on each branch that serves a page.
 A session that is not told this polls a surface holding more than one page and is told about somebody else's round, or about none, and it has no way to find out which.
 
+It SHALL say that the session is kept for the whole review, and that a second round a person reads is written to the page they already have rather than served as a new one.
+A review is two rounds about one change and one person reading them, so a second address is a second tab, and the first goes stale with nothing on it saying so.
+
 It SHALL say it on both branches where such a round arrives: `escalated`, where the findings are the person's and socrates is finished, and `awaiting-response` holding a finding a person answers.
 
 It SHALL take the fact from what socrates reports rather than restating the condition, so that a session never decides for itself whether a round is one a person reads.
@@ -256,6 +259,11 @@ Everything in that step is run in a loop, and a page is made once, after the run
 
 - **WHEN** the skill is rendered
 - **THEN** it says how the session reaches `agora poll` once, and neither branch restates it
+
+#### Scenario: A second round reaches the page the person already has
+
+- **WHEN** the skill describes a second round that is one a person reads
+- **THEN** it says to write it to the session the first round was served under, and does not say to hand over a second address
 
 #### Scenario: The session does not decide the condition itself
 
