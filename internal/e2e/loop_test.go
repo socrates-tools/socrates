@@ -469,3 +469,92 @@ func TestTheLoopCarriesTheSessionFromServeToPollAndReachesAVerdict(t *testing.T)
 	driven.wroteNothingItself()
 	driven.namedNothingTheSkillDoesNot()
 }
+
+func TestASecondRoundAPersonReadsReachesThePageTheyAlreadyHave(t *testing.T) {
+	driven := driving(t, dialogueScenario(questionOfIntent, questionAtTheCap), answeredWrongly)
+	name := driven.review("count the characters of a document")
+
+	state, code := driven.waitedFor(name)
+	if state != runstate.AwaitingResponse || code != 4 {
+		t.Fatalf("a round holding a question left the run %s and socrates status exited %d, want a parked run", state, code)
+	}
+
+	first := driven.reported(name)
+	firstAddress := driven.serve(documentFor(t, "one thing only you can settle", first, oneQuestionAsADecision(t, first)))
+
+	held := driven.serving()
+	opened := held.opened
+	held.answer(surface.Sent{
+		Decisions: []surface.Choice{{ID: whatOnlyAPersonAnswers(t, first).ID, Chosen: []int{0}, Words: "the function stays, because the importer reads it"}},
+		Ends:      true,
+	})
+	answered := driven.polled()
+
+	driven.author("internal/added.go", answeredBetter)
+	if _, failures, refused := driven.run("respond", name, "--finding", "f1", "--decided", "--reason", answered.Decisions[0].Words); refused != 4 {
+		t.Fatalf("recording what the person answered on the page exited %d: %s", refused, failures)
+	}
+	if _, failures, refused := driven.run("respond", name, "--finding", "f2", "--fixed", "--note", "the guard is above the read now"); refused != 4 {
+		t.Fatalf("recording a fix exited %d: %s", refused, failures)
+	}
+	if _, failures, refused := driven.run("respond", name, "--finding", "f3", "--rejected", "--reason", "there is no retry loop in this function at all"); refused != 4 {
+		t.Fatalf("recording a rejection exited %d: %s", refused, failures)
+	}
+	if _, failures, refused := driven.run("continue", name); refused != 0 {
+		t.Fatalf("socrates continue with everything answered exited %d: %s", refused, failures)
+	}
+
+	state, code = driven.waitedFor(name)
+	if state != runstate.Escalated || code != 1 {
+		t.Fatalf("the second round left the run %s and socrates status exited %d, want escalated", state, code)
+	}
+
+	second := driven.reported(name)
+	secondAddress := driven.serveAgain(documentFor(t, "what the second round could not settle", second, oneQuestionAsADecision(t, second)))
+
+	if secondAddress != firstAddress {
+		t.Fatalf("the person was handed %q for the first round and %q for the second, and one review is one page", firstAddress, secondAddress)
+	}
+	if held.opened != opened {
+		t.Fatalf("the second round was written to the session %q, and the first was served under %q", held.opened, opened)
+	}
+
+	held.answer(surface.Sent{
+		Decisions: []surface.Choice{{ID: whatOnlyAPersonAnswers(t, second).ID, Chosen: []int{0}, Words: "the sentinel stays"}},
+		Ends:      true,
+	})
+	if read := driven.polled(); len(read.Decisions) != 1 || read.Decisions[0].Words != "the sentinel stays" {
+		t.Fatalf("agora poll on the one session returned %+v, and the second round was answered on the page the first was served under", read.Decisions)
+	}
+
+	driven.wroteNothingItself()
+	driven.namedNothingTheSkillDoesNot()
+}
+
+func whatOnlyAPersonAnswers(t *testing.T, read reportedRound) reportedFinding {
+	t.Helper()
+
+	for _, finding := range read.Findings {
+		if finding.Action == "ask-user" {
+			return finding
+		}
+	}
+	t.Fatalf("no finding of the round needs a person: %+v", read.Findings)
+	return reportedFinding{}
+}
+
+func oneQuestionAsADecision(t *testing.T, read reportedRound) []map[string]any {
+	t.Helper()
+
+	asked := whatOnlyAPersonAnswers(t, read)
+	return []map[string]any{{
+		"id":       asked.ID,
+		"question": asked.Description,
+		"meaning":  "nothing socrates can do closes this one",
+		"mode":     "single-choice",
+		"options": []map[string]any{
+			{"label": "it stays", "meaning": "what is there is what the product wants", "command": `socrates respond --finding ` + asked.ID + ` --decided --reason "it stays"`},
+			{"label": "take it out", "meaning": "nothing reads it", "command": `socrates respond --finding ` + asked.ID + ` --decided --reason "take it out"`},
+		},
+	}}
+}

@@ -7,6 +7,7 @@ Everything socrates prints names `socrates`.
 `agora` is a second and separate program in this repository, not a third name.
 It serves one document as one page on a loopback address, waits for a person, and prints what they answered.
 It knows nothing about code review, and nothing socrates does reaches it yet.
+One tool, so one home and one configuration file: both binaries read `~/.socrates/config.yaml` and write under `~/.socrates`, moved by `SOCRATES_HOME`.
 
 `openspec/` is normative and is where the reasoning lives: `openspec/specs` for what is required and why, and `openspec/changes/archive/*/design.md` for the decisions behind it.
 This file is a map.
@@ -39,7 +40,7 @@ What socrates is:
 - `internal/follow` - following a run's event log live.
 - `internal/terminal` - the pager, and the plain fallback.
 - `internal/skill` - the skill a coding session reads, and installing it.
-- `internal/exit`, `internal/version`, `internal/config`, `internal/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the optional configuration file, the JSONL log, the state directory, refusals, process groups.
+- `internal/exit`, `internal/version`, `internal/config`, `internal/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file both binaries read, the JSONL log, the one home both binaries write under, refusals, process groups.
 - `internal/corpus` - what real reviewers answered, verbatim and embedded, and what the routing rule does with it.
 - `internal/fidelity` - the recorded shapes of the real CLI, the drift check and the live smoke check, all network behind a build tag.
 
@@ -130,7 +131,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 **The skill**
 
 - `internal/skill` is its one source, and the committed copy is generated from it.
-- It names nothing the binary does not offer, lists every state a run rests in, teaches polling at a stated cadence, names `socrates watch` once and outside the loop, says once that the address `agora serve` prints holds the session `agora poll` is given, and says whose a question is.
+- It names nothing the binary does not offer, lists every state a run rests in, teaches polling at a stated cadence, names `socrates watch` once and outside the loop, says once that the address `agora serve` prints holds the session `agora poll` is given and that the session is kept for the whole review, and says whose a question is.
 - `dialogue.ResponseRules` and `skill.PageBar` are each stated once and rendered where they are needed.
 - It says every control carries the command it becomes and that the page shows that command to nobody, and it names each decision from the finding's identifier rather than titling it.
 - The loop it describes is driven end to end through the real binary, not read.
@@ -148,7 +149,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - The surface mints a session, `--session` never brings one into existence, and every page and every route of it is served under a path holding that session.
 - It turns away a request naming a host it did not bind, and every state-changing route carries a token: a session's own answers for that session and no other, and the one minted when the server started answers everywhere.
 - It composes a command and never runs one, the command it hands back is the option's own string, and no command is rendered on the page.
-- It writes only under the user's state directory.
+- It writes only under socrates' home, in a directory of its own beside the runs, and it resolves no home and reads no configuration file of its own.
 - A caller writes a document rather than a page, and the name, severity, audience and location come from the source a decision cites.
 - Every decision carries a free-text field that no document field can remove.
 - A caller's fragment is reduced to a fixed allowlist before it is embedded, and every name it carries is prefixed by the surface.

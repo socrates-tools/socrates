@@ -15,15 +15,23 @@ import (
 	"github.com/rui-ktei/socrates/internal/surface"
 )
 
-func (s *surfaced) configure(content string) {
+func (s *surfaced) configure(stated string) {
 	s.t.Helper()
 
 	if err := os.MkdirAll(s.home, 0o700); err != nil {
-		s.t.Fatalf("making the home agora reads its configuration from: %v", err)
+		s.t.Fatalf("making the home the one configuration file is read from: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(s.home, "config.yaml"), []byte(content), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(s.home, "config.yaml"), []byte(asASurfaceBlock(stated)), 0o600); err != nil {
 		s.t.Fatalf("writing what an operator stated: %v", err)
 	}
+}
+
+func asASurfaceBlock(stated string) string {
+	block := "surface:\n"
+	for _, line := range strings.Split(strings.TrimRight(stated, "\n"), "\n") {
+		block += "  " + line + "\n"
+	}
+	return block
 }
 
 func aFreeLoopbackAddress(t *testing.T) string {
@@ -187,7 +195,7 @@ func TestAnAddressAPersonCouldNotOpenIsRefused(t *testing.T) {
 	if !strings.Contains(failures, "agora.example:8443") {
 		t.Errorf("refusing an address a person could not open does not name it: %s", failures)
 	}
-	if _, err := os.Stat(filepath.Join(held.home, "surface.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
 		t.Error("a refused address left a session behind, and it starts no server")
 	}
 }
@@ -257,8 +265,29 @@ func TestAConfiguredBindThatIsNotLoopbackIsRefusedToo(t *testing.T) {
 	if !strings.Contains(failures, "0.0.0.0:8080") {
 		t.Errorf("refusing a configured bind that is not loopback does not name it: %s", failures)
 	}
-	if _, err := os.Stat(filepath.Join(held.home, "surface.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
 		t.Error("a refused configured bind left a session behind, and it starts no server")
+	}
+}
+
+func TestWhatAnOperatorStatesAboutTheSurfaceIsReadFromTheOneFile(t *testing.T) {
+	held := standing(t)
+
+	bound := aFreeLoopbackAddress(t)
+	reachedAt := "https://agora.example:8443/"
+	held.configure("bind: " + bound + "\nreached_at: " + reachedAt + "\n")
+	held.bindsWhatIsConfigured()
+
+	printed := strings.TrimSpace(held.serve(oneDecisionDocument))
+
+	if open := held.record(); open.Address != bound {
+		t.Errorf("the one file states the bind %q and the surface bound %q", bound, open.Address)
+	}
+	if !strings.HasPrefix(printed, reachedAt+strings.TrimPrefix(surface.SessionPrefix, "/")) {
+		t.Errorf("agora serve printed %q, and the one file states the surface is reached at %q", printed, reachedAt)
+	}
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "config.yaml")); err == nil {
+		t.Errorf("the surface read a configuration file of its own under %s", held.surfaceHome())
 	}
 }
 

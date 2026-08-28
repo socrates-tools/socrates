@@ -138,8 +138,8 @@ func TestASessionTheSurfaceNeverMintedIsRefusedByTheBinary(t *testing.T) {
 		t.Errorf("the refusal reads %q, without naming the session", failures)
 	}
 
-	if _, err := os.Stat(filepath.Join(held.home, "sessions", neverMinted)); err == nil {
-		t.Errorf("a refused session was written under %s", filepath.Join(held.home, "sessions"))
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "sessions", neverMinted)); err == nil {
+		t.Errorf("a refused session was written under %s", filepath.Join(held.surfaceHome(), "sessions"))
 	}
 	if held.opened != before {
 		t.Errorf("a refused session replaced the one the surface holds")
@@ -221,7 +221,7 @@ func TestAServeWhosePortSomethingElseHoldsIsRefused(t *testing.T) {
 	if !strings.Contains(failures, "--address") {
 		t.Errorf("refusing a port something else holds does not name the flag that moves it: %s", failures)
 	}
-	if _, err := os.Stat(filepath.Join(held.home, "surface.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
 		t.Error("a refused bind left a surface behind, and it starts no server")
 	}
 }
@@ -232,7 +232,7 @@ func TestEachSessionIsWrittenUnderADirectoryOfItsOwn(t *testing.T) {
 	_, first, _, second := held.twoPages()
 
 	for _, session := range []string{first, second} {
-		within := filepath.Join(held.home, "sessions", session)
+		within := filepath.Join(held.surfaceHome(), "sessions", session)
 		for _, named := range []string{"session.json", "document.json"} {
 			if _, err := os.Stat(filepath.Join(within, named)); err != nil {
 				t.Errorf("the session %s wrote no %s: %v", session, named, err)
@@ -295,7 +295,7 @@ func TestAStrangerOnThePortIsNotMistakenForTheSurface(t *testing.T) {
 	}
 	untilThePortIsFree(t, bound)
 
-	if err := os.WriteFile(filepath.Join(held.home, "surface.json"), whatAKilledSurfaceLeaves(t, bound), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(held.surfaceHome(), "surface.json"), whatAKilledSurfaceLeaves(t, bound), 0o600); err != nil {
 		t.Fatalf("leaving behind what a killed surface leaves: %v", err)
 	}
 
@@ -312,7 +312,7 @@ func TestAStrangerOnThePortIsNotMistakenForTheSurface(t *testing.T) {
 	if strings.Contains(failures, "asked by whoever started it") {
 		t.Errorf("agora reported a stranger on its port as a question of permission: %s", failures)
 	}
-	if _, err := os.Stat(filepath.Join(held.home, "surface.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
 		t.Error("agora kept a record naming a surface that is not there, so every later command repeats this")
 	}
 }
@@ -355,7 +355,10 @@ func TestAnotherAgorasSurfaceIsNotMistakenForThisOne(t *testing.T) {
 	}
 
 	held := servingSurface(t)
-	if err := os.WriteFile(filepath.Join(held.home, "surface.json"), whatAKilledSurfaceLeaves(t, shared), 0o600); err != nil {
+	if err := os.MkdirAll(held.surfaceHome(), 0o700); err != nil {
+		t.Fatalf("making the directory the surface writes under: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(held.surfaceHome(), "surface.json"), whatAKilledSurfaceLeaves(t, shared), 0o600); err != nil {
 		t.Fatalf("leaving behind what a killed surface leaves: %v", err)
 	}
 
@@ -369,7 +372,7 @@ func TestAnotherAgorasSurfaceIsNotMistakenForThisOne(t *testing.T) {
 	if strings.Contains(failures, "asked by whoever started it") {
 		t.Errorf("agora reported another agora on its port as a question of permission: %s", failures)
 	}
-	if _, err := os.Stat(filepath.Join(held.home, "surface.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
 		t.Error("agora kept a record naming a surface that is not its own, so every later command repeats this")
 	}
 

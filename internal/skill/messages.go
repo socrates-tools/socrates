@@ -84,6 +84,7 @@ Every control carries the command it becomes, |agora poll| hands that command ba
 The page shows that command to nobody: a person deciding is not at a prompt, a command under an option is the same choice again in a language they did not come here to read, and one they may believe they have to type.
 An option whose command you cannot name is one you do not offer, because you would be offering a decision you cannot honour.
 Wait for them with |agora poll --session|, giving it the session at the end of the address |agora serve| printed, because the surface holds a page per round and a poll naming none is told about none of them.
+Keep that session for the whole review. A second round the person reads is written to the page they already have, by serving it with |agora serve --session|, and you hand over no second address: one review is one change and one person reading it, so a second address is a second tab whose first has gone stale with nothing on it saying so.
 It prints what they chose and anything they wrote, and you record that with |socrates respond| in their own words rather than in yours.
 Do not ask them here for a decision they have already made there.
 

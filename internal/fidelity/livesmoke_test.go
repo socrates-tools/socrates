@@ -17,6 +17,7 @@ import (
 	"github.com/rui-ktei/socrates/internal/agent"
 	"github.com/rui-ktei/socrates/internal/document"
 	"github.com/rui-ktei/socrates/internal/findings"
+	"github.com/rui-ktei/socrates/internal/state"
 	"github.com/rui-ktei/socrates/internal/surface"
 )
 
@@ -60,7 +61,7 @@ func TestTheRealCLIStillAcceptsWhatSocratesAsksOfIt(t *testing.T) {
 	t.Logf("the real reviewer rated the change %s risk and reported %d findings", document.RiskLevel, len(document.Findings))
 
 	t.Run("what it answered reaches a page on the fixed port", func(t *testing.T) {
-		t.Setenv(surface.HomeVariable, t.TempDir())
+		t.Setenv(state.HomeVariable, t.TempDir())
 
 		read := whatThePersonReads(document)
 		raw, err := json.Marshal(read)

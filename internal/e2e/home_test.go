@@ -1,6 +1,7 @@
 package e2e_test
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -92,56 +93,119 @@ func TestARunIsFoundBesideTheConfiguration(t *testing.T) {
 	}
 }
 
-func TestOneVariableMovesEverythingAgoraHas(t *testing.T) {
-	held := standing(t)
+func TestOneVariableMovesEverythingBothBinariesHave(t *testing.T) {
+	session := harness.Start(t)
+	session.Simulator.Scenario(cleanScenario)
+	session.Repository.Write("internal/added.go", "package internal\n")
+
 	stated := aFreeLoopbackAddress(t)
-	held.configure("bind: " + stated + "\n")
+	if err := os.WriteFile(filepath.Join(session.Home, "config.yaml"), []byte("roles:\n  reviewer:\n    model: sonnet\nsurface:\n  bind: "+stated+"\n"), 0o644); err != nil {
+		t.Fatalf("writing the one configuration file under the stated home: %v", err)
+	}
+
+	held := servingSurface(t)
+	held.home = session.Home
+	held.where = session.Repository.Root
 	held.bindsWhatIsConfigured()
+
+	name := session.Review()
+	session.WaitForTerminal(name)
 
 	printed := held.serve(oneDecisionDocument)
 	if !strings.Contains(printed, stated) {
-		t.Errorf("agora serve printed %q, and the configuration under its home states the bind %s", printed, stated)
+		t.Errorf("agora serve printed %q, and the one configuration file under the stated home states the bind %s", printed, stated)
+	}
+	if model := session.Simulator.OnlyInvocation().Model; model != "sonnet" {
+		t.Errorf("the reviewer was invoked with the model %q, so both binaries did not read the one file under %s", model, session.Home)
 	}
 
 	held.answer(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}, Words: "go on"}}})
 
-	own := whatIsUnder(t, held.home)
-	if !own["config.yaml"] || !own["surface.json"] || !own["sessions"] {
-		t.Errorf("agora's home holds %v, and the configuration it read and what it wrote about itself both live there", own)
+	under := whatIsUnder(t, session.Home)
+	if !under["runs"] || !under["surface"] || !under["config.yaml"] {
+		t.Errorf("the stated home holds %v, and the runs, what the surface writes and the one configuration file all live under it", under)
 	}
-	for _, elsewhere := range []string{".agora", filepath.Join(".config", "agora"), filepath.Join(".local", "state", "agora")} {
+	for _, elsewhere := range []string{".socrates", ".agora", filepath.Join(".config", "agora"), filepath.Join(".local", "state", "agora")} {
 		if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), elsewhere)); err == nil {
-			t.Errorf("agora wrote %s under the person's own home, and one variable states where it writes", elsewhere)
+			t.Errorf("%s was written under the person's own home, and one variable states where both binaries write", elsewhere)
 		}
 	}
 }
 
-func TestNeitherProgramWritesInTheOthersHome(t *testing.T) {
+func TestTheSurfaceKeepsADirectoryOfItsOwnInsideThatHome(t *testing.T) {
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	held := servingSurface(t)
+	held.home = session.Home
 	held.where = session.Repository.Root
 
 	name := session.Review()
 	session.WaitForTerminal(name)
 	held.serve(oneDecisionDocument)
 
-	socrates := whatIsUnder(t, session.Home)
-	agora := whatIsUnder(t, held.home)
+	own := whatIsUnder(t, held.surfaceHome())
+	if !own["surface.json"] || !own["sessions"] {
+		t.Fatalf("the surface's directory holds %v, without what it wrote about itself and the session it opened", own)
+	}
 
-	if !socrates["runs"] {
-		t.Fatalf("socrates' home holds %v, without the runs it writes", socrates)
+	beside := whatIsUnder(t, session.Home)
+	if !beside["runs"] || !beside["surface"] {
+		t.Fatalf("the home holds %v, and the surface's directory sits beside the runs", beside)
 	}
-	if !agora["surface.json"] || !agora["sessions"] {
-		t.Fatalf("agora's home holds %v, without the sessions it writes", agora)
+
+	runs := filepath.Join(session.Home, "runs")
+	if err := filepath.WalkDir(runs, func(path string, entry fs.DirEntry, walked error) error {
+		if walked != nil {
+			return walked
+		}
+		if entry.Name() == "surface.json" || entry.Name() == "sessions" || entry.Name() == "session.json" {
+			t.Errorf("a run directory holds %s, and what the surface writes is beside the runs rather than inside one", path)
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("reading what is under %s: %v", runs, err)
 	}
-	if socrates["surface.json"] || socrates["sessions"] || socrates["config.yaml"] {
-		t.Errorf("socrates' home holds %v, and what agora writes is agora's", socrates)
+}
+
+func TestTheVariableThatMovedTheSurfacesOwnHomeIsRefused(t *testing.T) {
+	held := standing(t)
+	moved := t.TempDir()
+	held.also = []string{surface.RetiredHomeVariable + "=" + moved}
+
+	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", aPortTheOperatingSystemChooses)
+	if code == 0 {
+		t.Fatalf("a surface was served at %q while %s was still set", printed, surface.RetiredHomeVariable)
 	}
-	if agora["runs"] {
-		t.Errorf("agora's home holds %v, and what socrates writes is socrates'", agora)
+	if !strings.Contains(failures, surface.RetiredHomeVariable) || !strings.Contains(failures, state.HomeVariable) {
+		t.Errorf("the refusal reads %q, and it names the variable that moved the surface's home and the one that replaced it", failures)
+	}
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
+		t.Error("a refused startup left a surface behind, and it starts no server")
+	}
+	if _, err := os.Stat(moved); err == nil {
+		if entries := whatIsUnder(t, moved); len(entries) != 0 {
+			t.Errorf("the home that variable states holds %v, and it is read by nothing", entries)
+		}
+	}
+}
+
+func TestARelativeHomeIsRefusedByTheSurfaceToo(t *testing.T) {
+	// scenario: A relative home is refused
+	held := standing(t)
+	relative := filepath.Join("somewhere", "below")
+	held.home = relative
+
+	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", aPortTheOperatingSystemChooses)
+	if code == 0 {
+		t.Fatalf("a surface was served at %q with a relative home", printed)
+	}
+	if !strings.Contains(failures, state.HomeVariable) || !strings.Contains(failures, relative) {
+		t.Errorf("the refusal reads %q, without naming the variable and the path", failures)
+	}
+	if _, err := os.Stat(filepath.Join(held.where, relative)); err == nil {
+		t.Error("the surface read the relative home as a path below where it was run")
 	}
 }
 

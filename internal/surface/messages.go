@@ -1,11 +1,7 @@
 package surface
 
 const (
-	noHomeDirectory      = "agora keeps everything it reads and writes under one home directory, and it could not find your own home directory to put it under: %s. Set %s to an absolute path and run the command again"
-	statedHomeIsRelative = "%s names %q, which is not an absolute path, and agora would keep its home wherever the command happened to be run. Set it to an absolute path and run the command again"
-
-	unreadableConfiguration = "%s exists and agora cannot read it: %s. Fix its permissions or move it aside and run the command again"
-	unparsableConfiguration = "%s is not configuration agora can read: %s. Fix the file or move it aside, because agora will not quietly run on defaults while a configuration file says otherwise"
+	surfaceHasNoHomeOfItsOwn = "%s moved a home of the surface's own, and the surface has none: everything both binaries read and write is under one home, moved by %s. Unset %s, state that one instead, and run the command again"
 
 	addressIsNotHostAndPort    = "the address %q is not a host and a port: %s. Give an address such as 127.0.0.1:0 and run the command again"
 	addressNamesNoPort         = "the address %q names no port. Give an address such as 127.0.0.1:0 and run the command again"

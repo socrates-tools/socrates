@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/rui-ktei/socrates/internal/refusal"
+	"github.com/rui-ktei/socrates/internal/surface"
 	"github.com/spf13/cobra"
 )
 
@@ -32,6 +33,9 @@ func newRootCommand(code *int) *cobra.Command {
 		Args:          cobra.ArbitraryArgs,
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
+			return surface.CheckNoHomeOfItsOwn()
+		},
 		RunE: func(command *cobra.Command, arguments []string) error {
 			if len(arguments) > 0 {
 				return refusal.New(notACommand, arguments[0])

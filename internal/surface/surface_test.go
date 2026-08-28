@@ -16,6 +16,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/rui-ktei/socrates/internal/document"
+	"github.com/rui-ktei/socrates/internal/state"
 	"github.com/rui-ktei/socrates/internal/surface"
 )
 
@@ -75,8 +76,11 @@ type standing struct {
 func serving(t *testing.T, read document.Document, idle time.Duration) *standing {
 	t.Helper()
 
-	home := t.TempDir()
-	t.Setenv(surface.HomeVariable, home)
+	t.Setenv(state.HomeVariable, t.TempDir())
+	home, err := surface.Home()
+	if err != nil {
+		t.Fatalf("resolving where the surface writes: %v", err)
+	}
 
 	server, err := surface.Serve(aPortTheOperatingSystemChooses, idle)
 	if err != nil {

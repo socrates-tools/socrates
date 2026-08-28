@@ -5,12 +5,11 @@ import (
 	"path/filepath"
 
 	"github.com/rui-ktei/socrates/internal/refusal"
+	"github.com/rui-ktei/socrates/internal/state"
 )
 
 const (
-	HomeVariable  = "AGORA_HOME"
-	toolName      = "agora"
-	homeDirectory = "." + toolName
+	RetiredHomeVariable = "AGORA_HOME"
 
 	recordFile        = "surface.json"
 	sessionsDirectory = "sessions"
@@ -19,18 +18,14 @@ const (
 )
 
 func Home() (string, error) {
-	if stated := os.Getenv(HomeVariable); stated != "" {
-		if !filepath.IsAbs(stated) {
-			return "", refusal.New(statedHomeIsRelative, HomeVariable, stated)
-		}
-		return stated, nil
-	}
+	return state.Surface()
+}
 
-	own, err := os.UserHomeDir()
-	if err != nil {
-		return "", refusal.Wrapping(err, noHomeDirectory, err, HomeVariable)
+func CheckNoHomeOfItsOwn() error {
+	if os.Getenv(RetiredHomeVariable) == "" {
+		return nil
 	}
-	return filepath.Join(own, homeDirectory), nil
+	return refusal.New(surfaceHasNoHomeOfItsOwn, RetiredHomeVariable, state.HomeVariable, RetiredHomeVariable)
 }
 
 func RecordPath() (string, error) {

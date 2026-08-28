@@ -376,11 +376,31 @@ func TestTheSkillSaysToCarryTheSessionFromServeToPoll(t *testing.T) {
 	}
 }
 
+func TestASecondRoundReachesThePageThePersonAlreadyHas(t *testing.T) {
+	document := skill.Document()
+	page := sectionOf(t, document, pageHeading)
+
+	for _, said := range []string{
+		"Keep that session for the whole review",
+		"the page they already have",
+		"agora serve --session",
+		"you hand over no second address",
+	} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so a second round a person reads is served as a page of its own and the first goes stale:\n%s", said, page)
+		}
+	}
+
+	if counted := strings.Count(document, "Keep that session for the whole review"); counted != 1 {
+		t.Errorf("the skill says to keep the session %d times, want once, where the session is already stated", counted)
+	}
+}
+
 func TestTheSessionIsStatedOnceRatherThanOnEveryBranch(t *testing.T) {
 	document := skill.Document()
 
-	if counted := strings.Count(document, "--session"); counted != 1 {
-		t.Errorf("the skill names --session %d times, want once, and the copy a session reads first is the one that gets softened", counted)
+	if counted := strings.Count(document, "agora poll --session"); counted != 1 {
+		t.Errorf("the skill says how the session reaches agora poll %d times, want once, and the copy a session reads first is the one that gets softened", counted)
 	}
 	for _, branch := range []string{escalatedHeading, parkedHeading} {
 		if strings.Contains(sectionOf(t, document, branch), "--session") {

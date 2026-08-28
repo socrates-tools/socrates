@@ -118,13 +118,13 @@ It includes untracked files, because a freshly implemented feature is mostly unt
 No ref names the snapshot commit, so ordinary garbage collection reclaims it once the worktree is gone.
 `git status` before and after a review is byte-identical, and a test holds that.
 
-Everything socrates reads and everything it writes lives under one home, `~/.socrates` unless `SOCRATES_HOME` names an absolute path instead.
+Everything both binaries read and everything they write lives under one home, `~/.socrates` unless `SOCRATES_HOME` names an absolute path instead.
 Runs are `~/.socrates/runs/`, one directory per run, legible with `ls` and `cat`.
-agora keeps its own under `~/.agora`, moved the same way by `AGORA_HOME`.
+What agora writes about a page is `~/.socrates/surface/`, beside them.
 
 ## Configuration
 
-One optional file, at `~/.socrates/config.yaml`, beside the runs.
+One optional file, at `~/.socrates/config.yaml`, beside the runs, read by both binaries.
 socrates never creates it, never reads configuration out of the repository under review, and refuses rather than quietly running on defaults when the file will not parse.
 
 ```yaml
@@ -136,7 +136,12 @@ diff_ceiling: 131072
 agent_deadline: 30m
 log_ceiling: 1048576
 run_retention: 336h
+surface:
+  bind: 127.0.0.1:18018
+  reached_at: http://localhost:18018/
 ```
+
+The `surface` block is what an operator states about agora: the loopback address it binds, and the address a person is handed where that is not the one it bound.
 
 ## What it deliberately is not
 

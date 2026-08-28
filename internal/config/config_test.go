@@ -54,6 +54,9 @@ diff_ceiling: 4096
 agent_deadline: 45m
 log_ceiling: 8192
 run_retention: 72h
+surface:
+  bind: 127.0.0.1:7788
+  reached_at: https://agora.example:8443/
 `)
 
 	loaded, err := config.LoadFrom(path)
@@ -67,6 +70,7 @@ run_retention: 72h
 		AgentDeadline: 45 * time.Minute,
 		LogCeiling:    8192,
 		RunRetention:  72 * time.Hour,
+		Surface:       config.Surface{Bind: "127.0.0.1:7788", ReachedAt: "https://agora.example:8443/"},
 	}
 	if diff := cmp.Diff(want, loaded); diff != "" {
 		t.Errorf("the configuration differs (-want +got):\n%s", diff)
@@ -97,6 +101,32 @@ func TestASettingSocratesDoesNotHaveIsARefusal(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "reviewer_temperature") {
 		t.Errorf("the refusal does not name the setting: %s", err)
+	}
+}
+
+func TestASurfaceBlockThatNamesAFieldSocratesDoesNotKnowIsRefused(t *testing.T) {
+	path := write(t, "surface:\n  proxy: something.example\n")
+
+	_, err := config.LoadFrom(path)
+	if !refusal.Is(err) {
+		t.Fatalf("a surface block naming a field socrates does not know gave %v, want a refusal", err)
+	}
+	if !strings.Contains(err.Error(), "proxy") {
+		t.Errorf("the refusal does not name the field: %s", err)
+	}
+}
+
+func TestWhatTheSurfaceOnceReadOnItsOwnIsRefusedOutsideTheBlock(t *testing.T) {
+	for _, stated := range []string{"bind: 127.0.0.1:0\n", "reached_at: https://agora.example:8443/\n"} {
+		named, _, _ := strings.Cut(stated, ":")
+
+		_, err := config.LoadFrom(write(t, stated))
+		if !refusal.Is(err) {
+			t.Fatalf("a configuration file stating %s at the top gave %v, want a refusal", named, err)
+		}
+		if !strings.Contains(err.Error(), named) {
+			t.Errorf("the refusal does not name the field: %s", err)
+		}
 	}
 }
 

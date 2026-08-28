@@ -21,6 +21,12 @@ type Config struct {
 	AgentDeadline time.Duration       `yaml:"agent_deadline"`
 	LogCeiling    int64               `yaml:"log_ceiling"`
 	RunRetention  time.Duration       `yaml:"run_retention"`
+	Surface       Surface             `yaml:"surface"`
+}
+
+type Surface struct {
+	Bind      string `yaml:"bind"`
+	ReachedAt string `yaml:"reached_at"`
 }
 
 func Path() (string, error) {

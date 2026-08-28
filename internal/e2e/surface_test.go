@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/rui-ktei/socrates/internal/state"
 	"github.com/rui-ktei/socrates/internal/surface"
 	"github.com/rui-ktei/socrates/internal/testing/gitrepo"
 	"github.com/rui-ktei/socrates/internal/testing/source"
@@ -44,6 +45,7 @@ type surfaced struct {
 	where  string
 	bind   string
 	opened string
+	also   []string
 }
 
 func standing(t *testing.T) *surfaced {
@@ -67,6 +69,10 @@ func servingSurface(t *testing.T) *surfaced {
 
 const aPortTheOperatingSystemChooses = "127.0.0.1:0"
 
+func (s *surfaced) surfaceHome() string {
+	return filepath.Join(s.home, "surface")
+}
+
 func (s *surfaced) bindsWhatIsConfigured() {
 	s.bind = ""
 }
@@ -81,8 +87,9 @@ func (s *surfaced) reading(input string, arguments ...string) (string, string, i
 
 	command := exec.Command(s.binary, arguments...)
 	command.Dir = s.where
-	command.Env = append(os.Environ(), surface.HomeVariable+"="+s.home)
+	command.Env = append(os.Environ(), state.HomeVariable+"="+s.home)
 	command.Env = append(command.Env, source.Toolchain()...)
+	command.Env = append(command.Env, s.also...)
 	command.Stdin = strings.NewReader(input)
 
 	var printed, failures bytes.Buffer
@@ -148,7 +155,7 @@ func (s *surfaced) serving(arguments ...string) []string {
 func (s *surfaced) record() surface.Record {
 	s.t.Helper()
 
-	held, err := os.ReadFile(filepath.Join(s.home, "surface.json"))
+	held, err := os.ReadFile(filepath.Join(s.surfaceHome(), "surface.json"))
 	if err != nil {
 		s.t.Fatalf("reading what the surface wrote about itself: %v", err)
 	}
@@ -321,7 +328,7 @@ func TestAWildcardBindIsRefusedByTheBinary(t *testing.T) {
 	if !strings.Contains(failures, "0.0.0.0:0") {
 		t.Errorf("refusing a wildcard bind does not name it: %s", failures)
 	}
-	if _, err := os.Stat(filepath.Join(held.home, "surface.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
 		t.Error("a refused bind left a session behind, and it starts no server")
 	}
 }
@@ -395,7 +402,7 @@ func TestServeRefusesADocumentMarkingTwoOptions(t *testing.T) {
 	if !strings.Contains(failures, "c-1") {
 		t.Errorf("refusing a document marking two options does not name the decision: %s", failures)
 	}
-	if _, err := os.Stat(filepath.Join(held.home, "surface.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
 		t.Error("a refused document left a session behind, and it starts no server")
 	}
 }

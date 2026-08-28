@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rui-ktei/socrates/internal/config"
 	"github.com/rui-ktei/socrates/internal/document"
 	"github.com/rui-ktei/socrates/internal/process"
 	"github.com/rui-ktei/socrates/internal/refusal"
@@ -34,10 +35,11 @@ func newServeCommand() *cobra.Command {
 		Short: serveShort,
 		Args:  cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
-			configured, err := surface.LoadConfiguration()
+			read, err := config.Load()
 			if err != nil {
 				return err
 			}
+			configured := read.Surface
 			if !command.Flags().Changed(addressFlag) && configured.Bind != "" {
 				address = configured.Bind
 			}

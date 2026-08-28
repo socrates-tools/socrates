@@ -75,6 +75,15 @@ func (j *journey) serve(written string) string {
 	return held.serve(written)
 }
 
+func (j *journey) serveAgain(written string) string {
+	j.t.Helper()
+
+	held := j.serving()
+	j.noted("agora", "serve", []string{"--document", "--session"})
+
+	return held.serveAgain(written)
+}
+
 func (j *journey) polled() surface.Answered {
 	j.t.Helper()
 
