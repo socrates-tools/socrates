@@ -67,16 +67,43 @@ func TestAConfigurationNamingAFieldAgoraDoesNotKnowIsRefused(t *testing.T) {
 	}
 }
 
-func TestTheConfigurationLivesBesideSocratesOwnAndIsNotIt(t *testing.T) {
+func TestTheConfigurationSitsAtTheTopOfAgorasOwnHome(t *testing.T) {
 	stated := t.TempDir()
-	t.Setenv("XDG_CONFIG_HOME", stated)
+	t.Setenv(surface.HomeVariable, stated)
 
 	path, err := surface.ConfigurationPath()
 	if err != nil {
 		t.Fatalf("resolving where agora reads its configuration: %v", err)
 	}
-	if want := filepath.Join(stated, "agora", "config.yaml"); path != want {
-		t.Errorf("agora reads %s, and XDG_CONFIG_HOME says %s", path, want)
+	if want := filepath.Join(stated, "config.yaml"); path != want {
+		t.Errorf("agora reads %s, and its home is %s", path, want)
+	}
+
+	session, err := surface.SessionPath()
+	if err != nil {
+		t.Fatalf("resolving where agora writes its session: %v", err)
+	}
+	if filepath.Dir(session) != stated {
+		t.Errorf("agora writes its session at %s, outside the home its configuration was read from", session)
+	}
+}
+
+func TestARelativeHomeIsRefusedByAgora(t *testing.T) {
+	t.Setenv(surface.HomeVariable, filepath.Join("somewhere", "below"))
+
+	for named, resolve := range map[string]func() (string, error){
+		"its configuration": surface.ConfigurationPath,
+		"its session":       surface.SessionPath,
+		"its document":      surface.DocumentPath,
+	} {
+		path, err := resolve()
+		if !refusal.Is(err) {
+			t.Errorf("agora resolved %s to %q with a relative home, want a refusal: %v", named, path, err)
+			continue
+		}
+		if !strings.Contains(err.Error(), surface.HomeVariable) || !strings.Contains(err.Error(), "somewhere") {
+			t.Errorf("the refusal reads %q, without naming the variable and the path", err)
+		}
 	}
 }
 

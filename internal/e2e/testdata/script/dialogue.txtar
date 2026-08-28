@@ -30,7 +30,7 @@ stdout 'weakening or deleting behaviour'
 exec sh -c 'socrates respond --finding f1 --rejected --reason ""; echo exit=$?'
 stdout 'exit=3'
 stderr 'a rejection is a claim'
-exec sh -c 'ls $WORK/state/runs/*/r1/'
+exec sh -c 'ls $WORK/home/runs/*/r1/'
 ! stdout 'responses.jsonl'
 
 # A finding the round did not produce is refused, naming it.
@@ -69,7 +69,7 @@ stderr 'exactly one'
 exec sh -c 'socrates respond --finding f1 --decided --reason "Vic decided the guard stays"; echo exit=$?'
 stdout 'exit=3'
 stderr 'asks for a patch'
-exec sh -c 'ls $WORK/state/runs/*/r1/'
+exec sh -c 'ls $WORK/home/runs/*/r1/'
 ! stdout 'responses.jsonl'
 
 # Continuing while a blocking finding has no response is refused, naming what is unanswered.
@@ -82,7 +82,7 @@ stderr 'f2'
 stdin $WORK/reason.txt
 exec sh -c 'socrates respond --finding f1 --rejected --reason -; echo exit=$?'
 stdout 'exit=4'
-exec sh -c 'cat $WORK/state/runs/*/r1/responses.jsonl'
+exec sh -c 'cat $WORK/home/runs/*/r1/responses.jsonl'
 stdout 'the first line of the reason'
 stdout 'the second line of the reason'
 
@@ -90,7 +90,7 @@ stdout 'the second line of the reason'
 exec sh -c 'socrates respond --finding f1 --fixed --note "on reflection the reviewer was right"; echo exit=$?'
 stdout 'exit=4'
 stdout 'replaced'
-exec sh -c 'cat $WORK/state/runs/*/r1/responses.jsonl'
+exec sh -c 'cat $WORK/home/runs/*/r1/responses.jsonl'
 stdout 'the first line of the reason'
 stdout 'on reflection the reviewer was right'
 
@@ -106,8 +106,8 @@ stdout 'socrates continue'
 exec sh -c 'socrates continue --wait; echo exit=$?'
 stdout 'exit=0'
 stdout 'state: clean'
-exists $WORK/state/runs
-exec sh -c 'ls $WORK/state/runs/*/'
+exists $WORK/home/runs
+exec sh -c 'ls $WORK/home/runs/*/'
 stdout 'r1'
 stdout 'r2'
 

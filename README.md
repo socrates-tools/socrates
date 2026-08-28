@@ -118,11 +118,13 @@ It includes untracked files, because a freshly implemented feature is mostly unt
 No ref names the snapshot commit, so ordinary garbage collection reclaims it once the worktree is gone.
 `git status` before and after a review is byte-identical, and a test holds that.
 
-Run state lives under `${XDG_STATE_HOME:-~/.local/state}/socrates/runs/`, one directory per run, legible with `ls` and `cat`.
+Everything socrates reads and everything it writes lives under one home, `~/.socrates` unless `SOCRATES_HOME` names an absolute path instead.
+Runs are `~/.socrates/runs/`, one directory per run, legible with `ls` and `cat`.
+agora keeps its own under `~/.agora`, moved the same way by `AGORA_HOME`.
 
 ## Configuration
 
-One optional file, at `${XDG_CONFIG_HOME:-~/.config}/socrates/config.yaml`.
+One optional file, at `~/.socrates/config.yaml`, beside the runs.
 socrates never creates it, never reads configuration out of the repository under review, and refuses rather than quietly running on defaults when the file will not parse.
 
 ```yaml

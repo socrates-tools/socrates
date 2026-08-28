@@ -203,7 +203,7 @@ func TestASilentReviewerIsAFailureJourney(t *testing.T) {
 	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 30s\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	path := filepath.Join(os.Getenv("XDG_CONFIG_HOME"), "socrates", "config.yaml")
+	path := configurationPath(t, session)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatalf("creating the configuration directory: %v", err)
 	}

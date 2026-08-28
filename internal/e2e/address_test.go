@@ -16,11 +16,10 @@ import (
 func (s *surfaced) configure(content string) {
 	s.t.Helper()
 
-	directory := filepath.Join(os.Getenv("XDG_CONFIG_HOME"), "agora")
-	if err := os.MkdirAll(directory, 0o700); err != nil {
-		s.t.Fatalf("making the directory agora reads its configuration from: %v", err)
+	if err := os.MkdirAll(s.home, 0o700); err != nil {
+		s.t.Fatalf("making the home agora reads its configuration from: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(directory, "config.yaml"), []byte(content), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(s.home, "config.yaml"), []byte(content), 0o600); err != nil {
 		s.t.Fatalf("writing what an operator stated: %v", err)
 	}
 }

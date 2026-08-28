@@ -8,7 +8,7 @@ What exists today: `surface.Serve(document, address, token, idle)` binds, holds 
 The page reads its token from `document.body.dataset.token` and issues three fixed requests: `POST /answer`, `GET /` and `EventSource('/live')`.
 
 `hostIsTheSurface` compares the request's `Host` port against the bound port, and `CheckLoopback` refuses a bind that is not loopback.
-An operator may state a bind and the address the surface is reached at in `$XDG_CONFIG_HOME/agora/config.yaml`.
+An operator may state a bind and the address the surface is reached at in `config.yaml` at the top of agora's home.
 
 ## Goals / Non-Goals
 

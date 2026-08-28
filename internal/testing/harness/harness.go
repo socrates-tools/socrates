@@ -35,7 +35,7 @@ type Session struct {
 	Binary     string
 	Repository *gitrepo.Repository
 	Simulator  *simulator.Simulator
-	StateHome  string
+	Home       string
 	Store      runstore.Store
 }
 
@@ -53,7 +53,7 @@ func Start(t *testing.T) *Session {
 		Binary:     buildSocrates(t),
 		Repository: repository,
 		Simulator:  simulated,
-		StateHome:  home,
+		Home:       home,
 		Store:      runstore.New(filepath.Join(home, "runs")),
 	}
 	t.Cleanup(session.liftEverySeal)
@@ -293,7 +293,7 @@ func (s *Session) Names() []string {
 }
 
 func (s *Session) liftEverySeal() {
-	_ = snapshot.Unseal(s.StateHome)
+	_ = snapshot.Unseal(s.Home)
 }
 
 func (s *Session) stopEveryReviewer() {

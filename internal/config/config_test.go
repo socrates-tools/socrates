@@ -11,6 +11,7 @@ import (
 	"github.com/rui-ktei/socrates/internal/agent"
 	"github.com/rui-ktei/socrates/internal/config"
 	"github.com/rui-ktei/socrates/internal/refusal"
+	"github.com/rui-ktei/socrates/internal/state"
 )
 
 func TestNoConfigurationFile(t *testing.T) {
@@ -147,27 +148,32 @@ func write(t *testing.T, content string) string {
 	return path
 }
 
-func TestTheConfigurationLivesWhereXDGConfigHomeSaysOnEveryPlatform(t *testing.T) {
+func TestTheConfigurationSitsAtTheTopOfTheHomeOnEveryPlatform(t *testing.T) {
 	stated := t.TempDir()
-	t.Setenv("XDG_CONFIG_HOME", stated)
+	t.Setenv(state.HomeVariable, stated)
 
 	path, err := config.Path()
 	if err != nil {
 		t.Fatalf("resolving the configuration path: %v", err)
 	}
-	if want := filepath.Join(stated, "socrates", "config.yaml"); path != want {
-		t.Errorf("socrates reads %s, and XDG_CONFIG_HOME says %s", path, want)
+	if want := filepath.Join(stated, "config.yaml"); path != want {
+		t.Errorf("socrates reads %s, and its home is %s", path, want)
 	}
 }
 
-func TestARelativeXDGConfigHomeIsIgnored(t *testing.T) {
-	t.Setenv("XDG_CONFIG_HOME", "relative/config")
+func TestTheConfigurationIsResolvedByTheOneRuleThePackageDoesNotOwn(t *testing.T) {
+	stated := t.TempDir()
+	t.Setenv(state.HomeVariable, stated)
 
 	path, err := config.Path()
 	if err != nil {
 		t.Fatalf("resolving the configuration path: %v", err)
 	}
-	if !filepath.IsAbs(path) {
-		t.Errorf("socrates reads %s, and a configuration path that is not absolute depends on where the command was run", path)
+	home, err := state.Home()
+	if err != nil {
+		t.Fatalf("resolving socrates' home: %v", err)
+	}
+	if directory := filepath.Dir(path); directory != home {
+		t.Errorf("socrates reads its configuration from %s, and its home is %s, so the package resolves a directory of its own", directory, home)
 	}
 }

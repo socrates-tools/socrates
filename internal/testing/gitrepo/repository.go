@@ -20,7 +20,6 @@ func Hermetic(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("TMPDIR", t.TempDir())
 	t.Setenv("HOME", home)
-	t.Setenv("XDG_CONFIG_HOME", home)
 	t.Setenv("GIT_CONFIG_GLOBAL", os.DevNull)
 	t.Setenv("GIT_CONFIG_SYSTEM", os.DevNull)
 	t.Setenv("GIT_CONFIG_NOSYSTEM", "1")

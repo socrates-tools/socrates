@@ -1,15 +1,16 @@
 package surface
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/rui-ktei/socrates/internal/refusal"
 )
 
 const (
-	HomeVariable = "AGORA_STATE_HOME"
-	xdgVariable  = "XDG_STATE_HOME"
-	toolName     = "agora"
+	HomeVariable  = "AGORA_HOME"
+	toolName      = "agora"
+	homeDirectory = "." + toolName
 
 	sessionFile  = "session.json"
 	documentFile = "document.json"
@@ -17,17 +18,17 @@ const (
 
 func Home() (string, error) {
 	if stated := os.Getenv(HomeVariable); stated != "" {
+		if !filepath.IsAbs(stated) {
+			return "", refusal.New(statedHomeIsRelative, HomeVariable, stated)
+		}
 		return stated, nil
 	}
-	if shared := os.Getenv(xdgVariable); shared != "" {
-		return filepath.Join(shared, toolName), nil
-	}
 
-	home, err := os.UserHomeDir()
+	own, err := os.UserHomeDir()
 	if err != nil {
-		return "", fmt.Errorf(noHomeDirectory, err)
+		return "", refusal.Wrapping(err, noHomeDirectory, err, HomeVariable)
 	}
-	return filepath.Join(home, ".local", "state", toolName), nil
+	return filepath.Join(own, homeDirectory), nil
 }
 
 func SessionPath() (string, error) {

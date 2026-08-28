@@ -41,8 +41,8 @@ stderr '20260819T041530Z-ee66fe34'
 env SOCRATES_RUN=
 
 # A configuration file that does not parse is a refusal rather than a silent default.
-mkdir $WORK/config/socrates
-cp $WORK/broken.yaml $WORK/config/socrates/config.yaml
+mkdir $WORK/home
+cp $WORK/broken.yaml $WORK/home/config.yaml
 exec sh -c 'socrates review; echo exit=$?'
 stdout 'exit=3'
 stderr 'config.yaml'

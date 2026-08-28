@@ -366,7 +366,7 @@ func TestNoConfigurationFileIsCreated(t *testing.T) {
 		t.Fatalf("the run ended as %s with no configuration file present: %s", run.State, reason(run))
 	}
 
-	path := configurationPath(t)
+	path := configurationPath(t, session)
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		t.Errorf("socrates created %s", path)
 	}
@@ -374,7 +374,7 @@ func TestNoConfigurationFileIsCreated(t *testing.T) {
 
 func TestAnUnreadableConfigurationFileIsARefusalFromTheCommand(t *testing.T) {
 	session := harness.Start(t)
-	path := configurationPath(t)
+	path := configurationPath(t, session)
 
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatalf("creating the configuration directory: %v", err)
@@ -400,7 +400,7 @@ func TestTheReviewerModelIsWhatTheConfigurationSays(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	path := configurationPath(t)
+	path := configurationPath(t, session)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatalf("creating the configuration directory: %v", err)
 	}
@@ -479,12 +479,11 @@ func workingTree(t *testing.T, root string) map[string]string {
 	return found
 }
 
-func configurationPath(t *testing.T) string {
+func configurationPath(t *testing.T, session *harness.Session) string {
 	t.Helper()
 
-	home := os.Getenv("XDG_CONFIG_HOME")
-	if home == "" {
-		t.Fatal("the harness left no XDG_CONFIG_HOME, so this test would read the person's own configuration")
+	if session.Home == "" {
+		t.Fatal("the harness left socrates no home of its own, so this test would read the person's own configuration")
 	}
-	return filepath.Join(home, "socrates", "config.yaml")
+	return filepath.Join(session.Home, "config.yaml")
 }

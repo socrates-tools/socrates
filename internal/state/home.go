@@ -1,30 +1,32 @@
 package state
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/rui-ktei/socrates/internal/refusal"
 )
 
 const (
-	HomeVariable  = "SOCRATES_STATE_HOME"
-	xdgVariable   = "XDG_STATE_HOME"
-	runsDirectory = "runs"
+	HomeVariable      = "SOCRATES_HOME"
+	homeDirectory     = ".socrates"
+	runsDirectory     = "runs"
+	ConfigurationFile = "config.yaml"
 )
 
 func Home() (string, error) {
 	if stated := os.Getenv(HomeVariable); stated != "" {
+		if !filepath.IsAbs(stated) {
+			return "", refusal.New(statedHomeIsRelative, HomeVariable, stated)
+		}
 		return stated, nil
 	}
-	if shared := os.Getenv(xdgVariable); shared != "" {
-		return filepath.Join(shared, "socrates"), nil
-	}
 
-	home, err := os.UserHomeDir()
+	own, err := os.UserHomeDir()
 	if err != nil {
-		return "", fmt.Errorf(noHomeDirectory, err)
+		return "", refusal.Wrapping(err, noHomeDirectory, err, HomeVariable)
 	}
-	return filepath.Join(home, ".local", "state", "socrates"), nil
+	return filepath.Join(own, homeDirectory), nil
 }
 
 func Runs() (string, error) {
@@ -33,4 +35,12 @@ func Runs() (string, error) {
 		return "", err
 	}
 	return filepath.Join(home, runsDirectory), nil
+}
+
+func Configuration() (string, error) {
+	home, err := Home()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ConfigurationFile), nil
 }

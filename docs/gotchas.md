@@ -138,10 +138,11 @@ One abandoned run with a sealed worktree would otherwise make the retention swee
 Name one and it runs:
 
 ```sh
-SOCRATES_TEST_UNENFORCING_DIRECTORY=~/winhost/temp go test ./internal/e2e/ -run TestASealThatDoesNotHoldIsARefusal
+SOCRATES_TEST_UNENFORCING_DIRECTORY=<a directory that ignores permission bits> go test ./internal/e2e/ -run TestASealThatDoesNotHoldIsARefusal
 ```
 
-A Windows drive mounted into WSL2 is one: `chmod` there returns no error and changes nothing.
+A FAT or NTFS volume mounted on a Unix host is one, and so is a Windows drive mounted into WSL2.
+Recognise one by clearing a write bit and reading it back: `chmod a-w` there returns no error and `ls -l` shows the bit still set.
 The test refuses to run where the directory named does enforce permissions, rather than passing while asserting nothing.
 
 **Never revert a mutation with `git checkout <file>` while the file is new.**

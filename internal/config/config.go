@@ -6,20 +6,13 @@ import (
 	"io"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/rui-ktei/socrates/internal/agent"
 	"github.com/rui-ktei/socrates/internal/refusal"
+	"github.com/rui-ktei/socrates/internal/state"
 	"go.yaml.in/yaml/v3"
-)
-
-const (
-	directoryName             = "socrates"
-	fileName                  = "config.yaml"
-	configurationHomeVariable = "XDG_CONFIG_HOME"
-	underHomeDirectory        = ".config"
 )
 
 type Config struct {
@@ -31,27 +24,7 @@ type Config struct {
 }
 
 func Path() (string, error) {
-	directory, err := configurationDirectory()
-	if err != nil {
-		return "", refusal.New(noConfigurationDirectory, err)
-	}
-	return filepath.Join(directory, directoryName, fileName), nil
-}
-
-func configurationDirectory() (string, error) {
-	if stated := os.Getenv(configurationHomeVariable); filepath.IsAbs(stated) {
-		return stated, nil
-	}
-
-	platform, unusable := os.UserConfigDir()
-	if unusable == nil {
-		return platform, nil
-	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", unusable
-	}
-	return filepath.Join(home, underHomeDirectory), nil
+	return state.Configuration()
 }
 
 func Load() (Config, error) {

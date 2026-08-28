@@ -12,11 +12,7 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
-const (
-	configurationHomeVariable = "XDG_CONFIG_HOME"
-	underHomeDirectory        = ".config"
-	configurationFile         = "config.yaml"
-)
+const configurationFile = "config.yaml"
 
 type Configuration struct {
 	Bind      string `yaml:"bind"`
@@ -24,27 +20,11 @@ type Configuration struct {
 }
 
 func ConfigurationPath() (string, error) {
-	directory, err := configurationDirectory()
+	home, err := Home()
 	if err != nil {
-		return "", refusal.New(noConfigurationDirectory, err)
+		return "", err
 	}
-	return filepath.Join(directory, toolName, configurationFile), nil
-}
-
-func configurationDirectory() (string, error) {
-	if stated := os.Getenv(configurationHomeVariable); filepath.IsAbs(stated) {
-		return stated, nil
-	}
-
-	platform, unusable := os.UserConfigDir()
-	if unusable == nil {
-		return platform, nil
-	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", unusable
-	}
-	return filepath.Join(home, underHomeDirectory), nil
+	return filepath.Join(home, configurationFile), nil
 }
 
 func LoadConfiguration() (Configuration, error) {
