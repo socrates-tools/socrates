@@ -226,6 +226,10 @@ A session that starts a fresh review on its own initiative spends a full review 
 
 The skill SHALL say that where socrates reports the round as one a person reads, the session drafts a document, serves it with `agora`, hands the person the address, waits on `agora poll`, and records what came back with `socrates respond`.
 
+It SHALL say that the address `agora serve` prints holds the session that page belongs to, and that `agora poll` is given that session.
+It SHALL say it once, where the loop is described, rather than on each branch that serves a page.
+A session that is not told this polls a surface holding more than one page and is told about somebody else's round, or about none, and it has no way to find out which.
+
 It SHALL say it on both branches where such a round arrives: `escalated`, where the findings are the person's and socrates is finished, and `awaiting-response` holding a finding a person answers.
 
 It SHALL take the fact from what socrates reports rather than restating the condition, so that a session never decides for itself whether a round is one a person reads.
@@ -242,6 +246,16 @@ Everything in that step is run in a loop, and a page is made once, after the run
 
 - **WHEN** the skill is rendered
 - **THEN** the `escalated` branch and the `awaiting-response` branch each say to serve the page and hand over the address
+
+#### Scenario: The skill says to carry the session from serve to poll
+
+- **WHEN** the skill describes serving a page and waiting on it
+- **THEN** it says the printed address holds the session, and that `agora poll` is given that session
+
+#### Scenario: The session is stated once rather than on every branch
+
+- **WHEN** the skill is rendered
+- **THEN** it says how the session reaches `agora poll` once, and neither branch restates it
 
 #### Scenario: The session does not decide the condition itself
 
