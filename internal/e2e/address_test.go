@@ -11,6 +11,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/rui-ktei/socrates/internal/surface"
 )
 
 func (s *surfaced) configure(content string) {
@@ -38,14 +40,18 @@ func aFreeLoopbackAddress(t *testing.T) string {
 	return address
 }
 
-func TestWithNothingStatedTheSurfaceBindsWhatTheOperatingSystemChose(t *testing.T) {
+func thePageAt(reached, session string) string {
+	return strings.TrimSuffix(reached, "/") + surface.SessionPrefix + session
+}
+
+func TestTheSurfaceReportsThePortItWasGivenRatherThanTheOneItAskedFor(t *testing.T) {
 	held := standing(t)
 
 	printed := held.serve(oneDecisionDocument)
 
-	open := held.session()
-	if printed != open.Address {
-		t.Errorf("agora serve printed %q and bound %q", printed, open.Address)
+	open := held.record()
+	if want := thePageAt("http://"+open.Address, held.opened); printed != want {
+		t.Errorf("agora serve printed %q and bound %q, so the page is at %q", printed, open.Address, want)
 	}
 
 	host, port, err := net.SplitHostPort(open.Address)
@@ -60,6 +66,66 @@ func TestWithNothingStatedTheSurfaceBindsWhatTheOperatingSystemChose(t *testing.
 	}
 }
 
+func untilThePortIsFree(t *testing.T, address string) {
+	t.Helper()
+
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		listener, err := net.Listen("tcp", address)
+		if err == nil {
+			listener.Close()
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("the port %s is still held after the surface was stopped: %v", address, err)
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+}
+
+func requireTheFixedPortIsFree(t *testing.T) {
+	t.Helper()
+
+	listener, err := net.Listen("tcp", surface.DefaultAddress)
+	if err != nil {
+		t.Skipf("something else holds %s, so what the surface binds when nothing states one cannot be read here: %v", surface.DefaultAddress, err)
+	}
+	if err := listener.Close(); err != nil {
+		t.Fatalf("releasing %s: %v", surface.DefaultAddress, err)
+	}
+}
+
+func TestTheDefaultBindIsAFixedLoopbackPort(t *testing.T) {
+	requireTheFixedPortIsFree(t)
+
+	held := standing(t)
+	held.bindsWhatIsConfigured()
+
+	held.serve(oneDecisionDocument)
+	bound := held.record().Address
+
+	if bound != surface.DefaultAddress {
+		t.Fatalf("with nothing stated the surface bound %q, and the address it binds when nothing states one is %q", bound, surface.DefaultAddress)
+	}
+	host, _, err := net.SplitHostPort(bound)
+	if err != nil {
+		t.Fatalf("the surface bound %q: %v", bound, err)
+	}
+	if stated := net.ParseIP(host); stated == nil || !stated.IsLoopback() {
+		t.Errorf("the surface bound the host %q, and the address it binds when nothing states one is a loopback one", host)
+	}
+
+	if _, failures, code := held.run("stop"); code != 0 {
+		t.Fatalf("agora stop exited %d: %s", code, failures)
+	}
+	untilThePortIsFree(t, bound)
+
+	held.serve(oneDecisionDocument)
+	if again := held.record().Address; again != bound {
+		t.Errorf("a surface started again after the first stopped bound %q, and the first bound %q", again, bound)
+	}
+}
+
 const reachedAt = "https://agora.example:8443/"
 
 func TestServePrintsTheAddressStatedOverTheAddressBound(t *testing.T) {
@@ -68,11 +134,11 @@ func TestServePrintsTheAddressStatedOverTheAddressBound(t *testing.T) {
 
 	printed := held.serve(oneDecisionDocument)
 
-	open := held.session()
-	if printed != reachedAt {
-		t.Errorf("agora serve printed %q, and an operator stated the surface is reached at %q", printed, reachedAt)
+	open := held.record()
+	if want := thePageAt(reachedAt, held.opened); printed != want {
+		t.Errorf("agora serve printed %q, and an operator stated the surface is reached at %q", printed, want)
 	}
-	if printed == open.Address {
+	if strings.Contains(printed, open.Address) {
 		t.Errorf("agora serve printed the address it bound, %q", open.Address)
 	}
 }
@@ -83,28 +149,29 @@ func TestASurfaceThatWasRevisedPrintsTheAddressStatedToo(t *testing.T) {
 	held.configure("reached_at: " + reachedAt + "\n")
 
 	started := held.serve(oneDecisionDocument)
-	revised := held.serve(oneDecisionDocument)
+	revised := held.serveOnto(held.opened, oneDecisionDocument)
 
 	if started != revised {
-		t.Errorf("starting a surface printed %q and revising a live one printed %q", started, revised)
+		t.Errorf("starting a surface printed %q and revising the page it opened printed %q", started, revised)
 	}
-	if revised != reachedAt {
-		t.Errorf("revising a live surface printed %q, and an operator stated the surface is reached at %q", revised, reachedAt)
+	if want := thePageAt(reachedAt, held.opened); revised != want {
+		t.Errorf("revising a live surface printed %q, and an operator stated the surface is reached at %q", revised, want)
 	}
 }
 
-func TestWithNothingStatedBothExitsPrintTheAddressBound(t *testing.T) {
+func TestWithNoAddressToReachAtStatedBothExitsPrintTheAddressBound(t *testing.T) {
 	// scenario: serve returns before the person has read anything
 	held := standing(t)
 
 	started := held.serve(oneDecisionDocument)
-	bound := held.session().Address
-	revised := held.serve(oneDecisionDocument)
+	bound := held.record().Address
+	revised := held.serveOnto(held.opened, oneDecisionDocument)
 
-	if started != bound {
+	want := thePageAt("http://"+bound, held.opened)
+	if started != want {
 		t.Errorf("starting a surface printed %q and bound %q", started, bound)
 	}
-	if revised != bound {
+	if revised != want {
 		t.Errorf("revising a live surface printed %q and it is bound to %q", revised, bound)
 	}
 }
@@ -120,7 +187,7 @@ func TestAnAddressAPersonCouldNotOpenIsRefused(t *testing.T) {
 	if !strings.Contains(failures, "agora.example:8443") {
 		t.Errorf("refusing an address a person could not open does not name it: %s", failures)
 	}
-	if _, err := os.Stat(filepath.Join(held.home, "session.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(held.home, "surface.json")); err == nil {
 		t.Error("a refused address left a session behind, and it starts no server")
 	}
 }
@@ -132,11 +199,11 @@ func TestAnAddressNothingAnswersOnIsStillServed(t *testing.T) {
 	held.configure("reached_at: " + unserved + "\n")
 
 	printed := held.serve(oneDecisionDocument)
-	if printed != unserved {
-		t.Errorf("agora serve printed %q, and an operator stated the surface is reached at %q", printed, unserved)
+	if want := thePageAt(unserved, held.opened); printed != want {
+		t.Errorf("agora serve printed %q, and an operator stated the surface is reached at %q", printed, want)
 	}
 
-	answered, err := http.Get("http://" + held.session().Address + "/")
+	answered, err := http.Get(thePageAt("http://"+held.record().Address, held.opened))
 	if err != nil {
 		t.Fatalf("reaching the address the surface bound: %v", err)
 	}
@@ -150,11 +217,12 @@ func TestTheAddressTheSurfaceIsReachedAtIsNotAHostItAdmits(t *testing.T) {
 	held := standing(t)
 	held.configure("reached_at: " + reachedAt + "\n")
 
-	if printed := held.serve(oneDecisionDocument); printed != reachedAt {
-		t.Fatalf("agora serve printed %q, and an operator stated the surface is reached at %q", printed, reachedAt)
+	printed := held.serve(oneDecisionDocument)
+	if want := thePageAt(reachedAt, held.opened); printed != want {
+		t.Fatalf("agora serve printed %q, and an operator stated the surface is reached at %q", printed, want)
 	}
 
-	request, err := http.NewRequest(http.MethodGet, "http://"+held.session().Address+"/", nil)
+	request, err := http.NewRequest(http.MethodGet, "http://"+held.record().Address+"/", nil)
 	if err != nil {
 		t.Fatalf("addressing the surface: %v", err)
 	}
@@ -189,7 +257,7 @@ func TestAConfiguredBindThatIsNotLoopbackIsRefusedToo(t *testing.T) {
 	if !strings.Contains(failures, "0.0.0.0:8080") {
 		t.Errorf("refusing a configured bind that is not loopback does not name it: %s", failures)
 	}
-	if _, err := os.Stat(filepath.Join(held.home, "session.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(held.home, "surface.json")); err == nil {
 		t.Error("a refused configured bind left a session behind, and it starts no server")
 	}
 }
@@ -206,10 +274,11 @@ func TestAStatedFlagBeatsAConfiguredBind(t *testing.T) {
 		t.Fatalf("agora serve exited %d: %s", code, failures)
 	}
 
-	if open := held.session(); open.Address != passed {
+	open := held.record()
+	if open.Address != passed {
 		t.Errorf("a caller passed %q, an operator stated %q, and the surface bound %q", passed, configured, open.Address)
 	}
-	if strings.TrimSpace(printed) != passed {
+	if !strings.HasPrefix(strings.TrimSpace(printed), "http://"+passed+surface.SessionPrefix) {
 		t.Errorf("agora serve printed %q, and the caller passed %q", strings.TrimSpace(printed), passed)
 	}
 }
@@ -219,13 +288,14 @@ func TestAConfiguredBindIsWhatTheSurfaceBinds(t *testing.T) {
 
 	wanted := aFreeLoopbackAddress(t)
 	held.configure("bind: " + wanted + "\n")
+	held.bindsWhatIsConfigured()
 
 	printed := held.serve(oneDecisionDocument)
 
-	if open := held.session(); open.Address != wanted {
+	if open := held.record(); open.Address != wanted {
 		t.Errorf("an operator stated the bind %q and the surface bound %q", wanted, open.Address)
 	}
-	if printed != wanted {
+	if want := thePageAt("http://"+wanted, held.opened); printed != want {
 		t.Errorf("agora serve printed %q, and an operator stated the bind %q", printed, wanted)
 	}
 }
@@ -265,23 +335,24 @@ func TestAPersonAnswersThroughSomethingStandingInFrontOfTheSurface(t *testing.T)
 	bound := aFreeLoopbackAddress(t)
 	through := inFrontOf(t, bound)
 	held.configure("bind: " + bound + "\nreached_at: http://" + through + "/\n")
+	held.bindsWhatIsConfigured()
 
 	printed := held.serve(oneDecisionDocument)
-	if printed != "http://"+through+"/" {
-		t.Fatalf("agora serve printed %q, and the surface is reached at %q", printed, "http://"+through+"/")
+	if want := thePageAt("http://"+through, held.opened); printed != want {
+		t.Fatalf("agora serve printed %q, and the surface is reached at %q", printed, want)
 	}
-	if held.session().Address != bound {
-		t.Fatalf("the surface bound %q, and the proxy stands in front of %q", held.session().Address, bound)
+	if held.record().Address != bound {
+		t.Fatalf("the surface bound %q, and the proxy stands in front of %q", held.record().Address, bound)
 	}
 
-	page := opening(t, through)
+	page := opening(t, printed)
 	page.evaluate(chose("c-1", 0), nil)
 	page.write(within("c-1", ".words-field"), inTheirOwnWords)
 	page.click(within("c-1", ".commit"))
 	page.click(".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
-	answered, failures, code := held.run("poll")
+	answered, failures, code := held.poll()
 	if code != 0 {
 		t.Fatalf("agora poll exited %d: %s", code, failures)
 	}
@@ -292,5 +363,5 @@ func TestAPersonAnswersThroughSomethingStandingInFrontOfTheSurface(t *testing.T)
 		t.Errorf("what agora poll printed does not carry what the person wrote:\n%s", answered)
 	}
 
-	nothingLeftTheMachine(t, through, page.requests.all())
+	nothingLeftTheMachine(t, printed, page.requests.all())
 }

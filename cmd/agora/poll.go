@@ -5,22 +5,29 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/rui-ktei/socrates/internal/refusal"
 	"github.com/rui-ktei/socrates/internal/surface"
 	"github.com/spf13/cobra"
 )
 
 func newPollCommand(code *int) *cobra.Command {
-	return &cobra.Command{
+	var session string
+
+	command := &cobra.Command{
 		Use:   "poll",
 		Short: pollShort,
 		Args:  cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
-			open, err := surface.ReadSession()
+			if session == "" {
+				return refusal.New(nameTheSession, "poll")
+			}
+
+			open, err := surface.ReadRecord()
 			if err != nil {
 				return err
 			}
 
-			read, arrived, err := surface.Reach(open).Await(command.Context(), surface.PollDeadline)
+			read, arrived, err := surface.Reach(open).Await(command.Context(), session, surface.PollDeadline)
 			if err != nil {
 				return err
 			}
@@ -38,21 +45,33 @@ func newPollCommand(code *int) *cobra.Command {
 			return nil
 		},
 	}
+
+	command.Flags().StringVar(&session, sessionFlag, "", sessionUsage)
+	return command
 }
 
 func newEndCommand() *cobra.Command {
-	return &cobra.Command{
+	var session string
+
+	command := &cobra.Command{
 		Use:   "end",
 		Short: endShort,
 		Args:  cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
-			open, err := surface.ReadSession()
+			if session == "" {
+				return refusal.New(nameTheSession, "end")
+			}
+
+			open, err := surface.ReadRecord()
 			if err != nil {
 				return err
 			}
-			return surface.Reach(open).End(command.Context())
+			return surface.Reach(open).End(command.Context(), session)
 		},
 	}
+
+	command.Flags().StringVar(&session, sessionFlag, "", sessionUsage)
+	return command
 }
 
 func newStopCommand() *cobra.Command {
@@ -61,14 +80,14 @@ func newStopCommand() *cobra.Command {
 		Short: stopShort,
 		Args:  cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
-			open, err := surface.ReadSession()
+			open, err := surface.ReadRecord()
 			if err != nil {
 				return err
 			}
 			if err := surface.Reach(open).Stop(command.Context()); err != nil {
 				return err
 			}
-			return surface.ForgetSession()
+			return surface.ForgetRecord()
 		},
 	}
 }

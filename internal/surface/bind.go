@@ -7,7 +7,7 @@ import (
 	"github.com/rui-ktei/socrates/internal/refusal"
 )
 
-const DefaultAddress = "127.0.0.1:0"
+const DefaultAddress = "127.0.0.1:18018"
 
 const localhostName = "localhost"
 
@@ -37,6 +37,14 @@ func CheckLoopback(address string) error {
 		return refusal.New(addressIsNotLoopback, address)
 	}
 	return nil
+}
+
+func CheckFree(address string) error {
+	listener, err := net.Listen("tcp", address)
+	if err != nil {
+		return refusal.New(portIsHeldByAnother, address)
+	}
+	return listener.Close()
 }
 
 func CheckOpenable(address string) error {

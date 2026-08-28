@@ -42,6 +42,8 @@ type surfaced struct {
 	binary string
 	home   string
 	where  string
+	bind   string
+	opened string
 }
 
 func standing(t *testing.T) *surfaced {
@@ -58,9 +60,15 @@ func servingSurface(t *testing.T) *surfaced {
 	source.Build(t, "./cmd/agora", binary)
 
 	home := t.TempDir()
-	held := &surfaced{t: t, binary: binary, home: home, where: t.TempDir()}
+	held := &surfaced{t: t, binary: binary, home: home, where: t.TempDir(), bind: aPortTheOperatingSystemChooses}
 	t.Cleanup(func() { held.run("stop") })
 	return held
+}
+
+const aPortTheOperatingSystemChooses = "127.0.0.1:0"
+
+func (s *surfaced) bindsWhatIsConfigured() {
+	s.bind = ""
 }
 
 func (s *surfaced) run(arguments ...string) (string, string, int) {
@@ -95,37 +103,90 @@ func (s *surfaced) reading(input string, arguments ...string) (string, string, i
 func (s *surfaced) serve(document string) string {
 	s.t.Helper()
 
-	printed, failures, code := s.reading(document, "serve", "--document", "-")
+	printed, failures, code := s.reading(document, s.serving()...)
 	if code != 0 {
 		s.t.Fatalf("agora serve exited %d: %s", code, failures)
+	}
+	address := strings.TrimSpace(printed)
+	s.opened = theSessionIn(s.t, address)
+	return address
+}
+
+func (s *surfaced) serveAgain(document string) string {
+	s.t.Helper()
+	return s.serveOnto(s.opened, document)
+}
+
+func (s *surfaced) serveOnto(session, document string) string {
+	s.t.Helper()
+
+	printed, failures, code := s.reading(document, s.serving("--session", session)...)
+	if code != 0 {
+		s.t.Fatalf("agora serve --session exited %d: %s", code, failures)
 	}
 	return strings.TrimSpace(printed)
 }
 
-func (s *surfaced) session() surface.Session {
+func theSessionIn(t *testing.T, address string) string {
+	t.Helper()
+
+	_, session, found := strings.Cut(address, surface.SessionPrefix)
+	if !found || session == "" {
+		t.Fatalf("agora serve printed %q, and the address it prints holds the session the page belongs to", address)
+	}
+	return session
+}
+
+func (s *surfaced) serving(arguments ...string) []string {
+	asked := append([]string{"serve", "--document", "-"}, arguments...)
+	if s.bind != "" {
+		asked = append(asked, "--address", s.bind)
+	}
+	return asked
+}
+
+func (s *surfaced) record() surface.Record {
 	s.t.Helper()
 
-	held, err := os.ReadFile(filepath.Join(s.home, "session.json"))
+	held, err := os.ReadFile(filepath.Join(s.home, "surface.json"))
 	if err != nil {
-		s.t.Fatalf("reading the session the surface wrote: %v", err)
+		s.t.Fatalf("reading what the surface wrote about itself: %v", err)
 	}
-	var open surface.Session
+	var open surface.Record
 	if err := json.Unmarshal(held, &open); err != nil {
-		s.t.Fatalf("reading back the session: %v", err)
+		s.t.Fatalf("reading back what the surface wrote about itself: %v", err)
 	}
 	return open
 }
 
-func (s *surfaced) answer(sent surface.Sent) {
+func (s *surfaced) poll(arguments ...string) (string, string, int) {
+	s.t.Helper()
+	return s.run(append([]string{"poll", "--session", s.opened}, arguments...)...)
+}
+
+func (s *surfaced) end(session string) {
 	s.t.Helper()
 
-	open := s.session()
+	if _, failures, code := s.run("end", "--session", session); code != 0 {
+		s.t.Fatalf("agora end exited %d: %s", code, failures)
+	}
+}
+
+func (s *surfaced) answer(sent surface.Sent) {
+	s.t.Helper()
+	s.answerOn(s.opened, sent)
+}
+
+func (s *surfaced) answerOn(session string, sent surface.Sent) {
+	s.t.Helper()
+
+	open := s.record()
 	written, err := json.Marshal(sent)
 	if err != nil {
 		s.t.Fatalf("writing what a person sent: %v", err)
 	}
 
-	request, err := http.NewRequest(http.MethodPost, "http://"+open.Address+"/answer", bytes.NewReader(written))
+	request, err := http.NewRequest(http.MethodPost, "http://"+open.Address+surface.SessionPrefix+session+"/answer", bytes.NewReader(written))
 	if err != nil {
 		s.t.Fatalf("addressing the surface: %v", err)
 	}
@@ -227,11 +288,11 @@ func TestServeReturnsBeforeThePersonHasReadAnything(t *testing.T) {
 	if took > 20*time.Second {
 		t.Errorf("agora serve took %s to return, and it returns as soon as the page is reachable", took)
 	}
-	if err := surface.CheckLoopback(address); err != nil {
+	if err := surface.CheckLoopback(originOf(t, address)[len("http://"):]); err != nil {
 		t.Fatalf("agora serve printed %q: %v", address, err)
 	}
 
-	answered, err := http.Get("http://" + address + "/")
+	answered, err := http.Get(address)
 	if err != nil {
 		t.Fatalf("reaching the address agora serve printed: %v", err)
 	}
@@ -260,7 +321,7 @@ func TestAWildcardBindIsRefusedByTheBinary(t *testing.T) {
 	if !strings.Contains(failures, "0.0.0.0:0") {
 		t.Errorf("refusing a wildcard bind does not name it: %s", failures)
 	}
-	if _, err := os.Stat(filepath.Join(held.home, "session.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(held.home, "surface.json")); err == nil {
 		t.Error("a refused bind left a session behind, and it starts no server")
 	}
 }
@@ -285,7 +346,7 @@ func TestAFragmentOutsideTheAllowlistStillServes(t *testing.T) {
 
 	address := held.serve(string(raw))
 
-	answered, err := http.Get("http://" + address + "/")
+	answered, err := http.Get(address)
 	if err != nil {
 		t.Fatalf("reaching the surface: %v", err)
 	}
@@ -334,7 +395,7 @@ func TestServeRefusesADocumentMarkingTwoOptions(t *testing.T) {
 	if !strings.Contains(failures, "c-1") {
 		t.Errorf("refusing a document marking two options does not name the decision: %s", failures)
 	}
-	if _, err := os.Stat(filepath.Join(held.home, "session.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(held.home, "surface.json")); err == nil {
 		t.Error("a refused document left a session behind, and it starts no server")
 	}
 }
@@ -345,7 +406,7 @@ func TestADocumentWrittenBeforeTheMarkStillServes(t *testing.T) {
 
 	address := held.serve(oneDecisionDocument)
 
-	answered, err := http.Get("http://" + address + "/")
+	answered, err := http.Get(address)
 	if err != nil {
 		t.Fatalf("reaching the surface: %v", err)
 	}
@@ -377,32 +438,32 @@ func TestTheRepositoryIsUntouched(t *testing.T) {
 	before := repository.Status()
 	beforeTree := workingTree(t, repository.Root)
 
-	held.serve(oneDecisionDocument)
-	held.answer(surface.Sent{
-		Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}, Words: "go on"}},
-		Message:   "one more look",
-	})
+	_, first, _, second := held.twoPages()
+	for _, session := range []string{first, second} {
+		held.answerOn(session, surface.Sent{
+			Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}, Words: "go on"}},
+			Message:   "one more look",
+		})
 
-	printed, failures, code := held.run("poll")
-	if code != 0 {
-		t.Fatalf("agora poll exited %d: %s", code, failures)
-	}
-	if !strings.Contains(printed, "patch c-1") {
-		t.Errorf("what agora poll printed does not carry the command the option carries:\n%s", printed)
+		printed, failures, code := held.run("poll", "--session", session)
+		if code != 0 {
+			t.Fatalf("agora poll exited %d: %s", code, failures)
+		}
+		if !strings.Contains(printed, "patch c-1") {
+			t.Errorf("what agora poll printed does not carry the command the option carries:\n%s", printed)
+		}
+		held.end(session)
 	}
 
-	if _, failures, code := held.run("end"); code != 0 {
-		t.Fatalf("agora end exited %d: %s", code, failures)
-	}
 	if _, failures, code := held.run("stop"); code != 0 {
 		t.Fatalf("agora stop exited %d: %s", code, failures)
 	}
 
 	if after := repository.Status(); after != before {
-		t.Errorf("git status changed while the surface was served, answered and ended:\nbefore:\n%s\nafter:\n%s", before, after)
+		t.Errorf("git status changed while two surfaces were served, answered and ended:\nbefore:\n%s\nafter:\n%s", before, after)
 	}
 	if after := workingTree(t, repository.Root); !equalTrees(beforeTree, after) {
-		t.Errorf("the working tree changed while the surface was served, answered and ended:\nbefore: %v\nafter: %v", beforeTree, after)
+		t.Errorf("the working tree changed while two surfaces were served, answered and ended:\nbefore: %v\nafter: %v", beforeTree, after)
 	}
 }
 
@@ -440,9 +501,13 @@ func TestTheSurfaceWeighsWhatSomebodyHasSeen(t *testing.T) {
 
 func (s *surfaced) awaiting(within time.Duration) (surface.Answered, bool) {
 	s.t.Helper()
+	return s.awaitingOn(s.opened, within)
+}
 
-	open := s.session()
-	read, arrived, err := surface.Reach(open).Await(context.Background(), within)
+func (s *surfaced) awaitingOn(session string, within time.Duration) (surface.Answered, bool) {
+	s.t.Helper()
+
+	read, arrived, err := surface.Reach(s.record()).Await(context.Background(), session, within)
 	if err != nil {
 		s.t.Fatalf("waiting on the surface: %v", err)
 	}

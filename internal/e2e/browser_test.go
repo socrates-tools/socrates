@@ -3,6 +3,7 @@ package e2e_test
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -160,7 +161,7 @@ func opening(t *testing.T, address string, options ...chromedp.ExecAllocatorOpti
 	held.do(
 		network.Enable(),
 		log.Enable(),
-		chromedp.Navigate("http://"+address+"/"),
+		chromedp.Navigate(address),
 		chromedp.WaitReady("body", chromedp.ByQuery),
 		chromedp.WaitReady(".send", chromedp.ByQuery),
 	)
@@ -257,12 +258,23 @@ func within(decision, selector string) string {
 func nothingLeftTheMachine(t *testing.T, address string, reaching []string) {
 	t.Helper()
 
+	origin := originOf(t, address)
 	for _, asked := range reaching {
-		if !strings.HasPrefix(asked, "http://"+address+"/") && !strings.HasPrefix(asked, "data:") {
+		if !strings.HasPrefix(asked, origin+"/") && !strings.HasPrefix(asked, "data:") {
 			t.Errorf("the page requested %q, and every request it issues resolves to the surface itself", asked)
 		}
 	}
 	if len(reaching) < 3 {
 		t.Errorf("the page issued %d requests, and a check that saw almost nothing would pass forever: %v", len(reaching), reaching)
 	}
+}
+
+func originOf(t *testing.T, address string) string {
+	t.Helper()
+
+	read, err := url.Parse(address)
+	if err != nil {
+		t.Fatalf("reading the address the page was served at: %v", err)
+	}
+	return read.Scheme + "://" + read.Host
 }

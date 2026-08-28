@@ -51,7 +51,7 @@ What agora is:
 - `internal/stylesheet` - a caller's stylesheet read as a parse, reduced to a fixed allowlist, and scoped to the illustration.
 - `internal/render` - a document to one HTML page, and a patch to the rows of a split diff.
 - `internal/assets` - the built client bundle and fonts, embedded, and the stamp of their source.
-- `internal/surface` - the loopback server and its guards, the session file, the exchange, and the bounds on waiting.
+- `internal/surface` - the loopback server and its guards, the sessions it holds, what it writes about itself and about each page, the exchange, and the bounds on waiting.
 - `web/` - the client source, the design system and the fonts, built by `make assets`.
 
 What holds them both:
@@ -130,7 +130,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 **The skill**
 
 - `internal/skill` is its one source, and the committed copy is generated from it.
-- It names nothing the binary does not offer, lists every state a run rests in, teaches polling at a stated cadence, names `socrates watch` once and outside the loop, and says whose a question is.
+- It names nothing the binary does not offer, lists every state a run rests in, teaches polling at a stated cadence, names `socrates watch` once and outside the loop, says once that the address `agora serve` prints holds the session `agora poll` is given, and says whose a question is.
 - `dialogue.ResponseRules` and `skill.PageBar` are each stated once and rendered where they are needed.
 - It says every control carries the command it becomes and that the page shows that command to nobody, and it names each decision from the finding's identifier rather than titling it.
 - The loop it describes is driven end to end through the real binary, not read.
@@ -144,7 +144,9 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 **The surface**
 
 - It binds a loopback address; nothing widens it, and an address that is not one is refused before any server starts.
-- It turns away a request naming a host it did not bind, and every state-changing route carries the token the page was served with.
+- It binds a fixed port where nothing states one, and a port held by something it does not know of is a refusal rather than a port it takes.
+- The surface mints a session, `--session` never brings one into existence, and every page and every route of it is served under a path holding that session.
+- It turns away a request naming a host it did not bind, and every state-changing route carries a token: a session's own answers for that session and no other, and the one minted when the server started answers everywhere.
 - It composes a command and never runs one, the command it hands back is the option's own string, and no command is rendered on the page.
 - It writes only under the user's state directory.
 - A caller writes a document rather than a page, and the name, severity, audience and location come from the source a decision cites.
@@ -152,7 +154,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - A caller's fragment is reduced to a fixed allowlist before it is embedded, and every name it carries is prefixed by the surface.
 - A caller's stylesheet is reduced from a parse that reached the end of its input, every selector it keeps is scoped to the illustration, and the page admits it by a hash of exactly the bytes it embedded.
 - What a caller paints is contained by the illustration, so a rule inside one decides nothing about where the page's own controls land.
-- Delivery happens once, waiting is bounded, and an idle server stops.
+- Delivery happens once, waiting is bounded, collection is per session, and the server stops once it has held no session for the idle period.
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.
 - An element it hides paints nothing, every colour it paints is a token stated once, and every text meets a contrast floor under both preferences.
 - Nothing in it names review, finding, verdict, round, or run as a noun.

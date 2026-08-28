@@ -10,6 +10,7 @@ import (
 
 	"github.com/rui-ktei/socrates/internal/runstate"
 	"github.com/rui-ktei/socrates/internal/skill"
+	"github.com/rui-ktei/socrates/internal/surface"
 	"github.com/rui-ktei/socrates/internal/testing/harness"
 )
 
@@ -387,6 +388,82 @@ func TestTheLoopTheSkillDescribesReachesAVerdict(t *testing.T) {
 	state, code = driven.waitedFor(name)
 	if state != runstate.Clean || code != 0 {
 		t.Fatalf("the second round left the run %s and socrates status exited %d, want clean", state, code)
+	}
+
+	driven.wroteNothingItself()
+	driven.namedNothingTheSkillDoesNot()
+}
+
+func TestTheLoopCarriesTheSessionFromServeToPollAndReachesAVerdict(t *testing.T) {
+	const inTheirOwnWords = "the function stays, because the importer reads it every morning"
+
+	driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)
+	name := driven.review("count the characters of a document")
+
+	state, code := driven.waitedFor(name)
+	if state != runstate.AwaitingResponse || code != 4 {
+		t.Fatalf("a round holding a question left the run %s and socrates status exited %d, want a parked run", state, code)
+	}
+
+	read := driven.reported(name)
+	var asked reportedFinding
+	for _, finding := range read.Findings {
+		if finding.Action == "ask-user" {
+			asked = finding
+		}
+	}
+	if asked.ID == "" {
+		t.Fatalf("no finding of the parked round needs a person: %+v", read.Findings)
+	}
+
+	address := driven.serve(documentFor(t, "one thing only you can settle", read, []map[string]any{{
+		"id":       asked.ID,
+		"question": asked.Description,
+		"meaning":  "nothing socrates can do closes this one",
+		"mode":     "single-choice",
+		"options": []map[string]any{
+			{"label": "the function stays", "meaning": "the importer reads it", "command": `socrates respond --finding ` + asked.ID + ` --decided --reason "the function stays"`},
+			{"label": "take it out", "meaning": "nothing reads it", "command": `socrates respond --finding ` + asked.ID + ` --decided --reason "take the function out"`},
+		},
+	}}))
+
+	held := driven.serving()
+	if carried := theSessionIn(t, address); carried != held.opened {
+		t.Fatalf("the address agora serve printed holds %q, and the session it opened is %q", carried, held.opened)
+	}
+
+	held.answer(surface.Sent{
+		Decisions: []surface.Choice{{ID: asked.ID, Chosen: []int{0}, Words: inTheirOwnWords}},
+		Ends:      true,
+	})
+
+	answered := driven.polled()
+	if len(answered.Decisions) != 1 || answered.Decisions[0].ID != asked.ID {
+		t.Fatalf("agora poll on the session agora serve printed returned %+v", answered.Decisions)
+	}
+
+	driven.author("internal/added.go", answeredBetter)
+	if _, failures, code := driven.run("respond", name, "--finding", asked.ID, "--decided", "--reason", answered.Decisions[0].Words); code != 4 {
+		t.Fatalf("recording what the person answered on the page exited %d: %s", code, failures)
+	}
+	if _, failures, code := driven.run("respond", name, "--finding", "f2", "--fixed", "--note", "the guard is above the read now"); code != 4 {
+		t.Fatalf("recording a fix exited %d: %s", code, failures)
+	}
+	if _, failures, code := driven.run("respond", name, "--finding", "f3", "--rejected", "--reason", "there is no retry loop in this function at all"); code != 4 {
+		t.Fatalf("recording a rejection exited %d: %s", code, failures)
+	}
+	if _, failures, code := driven.run("continue", name); code != 0 {
+		t.Fatalf("socrates continue with everything answered exited %d: %s", code, failures)
+	}
+
+	state, code = driven.waitedFor(name)
+	if state != runstate.Clean || code != 0 {
+		t.Fatalf("the round that judged what the person answered on the page left the run %s and socrates status exited %d, want clean", state, code)
+	}
+
+	judging := driven.session.Simulator.Invocations()[1].Prompt
+	if !strings.Contains(judging, inTheirOwnWords) {
+		t.Errorf("the next round was not told what the person answered on the page:\n%s", judging)
 	}
 
 	driven.wroteNothingItself()

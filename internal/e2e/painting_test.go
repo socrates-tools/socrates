@@ -434,7 +434,7 @@ func TestAnOversizedStylesheetIsRefusedBeforeServing(t *testing.T) {
 			t.Errorf("refusing an oversized stylesheet does not say %q was exceeded: %s", named, failures)
 		}
 	}
-	if _, err := os.Stat(filepath.Join(held.home, "session.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(held.home, "surface.json")); err == nil {
 		t.Error("a refused document left a session behind, and it starts no server")
 	}
 }

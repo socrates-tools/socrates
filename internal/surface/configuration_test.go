@@ -79,12 +79,20 @@ func TestTheConfigurationSitsAtTheTopOfAgorasOwnHome(t *testing.T) {
 		t.Errorf("agora reads %s, and its home is %s", path, want)
 	}
 
-	session, err := surface.SessionPath()
+	record, err := surface.RecordPath()
 	if err != nil {
-		t.Fatalf("resolving where agora writes its session: %v", err)
+		t.Fatalf("resolving where agora writes what it is reached at: %v", err)
 	}
-	if filepath.Dir(session) != stated {
-		t.Errorf("agora writes its session at %s, outside the home its configuration was read from", session)
+	if filepath.Dir(record) != stated {
+		t.Errorf("agora writes what it is reached at to %s, outside the home its configuration was read from", record)
+	}
+
+	page, err := surface.PagePath("a1b2c3d4")
+	if err != nil {
+		t.Fatalf("resolving where agora writes a session: %v", err)
+	}
+	if want := filepath.Join(stated, "sessions", "a1b2c3d4", "session.json"); page != want {
+		t.Errorf("agora writes a session at %s, and its home is %s", page, want)
 	}
 }
 
@@ -92,9 +100,10 @@ func TestARelativeHomeIsRefusedByAgora(t *testing.T) {
 	t.Setenv(surface.HomeVariable, filepath.Join("somewhere", "below"))
 
 	for named, resolve := range map[string]func() (string, error){
-		"its configuration": surface.ConfigurationPath,
-		"its session":       surface.SessionPath,
-		"its document":      surface.DocumentPath,
+		"its configuration":     surface.ConfigurationPath,
+		"what it is reached at": surface.RecordPath,
+		"a session":             func() (string, error) { return surface.PagePath("a1b2c3d4") },
+		"a served document":     func() (string, error) { return surface.DocumentPath("a1b2c3d4") },
 	} {
 		path, err := resolve()
 		if !refusal.Is(err) {

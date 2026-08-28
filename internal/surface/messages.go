@@ -21,15 +21,24 @@ const (
 	requestNamesNoHost  = "a request naming no host cannot be the surface's own. Use the address agora serve printed and run the request again"
 	requestNamesTheHost = "a request naming the host %q did not reach the surface it was bound to. Use the address agora serve printed and run the request again"
 
-	answerCarriesNoToken = "an answer carries the token the page was served with"
-	cannotStream         = "this connection cannot carry a stream, so the page cannot be told when a reply arrives"
-	waitIsNotADuration   = "the wait %q is not a length of time. Give one such as 30m and run the command again"
+	answerCarriesNoToken    = "an answer carries the token the page was served with"
+	requestCarriesNoControl = "this is asked of the surface itself, and it is asked by whoever started it"
+
+	surfaceHoldsNoSuchSession = "the surface holds no session %q. A session comes into existence only when agora serve is given none, so run agora serve without --session to open one"
+	portIsHeldByAnother       = "something is already listening on %s and it is not a surface agora knows of, so agora will not take that port from it. Free it, or name another loopback address with --address, and run the command again"
+	bodyIsOverTheCeiling      = "what was sent is larger than the %d bytes the surface accepts. Send a smaller document"
+	cannotStream              = "this connection cannot carry a stream, so the page cannot be told when a reply arrives"
+	waitIsNotADuration        = "the wait %q is not a length of time. Give one such as 30m and run the command again"
 
 	mintingTheToken      = "minting the token this session answers on: %w"
+	mintingTheSession    = "minting the session the page belongs to: %w"
+	writingTheRecord     = "writing what the surface is reached at: %w"
+	readingTheRecord     = "reading what the surface is reached at: %w"
+	forgettingTheRecord  = "forgetting what the surface was reached at: %w"
 	writingTheSession    = "writing the session: %w"
-	readingTheSession    = "reading the session: %w"
 	forgettingTheSession = "forgetting the session: %w"
 	writingTheDocument   = "writing the document: %w"
+	openingTheSession    = "opening a session on the surface: %w"
 	noSurfaceIsOpen      = "no surface is open. Run agora serve with a document and try again"
 
 	exchangeIsOver                 = "the exchange is over, and a closed exchange does not reopen"
@@ -37,8 +46,9 @@ const (
 	answerNamesNoOption            = "an answer names option %d of decision %q, which that decision does not offer"
 	singleChoiceCarriesMoreThanOne = "an answer to the single-choice decision %q carries %d choices"
 
-	reachingTheSurface  = "reaching the surface: %w"
-	surfaceAnsweredWith = "the surface answered with %d"
-	surfaceRefused      = "the surface refused with %d: %s"
-	readingTheAnswer    = "reading what came back: %w"
+	reachingTheSurface     = "reaching the surface: %w"
+	addressIsNotTheSurface = "something answers at %s and it does not say it is a surface agora started"
+	surfaceAnsweredWith    = "the surface answered with %d"
+	surfaceRefused         = "the surface refused with %d: %s"
+	readingTheAnswer       = "reading what came back: %w"
 )

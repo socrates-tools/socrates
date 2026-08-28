@@ -25,7 +25,7 @@ Some rounds hold something only a person can act on.
 That line is what decides it. Do not work it out for yourself from the state or from any count, because a round you decide wrongly about is a round nobody renders and nobody notices was not rendered.
 
 Where it says so, do not paste the findings into the terminal.
-Write a document for the round and serve it: `agora serve --document ./round.json` prints a loopback address.
+Write a document for the round and serve it: `agora serve --document ./round.json` prints the loopback address of its page.
 Hand the person that address, then say briefly what it holds.
 The page is served on this machine and reaches nowhere beyond it. A findings document quotes the code it was written about, so it goes to no other machine and is put in front of nobody else.
 
@@ -46,7 +46,8 @@ The person answers on the page.
 Every control carries the command it becomes, `agora poll` hands that command back to you, and nothing is recorded until you run it here.
 The page shows that command to nobody: a person deciding is not at a prompt, a command under an option is the same choice again in a language they did not come here to read, and one they may believe they have to type.
 An option whose command you cannot name is one you do not offer, because you would be offering a decision you cannot honour.
-Wait for them with `agora poll`, which prints what they chose and anything they wrote, and record it with `socrates respond` in their own words rather than in yours.
+Wait for them with `agora poll --session`, giving it the session at the end of the address `agora serve` printed, because the surface holds a page per round and a poll naming none is told about none of them.
+It prints what they chose and anything they wrote, and you record that with `socrates respond` in their own words rather than in yours.
 Do not ask them here for a decision they have already made there.
 
 The page and this terminal have to be matchable in both directions.

@@ -1,12 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/rui-ktei/socrates/internal/document"
@@ -20,32 +20,20 @@ const (
 	servingVariable = "AGORA_SERVING"
 	standardInput   = "-"
 	addressFlag     = "address"
+	sessionFlag     = "session"
 
 	reachInterval = 20 * time.Millisecond
 	reachDeadline = 20 * time.Second
 )
 
 func newServeCommand() *cobra.Command {
-	var from, address string
+	var from, address, session string
 
 	command := &cobra.Command{
 		Use:   "serve",
 		Short: serveShort,
 		Args:  cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
-			if from == "" {
-				return refusal.New(nameTheDocument)
-			}
-
-			raw, err := readDocument(command, from)
-			if err != nil {
-				return err
-			}
-			read, err := document.Read(raw)
-			if err != nil {
-				return err
-			}
-
 			configured, err := surface.LoadConfiguration()
 			if err != nil {
 				return err
@@ -63,14 +51,26 @@ func newServeCommand() *cobra.Command {
 			}
 
 			if inTheForeground() {
-				return hold(read, raw, address)
+				return hold(address)
 			}
-			return start(command, raw, address, configured.ReachedAt)
+
+			if from == "" {
+				return refusal.New(nameTheDocument)
+			}
+			raw, err := readDocument(command, from)
+			if err != nil {
+				return err
+			}
+			if _, err := document.Read(raw); err != nil {
+				return err
+			}
+			return start(command, raw, address, configured.ReachedAt, session)
 		},
 	}
 
 	command.Flags().StringVar(&from, "document", "", documentUsage)
 	command.Flags().StringVar(&address, addressFlag, surface.DefaultAddress, addressUsage)
+	command.Flags().StringVar(&session, sessionFlag, "", sessionUsage)
 	return command
 }
 
@@ -94,48 +94,47 @@ func readDocument(command *cobra.Command, from string) ([]byte, error) {
 	return raw, nil
 }
 
-func hold(read document.Document, raw []byte, address string) error {
-	token, err := surface.MintToken()
+func hold(address string) error {
+	server, err := surface.Serve(address, surface.IdlePeriod)
 	if err != nil {
 		return err
 	}
 
-	server, err := surface.Serve(read, address, token, surface.IdlePeriod)
-	if err != nil {
-		return err
-	}
-
-	if err := surface.WriteDocument(raw); err != nil {
-		return err
-	}
-	if err := surface.WriteSession(surface.Session{
+	if err := surface.WriteRecord(surface.Record{
 		Address: server.Address(),
-		Token:   token,
+		Token:   server.Control(),
 		Process: os.Getpid(),
 	}); err != nil {
 		return err
 	}
 
 	server.Wait()
-	return surface.ForgetSession()
+	return surface.ForgetRecord()
 }
 
-func start(command *cobra.Command, raw []byte, address, reachedAt string) error {
-	if open, err := surface.ReadSession(); err == nil {
+func start(command *cobra.Command, raw []byte, address, reachedAt, session string) error {
+	if open, err := surface.ReadRecord(); err == nil {
 		reaching, cancel := context.WithTimeout(command.Context(), reachTimeout())
 		defer cancel()
 
 		caller := surface.Reach(open)
 		if caller.Reachable(reaching) == nil {
-			if err := caller.Revise(reaching, raw); err != nil {
+			named, err := onTheSurfaceStanding(reaching, caller, raw, session)
+			if err != nil {
 				return err
 			}
-			fmt.Fprintln(command.OutOrStdout(), whereItIsReachedAt(open, reachedAt))
+			fmt.Fprintln(command.OutOrStdout(), whereThePageIs(open, reachedAt, named))
 			return nil
 		}
 	}
 
-	if err := surface.ForgetSession(); err != nil {
+	if session != "" {
+		return refusal.New(noSurfaceHoldsThatSession, session)
+	}
+	if err := surface.ForgetRecord(); err != nil {
+		return err
+	}
+	if err := surface.CheckFree(address); err != nil {
 		return err
 	}
 
@@ -144,9 +143,9 @@ func start(command *cobra.Command, raw []byte, address, reachedAt string) error 
 		return fmt.Errorf(readingThisBinary, err)
 	}
 
-	spawned := exec.Command(binary, "serve", "--document", standardInput, "--address", address)
+	spawned := exec.Command(binary, "serve", "--"+addressFlag, address)
 	spawned.Env = append(os.Environ(), servingVariable+"=yes")
-	spawned.Stdin = bytes.NewReader(raw)
+	spawned.Stdin = nil
 	spawned.Stdout = nil
 	spawned.Stderr = nil
 	process.Detach(spawned)
@@ -160,23 +159,46 @@ func start(command *cobra.Command, raw []byte, address, reachedAt string) error 
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(command.OutOrStdout(), whereItIsReachedAt(open, reachedAt))
+
+	opening, cancel := context.WithTimeout(command.Context(), reachTimeout())
+	defer cancel()
+
+	opened, err := surface.Reach(open).Open(opening, raw)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(command.OutOrStdout(), whereThePageIs(open, reachedAt, opened.Session))
 	return nil
 }
 
-func whereItIsReachedAt(open surface.Session, reachedAt string) string {
-	if reachedAt != "" {
-		return reachedAt
+func onTheSurfaceStanding(ctx context.Context, caller *surface.Caller, raw []byte, session string) (string, error) {
+	if session == "" {
+		opened, err := caller.Open(ctx, raw)
+		if err != nil {
+			return "", err
+		}
+		return opened.Session, nil
 	}
-	return open.Address
+	if err := caller.Revise(ctx, session, raw); err != nil {
+		return "", err
+	}
+	return session, nil
 }
 
-func waitUntilReachable(ctx context.Context) (surface.Session, error) {
+func whereThePageIs(open surface.Record, reachedAt, session string) string {
+	reached := reachedAt
+	if reached == "" {
+		reached = "http://" + open.Address
+	}
+	return strings.TrimSuffix(reached, "/") + surface.SessionPrefix + session
+}
+
+func waitUntilReachable(ctx context.Context) (surface.Record, error) {
 	waiting, cancel := context.WithTimeout(ctx, reachDeadline)
 	defer cancel()
 
 	for {
-		if open, err := surface.ReadSession(); err == nil {
+		if open, err := surface.ReadRecord(); err == nil {
 			reaching, done := context.WithTimeout(waiting, reachTimeout())
 			err := surface.Reach(open).Reachable(reaching)
 			done()
@@ -187,7 +209,7 @@ func waitUntilReachable(ctx context.Context) (surface.Session, error) {
 
 		select {
 		case <-waiting.Done():
-			return surface.Session{}, fmt.Errorf(surfaceNeverAnswered, reachDeadline)
+			return surface.Record{}, fmt.Errorf(surfaceNeverAnswered, reachDeadline)
 		case <-time.After(reachInterval):
 		}
 	}

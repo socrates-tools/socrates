@@ -181,7 +181,7 @@ func TestANewDocumentReopensAnEndedPage(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 	held.ended(t, page)
 
-	held.serve(oneDecisionReply)
+	held.serveAgain(oneDecisionReply)
 	page.reload()
 
 	page.evaluate(chose("c-3", 0), nil)
@@ -213,8 +213,8 @@ func TestServingAgainOntoAnEndedExchangeYieldsAnAnswerablePage(t *testing.T) {
 		t.Fatal("ending without answering delivered nothing")
 	}
 
-	address := held.serve(oneDecisionReply)
-	if err := surface.CheckLoopback(address); err != nil {
+	address := held.serveAgain(oneDecisionReply)
+	if err := surface.CheckLoopback(originOf(t, address)[len("http://"):]); err != nil {
 		t.Fatalf("serving a document again printed %q: %v", address, err)
 	}
 
@@ -233,7 +233,7 @@ func TestServingAgainWhileTheExchangeIsOpenIsUnchanged(t *testing.T) {
 	held := standing(t)
 	first := held.serve(oneDecisionDocument)
 
-	again := held.serve(oneDecisionReply)
+	again := held.serveAgain(oneDecisionReply)
 	if again != first {
 		t.Errorf("serving a new document to an open surface printed %q, and the surface it was written to is at %q", again, first)
 	}
@@ -316,7 +316,7 @@ func TestACallerWhoAsksAgainIsHandedAnAddressThatTakesTheAnswer(t *testing.T) {
 		t.Fatalf("finishing without answering delivered %+v", finished)
 	}
 
-	address := held.serve(oneDecisionDocument)
+	address := held.serveAgain(oneDecisionDocument)
 	asked := opening(t, address)
 
 	asked.evaluate(chose("c-1", 0), nil)
@@ -337,9 +337,7 @@ func TestAPageOpenedForTheFirstTimeAfterTheEndRendersClosed(t *testing.T) {
 	held := standing(t)
 	address := held.serve(twoDecisionDocument)
 
-	if _, failures, code := held.run("end"); code != 0 {
-		t.Fatalf("agora end exited %d: %s", code, failures)
-	}
+	held.end(held.opened)
 
 	rendersClosed(t, opening(t, address), "a page opened for the first time onto an ended exchange")
 }
@@ -349,9 +347,7 @@ func TestAPageServedClosedFollowsNothing(t *testing.T) {
 	held := standing(t)
 	address := held.serve(twoDecisionDocument)
 
-	if _, failures, code := held.run("end"); code != 0 {
-		t.Fatalf("agora end exited %d: %s", code, failures)
-	}
+	held.end(held.opened)
 
 	page := opening(t, address)
 	asked := page.requests.all()

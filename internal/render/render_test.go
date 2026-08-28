@@ -39,7 +39,7 @@ func oneDecision(mode document.Mode) document.Document {
 func rendered(t *testing.T, read document.Document) *html.Node {
 	t.Helper()
 
-	written, err := render.Page(read, render.Frame{Token: "a-token", Revision: 1})
+	written, err := render.Page(read, render.Frame{Base: "/sessions/a1b2c3d4", Token: "a-token", Revision: 1})
 	if err != nil {
 		t.Fatalf("rendering the page: %v", err)
 	}
@@ -442,5 +442,27 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 	}
 	if !slices.Equal(want, parts) {
 		t.Errorf("the controls the page offers are %v, want %v", parts, want)
+	}
+}
+
+func TestThePageCarriesTheBaseItsRequestsAreMadeAgainst(t *testing.T) {
+	const base = "/sessions/a1b2c3d4"
+
+	written, err := render.Page(oneDecision(document.One), render.Frame{Base: base, Token: "a-token", Revision: 1})
+	if err != nil {
+		t.Fatalf("rendering the page: %v", err)
+	}
+
+	parsed, err := html.Parse(strings.NewReader(written))
+	if err != nil {
+		t.Fatalf("reading back the rendered page: %v", err)
+	}
+
+	bodies := elements(parsed, "body")
+	if len(bodies) != 1 {
+		t.Fatalf("the page holds %d bodies", len(bodies))
+	}
+	if carried := attribute(bodies[0], "data-base"); carried != base {
+		t.Errorf("the page carries the base %q, and it was served under %q", carried, base)
 	}
 }

@@ -361,3 +361,30 @@ func stepOf(t *testing.T, document, named string) string {
 	}
 	return document[start : start+1+end]
 }
+
+func TestTheSkillSaysToCarryTheSessionFromServeToPoll(t *testing.T) {
+	page := sectionOf(t, skill.Document(), pageHeading)
+
+	for _, said := range []string{
+		"agora serve --document ./round.json" + inlineCode + " prints the loopback address of its page",
+		"agora poll --session",
+		"the session at the end of the address",
+	} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so a session polls a surface holding more than one page and is told about none of them:\n%s", said, page)
+		}
+	}
+}
+
+func TestTheSessionIsStatedOnceRatherThanOnEveryBranch(t *testing.T) {
+	document := skill.Document()
+
+	if counted := strings.Count(document, "--session"); counted != 1 {
+		t.Errorf("the skill names --session %d times, want once, and the copy a session reads first is the one that gets softened", counted)
+	}
+	for _, branch := range []string{escalatedHeading, parkedHeading} {
+		if strings.Contains(sectionOf(t, document, branch), "--session") {
+			t.Errorf("%s restates how the session reaches agora poll, and it is stated once where the page is described", branch)
+		}
+	}
+}

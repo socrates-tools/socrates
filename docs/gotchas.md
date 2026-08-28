@@ -131,6 +131,15 @@ Nothing depends on the modes a lifted worktree carries, because a worktree is th
 `os.RemoveAll` unlinks entries, which needs write permission on the directory that holds them, so every path that removes a worktree or a run directory lifts the seal first.
 One abandoned run with a sealed worktree would otherwise make the retention sweep fail, and the sweep runs at the start of every review.
 
+**A page cannot work out its own base from the URL a person typed.**
+The surface serves each session under `/sessions/<session>`, and the client builds `/answer`, `/live` and the page re-read from that base.
+Deriving it from `document.URL` works only while the path carries a trailing slash, which is a property of what somebody typed rather than one the page holds.
+The server states the base in a `data-` attribute beside the token, and the client reads it from there.
+
+**`{$}` and a wildcard segment are different patterns to Go's `ServeMux`.**
+`POST /sessions/{$}` matches `/sessions/` and nothing else, `GET /sessions/{session}` matches one non-empty segment, and neither shadows the other.
+A page reachable both with and without a trailing slash needs `/sessions/{session}` and `/sessions/{session}/{$}` registered, because the first does not match a path ending in a slash.
+
 ## Testing
 
 **One journey needs a filesystem that ignores permission bits, and skips without one.**

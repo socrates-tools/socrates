@@ -27,6 +27,10 @@ function token() {
   return document.body.dataset.token || ''
 }
 
+function base() {
+  return document.body.dataset.base || ''
+}
+
 function surface() {
   return document.querySelector('main.surface')
 }
@@ -175,7 +179,7 @@ async function send(ends) {
   }
 
   say(ends ? 'Finishing.' : 'Sending.')
-  const answered = await fetch('/answer', {
+  const answered = await fetch(`${base()}/answer`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-agora-token': token() },
     body: JSON.stringify(sent),
@@ -248,7 +252,7 @@ function bind() {
 }
 
 async function take(revision) {
-  const answered = await fetch('/', { headers: { 'x-agora-token': token() } })
+  const answered = await fetch(base(), { headers: { 'x-agora-token': token() } })
   if (!answered.ok) {
     return
   }
@@ -302,7 +306,7 @@ function follow() {
     return
   }
 
-  const live = new EventSource('/live')
+  const live = new EventSource(`${base()}/live`)
   live.addEventListener('revision', (event) => {
     const revision = Number(event.data)
     if (revision > Number(document.body.dataset.revision)) {

@@ -29,6 +29,7 @@ var pageSource string
 var page = template.Must(template.New("page").Parse(pageSource))
 
 type Frame struct {
+	Base     string
 	Token    string
 	Revision int
 	Over     bool
@@ -37,6 +38,7 @@ type Frame struct {
 type view struct {
 	Title      string
 	Preamble   string
+	Base       string
 	Token      string
 	Revision   int
 	Over       bool
@@ -83,6 +85,7 @@ func viewOf(read document.Document, frame Frame) view {
 	shown := view{
 		Title:      read.Title,
 		Preamble:   read.Preamble,
+		Base:       frame.Base,
 		Token:      frame.Token,
 		Revision:   frame.Revision,
 		Over:       frame.Over,

@@ -96,6 +96,7 @@ func TestOneVariableMovesEverythingAgoraHas(t *testing.T) {
 	held := standing(t)
 	stated := aFreeLoopbackAddress(t)
 	held.configure("bind: " + stated + "\n")
+	held.bindsWhatIsConfigured()
 
 	printed := held.serve(oneDecisionDocument)
 	if !strings.Contains(printed, stated) {
@@ -105,8 +106,8 @@ func TestOneVariableMovesEverythingAgoraHas(t *testing.T) {
 	held.answer(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}, Words: "go on"}}})
 
 	own := whatIsUnder(t, held.home)
-	if !own["config.yaml"] || !own["session.json"] {
-		t.Errorf("agora's home holds %v, and the configuration it read and the session it wrote both live there", own)
+	if !own["config.yaml"] || !own["surface.json"] || !own["sessions"] {
+		t.Errorf("agora's home holds %v, and the configuration it read and what it wrote about itself both live there", own)
 	}
 	for _, elsewhere := range []string{".agora", filepath.Join(".config", "agora"), filepath.Join(".local", "state", "agora")} {
 		if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), elsewhere)); err == nil {
@@ -133,10 +134,10 @@ func TestNeitherProgramWritesInTheOthersHome(t *testing.T) {
 	if !socrates["runs"] {
 		t.Fatalf("socrates' home holds %v, without the runs it writes", socrates)
 	}
-	if !agora["session.json"] {
-		t.Fatalf("agora's home holds %v, without the session it writes", agora)
+	if !agora["surface.json"] || !agora["sessions"] {
+		t.Fatalf("agora's home holds %v, without the sessions it writes", agora)
 	}
-	if socrates["session.json"] || socrates["document.json"] || socrates["config.yaml"] {
+	if socrates["surface.json"] || socrates["sessions"] || socrates["config.yaml"] {
 		t.Errorf("socrates' home holds %v, and what agora writes is agora's", socrates)
 	}
 	if agora["runs"] {

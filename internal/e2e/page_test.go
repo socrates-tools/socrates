@@ -244,7 +244,7 @@ func TestSendingWithoutEndingKeepsThePageOpen(t *testing.T) {
 		t.Error("sending without ending closed the page")
 	}
 
-	held.serve(oneDecisionReply)
+	held.serveAgain(oneDecisionReply)
 	page.waitFor(`!!document.querySelector('.decision[data-decision="c-3"]')`)
 
 	var title string
@@ -260,7 +260,7 @@ func TestARerenderReachesAnOpenPage(t *testing.T) {
 	var loads int
 	page.evaluate(`(window.__loads = (window.__loads || 0) + 1)`, &loads)
 
-	held.serve(oneDecisionReply)
+	held.serveAgain(oneDecisionReply)
 	page.waitFor(`!!document.querySelector('.decision[data-decision="c-3"]')`)
 
 	var again int
@@ -283,7 +283,7 @@ func TestAnAnswerCommittedButNotSentIsNotCarriedIntoNewContent(t *testing.T) {
 	page.evaluate(chose("c-1", 0), nil)
 	page.click(within("c-1", ".commit"))
 
-	held.serve(oneDecisionReply)
+	held.serveAgain(oneDecisionReply)
 	page.waitFor(`!!document.querySelector('.decision[data-decision="c-3"]')`)
 
 	page.click(".send")
@@ -411,7 +411,7 @@ func TestRearrangingTheOptionsDoesNotRearrangeTheAnswer(t *testing.T) {
 	page.click(".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
-	printed, failures, code := held.run("poll")
+	printed, failures, code := held.poll()
 	if code != 0 {
 		t.Fatalf("agora poll exited %d: %s", code, failures)
 	}

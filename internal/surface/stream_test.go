@@ -13,7 +13,7 @@ import (
 func events(t *testing.T, held *standing, within time.Duration) <-chan string {
 	t.Helper()
 
-	request, err := http.NewRequest(http.MethodGet, held.at("/live"), nil)
+	request, err := http.NewRequest(http.MethodGet, held.under("/live"), nil)
 	if err != nil {
 		t.Fatalf("addressing the surface: %v", err)
 	}
@@ -77,12 +77,12 @@ func TestAnOpenStreamReportsARevisionAndThenTheClose(t *testing.T) {
 	held := serving(t, twoDecisions(), 0)
 	arriving := events(t, held, 20*time.Second)
 
-	held.server.Exchange().Revise(twoDecisions())
+	held.exchange(t).Revise(twoDecisions())
 	if event := next(t, arriving, 5*time.Second); event != "revision" {
 		t.Errorf("a stream onto an open exchange reported %q when the caller wrote a new document, want %q", event, "revision")
 	}
 
-	held.server.Exchange().End()
+	held.exchange(t).End()
 	if event := next(t, arriving, 5*time.Second); event != "closed" {
 		t.Errorf("a stream onto an open exchange reported %q when the exchange ended, want %q", event, "closed")
 	}

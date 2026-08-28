@@ -19,8 +19,6 @@ import (
 	"github.com/rui-ktei/socrates/internal/surface"
 )
 
-const token = "a-token-the-page-carries"
-
 func twoDecisions() document.Document {
 	return document.Document{
 		Title: "two things to settle",
@@ -48,9 +46,30 @@ func twoDecisions() document.Document {
 	}
 }
 
+func oneOtherDecision() document.Document {
+	return document.Document{
+		Title: "one other thing to settle",
+		Decisions: []document.Decision{
+			{
+				ID:       "c-9",
+				Question: "should the reaper run before the sweep",
+				Mode:     document.One,
+				Options: []document.Option{
+					{Label: "reap first", Command: "patch c-9"},
+					{Label: "leave it", Command: "agree c-9"},
+				},
+			},
+		},
+	}
+}
+
+const aPortTheOperatingSystemChooses = "127.0.0.1:0"
+
 type standing struct {
-	server *surface.Server
-	home   string
+	server  *surface.Server
+	home    string
+	session string
+	token   string
 }
 
 func serving(t *testing.T, read document.Document, idle time.Duration) *standing {
@@ -59,28 +78,66 @@ func serving(t *testing.T, read document.Document, idle time.Duration) *standing
 	home := t.TempDir()
 	t.Setenv(surface.HomeVariable, home)
 
-	server, err := surface.Serve(read, surface.DefaultAddress, token, idle)
+	server, err := surface.Serve(aPortTheOperatingSystemChooses, idle)
 	if err != nil {
 		t.Fatalf("serving: %v", err)
 	}
 	t.Cleanup(server.Stop)
 
-	return &standing{server: server, home: home}
+	opened, err := server.Open(read, written(t, read))
+	if err != nil {
+		t.Fatalf("opening a session on the surface: %v", err)
+	}
+	return &standing{server: server, home: home, session: opened.Session, token: opened.Token}
+}
+
+func written(t *testing.T, read document.Document) []byte {
+	t.Helper()
+
+	raw, err := json.Marshal(read)
+	if err != nil {
+		t.Fatalf("writing the document a session was opened on: %v", err)
+	}
+	return raw
+}
+
+func (s *standing) exchange(t *testing.T) *surface.Exchange {
+	t.Helper()
+
+	one, standing := s.server.Exchange(s.session)
+	if !standing {
+		t.Fatalf("the surface holds no session %q", s.session)
+	}
+	return one
 }
 
 func (s *standing) at(route string) string {
 	return "http://" + s.server.Address() + route
 }
 
+func (s *standing) under(route string) string {
+	return s.at(surface.SessionPrefix + s.session + route)
+}
+
 func (s *standing) send(t *testing.T, sent surface.Sent) int {
 	t.Helper()
+	return s.sendingAs(t, s.session, s.token, sent)
+}
 
-	written, err := json.Marshal(sent)
+func (s *standing) sendingAs(t *testing.T, session, token string, sent surface.Sent) int {
+	t.Helper()
+
+	sending, err := json.Marshal(sent)
 	if err != nil {
 		t.Fatalf("writing what a person sent: %v", err)
 	}
+	return s.posting(t, s.at(surface.SessionPrefix+session+"/answer"), token, sending)
+}
 
-	request, err := http.NewRequest(http.MethodPost, s.at("/answer"), bytes.NewReader(written))
+func (s *standing) posting(t *testing.T, address, token string, body []byte) int {
+	t.Helper()
+
+	request, err := http.NewRequest(http.MethodPost, address, bytes.NewReader(body))
 	if err != nil {
 		t.Fatalf("addressing the surface: %v", err)
 	}
@@ -95,11 +152,27 @@ func (s *standing) send(t *testing.T, sent surface.Sent) int {
 	return answered.StatusCode
 }
 
+func (s *standing) fetch(t *testing.T, address string) (int, string) {
+	t.Helper()
+
+	answered, err := http.Get(address)
+	if err != nil {
+		t.Fatalf("reaching the surface: %v", err)
+	}
+	defer answered.Body.Close()
+
+	said, err := io.ReadAll(answered.Body)
+	if err != nil {
+		t.Fatalf("reading what the surface said: %v", err)
+	}
+	return answered.StatusCode, string(said)
+}
+
 func (s *standing) await(t *testing.T, within time.Duration) (surface.Answered, bool) {
 	t.Helper()
 
-	open := surface.Session{Address: s.server.Address(), Token: token}
-	read, arrived, err := surface.Reach(open).Await(context.Background(), within)
+	open := surface.Record{Address: s.server.Address(), Token: s.server.Control()}
+	read, arrived, err := surface.Reach(open).Await(context.Background(), s.session, within)
 	if err != nil {
 		t.Fatalf("waiting on the surface: %v", err)
 	}
@@ -111,7 +184,7 @@ func TestAWildcardBindIsRefusedRatherThanQuietlyNarrowed(t *testing.T) {
 		t.Run(refused, func(t *testing.T) {
 			before := open(t)
 
-			server, err := surface.Serve(twoDecisions(), refused, token, 0)
+			server, err := surface.Serve(refused, 0)
 			if err == nil {
 				server.Stop()
 				t.Fatalf("the surface bound %q, and it binds a loopback address only", refused)
@@ -173,12 +246,12 @@ func TestARequestClaimingAnotherHostIsRejected(t *testing.T) {
 func TestAnAnswerWithoutTheTokenIsRejected(t *testing.T) {
 	held := serving(t, twoDecisions(), 0)
 
-	written, err := json.Marshal(surface.Sent{Message: "let me in"})
+	sending, err := json.Marshal(surface.Sent{Message: "let me in"})
 	if err != nil {
 		t.Fatalf("writing what a person sent: %v", err)
 	}
 
-	answered, err := http.Post(held.at("/answer"), "application/json", bytes.NewReader(written))
+	answered, err := http.Post(held.under("/answer"), "application/json", bytes.NewReader(sending))
 	if err != nil {
 		t.Fatalf("reaching the surface: %v", err)
 	}

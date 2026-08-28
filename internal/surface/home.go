@@ -12,8 +12,10 @@ const (
 	toolName      = "agora"
 	homeDirectory = "." + toolName
 
-	sessionFile  = "session.json"
-	documentFile = "document.json"
+	recordFile        = "surface.json"
+	sessionsDirectory = "sessions"
+	pageFile          = "session.json"
+	documentFile      = "document.json"
 )
 
 func Home() (string, error) {
@@ -31,18 +33,42 @@ func Home() (string, error) {
 	return filepath.Join(own, homeDirectory), nil
 }
 
-func SessionPath() (string, error) {
+func RecordPath() (string, error) {
 	home, err := Home()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, sessionFile), nil
+	return filepath.Join(home, recordFile), nil
 }
 
-func DocumentPath() (string, error) {
+func SessionsPath() (string, error) {
 	home, err := Home()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, documentFile), nil
+	return filepath.Join(home, sessionsDirectory), nil
+}
+
+func SessionPath(session string) (string, error) {
+	sessions, err := SessionsPath()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(sessions, session), nil
+}
+
+func PagePath(session string) (string, error) {
+	within, err := SessionPath(session)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(within, pageFile), nil
+}
+
+func DocumentPath(session string) (string, error) {
+	within, err := SessionPath(session)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(within, documentFile), nil
 }

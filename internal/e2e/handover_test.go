@@ -72,20 +72,16 @@ func (j *journey) serve(written string) string {
 	held := j.serving()
 	j.noted("agora", "serve", []string{"--document"})
 
-	printed, failures, code := held.reading(written, "serve", "--document", "-")
-	if code != 0 {
-		j.t.Fatalf("agora serve exited %d: %s\n%s", code, failures, written)
-	}
-	return strings.TrimSpace(printed)
+	return held.serve(written)
 }
 
 func (j *journey) polled() surface.Answered {
 	j.t.Helper()
 
 	held := j.serving()
-	j.noted("agora", "poll", nil)
+	j.noted("agora", "poll", []string{"--session"})
 
-	printed, failures, code := held.run("poll")
+	printed, failures, code := held.poll()
 	if code != 0 {
 		j.t.Fatalf("agora poll exited %d: %s", code, failures)
 	}
@@ -169,7 +165,7 @@ func TestARoundAPersonReadsIsHandedOverAsAPage(t *testing.T) {
 	}
 
 	address := driven.serve(documentFor(t, "three things this change was told", read, everyFindingAsADecision(read)))
-	if err := surface.CheckLoopback(address); err != nil {
+	if err := surface.CheckLoopback(originOf(t, address)[len("http://"):]); err != nil {
 		t.Fatalf("agora serve handed back %q: %v", address, err)
 	}
 

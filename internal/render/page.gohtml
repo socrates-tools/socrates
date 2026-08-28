@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="/assets/surface.css">
 {{if .Stylesheet}}<style>{{.Stylesheet}}</style>{{end}}
 </head>
-<body data-token="{{.Token}}" data-revision="{{.Revision}}" data-over="{{if .Over}}yes{{else}}no{{end}}">
+<body data-base="{{.Base}}" data-token="{{.Token}}" data-revision="{{.Revision}}" data-over="{{if .Over}}yes{{else}}no{{end}}">
 <main class="surface">
 <header class="heading">
 <h1>{{.Title}}</h1>
