@@ -25,6 +25,7 @@ func TestCancellingStopsTheReviewerThatIsAnswering(t *testing.T) {
 	name := session.Review()
 	session.WaitFor(name, runstate.Reviewing)
 	answering := waitForTheReviewerToAnswer(t, session)
+	waitUntilTheRunNamesItsAgent(t, session, name)
 
 	started := session.Recorded(name)
 	if started.Agent != answering.Process {
