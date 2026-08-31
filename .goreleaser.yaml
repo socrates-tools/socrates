@@ -77,13 +77,11 @@ sboms:
 signs:
   - id: checksums
     cmd: cosign
-    signature: ${artifact}.sig
-    certificate: ${artifact}.pem
+    signature: ${artifact}.bundle
     args:
       - sign-blob
       - --yes
-      - --output-signature=${signature}
-      - --output-certificate=${certificate}
+      - --bundle=${signature}
       - ${artifact}
     artifacts: checksum
     output: true
@@ -103,8 +101,7 @@ release:
     ```sh
     sha256sum --check --ignore-missing checksums.txt
     cosign verify-blob checksums.txt \
-      --certificate checksums.txt.pem \
-      --signature checksums.txt.sig \
+      --bundle checksums.txt.bundle \
       --certificate-identity-regexp 'https://github.com/socrates-devtool/socrates/.*' \
       --certificate-oidc-issuer https://token.actions.githubusercontent.com
     gh attestation verify socrates_*.tar.gz --repo socrates-devtool/socrates

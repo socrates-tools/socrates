@@ -50,10 +50,9 @@ Check the download against this repository rather than against whoever pushed th
 The checksums carry a keyless signature, and every archive carries build provenance saying which workflow and which commit produced it:
 
 ```sh
-gh release download "$tag" --repo socrates-devtool/socrates --pattern 'checksums.txt.*'
+gh release download "$tag" --repo socrates-devtool/socrates --pattern 'checksums.txt.bundle'
 cosign verify-blob checksums.txt \
-  --certificate checksums.txt.pem \
-  --signature checksums.txt.sig \
+  --bundle checksums.txt.bundle \
   --certificate-identity-regexp 'https://github.com/socrates-devtool/socrates/.*' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 gh attestation verify socrates_*.tar.gz --repo socrates-devtool/socrates

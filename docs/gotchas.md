@@ -189,6 +189,10 @@ A verification run sets `GOTOOLCHAIN=local`, so `go run` cannot fetch a newer to
 Locally the switch is silent and the release snapshot succeeds; on a runner the same command fails with "requires go >= 1.27.0 (running go 1.26.7; GOTOOLCHAIN=local)".
 Read the candidate's `go` directive before bumping `RELEASER`, and pin the newest version that stays at or below what `go.mod` requires.
 
+**cosign 3 writes one bundle, and the old pair of output flags is refused rather than deprecated.**
+`--output-signature` and `--output-certificate` still parse, and then the run fails with "create bundle file: open : no such file or directory", because `--new-bundle-format` is on by default and wants `--bundle`.
+The release signs the checksums into `checksums.txt.bundle`, verified with `cosign verify-blob --bundle`, and the workflow pins the cosign release so a new default cannot change that shape under it.
+
 **Private vulnerability reporting cannot be enabled while the repository is private.**
 `PUT /repos/{owner}/{repo}/private-vulnerability-reporting` answers 404 rather than 403, which reads as a wrong path rather than as a feature that is not there.
 It is available for public repositories only, so `SECURITY.md` names the channel and does not claim it is enabled, and enabling it belongs with making the repository public.
