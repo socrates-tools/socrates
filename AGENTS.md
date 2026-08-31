@@ -71,14 +71,13 @@ Run this before reporting work done:
 
 ```sh
 make fmt
-make lint
-make test
-make scenario-coverage
-make scenario-drop
-make corpus-outcomes
+make verify
 ```
 
-`make lint` fails on anything `gofmt` would rewrite.
+`make verify` is the one entry point, and it runs `make lint`, `make test`, `make scenario-coverage`, `make scenario-drop`, `make corpus-outcomes` and `make fixtures-diff`, in that order.
+Continuous integration runs that same command on every supported platform, so passing locally and passing there are one claim rather than two.
+
+`make lint` fails on anything `gofmt` would rewrite, then vets, then runs the analysers `.golangci.yaml` names at the version the `Makefile` pins, so the cheapest gate is the first to fail.
 `make test` drives the surface page with a real browser, so a Chrome or Chromium must be on `PATH` or named by `AGORA_BROWSER`.
 `make skill`, `make assets` and `make platforms` regenerate committed files from their sources, and `make test` fails while a generated file and its source disagree.
 `make scenario-coverage` and `make scenario-drop` are also held by `make test`; neither reads prose, so a delta that rewrites a requirement's sentences from a stale copy is still something only a reader catches.
@@ -150,6 +149,16 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - The build states the path once and is checked against `go.mod`, so what a binary stamps into itself cannot disagree with what the compiler resolved.
 - No source file and no live specification names a code-hosting account other than the organisation's; an archived change is exempt, because the account it names is the account that existed when the decision was taken.
 - `openspec/config.yaml` names the binaries, commands and directories the repository has, and cites no source a reader cannot reach.
+
+**What a verification run proves**
+
+- One entry point runs every gate, a run invokes that entry point rather than listing the gates, and formatting fails before the suite does.
+- The matrix is read from the platform statement, so the suite runs on every platform the set names and on no runner it does not.
+- Every action a workflow uses is named by a commit with its version beside it, and a check fails while any is named by a tag.
+- Every workflow states a read-only token at the top and escalates only in the job that needs more, and a superseded run is cancelled rather than left to report.
+- The module graph is checked for known vulnerabilities on a run and on a schedule, and dependency updates arrive as changes somebody reviews.
+- The browser the page half drives is installed by the run at a stated version rather than found on the runner, and an absent browser fails rather than skips.
+- Nothing a workflow runs reaches the real CLI, by target or by build tag.
 
 **The platforms the guarantees hold on**
 
