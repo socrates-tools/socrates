@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/runstate"
 )
 
 func TestAReaderNeverSeesHalfAState(t *testing.T) {

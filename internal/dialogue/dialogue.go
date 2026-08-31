@@ -1,8 +1,8 @@
 package dialogue
 
 import (
-	"github.com/socrates-devtool/socrates/internal/findings"
-	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/runstate"
 )
 
 const Cap = 2

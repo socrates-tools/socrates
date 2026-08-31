@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/convention"
-	"github.com/socrates-devtool/socrates/internal/skill"
+	"github.com/ktei/socrates/internal/convention"
+	"github.com/ktei/socrates/internal/skill"
 )
 
 func TestOneConstantNamesTheSkillAndReadsItsInvocations(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/testing/source"
+	"github.com/ktei/socrates/internal/testing/source"
 )
 
 var recordedWhenLinked = []string{"version", "commit", "uncommitted"}

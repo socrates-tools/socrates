@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/runstate"
-	"github.com/socrates-devtool/socrates/internal/skill"
-	"github.com/socrates-devtool/socrates/internal/testing/harness"
+	"github.com/ktei/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/skill"
+	"github.com/ktei/socrates/internal/testing/harness"
 )
 
 const readByAPerson = "read by a person"

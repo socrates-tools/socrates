@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/socrates-devtool/socrates/internal/agent"
-	"github.com/socrates-devtool/socrates/internal/corpus"
-	"github.com/socrates-devtool/socrates/internal/findings"
-	"github.com/socrates-devtool/socrates/internal/reviewer"
-	"github.com/socrates-devtool/socrates/internal/runlog"
-	"github.com/socrates-devtool/socrates/internal/runstore"
+	"github.com/ktei/socrates/internal/agent"
+	"github.com/ktei/socrates/internal/corpus"
+	"github.com/ktei/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/reviewer"
+	"github.com/ktei/socrates/internal/runlog"
+	"github.com/ktei/socrates/internal/runstore"
 )
 
 const (

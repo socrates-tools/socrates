@@ -39,8 +39,8 @@ A release archive is the shortest way in.
 Each one carries `socrates`, `scrat` and `agora`, along with `LICENSE` and `NOTICE`, so extracting one gives you what installing from source gives you.
 
 ```sh
-tag=$(gh release view --repo socrates-devtool/socrates --json tagName --jq .tagName)
-gh release download "$tag" --repo socrates-devtool/socrates --pattern "socrates_*_$(uname -s | tr 'A-Z' 'a-z')_*.tar.gz" --pattern checksums.txt
+tag=$(gh release view --repo ktei/socrates --json tagName --jq .tagName)
+gh release download "$tag" --repo ktei/socrates --pattern "socrates_*_$(uname -s | tr 'A-Z' 'a-z')_*.tar.gz" --pattern checksums.txt
 sha256sum --check --ignore-missing checksums.txt
 tar -xzf socrates_*.tar.gz -C ~/.local/bin socrates scrat agora
 socrates skill
@@ -50,17 +50,17 @@ Check the download against this repository rather than against whoever pushed th
 The checksums carry a keyless signature, and the release records build provenance saying which workflow and which commit produced each archive:
 
 ```sh
-gh release download "$tag" --repo socrates-devtool/socrates --pattern 'checksums.txt.bundle'
+gh release download "$tag" --repo ktei/socrates --pattern 'checksums.txt.bundle'
 cosign verify-blob checksums.txt \
   --bundle checksums.txt.bundle \
-  --certificate-identity-regexp 'https://github.com/socrates-devtool/socrates/.*' \
+  --certificate-identity-regexp 'https://github.com/ktei/socrates/.*' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
-gh attestation verify socrates_*.tar.gz --repo socrates-devtool/socrates
+gh attestation verify socrates_*.tar.gz --repo ktei/socrates
 ```
 
 GitHub stores build provenance for a public repository only, so the last of those three begins with the first release published from one.
 
-`go install github.com/socrates-devtool/socrates/cmd/socrates@latest` works too, and gives you `socrates` alone: no `scrat`, no `agora`, and no version stamp, because nothing links one in.
+`go install github.com/ktei/socrates/cmd/socrates@latest` works too, and gives you `socrates` alone: no `scrat`, no `agora`, and no version stamp, because nothing links one in.
 
 `CHANGELOG.md` says what each release means to somebody who has the previous one.
 

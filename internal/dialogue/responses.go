@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/socrates-devtool/socrates/internal/findings"
-	"github.com/socrates-devtool/socrates/internal/refusal"
+	"github.com/ktei/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/refusal"
 )
 
 type Resolution string

@@ -5,7 +5,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/surface"
+	"github.com/ktei/socrates/internal/surface"
 )
 
 func TestTwoMintedSessionsDifferAndEachIsAPathSegment(t *testing.T) {

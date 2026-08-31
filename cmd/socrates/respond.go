@@ -5,10 +5,10 @@ import (
 	"io"
 	"strings"
 
-	"github.com/socrates-devtool/socrates/internal/dialogue"
-	"github.com/socrates-devtool/socrates/internal/refusal"
-	"github.com/socrates-devtool/socrates/internal/report"
-	"github.com/socrates-devtool/socrates/internal/reviewer"
+	"github.com/ktei/socrates/internal/dialogue"
+	"github.com/ktei/socrates/internal/refusal"
+	"github.com/ktei/socrates/internal/report"
+	"github.com/ktei/socrates/internal/reviewer"
 	"github.com/spf13/cobra"
 )
 

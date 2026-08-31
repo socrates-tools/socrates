@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-devtool/socrates/internal/process"
-	"github.com/socrates-devtool/socrates/internal/runstate"
-	"github.com/socrates-devtool/socrates/internal/testing/harness"
+	"github.com/ktei/socrates/internal/process"
+	"github.com/ktei/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/testing/harness"
 )
 
 func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/version"
+	"github.com/ktei/socrates/internal/version"
 )
 
 const (

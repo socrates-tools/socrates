@@ -17,8 +17,8 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -X github.com/socrates-devtool/socrates/internal/version.version={{ if .IsSnapshot }}{{ else }}{{ .Tag }}{{ end }}
-      - -X github.com/socrates-devtool/socrates/internal/version.commit={{ .ShortCommit }}
+      - -X github.com/ktei/socrates/internal/version.version={{ if .IsSnapshot }}{{ else }}{{ .Tag }}{{ end }}
+      - -X github.com/ktei/socrates/internal/version.commit={{ .ShortCommit }}
 
   - id: scrat
     main: ./cmd/socrates
@@ -34,8 +34,8 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -X github.com/socrates-devtool/socrates/internal/version.version={{ if .IsSnapshot }}{{ else }}{{ .Tag }}{{ end }}
-      - -X github.com/socrates-devtool/socrates/internal/version.commit={{ .ShortCommit }}
+      - -X github.com/ktei/socrates/internal/version.version={{ if .IsSnapshot }}{{ else }}{{ .Tag }}{{ end }}
+      - -X github.com/ktei/socrates/internal/version.commit={{ .ShortCommit }}
 
   - id: agora
     main: ./cmd/agora
@@ -102,7 +102,7 @@ release:
     sha256sum --check --ignore-missing checksums.txt
     cosign verify-blob checksums.txt \
       --bundle checksums.txt.bundle \
-      --certificate-identity-regexp 'https://github.com/socrates-devtool/socrates/.*' \
+      --certificate-identity-regexp 'https://github.com/ktei/socrates/.*' \
       --certificate-oidc-issuer https://token.actions.githubusercontent.com
-    gh attestation verify socrates_*.tar.gz --repo socrates-devtool/socrates
+    gh attestation verify socrates_*.tar.gz --repo ktei/socrates
     ```

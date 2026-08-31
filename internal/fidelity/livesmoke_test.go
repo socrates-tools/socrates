@@ -15,11 +15,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-devtool/socrates/internal/agent"
-	"github.com/socrates-devtool/socrates/internal/document"
-	"github.com/socrates-devtool/socrates/internal/findings"
-	"github.com/socrates-devtool/socrates/internal/state"
-	"github.com/socrates-devtool/socrates/internal/surface"
+	"github.com/ktei/socrates/internal/agent"
+	"github.com/ktei/socrates/internal/document"
+	"github.com/ktei/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/state"
+	"github.com/ktei/socrates/internal/surface"
 )
 
 const smokeDeadline = 10 * time.Minute

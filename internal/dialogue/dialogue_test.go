@@ -7,10 +7,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-devtool/socrates/internal/dialogue"
-	"github.com/socrates-devtool/socrates/internal/findings"
-	"github.com/socrates-devtool/socrates/internal/runstate"
-	"github.com/socrates-devtool/socrates/internal/testing/source"
+	"github.com/ktei/socrates/internal/dialogue"
+	"github.com/ktei/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/testing/source"
 )
 
 var everySeverity = []findings.Severity{findings.Error, findings.Warning, findings.Info}

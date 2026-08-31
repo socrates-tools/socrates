@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/runlog"
+	"github.com/ktei/socrates/internal/runlog"
 )
 
 func TestEventsAreOneJSONObjectPerLine(t *testing.T) {

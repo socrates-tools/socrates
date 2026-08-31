@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-devtool/socrates/internal/agent"
-	"github.com/socrates-devtool/socrates/internal/config"
-	"github.com/socrates-devtool/socrates/internal/refusal"
-	"github.com/socrates-devtool/socrates/internal/state"
+	"github.com/ktei/socrates/internal/agent"
+	"github.com/ktei/socrates/internal/config"
+	"github.com/ktei/socrates/internal/refusal"
+	"github.com/ktei/socrates/internal/state"
 )
 
 func TestNoConfigurationFile(t *testing.T) {

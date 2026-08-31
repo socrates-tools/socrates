@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/socrates-devtool/socrates/internal/refusal"
+	"github.com/ktei/socrates/internal/refusal"
 )
 
 const (

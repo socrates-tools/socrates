@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-devtool/socrates/internal/agent"
-	"github.com/socrates-devtool/socrates/internal/fidelity"
+	"github.com/ktei/socrates/internal/agent"
+	"github.com/ktei/socrates/internal/fidelity"
 )
 
 const recordingDeadline = 10 * time.Minute

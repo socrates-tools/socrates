@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/socrates-devtool/socrates/internal/refusal"
-	"github.com/socrates-devtool/socrates/internal/runlog"
-	"github.com/socrates-devtool/socrates/internal/runstate"
-	"github.com/socrates-devtool/socrates/internal/runstore"
-	"github.com/socrates-devtool/socrates/internal/snapshot"
+	"github.com/ktei/socrates/internal/refusal"
+	"github.com/ktei/socrates/internal/runlog"
+	"github.com/ktei/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/runstore"
+	"github.com/ktei/socrates/internal/snapshot"
 )
 
 type Continuation struct {

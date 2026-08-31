@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-devtool/socrates/internal/reviewer"
-	"github.com/socrates-devtool/socrates/internal/runstate"
-	"github.com/socrates-devtool/socrates/internal/runstore"
+	"github.com/ktei/socrates/internal/reviewer"
+	"github.com/ktei/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/runstore"
 )
 
 func TestACancelledRunIsNeverReadAsFailed(t *testing.T) {

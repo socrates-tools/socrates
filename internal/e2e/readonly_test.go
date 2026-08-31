@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/runstate"
-	"github.com/socrates-devtool/socrates/internal/testing/harness"
+	"github.com/ktei/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/testing/harness"
 )
 
 func TestAReviewerThatWroteFailsTheRound(t *testing.T) {

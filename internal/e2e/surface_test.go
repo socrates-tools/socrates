@@ -15,10 +15,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-devtool/socrates/internal/state"
-	"github.com/socrates-devtool/socrates/internal/surface"
-	"github.com/socrates-devtool/socrates/internal/testing/gitrepo"
-	"github.com/socrates-devtool/socrates/internal/testing/source"
+	"github.com/ktei/socrates/internal/state"
+	"github.com/ktei/socrates/internal/surface"
+	"github.com/ktei/socrates/internal/testing/gitrepo"
+	"github.com/ktei/socrates/internal/testing/source"
 )
 
 const oneDecisionDocument = `{

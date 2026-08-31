@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/socrates-devtool/socrates/internal/corpus"
-	"github.com/socrates-devtool/socrates/internal/corpus/outcomes"
+	"github.com/ktei/socrates/internal/corpus"
+	"github.com/ktei/socrates/internal/corpus/outcomes"
 )
 
 func main() {

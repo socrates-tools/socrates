@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/testing/harness"
-	"github.com/socrates-devtool/socrates/internal/testing/source"
+	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/ktei/socrates/internal/testing/source"
 )
 
 const (

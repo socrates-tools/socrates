@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/assets"
-	"github.com/socrates-devtool/socrates/internal/testing/source"
+	"github.com/ktei/socrates/internal/assets"
+	"github.com/ktei/socrates/internal/testing/source"
 )
 
 var stamped = []string{"src", "fonts", "build.mjs", "package.json", "pnpm-lock.yaml"}

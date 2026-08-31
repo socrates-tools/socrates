@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-devtool/socrates/internal/surface"
-	"github.com/socrates-devtool/socrates/internal/testing/source"
+	"github.com/ktei/socrates/internal/surface"
+	"github.com/ktei/socrates/internal/testing/source"
 )
 
 func (s *surfaced) configure(stated string) {

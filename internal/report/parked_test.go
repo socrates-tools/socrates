@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/dialogue"
-	"github.com/socrates-devtool/socrates/internal/report"
-	"github.com/socrates-devtool/socrates/internal/runstate"
-	"github.com/socrates-devtool/socrates/internal/runstore"
+	"github.com/ktei/socrates/internal/dialogue"
+	"github.com/ktei/socrates/internal/report"
+	"github.com/ktei/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/runstore"
 )
 
 const patchableDocument = `{

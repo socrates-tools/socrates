@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/refusal"
-	"github.com/socrates-devtool/socrates/internal/snapshot"
-	"github.com/socrates-devtool/socrates/internal/testing/gitrepo"
+	"github.com/ktei/socrates/internal/refusal"
+	"github.com/ktei/socrates/internal/snapshot"
+	"github.com/ktei/socrates/internal/testing/gitrepo"
 )
 
 func TestAReviewerCannotCreateAFile(t *testing.T) {

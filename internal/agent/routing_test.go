@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/agent"
-	"github.com/socrates-devtool/socrates/internal/findings"
-	"github.com/socrates-devtool/socrates/internal/testing/simulator"
+	"github.com/ktei/socrates/internal/agent"
+	"github.com/ktei/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/testing/simulator"
 )
 
 func TestTheReviewersModelIsConfigurableOnItsOwn(t *testing.T) {

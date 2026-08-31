@@ -7,7 +7,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/dialogue"
+	"github.com/ktei/socrates/internal/dialogue"
 )
 
 func TestTwoAnswersDoNotOverwriteEachOther(t *testing.T) {

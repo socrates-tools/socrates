@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-devtool/socrates/internal/document"
-	"github.com/socrates-devtool/socrates/internal/render"
+	"github.com/ktei/socrates/internal/document"
+	"github.com/ktei/socrates/internal/render"
 	"golang.org/x/net/html"
 )
 

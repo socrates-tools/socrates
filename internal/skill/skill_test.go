@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/dialogue"
-	"github.com/socrates-devtool/socrates/internal/runstate"
-	"github.com/socrates-devtool/socrates/internal/skill"
+	"github.com/ktei/socrates/internal/dialogue"
+	"github.com/ktei/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/skill"
 )
 
 const (

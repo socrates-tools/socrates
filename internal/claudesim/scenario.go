@@ -9,7 +9,7 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"github.com/socrates-devtool/socrates/internal/corpus"
+	"github.com/ktei/socrates/internal/corpus"
 )
 
 type Behaviour string

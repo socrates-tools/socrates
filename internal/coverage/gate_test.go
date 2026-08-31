@@ -3,8 +3,8 @@ package coverage_test
 import (
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/coverage"
-	"github.com/socrates-devtool/socrates/internal/testing/source"
+	"github.com/ktei/socrates/internal/coverage"
+	"github.com/ktei/socrates/internal/testing/source"
 )
 
 func TestEveryScenarioUnderWayIsNamedByATest(t *testing.T) {

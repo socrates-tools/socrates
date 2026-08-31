@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/socrates-devtool/socrates/internal/follow"
-	"github.com/socrates-devtool/socrates/internal/presentation"
-	"github.com/socrates-devtool/socrates/internal/report"
-	"github.com/socrates-devtool/socrates/internal/runlog"
-	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/follow"
+	"github.com/ktei/socrates/internal/presentation"
+	"github.com/ktei/socrates/internal/report"
+	"github.com/ktei/socrates/internal/runlog"
+	"github.com/ktei/socrates/internal/runstate"
 	"github.com/spf13/cobra"
 )
 

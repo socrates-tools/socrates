@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/claudesim"
-	"github.com/socrates-devtool/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/claudesim"
+	"github.com/ktei/socrates/internal/findings"
 )
 
 var validArguments = []string{

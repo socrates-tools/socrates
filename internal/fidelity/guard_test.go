@@ -8,9 +8,9 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/corpus"
-	"github.com/socrates-devtool/socrates/internal/fidelity"
-	"github.com/socrates-devtool/socrates/internal/testing/source"
+	"github.com/ktei/socrates/internal/corpus"
+	"github.com/ktei/socrates/internal/fidelity"
+	"github.com/ktei/socrates/internal/testing/source"
 )
 
 var behindATag = []string{"record_test.go", "drift_test.go", "livesmoke_test.go"}

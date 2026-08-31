@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/agent"
-	"github.com/socrates-devtool/socrates/internal/testing/source"
+	"github.com/ktei/socrates/internal/agent"
+	"github.com/ktei/socrates/internal/testing/source"
 )
 
 var simulatorTrees = []string{

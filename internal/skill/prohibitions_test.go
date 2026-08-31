@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/skill"
+	"github.com/ktei/socrates/internal/skill"
 )
 
 func TestTheThreeProhibitionsArePresent(t *testing.T) {

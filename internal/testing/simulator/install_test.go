@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/findings"
-	"github.com/socrates-devtool/socrates/internal/testing/simulator"
+	"github.com/ktei/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/testing/simulator"
 )
 
 func TestTheSimulatorAnswersUnderTheNameSocratesInvokes(t *testing.T) {

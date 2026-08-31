@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/claudesim"
-	"github.com/socrates-devtool/socrates/internal/corpus"
+	"github.com/ktei/socrates/internal/claudesim"
+	"github.com/ktei/socrates/internal/corpus"
 )
 
 const replayed = "dialogue-layer-first-look"

@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/assets"
-	"github.com/socrates-devtool/socrates/internal/convention"
-	"github.com/socrates-devtool/socrates/internal/testing/source"
+	"github.com/ktei/socrates/internal/assets"
+	"github.com/ktei/socrates/internal/convention"
+	"github.com/ktei/socrates/internal/testing/source"
 )
 
 func TestEveryEmbeddedFileIsAccountedForInTheNotice(t *testing.T) {

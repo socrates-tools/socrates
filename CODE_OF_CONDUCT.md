@@ -22,7 +22,7 @@ There is no email address published for this project, deliberately: nothing here
 Use GitHub instead, which is where everything else about the project already is.
 
 - **Where a report can be public:** open an issue on this repository.
-- **Where it cannot:** [open a draft security advisory](https://github.com/socrates-devtool/socrates/security/advisories/new).
+- **Where it cannot:** [open a draft security advisory](https://github.com/ktei/socrates/security/advisories/new).
   It is private to you and the maintainer, and it is the one private channel this repository has.
   Say at the top that the report is about conduct rather than a vulnerability, and it will be read the same way.
 

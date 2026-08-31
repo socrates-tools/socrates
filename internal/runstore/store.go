@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/socrates-devtool/socrates/internal/process"
-	"github.com/socrates-devtool/socrates/internal/prompt"
-	"github.com/socrates-devtool/socrates/internal/refusal"
-	"github.com/socrates-devtool/socrates/internal/runstate"
-	"github.com/socrates-devtool/socrates/internal/snapshot"
+	"github.com/ktei/socrates/internal/process"
+	"github.com/ktei/socrates/internal/prompt"
+	"github.com/ktei/socrates/internal/refusal"
+	"github.com/ktei/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/snapshot"
 )
 
 const recordName = "run.json"

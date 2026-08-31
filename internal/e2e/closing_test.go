@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-devtool/socrates/internal/surface"
+	"github.com/ktei/socrates/internal/surface"
 )
 
 const somethingLiveOnThePage = `Array.from(document.querySelectorAll('button, .choice, textarea')).some((held) => !held.disabled)`

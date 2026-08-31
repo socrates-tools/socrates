@@ -36,5 +36,5 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-devtool/socrates/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/socrates-devtool/socrates/releases/tag/v0.1.0
+[Unreleased]: https://github.com/ktei/socrates/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/ktei/socrates/releases/tag/v0.1.0

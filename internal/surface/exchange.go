@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/socrates-devtool/socrates/internal/document"
+	"github.com/ktei/socrates/internal/document"
 )
 
 type Sent struct {

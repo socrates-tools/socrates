@@ -4,10 +4,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/socrates-devtool/socrates/internal/agent"
-	"github.com/socrates-devtool/socrates/internal/config"
-	"github.com/socrates-devtool/socrates/internal/reviewer"
-	"github.com/socrates-devtool/socrates/internal/runlog"
+	"github.com/ktei/socrates/internal/agent"
+	"github.com/ktei/socrates/internal/config"
+	"github.com/ktei/socrates/internal/reviewer"
+	"github.com/ktei/socrates/internal/runlog"
 	"github.com/spf13/cobra"
 )
 

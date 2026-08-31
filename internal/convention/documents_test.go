@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-devtool/socrates/internal/convention"
-	"github.com/socrates-devtool/socrates/internal/platform"
-	"github.com/socrates-devtool/socrates/internal/testing/source"
+	"github.com/ktei/socrates/internal/convention"
+	"github.com/ktei/socrates/internal/platform"
+	"github.com/ktei/socrates/internal/testing/source"
 )
 
 func TestTheRequirementsComeBeforeTheExplanation(t *testing.T) {

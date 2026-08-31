@@ -9,10 +9,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-devtool/socrates/internal/agent"
-	"github.com/socrates-devtool/socrates/internal/findings"
-	"github.com/socrates-devtool/socrates/internal/testing/gitrepo"
-	"github.com/socrates-devtool/socrates/internal/testing/simulator"
+	"github.com/ktei/socrates/internal/agent"
+	"github.com/ktei/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/testing/gitrepo"
+	"github.com/ktei/socrates/internal/testing/simulator"
 )
 
 func TestTheInvocationCarriesTheSchema(t *testing.T) {

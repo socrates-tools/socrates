@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/socrates-devtool/socrates/internal/process"
+	"github.com/ktei/socrates/internal/process"
 )
 
 const ReleaseTargetsFile = "platforms.json"

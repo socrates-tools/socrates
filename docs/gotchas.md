@@ -204,7 +204,7 @@ What that looks like is not a slow queue: the job simply never starts, with no s
 The verification jobs had already run, so the tag exists and nothing is published, and rerunning the failed job fails the same way until the limit is raised or the repository is public.
 
 **Build provenance is refused while the repository is private.**
-`actions/attest-build-provenance` signs the archives and then fails to store the attestation: "Feature not available for the socrates-devtool organization. To enable this feature, please upgrade the billing plan, or make this repository public".
+`actions/attest-build-provenance` signs the archives and then fails to store the attestation, saying the feature is not available for the account and that the way to it is to upgrade the billing plan or make the repository public.
 The step is left in the release and left failing, the same way the code-scanning upload is, because it starts working the moment the repository is public and its failure is the reminder until then.
 Everything before it publishes: the archives, the checksums, the cosign bundle and the bills of materials are all on the release.
 

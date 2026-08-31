@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/runstate"
 )
 
 func TestAParkedRunWithNoProcessesIsStillParked(t *testing.T) {

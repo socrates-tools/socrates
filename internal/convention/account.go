@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	Organisation = "socrates-devtool"
+	Organisation = "ktei"
 	Repository   = "socrates"
 )
 

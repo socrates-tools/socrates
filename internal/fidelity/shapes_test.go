@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/fidelity"
+	"github.com/ktei/socrates/internal/fidelity"
 )
 
 const recordedStream = `{"type":"system","subtype":"init","session_id":"s","model":"claude","tools":["Read"],"cwd":"/tmp"}

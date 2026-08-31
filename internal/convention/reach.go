@@ -29,7 +29,7 @@ type Scope struct {
 }
 
 var Socrates = Scope{
-	Module: "github.com/socrates-devtool/socrates",
+	Module: "github.com/ktei/socrates",
 	From:   []string{filepath.Join("cmd", "socrates")},
 }
 

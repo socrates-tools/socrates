@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-devtool/socrates/internal/agent"
-	"github.com/socrates-devtool/socrates/internal/presentation"
-	"github.com/socrates-devtool/socrates/internal/reviewer"
-	"github.com/socrates-devtool/socrates/internal/runlog"
-	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/agent"
+	"github.com/ktei/socrates/internal/presentation"
+	"github.com/ktei/socrates/internal/reviewer"
+	"github.com/ktei/socrates/internal/runlog"
+	"github.com/ktei/socrates/internal/runstate"
 )
 
 var at = time.Date(2026, 8, 21, 9, 14, 2, 0, time.UTC)

@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-devtool/socrates/internal/document"
+	"github.com/ktei/socrates/internal/document"
 )
 
 const callersPalette = `:root{--panel-face:#fbf9f4;--panel-ink:#2f2b23;--panel-rule:#d8d2c4}` +

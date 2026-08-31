@@ -15,9 +15,9 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-devtool/socrates/internal/document"
-	"github.com/socrates-devtool/socrates/internal/state"
-	"github.com/socrates-devtool/socrates/internal/surface"
+	"github.com/ktei/socrates/internal/document"
+	"github.com/ktei/socrates/internal/state"
+	"github.com/ktei/socrates/internal/surface"
 )
 
 func twoDecisions() document.Document {

@@ -12,7 +12,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/socrates-devtool/socrates/internal/platform"
+	"github.com/ktei/socrates/internal/platform"
 )
 
 const (

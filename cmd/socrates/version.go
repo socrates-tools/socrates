@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/socrates-devtool/socrates/internal/refusal"
-	"github.com/socrates-devtool/socrates/internal/version"
+	"github.com/ktei/socrates/internal/refusal"
+	"github.com/ktei/socrates/internal/version"
 	"github.com/spf13/cobra"
 )
 

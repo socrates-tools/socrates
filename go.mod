@@ -1,4 +1,4 @@
-module github.com/socrates-devtool/socrates
+module github.com/ktei/socrates
 
 go 1.26
 

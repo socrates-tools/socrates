@@ -9,7 +9,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/runstate"
 )
 
 type Severity string

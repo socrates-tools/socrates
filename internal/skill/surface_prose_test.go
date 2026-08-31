@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-devtool/socrates/internal/skill"
+	"github.com/ktei/socrates/internal/skill"
 )
 
 func TestProseNamingTheProductIsNotAnInvocation(t *testing.T) {

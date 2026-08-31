@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-devtool/socrates/internal/exit"
-	"github.com/socrates-devtool/socrates/internal/process"
-	"github.com/socrates-devtool/socrates/internal/runstate"
-	"github.com/socrates-devtool/socrates/internal/state"
-	"github.com/socrates-devtool/socrates/internal/testing/harness"
+	"github.com/ktei/socrates/internal/exit"
+	"github.com/ktei/socrates/internal/process"
+	"github.com/ktei/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/state"
+	"github.com/ktei/socrates/internal/testing/harness"
 )
 
 const unenforcingDirectory = "SOCRATES_TEST_UNENFORCING_DIRECTORY"
