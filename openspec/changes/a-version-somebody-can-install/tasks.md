@@ -26,6 +26,8 @@ No task requires a particular archive size, a particular digest, or a particular
 - [x] 3.1 Add `.goreleaser.yaml` building the supported set and no others, producing archives that satisfy the tests from group 2, and verify those tests pass against a locally produced snapshot build
 - [x] 3.2 Add `.github/workflows/release.yml`, on tag, that runs the verification matrix first and publishes nothing if it does not pass. Covers `A release that did not pass verification produces nothing`
 - [x] 3.3 Add checksums, a keyless signature over them, a bill of materials and build provenance to what the release publishes. Covers `A release carries what is needed to verify it`
+
+  Four of the four are in the release. GitHub stores the provenance attestation for a public repository only, so the step signs and is then refused, and it is left in place and left failing the way the code-scanning upload is. Recorded under "Continuous integration" in `docs/gotchas.md`.
 - [x] 3.4 Verify that nothing the release compiles or runs reaches the real CLI, by the same build-tag boundary continuous integration relies on, and record what was checked. Covers `Nothing in the release path reaches the real reviewer CLI`
 - [x] 3.5 Mutate the guard: point the release at a commit whose verification fails, and verify no artifact is published, then restore
 
@@ -39,4 +41,8 @@ No task requires a particular archive size, a particular digest, or a particular
 ## 5. The first release
 
 - [ ] 5.1 Tag `v0.1.0`, run the release, and record which artifacts it produced and that the verification over them passes
+
+  Run once and withdrawn, then blocked. The release published four archives, `checksums.txt`, `checksums.txt.bundle` and one bill of materials per archive, and the provenance step was refused as above. It was deleted so that `CHANGELOG.md` could stop claiming provenance the release does not carry. The tag was cut again and the publication job could not start: the account had reached its Actions spending limit, which a private repository reaches quickly because a macOS minute is billed as ten. The tag stands and the run is waiting for the limit or for the repository to be public.
 - [ ] 5.2 Verify a downloaded archive extracts to a working `socrates`, `scrat` and `agora` on a supported platform, and record it
+
+  Done against the withdrawn release and to be redone against the published one. `socrates_0.1.0_linux_amd64.tar.gz` checksummed against `checksums.txt`, its signature verified with `cosign verify-blob --bundle` against the workflow's identity and the Actions issuer, and it extracted to `socrates`, `scrat` and `agora`, all three reporting `v0.1.0, built from d4716e2`, beside `LICENSE` and `NOTICE`.
