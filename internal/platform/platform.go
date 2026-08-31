@@ -1,6 +1,7 @@
 package platform
 
 import (
+	"encoding/json"
 	"runtime"
 	"slices"
 	"strings"
@@ -13,9 +14,15 @@ const ReleaseTargetsFile = "platforms.json"
 type Platform struct {
 	OperatingSystem           string
 	Name                      string
+	Runner                    string
 	ReapsByProcessGroup       bool
 	FilesystemEnforcesTheSeal bool
 	TheSuiteRunsThere         bool
+}
+
+type Target struct {
+	OS     string `json:"os"`
+	Runner string `json:"runner"`
 }
 
 func (p Platform) Qualifies() bool {
@@ -26,6 +33,7 @@ var stated = []Platform{
 	{
 		OperatingSystem:           "linux",
 		Name:                      "Linux",
+		Runner:                    "ubuntu-latest",
 		ReapsByProcessGroup:       true,
 		FilesystemEnforcesTheSeal: true,
 		TheSuiteRunsThere:         true,
@@ -33,6 +41,7 @@ var stated = []Platform{
 	{
 		OperatingSystem:           "darwin",
 		Name:                      "macOS",
+		Runner:                    "macos-latest",
 		ReapsByProcessGroup:       true,
 		FilesystemEnforcesTheSeal: true,
 		TheSuiteRunsThere:         true,
@@ -63,6 +72,30 @@ func Names() []string {
 		named = append(named, one.Name)
 	}
 	return named
+}
+
+func Runners() []string {
+	var running []string
+	for _, one := range Supported() {
+		running = append(running, one.Runner)
+	}
+	return running
+}
+
+func Targets() []Target {
+	var targets []Target
+	for _, one := range Supported() {
+		targets = append(targets, Target{OS: one.OperatingSystem, Runner: one.Runner})
+	}
+	return targets
+}
+
+func Rendered() ([]byte, error) {
+	rendered, err := json.MarshalIndent(Targets(), "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return append(rendered, '\n'), nil
 }
 
 func Stated() string {

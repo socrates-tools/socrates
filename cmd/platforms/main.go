@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -16,11 +15,11 @@ func main() {
 }
 
 func state() error {
-	stated, err := json.MarshalIndent(platform.OperatingSystems(), "", "  ")
+	rendered, err := platform.Rendered()
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(platform.ReleaseTargetsFile, append(stated, '\n'), 0o644); err != nil {
+	if err := os.WriteFile(platform.ReleaseTargetsFile, rendered, 0o644); err != nil {
 		return fmt.Errorf(writingTheTargets, platform.ReleaseTargetsFile, err)
 	}
 	return nil

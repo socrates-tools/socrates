@@ -9,14 +9,14 @@ No task asserts a run duration, a runner image version, or a particular advisory
 
 ## 1. One entry point
 
-- [ ] 1.1 Add `verify` to the `Makefile`, running the sequence `AGENTS.md` lists, with `lint` first and `gofmt` first within it, and verify it passes on a clean tree
-- [ ] 1.2 Add a test that verification fails on formatting before the end-to-end suite runs, by running it against an unformatted tree. Covers `Formatting fails before the suite does`
-- [ ] 1.3 Point `.github/workflows/ci.yml` at `make verify` instead of listing the targets, and verify the run is green. Covers `One command runs every gate`
+- [x] 1.1 Add `verify` to the `Makefile`, running the sequence `AGENTS.md` lists, with `lint` first and `gofmt` first within it, and verify it passes on a clean tree
+- [x] 1.2 Add a test that verification fails on formatting before the end-to-end suite runs, by running it against an unformatted tree. Covers `Formatting fails before the suite does`
+- [x] 1.3 Point `.github/workflows/ci.yml` at `make verify` instead of listing the targets, and verify the run is green. Covers `One command runs every gate`
 
 ## 2. The matrix is the supported set
 
-- [ ] 2.1 Derive the workflow matrix from the stated supported set rather than writing platforms into the workflow, and verify a run happens on each
-- [ ] 2.2 Add a test that a platform in the matrix and not in the supported set fails, and verify it fails when one is added. Covers `A platform in the matrix but not in the supported set fails`
+- [x] 2.1 Derive the workflow matrix from the stated supported set rather than writing platforms into the workflow, and verify a run happens on each
+- [x] 2.2 Add a test that a platform in the matrix and not in the supported set fails, and verify it fails when one is added. Covers `A platform in the matrix but not in the supported set fails`
 - [ ] 2.3 Run the full suite on each supported platform and record which platforms ran and that every gate passed. Covers `The suite runs on each supported platform`
 - [ ] 2.4 Fix whatever the second platform finds, or record it as a defect with the failing gate named, before this group is done
 

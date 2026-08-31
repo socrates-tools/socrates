@@ -7,8 +7,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  verification:
+  platforms:
     runs-on: ubuntu-latest
+    outputs:
+      supported: ${{ steps.stated.outputs.supported }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read the platforms socrates states it supports
+        id: stated
+        run: echo "supported=$(jq -c . platforms.json)" >> "$GITHUB_OUTPUT"
+
+  verification:
+    needs: platforms
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ${{ fromJSON(needs.platforms.outputs.supported) }}
+    runs-on: ${{ matrix.platform.runner }}
     steps:
       - uses: actions/checkout@v7
 
@@ -26,23 +42,8 @@ jobs:
           "$browser" --version
           echo "AGORA_BROWSER=$browser" >> "$GITHUB_ENV"
 
-      - name: Fail on anything gofmt would rewrite
-        run: make lint
-
-      - name: Run the suite
-        run: make test
-
-      - name: Check every scenario under way is named by a test
-        run: make scenario-coverage
-
-      - name: Check archiving would take no scenario out of the specifications
-        run: make scenario-drop
-
-      - name: Report which outcomes only fixtures reach
-        run: make corpus-outcomes
-
-      - name: Compare the simulator against the recordings
-        run: make fixtures-diff
+      - name: Run every gate a contributor runs
+        run: make verify
 
       - uses: actions/setup-node@v6
         with:

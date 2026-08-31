@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/socrates-devtool/socrates/internal/platform"
 )
 
 const (
@@ -77,13 +79,13 @@ func PlatformsNamedOutsideTheStatement(root string, named []string) ([]string, e
 	return copies, nil
 }
 
-func PlatformsAReleaseBuilds(root, targets string) ([]string, error) {
+func PlatformsAReleaseBuilds(root, targets string) ([]platform.Target, error) {
 	held, err := os.ReadFile(filepath.Join(root, targets))
 	if err != nil {
 		return nil, err
 	}
 
-	var built []string
+	var built []platform.Target
 	if err := json.Unmarshal(held, &built); err != nil {
 		return nil, fmt.Errorf("reading %s: %w", targets, err)
 	}

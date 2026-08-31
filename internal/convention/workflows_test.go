@@ -24,6 +24,35 @@ func TestNoWorkflowReachesTheRealCLI(t *testing.T) {
 	}
 }
 
+func TestTheRunInvokesTheEntryPointRatherThanTheGates(t *testing.T) {
+	gates, err := convention.WorkflowsRunningTheGates(source.Root(t))
+	if err != nil {
+		t.Fatalf("reading the workflows: %v", err)
+	}
+
+	if len(gates.Invoking) == 0 {
+		t.Errorf("no workflow runs make %s, so what a run proves and what a contributor runs are two lists that can disagree", convention.TheEntryPoint)
+	}
+	for _, listing := range gates.Listing {
+		t.Errorf("%s: run make %s instead, so a gate added to it is added to both", listing, convention.TheEntryPoint)
+	}
+}
+
+func TestAWorkflowListingAGateOfItsOwnIsReported(t *testing.T) {
+	root := t.TempDir()
+	writeWorkflow(t, root, "listing.yml", "steps:\n  - run: make verify\n  - run: make scenario-drop\n")
+
+	gates, err := convention.WorkflowsRunningTheGates(root)
+	if err != nil {
+		t.Fatalf("reading a fabricated workflow: %v", err)
+	}
+
+	want := []string{"listing.yml runs make scenario-drop of its own"}
+	if diff := cmp.Diff(want, gates.Listing); diff != "" {
+		t.Errorf("what a workflow running a gate of its own reports differs (-want +got):\n%s", diff)
+	}
+}
+
 func TestAWorkflowRecordingAgainstTheRealCLIIsReported(t *testing.T) {
 	root := t.TempDir()
 	writeWorkflow(t, root, "paid.yml", "steps:\n  - run: make fixtures\n")

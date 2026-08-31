@@ -10,7 +10,7 @@ UNCOMMITTED = $(if $(shell git status --porcelain 2>/dev/null),yes,)
 STAMP = -X $(MODULE)/internal/version.commit=$(COMMIT) -X $(MODULE)/internal/version.uncommitted=$(UNCOMMITTED)
 SURFACE_STAMP = -X main.commit=$(COMMIT) -X main.uncommitted=$(UNCOMMITTED)
 
-.PHONY: build install test lint fmt skill assets platforms scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
+.PHONY: build install verify test lint fmt skill assets platforms scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
 
 build:
 	go build -ldflags '$(STAMP)' -o $(BINARY) ./cmd/socrates
@@ -21,6 +21,14 @@ install:
 	ln -sf socrates $(INSTALL_DIR)/$(SHORT_NAME)
 	$(INSTALL_DIR)/socrates skill
 	go install -ldflags '$(SURFACE_STAMP)' ./cmd/agora
+
+verify:
+	$(MAKE) lint
+	$(MAKE) test
+	$(MAKE) scenario-coverage
+	$(MAKE) scenario-drop
+	$(MAKE) corpus-outcomes
+	$(MAKE) fixtures-diff
 
 test:
 	go test -race ./...

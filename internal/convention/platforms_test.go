@@ -2,6 +2,7 @@ package convention_test
 
 import (
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -23,8 +24,33 @@ func TestAReleaseBuildsTheSupportedPlatformsAndNoOthers(t *testing.T) {
 		t.Fatalf("%s names no platform, so this check has nothing to compare and would pass forever", platform.ReleaseTargetsFile)
 	}
 
-	for _, disagreeing := range convention.PlatformDisagreements(platform.OperatingSystems(), built, platform.ReleaseTargetsFile) {
+	var operating, running []string
+	for _, one := range built {
+		operating = append(operating, one.OS)
+		running = append(running, one.Runner)
+	}
+
+	for _, disagreeing := range convention.PlatformDisagreements(platform.OperatingSystems(), operating, platform.ReleaseTargetsFile) {
 		t.Errorf("%s: regenerate it with make platforms", disagreeing)
+	}
+	for _, disagreeing := range convention.PlatformDisagreements(platform.Runners(), running, platform.ReleaseTargetsFile) {
+		t.Errorf("%s: regenerate it with make platforms", disagreeing)
+	}
+}
+
+func TestAPlatformInTheMatrixButNotInTheSupportedSetFails(t *testing.T) {
+	named, err := convention.RunnersNamedInWorkflows(source.Root(t))
+	if err != nil {
+		t.Fatalf("reading what the workflows run on: %v", err)
+	}
+	if len(named) == 0 {
+		t.Fatal("no workflow names a runner at all, so this check has nothing to read and would pass forever")
+	}
+
+	for _, running := range named {
+		if !slices.Contains(platform.Runners(), running.Runner) {
+			t.Errorf("%s runs on %s, and the supported set names %v: read the matrix from %s rather than naming a platform in a workflow", running.Workflow, running.Runner, platform.Runners(), platform.ReleaseTargetsFile)
+		}
 	}
 }
 
