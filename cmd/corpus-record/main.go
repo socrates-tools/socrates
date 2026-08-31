@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -31,7 +32,7 @@ func record() error {
 	flag.Parse()
 
 	if request.Run == "" || request.Name == "" || request.Subject == "" {
-		return fmt.Errorf(nothingToRecord)
+		return errors.New(nothingToRecord)
 	}
 
 	root, err := os.Getwd()

@@ -2,6 +2,7 @@ BINARY := bin/socrates
 SURFACE := bin/agora
 MODULE := github.com/socrates-devtool/socrates
 SHORT_NAME := scrat
+LINTER := github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
 
 INSTALL_DIR = $(firstword $(shell go env GOBIN) $(shell go env GOPATH)/bin)
 
@@ -39,6 +40,7 @@ lint:
 		echo 'gofmt would rewrite:'; echo "$$unformatted"; exit 1; \
 	fi
 	go vet ./...
+	go run $(LINTER) run
 
 fmt:
 	gofmt -w .

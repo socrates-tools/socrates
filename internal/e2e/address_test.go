@@ -634,12 +634,12 @@ func inFrontOf(t *testing.T, bound string) string {
 		t.Fatalf("addressing the surface the proxy stands in front of: %v", err)
 	}
 
-	forwarding := httputil.NewSingleHostReverseProxy(upstream)
-	forwarding.FlushInterval = -1
-	director := forwarding.Director
-	forwarding.Director = func(request *http.Request) {
-		director(request)
-		request.Host = bound
+	forwarding := &httputil.ReverseProxy{
+		FlushInterval: -1,
+		Rewrite: func(request *httputil.ProxyRequest) {
+			request.SetURL(upstream)
+			request.Out.Host = bound
+		},
 	}
 
 	listener, err := net.Listen("tcp", "127.0.0.1:0")

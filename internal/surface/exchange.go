@@ -2,6 +2,7 @@ package surface
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"sync"
@@ -99,7 +100,7 @@ func (e *Exchange) Receive(sent Sent) (Answered, error) {
 	defer e.mu.Unlock()
 
 	if e.over {
-		return Answered{}, fmt.Errorf(exchangeIsOver)
+		return Answered{}, errors.New(exchangeIsOver)
 	}
 
 	answered, err := resolve(e.read, sent)

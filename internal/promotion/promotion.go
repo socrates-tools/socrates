@@ -1,6 +1,7 @@
 package promotion
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -63,8 +64,12 @@ type requirement struct {
 
 func Check(root string) (Report, error) {
 	changes := filepath.Join(root, openspecDirectory, changesDirectory)
-	if _, err := os.Stat(changes); err != nil {
+	_, err := os.Stat(changes)
+	if errors.Is(err, fs.ErrNotExist) {
 		return Report{}, nil
+	}
+	if err != nil {
+		return Report{}, err
 	}
 
 	underWay, err := changesUnderWay(changes)

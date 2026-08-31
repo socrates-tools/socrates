@@ -17,6 +17,7 @@ const theEntryPoint = "verify"
 var everyGate = []string{
 	"gofmt -l",
 	"go vet",
+	"golangci-lint",
 	"go test -race",
 	"scripts/scenario-coverage",
 	"scripts/scenario-drop",
