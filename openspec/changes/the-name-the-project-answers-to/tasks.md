@@ -28,6 +28,6 @@ Authorship is rewritten before the module is renamed, and the transfer happens b
 ## 4. What only happens once
 
 - [x] 4.1 Verify `make verify` passes identically to the run recorded before task 2.1 began, and that the diff of this change touches paths, the context file and the new check and nothing else
-- [ ] 4.2 Rewrite the commit history so every commit is authored from the personal address, before any public push, and record that it was done
-- [ ] 4.3 Re-create every local clone and worktree from the rewritten history, and verify a fresh clone builds and `make verify` passes in it
-- [ ] 4.4 Transfer the repository to the organisation so its issues and its URL redirects follow it, and verify the archived issue link still resolves
+- [x] 4.2 Rewrite the commit history so every commit is authored from the personal address, before any public push, and record that it was done
+- [x] 4.3 Re-create every local clone and worktree from the rewritten history, and verify a fresh clone builds and `make verify` passes in it
+- [x] 4.4 Transfer the repository to the organisation so its issues and its URL redirects follow it, and verify the archived issue link still resolves

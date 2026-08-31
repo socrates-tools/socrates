@@ -68,6 +68,12 @@ A fresh repository would lose both, and would buy nothing, because the history i
 The order is: rewrite the authorship, then rename the module, then transfer, then push.
 Rewriting after the transfer would mean force-pushing over a repository somebody could already have cloned.
 
+### What was done once
+
+The authorship rewrite was run with `git filter-repo --mailmap` over all 101 commits, before any public push.
+Every commit now carries `Rui Cheng <2195250+ktei@users.noreply.github.com>` as author and as committer, the tree of the tip is unchanged, and the subjects and their order are unchanged.
+The repository was then transferred to the organisation, the rewritten history force-pushed to it, and every local checkout re-created from it.
+
 ## Risks / Trade-offs
 
 **A rewritten history invalidates every existing clone and worktree.**
