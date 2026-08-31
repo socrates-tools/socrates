@@ -184,6 +184,11 @@ Enabling it over the API answers "Advanced security has not been purchased", whi
 The analysis is correct and the schedule is left in place, because code scanning is free for a public repository and the workflow starts reporting the moment this one is public.
 Until then the weekly failure is the reminder, and nothing else in verification depends on it.
 
+**The releaser the `Makefile` pins has to build under the toolchain the module asks for.**
+A verification run sets `GOTOOLCHAIN=local`, so `go run` cannot fetch a newer toolchain for a tool whose own `go.mod` asks for one.
+Locally the switch is silent and the release snapshot succeeds; on a runner the same command fails with "requires go >= 1.27.0 (running go 1.26.7; GOTOOLCHAIN=local)".
+Read the candidate's `go` directive before bumping `RELEASER`, and pin the newest version that stays at or below what `go.mod` requires.
+
 **Private vulnerability reporting cannot be enabled while the repository is private.**
 `PUT /repos/{owner}/{repo}/private-vulnerability-reporting` answers 404 rather than 403, which reads as a wrong path rather than as a feature that is not there.
 It is available for public repositories only, so `SECURITY.md` names the channel and does not claim it is enabled, and enabling it belongs with making the repository public.
