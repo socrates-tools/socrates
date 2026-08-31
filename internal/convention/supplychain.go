@@ -171,6 +171,34 @@ func WhenWorkflowsRun(root string) ([]WorkflowClaim, error) {
 	return claimed(root, "on")
 }
 
+var triggersNobodyAsksFor = []string{"push", "pull_request", "schedule"}
+
+const OnRequest = "workflow_dispatch"
+
+type WorkflowStart struct {
+	Workflow  string
+	Unasked   []string
+	OnRequest bool
+}
+
+func WhatStartsAWorkflow(root string, named string) (WorkflowStart, error) {
+	start := WorkflowStart{Workflow: named}
+
+	held, err := os.ReadFile(filepath.Join(root, WorkflowsDirectory, named))
+	if err != nil {
+		return start, err
+	}
+
+	stated := topLevelBlock(string(held), "on")
+	start.OnRequest = strings.Contains(stated, OnRequest)
+	for _, trigger := range triggersNobodyAsksFor {
+		if regexp.MustCompile(`(?m)^` + regexp.QuoteMeta(trigger) + `:?$`).MatchString(stated) {
+			start.Unasked = append(start.Unasked, trigger)
+		}
+	}
+	return start, nil
+}
+
 func WorkflowsChecking(root, checked string) ([]string, error) {
 	var checking []string
 

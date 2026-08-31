@@ -103,23 +103,88 @@ func TestAKnownVulnerabilityInADependencyIsReported(t *testing.T) {
 		t.Fatalf("reading what the workflows check: %v", err)
 	}
 	if len(checking) == 0 {
-		t.Fatalf("no workflow runs %s, so an advisory published against the module graph waits for somebody to look", convention.TheVulnerabilityCheck)
+		t.Fatalf("no workflow runs %s, so nothing reads the module graph for a published advisory at all", convention.TheVulnerabilityCheck)
 	}
 
-	when, err := convention.WhenWorkflowsRun(root)
+	for _, named := range checking {
+		start, err := convention.WhatStartsAWorkflow(root, named)
+		if err != nil {
+			t.Fatalf("reading what starts %s: %v", named, err)
+		}
+		if !start.OnRequest {
+			t.Errorf("%s runs %s and nobody can ask for one: state %s, because an advisory now waits for somebody to ask", named, convention.TheVulnerabilityCheck, convention.OnRequest)
+		}
+	}
+}
+
+func TestARunIsStartedByAPersonOrByARelease(t *testing.T) {
+	root := source.Root(t)
+
+	gates, err := convention.WorkflowsRunningTheGates(root)
 	if err != nil {
-		t.Fatalf("reading when the workflows run: %v", err)
+		t.Fatalf("reading which workflows run the suite: %v", err)
+	}
+	checking, err := convention.WorkflowsChecking(root, convention.TheVulnerabilityCheck)
+	if err != nil {
+		t.Fatalf("reading what the workflows check: %v", err)
 	}
 
-	for _, claim := range when {
-		if !slices.Contains(checking, claim.Workflow) {
-			continue
+	asked := append(slices.Clone(gates.Invoking), checking...)
+	if len(asked) == 0 {
+		t.Fatal("no workflow runs the suite or reads the module graph, so this check has nothing to read and would pass forever")
+	}
+
+	for _, named := range asked {
+		start, err := convention.WhatStartsAWorkflow(root, named)
+		if err != nil {
+			t.Fatalf("reading what starts %s: %v", named, err)
 		}
-		for _, trigger := range []string{"schedule", "push"} {
-			if !strings.Contains(claim.Stated, trigger) {
-				t.Errorf("%s runs %s and not on %s, and an advisory published between runs has to arrive without anybody looking", claim.Workflow, convention.TheVulnerabilityCheck, trigger)
-			}
+		for _, unasked := range start.Unasked {
+			t.Errorf("%s starts on %s, and a run nobody asked for is one this account cannot pay for", named, unasked)
 		}
+		if !start.OnRequest {
+			t.Errorf("%s states no %s, so nobody can start it at all", named, convention.OnRequest)
+		}
+	}
+}
+
+func TestAWorkflowStartingOnAPushIsReported(t *testing.T) {
+	root := t.TempDir()
+	writeWorkflow(t, root, "eager.yml", "on:\n  push:\n    branches: [main]\n  pull_request:\n  workflow_dispatch:\n\njobs:\n  one:\n    steps:\n      - run: make verify\n")
+
+	start, err := convention.WhatStartsAWorkflow(root, "eager.yml")
+	if err != nil {
+		t.Fatalf("reading a fabricated workflow: %v", err)
+	}
+
+	if diff := cmp.Diff([]string{"push", "pull_request"}, start.Unasked); diff != "" {
+		t.Errorf("what a workflow starting on a push reports differs (-want +got):\n%s", diff)
+	}
+	if !start.OnRequest {
+		t.Error("a workflow stating workflow_dispatch was read as unstartable")
+	}
+}
+
+func TestAReleaseStillGatesOnTheFullMatrix(t *testing.T) {
+	root := source.Root(t)
+
+	gate, err := convention.HowTheReleaseIsGated(root)
+	if err != nil {
+		t.Fatalf("reading how a release is gated: %v", err)
+	}
+	if gate.Verifying == "" {
+		t.Fatalf("no job in %s runs the workflow that invokes make %s, so a release gates on nothing", convention.ReleaseWorkflow, convention.TheEntryPoint)
+	}
+	for _, ungated := range gate.Ungated {
+		t.Errorf("the job %s in %s does not need %s", ungated, convention.ReleaseWorkflow, gate.Verifying)
+	}
+
+	reading, err := convention.WorkflowsReadingTheStatement(root, platform.ReleaseTargetsFile)
+	if err != nil {
+		t.Fatalf("reading what the suite runs on: %v", err)
+	}
+	if len(reading.Invoking) == 0 {
+		t.Fatalf("the workflow a release gates on runs the suite without reading %s, so the matrix it runs is a second copy", platform.ReleaseTargetsFile)
 	}
 }
 
