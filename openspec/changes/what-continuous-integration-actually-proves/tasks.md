@@ -25,13 +25,13 @@ No task asserts a run duration, a runner image version, or a particular advisory
 - [x] 3.1 Add a convention check that no `uses:` in any workflow names an action by a tag, and verify it fails against the workflows as they stand. Covers `An action named by a tag fails the check`
 - [x] 3.2 Pin every action to a commit with its version in a trailing comment, and verify 3.1 passes
 - [x] 3.3 Add `permissions: contents: read` at the top of every workflow, escalating only in a job that needs more, and verify the run is green. Covers `Verification runs read-only`
-- [ ] 3.4 Add a concurrency group so a superseded run is cancelled, and verify a second push cancels the first run. Covers `A superseded run does not report`
+- [x] 3.4 Add a concurrency group so a superseded run is cancelled, and verify a second push cancels the first run. Covers `A superseded run does not report`
 - [x] 3.5 Add `.github/dependabot.yml` for Go modules, npm and Actions, and record the first change it opens. Covers `A dependency update arrives as a change somebody reviews`
 
 ## 4. What the run checks and what it must keep
 
 - [x] 4.1 Add a vulnerability check over the module graph to the run and to a schedule, and record what it reported on the graph as it stands. Covers `A known vulnerability in a dependency is reported`
-- [ ] 4.2 Add `.github/workflows/codeql.yml` on a schedule, and record its first result
+- [x] 4.2 Add `.github/workflows/codeql.yml` on a schedule, and record its first result
 - [x] 4.3 Install the browser at a known version in the run and point `AGORA_BROWSER` at it, rather than resolving one from the runner image, and verify the page half of the suite still passes. Covers `The page half runs against a known browser`
 - [x] 4.4 Mutate the guard: make no browser available and verify the run fails rather than skipping, then restore
 - [x] 4.5 Verify no workflow compiles or runs anything behind the `record`, `drift` or `livesmoke` tags that reaches the real CLI, and record what was checked. Covers `A verification run reaches no reviewer CLI`
@@ -39,4 +39,4 @@ No task asserts a run duration, a runner image version, or a particular advisory
 ## 5. The linter widens
 
 - [x] 5.1 Add `.golangci.yaml` enabling the analysers whose findings this project would act on, keeping `gofmt` as the first gate, and verify it passes against the tree as it stands
-- [ ] 5.2 Widen `make lint` to run it, and verify `make verify` is green on every supported platform
+- [x] 5.2 Widen `make lint` to run it, and verify `make verify` is green on every supported platform

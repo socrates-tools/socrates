@@ -175,3 +175,19 @@ The other direction would fail permanently and be turned off within a week.
 **`testscript` scripts assert exit codes through `sh`.**
 `exec` fails a script on any non-zero status and there is no assertion for a specific code, so `exec sh -c 'socrates status; echo exit=$?'` plus `stdout 'exit=3'` is how the contract gets checked.
 `cp stdout file` is how you keep output for a later assertion, and `$WORK` is expanded inside single quotes.
+
+## Continuous integration
+
+**Code scanning cannot report while the repository is private and unlicensed.**
+`.github/workflows/codeql.yml` builds the database and runs every query, and then the upload is refused with "Advanced Security must be enabled for this repository to use code scanning".
+Enabling it over the API answers "Advanced security has not been purchased", which is what a private repository on a plan without it answers.
+The analysis is correct and the schedule is left in place, because code scanning is free for a public repository and the workflow starts reporting the moment this one is public.
+Until then the weekly failure is the reminder, and nothing else in verification depends on it.
+
+**A private repository's CodeQL job needs `actions: read`.**
+Without it the analysis runs to the end and then fails with "Resource not accessible by integration" against the workflow-runs endpoint, which reads as a bug in the action rather than as a permission.
+`security-events: write` alone is enough on a public repository and is not enough here.
+
+**A checked box in a change's `tasks.md` is what makes its scenarios a gate.**
+`make scenario-coverage` counts a change as under way as soon as one box is checked, and then every scenario in that change needs a test naming it.
+Check the boxes and then run `make verify`, never the other way round, or the run fails on scenarios whose tests are still ahead of you in the same change.
