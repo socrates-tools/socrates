@@ -13,10 +13,27 @@ The asymmetry is the whole point.
 The author has the context and does the patching.
 The reviewer has independence and has written none of it.
 
-## Installing it
+## What it needs
 
-socrates needs `git` and the `claude` CLI 2.1.169 or later on your `PATH`.
-That floor is where `--safe-mode` arrived, which is the one mechanism keeping your machine's customisations out of a reviewer, and socrates keeps no fallback for a CLI that does not know it.
+socrates is a front end for a reviewer it does not contain, so the reviewer is the first thing to check you have.
+All of this has to be true before anything below works:
+
+- **The `claude` CLI, 2.1.169 or later, on your `PATH`.**
+  That floor is where `--safe-mode` arrived, which is the one mechanism keeping your machine's customisations out of a reviewer, and socrates keeps no fallback for a CLI that does not know it.
+- **An Anthropic account that CLI is signed in to.**
+  Every round of every review is a model call, made on your account and against whatever plan or credit it carries.
+  socrates costs nothing and the reviews are not free.
+- **Linux or macOS.**
+  socrates makes two promises that are not matters of care, and both are held by unix mechanisms.
+  On Windows, run socrates under WSL, which is a supported Linux.
+- **`git`.**
+  The snapshot a reviewer reads is a real commit in your repository.
+- **Go 1.26 or later, if you install from source.**
+  A release archive needs no toolchain.
+
+If the first two are not true for you, this is the right place to find that out rather than the twentieth minute.
+
+## Installing it
 
 A release archive is the shortest way in.
 Each one carries `socrates`, `scrat` and `agora`, along with `LICENSE` and `NOTICE`, so extracting one gives you what installing from source gives you.
@@ -57,6 +74,45 @@ bin/socrates review --intent "add the parser I asked for"
 
 `make install` puts it on your `PATH` under both of its names: `socrates`, and `scrat` for the short one.
 They are one binary, so the two can never be at different commits, and `socrates version` says which release that is and which commit it was built from.
+
+## The second binary
+
+Installing socrates installs a second program beside it, called `agora`, and it is not a third name for the first one.
+
+agora serves one document as one page on a loopback address, waits for a person to answer it, and prints what they answered.
+That is all agora does.
+It knows nothing about code review: no finding, no verdict, no run and no round appears anywhere in it.
+It renders a document some caller wrote and hands back the decision a person made about it.
+
+agora exists because a finding that asks a person is the one thing socrates cannot answer, and a decision like that is better read on a page that can quote the code it is about than in a terminal that cannot.
+Nothing socrates does reaches agora yet, so today it is a program you can run on its own and nothing that runs behind your back.
+
+```sh
+agora serve --document decision.json   # prints the address the page is served at
+agora poll --session <session>         # blocks until somebody answers, then prints it
+agora stop                             # shuts it down, taking every page with it
+```
+
+The two binaries share one home and one optional configuration file, and nothing else.
+
+`review` prints the run identifier and returns while the review runs:
+
+```
+20260819T101500-ab12cd34
+follow it with: socrates status 20260819T101500-ab12cd34
+```
+
+Then either poll it or wait for it:
+
+```sh
+socrates status                   # a few lines, and an exit code you can branch on
+socrates findings                 # what it found, as socrates classified it
+socrates findings --json          # the same, with every effective action resolved
+socrates review --wait            # block until the verdict, and exit with its code
+socrates cancel                   # stop a review and say that nothing was decided
+```
+
+Naming no run means the most recent run for the repository you are standing in.
 
 ## The platforms it holds on
 
@@ -149,6 +205,21 @@ No ref names the snapshot commit, so ordinary garbage collection reclaims it onc
 Everything both binaries read and everything they write lives under one home, `~/.socrates` unless `SOCRATES_HOME` names an absolute path instead.
 Runs are `~/.socrates/runs/`, one directory per run, legible with `ls` and `cat`.
 What agora writes about a page is `~/.socrates/surface/`, beside them.
+
+## Where what it reads goes
+
+socrates sends nothing anywhere.
+No telemetry, no usage counter, no crash report, no update check.
+It opens no network connection at all outside a build tag the ordinary suite does not compile, and a test holds that by reading what `cmd/socrates` and every package it reaches import.
+
+The reviewer CLI it drives is the other half of the answer, and that half is not silent.
+socrates spawns `claude`, and that CLI sends the change to its vendor, Anthropic, exactly as it does when you run it yourself.
+Your diff, the file contents a reviewer reads and the one line of intent you chose to state go there, under the terms your own account carries.
+That is the mechanism rather than a leak: a review is a model call, and the model is not on your machine.
+If that is not acceptable for a repository, socrates is not the tool to point at it.
+
+socrates is not affiliated with, endorsed by or sponsored by Anthropic.
+"Claude" and "Anthropic" are trademarks of Anthropic PBC, named here only to say which CLI socrates drives.
 
 ## Configuration
 

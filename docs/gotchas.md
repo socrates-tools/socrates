@@ -184,6 +184,10 @@ Enabling it over the API answers "Advanced security has not been purchased", whi
 The analysis is correct and the schedule is left in place, because code scanning is free for a public repository and the workflow starts reporting the moment this one is public.
 Until then the weekly failure is the reminder, and nothing else in verification depends on it.
 
+**Private vulnerability reporting cannot be enabled while the repository is private.**
+`PUT /repos/{owner}/{repo}/private-vulnerability-reporting` answers 404 rather than 403, which reads as a wrong path rather than as a feature that is not there.
+It is available for public repositories only, so `SECURITY.md` names the channel and does not claim it is enabled, and enabling it belongs with making the repository public.
+
 **A private repository's CodeQL job needs `actions: read`.**
 Without it the analysis runs to the end and then fails with "Resource not accessible by integration" against the workflow-runs endpoint, which reads as a bug in the action rather than as a permission.
 `security-events: write` alone is enough on a public repository and is not enough here.

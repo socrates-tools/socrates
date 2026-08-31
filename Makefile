@@ -13,7 +13,7 @@ VERSION = $(shell git describe --tags --exact-match 2>/dev/null)
 STAMP = -X $(MODULE)/internal/version.version=$(VERSION) -X $(MODULE)/internal/version.commit=$(COMMIT) -X $(MODULE)/internal/version.uncommitted=$(UNCOMMITTED)
 SURFACE_STAMP = -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.uncommitted=$(UNCOMMITTED)
 
-TARGETS := build install release release-snapshot verify test lint fmt skill assets platforms scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
+TARGETS := build install release release-snapshot verify test lint fmt help skill assets platforms scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
 
 .PHONY: $(TARGETS)
 
@@ -54,6 +54,10 @@ lint:
 
 fmt:
 	gofmt -w .
+
+help:
+	@printf 'socrates targets:\n'
+	@printf '  make %s\n' $(TARGETS)
 
 skill:
 	go run ./cmd/socrates skill --to .claude/skills

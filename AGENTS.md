@@ -74,6 +74,7 @@ make fmt
 make verify
 ```
 
+`make help` lists every target.
 `make verify` is the one entry point, and it runs `make lint`, `make test`, `make scenario-coverage`, `make scenario-drop`, `make corpus-outcomes` and `make fixtures-diff`, in that order.
 Continuous integration runs that same command on every supported platform, so passing locally and passing there are one claim rather than two.
 
@@ -178,6 +179,17 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - Every job that publishes needs the job that ran the verification matrix, so a tag on a commit whose verification did not pass produces nothing.
 - A release carries a checksum, a keyless signature over the checksums, a bill of materials and build provenance, and nothing in the release path reaches the real CLI.
 - Each release is recorded in `CHANGELOG.md`, written by hand, in terms of what it means to somebody who has the previous one.
+
+**The door a stranger arrives at**
+
+- `README.md` states what socrates needs before it explains how socrates works, and the reviewer CLI, its floor and the account behind it are part of that.
+- The toolchain floor a document states is read against `go.mod`, so the two cannot drift.
+- Every binary `make install` puts on a path is explained rather than mentioned.
+- Where what socrates reads goes is stated in both directions: socrates sends nothing, and the reviewer CLI it drives sends the change to its vendor. Neither half is stated without the other.
+- `SECURITY.md` names a private channel and says what socrates does not defend against, including the residual `README.md` already names.
+- `CONTRIBUTING.md` says a change starts as a proposal in `openspec/` before it says anything about the toolchain, and it names one verification command rather than the gates.
+- `make help` names every target a document tells a contributor to run.
+- The documents a first change needs are present, and `.editorconfig` and `.gitattributes` match the conventions the source is held to.
 
 **The terms the work is published under**
 

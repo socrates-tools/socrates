@@ -18,6 +18,7 @@ var ContractsTestsRead = map[string]string{
 	filepath.Join("internal", "convention", "account_test.go"):     "the account this project answers to, where the source is the subject of the check and not a proxy for anything else",
 	filepath.Join("internal", "convention", "comments_test.go"):    "this repository's no-commentary convention, where the source is the subject of the check and not a proxy for anything else",
 	filepath.Join("internal", "convention", "context_test.go"):     "the normative context itself, which is a document of this repository rather than a proxy for behaviour",
+	filepath.Join("internal", "convention", "documents_test.go"):   "what a person reads before they trust the tool, install it or propose a change to it, which is a property of this repository's documents and reads no Go file at all",
 	filepath.Join("internal", "convention", "evidence_test.go"):    "this convention itself, which is a property of the test suite",
 	filepath.Join("internal", "convention", "ignorance_test.go"):   "the rule that the surface names nothing of the other tool, which is a property of this repository's source rather than a proxy for behaviour",
 	filepath.Join("internal", "convention", "licence_test.go"):     "the rule that the terms are stated once at the root and never as a header, where the source is the subject of the check and not a proxy for anything else",

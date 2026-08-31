@@ -1,0 +1,22 @@
+* text=auto eol=lf
+
+*.go text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.txtar text eol=lf
+Makefile text eol=lf
+
+*.woff2 binary
+*.woff binary
+*.ttf binary
+*.otf binary
+*.png binary
+*.ico binary
+
+internal/assets/bundle/** linguist-generated
+.claude/skills/socrates/SKILL.md linguist-generated
+platforms.json linguist-generated
+
+openspec/changes/archive/** linguist-documentation
