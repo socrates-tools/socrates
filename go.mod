@@ -6,7 +6,7 @@ require (
 	github.com/chromedp/cdproto v0.0.0-20260714215040-dc233986426f
 	github.com/chromedp/chromedp v0.16.0
 	github.com/google/go-cmp v0.7.0
-	github.com/rogpeppe/go-internal v1.15.0
+	github.com/rogpeppe/go-internal v1.16.0
 	github.com/spf13/cobra v1.10.2
 	github.com/tdewolff/parse/v2 v2.8.16
 	go.yaml.in/yaml/v3 v3.0.5
