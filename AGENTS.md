@@ -33,6 +33,7 @@ What socrates is:
 - `internal/hygiene` - model output neutralised before it re-enters a prompt.
 - `internal/prompt` - the delivered prompt, assembled from named sections.
 - `internal/testquality` - the test-quality rule, shared by every role that needs it.
+- `internal/platform` - the one place the supported platforms are stated, and the basis on which one qualifies.
 - `internal/agent` - the only package that starts a model process.
 - `internal/reviewer` - beginning, supervising, responding, advancing, cancelling.
 - `internal/report` - what `status` and `findings` print.
@@ -62,7 +63,7 @@ What holds them both:
 - `internal/e2e` - real binaries, a real repository, real git, real processes, the simulator on `PATH`, a real browser.
 - `internal/claudesim` - the simulator's half of the real CLI's wire contract: the arguments it reads, the scenario it replays, the stream it writes, and the log of every invocation.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
-- `cmd/claudesim`, `cmd/scenario-coverage`, `cmd/scenario-drop`, `cmd/corpus-outcomes`, `cmd/corpus-record` - the simulator and the gate binaries.
+- `cmd/claudesim`, `cmd/scenario-coverage`, `cmd/scenario-drop`, `cmd/corpus-outcomes`, `cmd/corpus-record`, `cmd/platforms` - the simulator and the gate binaries.
 
 ## Verification
 
@@ -79,7 +80,7 @@ make corpus-outcomes
 
 `make lint` fails on anything `gofmt` would rewrite.
 `make test` drives the surface page with a real browser, so a Chrome or Chromium must be on `PATH` or named by `AGORA_BROWSER`.
-`make skill` and `make assets` regenerate committed files from their sources, and `make test` fails while a generated file and its source disagree.
+`make skill`, `make assets` and `make platforms` regenerate committed files from their sources, and `make test` fails while a generated file and its source disagree.
 `make scenario-coverage` and `make scenario-drop` are also held by `make test`; neither reads prose, so a delta that rewrites a requirement's sentences from a stale copy is still something only a reader catches.
 `make corpus-outcomes` states which outcomes only fixtures reach and never fails for one; rewrite its recorded distribution with `scripts/corpus-outcomes -write` once a move is deliberate.
 `make fixtures-diff` compares the simulator against the recordings and reaches nothing.
@@ -149,6 +150,14 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - The build states the path once and is checked against `go.mod`, so what a binary stamps into itself cannot disagree with what the compiler resolved.
 - No source file and no live specification names a code-hosting account other than the organisation's; an archived change is exempt, because the account it names is the account that existed when the decision was taken.
 - `openspec/config.yaml` names the binaries, commands and directories the repository has, and cites no source a reader cannot reach.
+
+**The platforms the guarantees hold on**
+
+- `internal/platform` states the supported set once, on the basis that reaping by process group is available, the filesystem enforces the seal and the suite runs there rather than on the basis that socrates compiles.
+- The refusal, what a release builds and what a person reads all read that set, and no second copy of it exists in the source.
+- A review is refused where this build cannot reap by process group, before a snapshot is taken and before a reviewer is spawned, naming the missing guarantee and the same way forward the README names.
+- A command that neither spawns nor reaps is not refused there, so a finished run stays readable.
+- `platforms.json` is generated from the statement, and a platform on one side and not the other fails the suite in both directions.
 
 **The terms the work is published under**
 
