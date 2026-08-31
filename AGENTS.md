@@ -60,6 +60,7 @@ What holds them both:
 - `internal/convention` - the repository's conventions as executable checks.
 - `internal/coverage`, `internal/promotion` - the scenario-coverage and promotion gates.
 - `internal/e2e` - real binaries, a real repository, real git, real processes, the simulator on `PATH`, a real browser.
+- `internal/claudesim` - the simulator's half of the real CLI's wire contract: the arguments it reads, the scenario it replays, the stream it writes, and the log of every invocation.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
 - `cmd/claudesim`, `cmd/scenario-coverage`, `cmd/scenario-drop`, `cmd/corpus-outcomes`, `cmd/corpus-record` - the simulator and the gate binaries.
 
@@ -141,6 +142,13 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - `socrates` and `scrat` are one program under two names, and `agora` is a different program.
 - What a binary says about itself was recorded when it was linked and is never read where it is run.
 - socrates reaches no network outside a build tag, and what is measured is `cmd/socrates` and the packages it reaches rather than this repository.
+
+**The name the project answers to**
+
+- The module path is the project's repository under the organisation that publishes it, and every import of the project resolves under it.
+- The build states the path once and is checked against `go.mod`, so what a binary stamps into itself cannot disagree with what the compiler resolved.
+- No source file and no live specification names a code-hosting account other than the organisation's; an archived change is exempt, because the account it names is the account that existed when the decision was taken.
+- `openspec/config.yaml` names the binaries, commands and directories the repository has, and cites no source a reader cannot reach.
 
 **The surface**
 
