@@ -21,8 +21,9 @@ The first release anybody other than its author can install.
 - `agora`, a second binary, serves one document as one page on a loopback address, waits for a person, and prints what they answered.
 - Downloadable archives for Linux and macOS, on `amd64` and `arm64`.
   Each carries `socrates`, `scrat`, `agora`, `LICENSE` and `NOTICE`, so extracting one archive gives you what installing from source gives you.
-- A checksum for every archive, a keyless signature over the checksums, a bill of materials, and build provenance.
+- A checksum for every archive, a keyless signature over the checksums, and a bill of materials.
   Together they let you check a download against this repository without extending trust to whoever pushed the tag.
+  The release records build provenance too, which GitHub stores for a public repository only, so v0.1.0 carries none.
 - `socrates version` and `agora version` now name the release they were built from as well as the commit.
   A build that is not at a tag says it is a development build rather than borrowing the nearest one, so a version in a bug report is a version somebody can install.
 

@@ -47,7 +47,7 @@ socrates skill
 ```
 
 Check the download against this repository rather than against whoever pushed the tag.
-The checksums carry a keyless signature, and every archive carries build provenance saying which workflow and which commit produced it:
+The checksums carry a keyless signature, and the release records build provenance saying which workflow and which commit produced each archive:
 
 ```sh
 gh release download "$tag" --repo socrates-devtool/socrates --pattern 'checksums.txt.bundle'
@@ -57,6 +57,8 @@ cosign verify-blob checksums.txt \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 gh attestation verify socrates_*.tar.gz --repo socrates-devtool/socrates
 ```
+
+GitHub stores build provenance for a public repository only, so the last of those three begins with the first release published from one.
 
 `go install github.com/socrates-devtool/socrates/cmd/socrates@latest` works too, and gives you `socrates` alone: no `scrat`, no `agora`, and no version stamp, because nothing links one in.
 

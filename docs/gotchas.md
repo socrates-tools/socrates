@@ -198,6 +198,11 @@ Read the candidate's `go` directive before bumping `RELEASER`, and pin the newes
 `--output-signature` and `--output-certificate` still parse, and then the run fails with "create bundle file: open : no such file or directory", because `--new-bundle-format` is on by default and wants `--bundle`.
 The release signs the checksums into `checksums.txt.bundle`, verified with `cosign verify-blob --bundle`, and the workflow pins the cosign release so a new default cannot change that shape under it.
 
+**Build provenance is refused while the repository is private.**
+`actions/attest-build-provenance` signs the archives and then fails to store the attestation: "Feature not available for the socrates-devtool organization. To enable this feature, please upgrade the billing plan, or make this repository public".
+The step is left in the release and left failing, the same way the code-scanning upload is, because it starts working the moment the repository is public and its failure is the reminder until then.
+Everything before it publishes: the archives, the checksums, the cosign bundle and the bills of materials are all on the release.
+
 **Private vulnerability reporting cannot be enabled while the repository is private.**
 `PUT /repos/{owner}/{repo}/private-vulnerability-reporting` answers 404 rather than 403, which reads as a wrong path rather than as a feature that is not there.
 It is available for public repositories only, so `SECURITY.md` names the channel and does not claim it is enabled, and enabling it belongs with making the repository public.

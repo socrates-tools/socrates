@@ -27,7 +27,9 @@ No task requires a particular archive size, a particular digest, or a particular
 - [x] 3.2 Add `.github/workflows/release.yml`, on tag, that runs the verification matrix first and publishes nothing if it does not pass. Covers `A release that did not pass verification produces nothing`
 - [x] 3.3 Add checksums, a keyless signature over them, a bill of materials and build provenance to what the release publishes. Covers `A release carries what is needed to verify it`
 - [x] 3.4 Verify that nothing the release compiles or runs reaches the real CLI, by the same build-tag boundary continuous integration relies on, and record what was checked. Covers `Nothing in the release path reaches the real reviewer CLI`
-- [ ] 3.5 Mutate the guard: point the release at a commit whose verification fails, and verify no artifact is published, then restore
+- [x] 3.5 Mutate the guard: point the release at a commit whose verification fails, and verify no artifact is published, then restore
+
+  `v0.0.0-guard` was pushed on a commit that broke the formatting gate and is on no branch. Both verification jobs failed, `publication` was reported skipped, and the repository held no release, no archive and no attestation afterwards. The tag was deleted and the commit is unreachable.
 
 ## 4. What a person reads
 
