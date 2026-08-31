@@ -1,4 +1,4 @@
-//go:build unix
+//go:build unix && !noprocessgroups
 
 package process
 
@@ -9,6 +9,8 @@ import (
 	"strings"
 	"syscall"
 )
+
+const ReapsByGroup = true
 
 func OwnGroup(command *exec.Cmd) {
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}

@@ -15,7 +15,7 @@ The reviewer has independence and has written none of it.
 
 ## The first run
 
-socrates needs Go 1.25 or later, `git`, and the `claude` CLI 2.1.169 or later on your `PATH`.
+socrates needs Go 1.26 or later, `git`, and the `claude` CLI 2.1.169 or later on your `PATH`.
 That floor is where `--safe-mode` arrived, which is the one mechanism keeping your machine's customisations out of a reviewer, and socrates keeps no fallback for a CLI that does not know it.
 
 ```sh
@@ -44,6 +44,21 @@ socrates cancel                   # stop a review and say that nothing was decid
 ```
 
 Naming no run means the most recent run for the repository you are standing in.
+
+## The platforms it holds on
+
+socrates makes two promises that are not matters of care: the reviewer never writes, and everything the reviewer started is reaped with it.
+Both are held by unix mechanisms, so a platform is supported where both hold and where the suite runs, rather than where socrates compiles.
+
+| platform | reaps by process group | the filesystem enforces the seal | the suite runs there |
+| --- | --- | --- | --- |
+| Linux | yes | yes | yes |
+| macOS | yes | yes | yes |
+
+On Windows, run socrates under WSL, which is a supported Linux and is how socrates itself is developed.
+
+A review started where reaping by process group is unavailable refuses before it takes a snapshot and before it spawns a reviewer, because a verdict socrates cannot stand behind is worse than no verdict.
+Reading a finished run is not refused there: `socrates status`, `socrates findings` and `socrates logs` make neither promise.
 
 ## Three ways to read one run, for three readers
 

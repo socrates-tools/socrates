@@ -2,6 +2,7 @@ package reviewer
 
 const (
 	aReviewInsideAReview    = "this process is already the reviewer for run %s, and a review inside a review spawns without end: run socrates review from your own session instead"
+	nothingHereReapsAGroup  = "socrates reaps everything a reviewer starts by process group, and this socrates on %s cannot, so a review here could leave the reviewer's workers holding the snapshot after the run ends: socrates supports %s, so run the review there, and on Windows run it under WSL, which is a supported Linux"
 	checkingOutTheSnapshot  = "checking out the snapshot: %w"
 	clearingTheLastRound    = "clearing what the last round left where this round's worktree goes: %w"
 	storedAndUnreadable     = "the answer was appended to %s and the document could not be read back afterwards (%w), so the answer is recorded and what is still unanswered is not: read the last lines of that file and remove any partial one"

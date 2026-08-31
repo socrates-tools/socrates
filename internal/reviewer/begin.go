@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/socrates-devtool/socrates/internal/platform"
 	"github.com/socrates-devtool/socrates/internal/process"
 	"github.com/socrates-devtool/socrates/internal/refusal"
 	"github.com/socrates-devtool/socrates/internal/runlog"
@@ -45,6 +46,9 @@ func OuterRun() string {
 }
 
 func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
+	if !platform.ReviewIsSupported() {
+		return nil, refusal.New(nothingHereReapsAGroup, platform.TheOneRunning(), platform.Stated())
+	}
 	if outer := OuterRun(); outer != "" {
 		return nil, refusal.New(aReviewInsideAReview, outer)
 	}

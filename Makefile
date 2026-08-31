@@ -10,7 +10,7 @@ UNCOMMITTED = $(if $(shell git status --porcelain 2>/dev/null),yes,)
 STAMP = -X $(MODULE)/internal/version.commit=$(COMMIT) -X $(MODULE)/internal/version.uncommitted=$(UNCOMMITTED)
 SURFACE_STAMP = -X main.commit=$(COMMIT) -X main.uncommitted=$(UNCOMMITTED)
 
-.PHONY: build install test lint fmt skill assets scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
+.PHONY: build install test lint fmt skill assets platforms scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
 
 build:
 	go build -ldflags '$(STAMP)' -o $(BINARY) ./cmd/socrates
@@ -40,6 +40,9 @@ skill:
 
 assets:
 	cd web && pnpm install --frozen-lockfile && node build.mjs
+
+platforms:
+	go run ./cmd/platforms
 
 scenario-coverage:
 	./scripts/scenario-coverage

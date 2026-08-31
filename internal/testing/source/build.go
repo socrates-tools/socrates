@@ -40,8 +40,19 @@ func Toolchain() []string {
 
 func Build(t *testing.T, target, output string) {
 	t.Helper()
+	BuildWithTags(t, target, output)
+}
 
-	build := exec.Command("go", "build", "-o", output, target)
+func BuildWithTags(t *testing.T, target, output string, tags ...string) {
+	t.Helper()
+
+	arguments := []string{"build"}
+	if len(tags) > 0 {
+		arguments = append(arguments, "-tags", strings.Join(tags, ","))
+	}
+	arguments = append(arguments, "-o", output, target)
+
+	build := exec.Command("go", arguments...)
 	build.Dir = Root(t)
 	build.Env = append(os.Environ(), toolchain...)
 

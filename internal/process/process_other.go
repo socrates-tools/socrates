@@ -1,4 +1,4 @@
-//go:build !unix
+//go:build !unix || noprocessgroups
 
 package process
 
@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 )
+
+const ReapsByGroup = false
 
 var unsupported = errors.New(noProcessGroups)
 

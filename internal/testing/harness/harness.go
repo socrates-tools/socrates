@@ -24,6 +24,8 @@ import (
 )
 
 const (
+	withoutProcessGroups = "noprocessgroups"
+
 	terminalWait = 30 * time.Second
 	reapingWait  = 10 * time.Second
 	reapingPoll  = 10 * time.Millisecond
@@ -61,11 +63,19 @@ func Start(t *testing.T) *Session {
 	return session
 }
 
-func buildSocrates(t *testing.T) string {
+func (s *Session) WhereNothingReaps() *Session {
+	s.t.Helper()
+
+	elsewhere := *s
+	elsewhere.Binary = buildSocrates(s.t, withoutProcessGroups)
+	return &elsewhere
+}
+
+func buildSocrates(t *testing.T, tags ...string) string {
 	t.Helper()
 
 	binary := filepath.Join(t.TempDir(), "socrates")
-	source.Build(t, "./cmd/socrates", binary)
+	source.BuildWithTags(t, "./cmd/socrates", binary, tags...)
 	return binary
 }
 
