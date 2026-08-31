@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -60,7 +61,7 @@ func TestTheRealCLIStillAcceptsWhatSocratesAsksOfIt(t *testing.T) {
 	}
 	t.Logf("the real reviewer rated the change %s risk and reported %d findings", document.RiskLevel, len(document.Findings))
 
-	t.Run("what it answered reaches a page on the fixed port", func(t *testing.T) {
+	t.Run("what it answered reaches a page on a port of the window", func(t *testing.T) {
 		t.Setenv(state.HomeVariable, t.TempDir())
 
 		read := whatThePersonReads(document)
@@ -69,14 +70,20 @@ func TestTheRealCLIStillAcceptsWhatSocratesAsksOfIt(t *testing.T) {
 			t.Fatalf("writing the document the page is served from: %v", err)
 		}
 
-		server, err := surface.Serve(surface.DefaultAddress, surface.IdlePeriod)
+		window := surface.WindowAddresses()
+		free, err := surface.FirstFreeIn(window)
 		if err != nil {
-			t.Fatalf("serving on the fixed port %s: %v", surface.DefaultAddress, err)
+			t.Fatalf("taking a port of the window: %v", err)
+		}
+
+		server, err := surface.Serve(free, surface.IdlePeriod)
+		if err != nil {
+			t.Fatalf("serving on %s: %v", free, err)
 		}
 		defer server.Stop()
 
-		if server.Address() != surface.DefaultAddress {
-			t.Fatalf("the surface bound %q, and the port nothing states is %q", server.Address(), surface.DefaultAddress)
+		if !slices.Contains(window, server.Address()) {
+			t.Fatalf("the surface bound %q, and the ports it takes where nothing states one run from %q to %q", server.Address(), window[len(window)-1], window[0])
 		}
 
 		opened, err := server.Open(read, raw)

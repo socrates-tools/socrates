@@ -148,6 +148,10 @@ The `surface` block is what an operator states about the page a person reads: th
 The page is served on `127.0.0.1:18018` and can be opened from that machine and no other.
 That is the point: the document quotes the code it was written about, so nothing widens the bind and there is no tunnel and no share command.
 
+Where nothing states an address and something else already holds that port, the surface counts down through a window of ten ports and takes the first one free, rather than refusing over a port nobody chose.
+Stating either field of the `surface` block stops it counting: an operator who states one has aimed something at a port, so a port held by something else is refused rather than walked past.
+Serving a page names the port it bound, which is the one to forward.
+
 Where you run socrates in a devcontainer, over ssh, or anywhere else with a network namespace of its own, your browser is on another machine and the address you are handed will not open.
 You get a connection that opens and carries nothing, which a browser reports as an empty reply and which looks exactly like a port nobody forwarded.
 

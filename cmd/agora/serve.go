@@ -43,8 +43,12 @@ func newServeCommand() *cobra.Command {
 			if !command.Flags().Changed(addressFlag) && configured.Bind != "" {
 				address = configured.Bind
 			}
-			if err := surface.CheckLoopback(address); err != nil {
-				return err
+			if aPortWasCommittedTo(command, configured) {
+				if err := surface.CheckLoopback(address); err != nil {
+					return err
+				}
+			} else {
+				address = ""
 			}
 			if configured.ReachedAt != "" {
 				if err := surface.CheckOpenable(configured.ReachedAt); err != nil {
@@ -82,6 +86,20 @@ func newServeCommand() *cobra.Command {
 
 func inTheForeground() bool {
 	return os.Getenv(servingVariable) != ""
+}
+
+func aPortWasCommittedTo(command *cobra.Command, configured config.Surface) bool {
+	return command.Flags().Changed(addressFlag) || configured.Bind != "" || configured.ReachedAt != ""
+}
+
+func whereToBind(committed string) (string, error) {
+	if committed != "" {
+		if err := surface.CheckFree(committed); err != nil {
+			return "", err
+		}
+		return committed, nil
+	}
+	return surface.FirstFreeIn(surface.WindowAddresses())
 }
 
 func readDocument(command *cobra.Command, from string) ([]byte, error) {
@@ -140,7 +158,8 @@ func start(command *cobra.Command, raw []byte, address string, said stated, sess
 	if err := surface.ForgetRecord(); err != nil {
 		return err
 	}
-	if err := surface.CheckFree(address); err != nil {
+	binding, err := whereToBind(address)
+	if err != nil {
 		return err
 	}
 
@@ -149,7 +168,7 @@ func start(command *cobra.Command, raw []byte, address string, said stated, sess
 		return fmt.Errorf(readingThisBinary, err)
 	}
 
-	spawned := exec.Command(binary, "serve", "--"+addressFlag, address)
+	spawned := exec.Command(binary, "serve", "--"+addressFlag, binding)
 	spawned.Env = append(os.Environ(), servingVariable+"=yes")
 	spawned.Stdin = nil
 	spawned.Stdout = nil

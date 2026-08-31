@@ -105,6 +105,168 @@ func requireTheFixedPortIsFree(t *testing.T) {
 	}
 }
 
+func holdingTheWindowDownTo(t *testing.T, ports int) []string {
+	t.Helper()
+
+	addresses := surface.WindowAddresses()
+	for _, address := range addresses[:ports] {
+		listener, err := net.Listen("tcp", address)
+		if err != nil {
+			t.Skipf("something else already holds %s, so a window walked past a held port cannot be read here: %v", address, err)
+		}
+		t.Cleanup(func() { listener.Close() })
+	}
+	return addresses
+}
+
+func TestAHeldDefaultIsTheNextPortDownRatherThanARefusal(t *testing.T) {
+	addresses := holdingTheWindowDownTo(t, 1)
+
+	held := standing(t)
+	held.bindsWhatIsConfigured()
+
+	printed := held.serve(oneDecisionDocument)
+
+	if bound := held.record().Address; bound != addresses[1] {
+		t.Fatalf("the port at the top of the window is held and the surface bound %q, and the next port down is %q", bound, addresses[1])
+	}
+	if want := thePageAt("http://"+addresses[1], held.opened); printed != want {
+		t.Errorf("agora serve printed %q, and the page it served is at %q", printed, want)
+	}
+
+	answered, err := http.Get(printed)
+	if err != nil {
+		t.Fatalf("reaching the page the surface walked down to: %v", err)
+	}
+	defer answered.Body.Close()
+	if answered.StatusCode != http.StatusOK {
+		t.Errorf("the page at %s answered with %d", printed, answered.StatusCode)
+	}
+}
+
+func TestTheWindowIsWalkedFromTheTopDownRatherThanAtRandom(t *testing.T) {
+	addresses := holdingTheWindowDownTo(t, 3)
+
+	held := standing(t)
+	held.bindsWhatIsConfigured()
+
+	held.serve(oneDecisionDocument)
+	bound := held.record().Address
+
+	if bound != addresses[3] {
+		t.Fatalf("the three ports at the top of the window are held and the surface bound %q, and the highest free one is %q", bound, addresses[3])
+	}
+
+	if _, failures, code := held.run("stop"); code != 0 {
+		t.Fatalf("agora stop exited %d: %s", code, failures)
+	}
+	untilThePortIsFree(t, bound)
+
+	held.serve(oneDecisionDocument)
+	if again := held.record().Address; again != bound {
+		t.Errorf("a surface started again after the first stopped bound %q, and the first bound %q", again, bound)
+	}
+}
+
+func TestAWholeWindowHeldIsARefusalThatNamesTheWindow(t *testing.T) {
+	addresses := holdingTheWindowDownTo(t, len(surface.WindowAddresses()))
+
+	held := standing(t)
+	held.bindsWhatIsConfigured()
+
+	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-")
+	if code == 0 {
+		t.Fatalf("every port of the window is held and a page was served at %q", printed)
+	}
+	for _, named := range []string{addresses[0], addresses[len(addresses)-1]} {
+		if !strings.Contains(failures, named) {
+			t.Errorf("refusing a whole window held does not name %s:\n%s", named, failures)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
+		t.Error("a refused window left a surface behind, and it starts no server")
+	}
+}
+
+func aHeldLoopbackAddress(t *testing.T) string {
+	t.Helper()
+
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("holding a loopback address: %v", err)
+	}
+	t.Cleanup(func() { listener.Close() })
+	return listener.Addr().String()
+}
+
+func (s *surfaced) boundNothing(named string) {
+	s.t.Helper()
+
+	if _, err := os.Stat(filepath.Join(s.surfaceHome(), "surface.json")); err == nil {
+		s.t.Errorf("refusing %s left a surface behind, and it starts no server", named)
+	}
+	for _, address := range surface.WindowAddresses() {
+		if address == named {
+			continue
+		}
+		listener, err := net.Listen("tcp", address)
+		if err != nil {
+			s.t.Errorf("refusing %s bound %s instead of taking no port at all", named, address)
+			continue
+		}
+		listener.Close()
+	}
+}
+
+func TestAStatedAddressThatIsHeldIsRefusedRatherThanWalked(t *testing.T) {
+	taken := aHeldLoopbackAddress(t)
+
+	held := standing(t)
+
+	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", taken)
+	if code == 0 {
+		t.Fatalf("a caller stated the held address %s and a page was served at %q", taken, printed)
+	}
+	if !strings.Contains(failures, taken) {
+		t.Errorf("refusing a stated address that is held does not name it: %s", failures)
+	}
+	held.boundNothing(taken)
+}
+
+func TestAConfiguredBindThatIsHeldIsRefusedRatherThanWalked(t *testing.T) {
+	taken := aHeldLoopbackAddress(t)
+
+	held := standing(t)
+	held.configure("bind: " + taken + "\n")
+	held.bindsWhatIsConfigured()
+
+	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-")
+	if code == 0 {
+		t.Fatalf("an operator stated the held bind %s and a page was served at %q", taken, printed)
+	}
+	if !strings.Contains(failures, taken) {
+		t.Errorf("refusing a configured bind that is held does not name it: %s", failures)
+	}
+	held.boundNothing(taken)
+}
+
+func TestAStatedReachedAtAddressPinsThePortToo(t *testing.T) {
+	addresses := holdingTheWindowDownTo(t, 1)
+
+	held := standing(t)
+	held.configure("reached_at: " + reachedAt + "\n")
+	held.bindsWhatIsConfigured()
+
+	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-")
+	if code == 0 {
+		t.Fatalf("an operator stated where the surface is reached at, the port at the top of the window is held, and a page was served at %q", printed)
+	}
+	if !strings.Contains(failures, addresses[0]) {
+		t.Errorf("refusing a held port an operator committed to does not name it: %s", failures)
+	}
+	held.boundNothing(addresses[0])
+}
+
 func TestTheDefaultBindIsAFixedLoopbackPort(t *testing.T) {
 	requireTheFixedPortIsFree(t)
 
@@ -346,6 +508,32 @@ func TestAPageServedWithNothingStatedSaysWhereItCanBeOpenedFrom(t *testing.T) {
 	defer answered.Body.Close()
 	if answered.StatusCode != http.StatusOK {
 		t.Errorf("the page answered with %d, and what was said is a statement rather than a refusal", answered.StatusCode)
+	}
+}
+
+func TestWhatAPersonIsToldToForwardIsThePortTheWindowWalkedDownTo(t *testing.T) {
+	// scenario: A page served with nothing stated says where it can be opened from
+	addresses := holdingTheWindowDownTo(t, 1)
+
+	held := standing(t)
+	held.bindsWhatIsConfigured()
+
+	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-")
+	if code != 0 {
+		t.Fatalf("agora serve exited %d: %s", code, failures)
+	}
+	if bound := held.record().Address; bound != addresses[1] {
+		t.Fatalf("the port at the top of the window is held and the surface bound %q, and the next port down is %q", bound, addresses[1])
+	}
+
+	if !strings.Contains(failures, addresses[1]) {
+		t.Errorf("what a person is told to forward is %q, and the surface bound %s", failures, addresses[1])
+	}
+	if strings.Contains(failures, addresses[0]) {
+		t.Errorf("what a person is told to forward names %s, and the surface walked past it:\n%s", addresses[0], failures)
+	}
+	if got := strings.TrimSpace(printed); !strings.HasPrefix(got, "http://"+addresses[1]+surface.SessionPrefix) {
+		t.Errorf("agora serve printed %q, and the surface bound %s", got, addresses[1])
 	}
 }
 

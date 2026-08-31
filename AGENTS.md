@@ -145,7 +145,8 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 **The surface**
 
 - It binds a loopback address; nothing widens it, and an address that is not one is refused before any server starts.
-- It binds a fixed port where nothing states one, and a port held by something it does not know of is a refusal rather than a port it takes.
+- It takes the first free port of a fixed window counting down where nothing states one, and a whole window held is a refusal naming it.
+- A port an operator committed to, by flag or by either field of the `surface` block, is bound or refused and never walked past.
 - The surface mints a session, `--session` never brings one into existence, and every page and every route of it is served under a path holding that session.
 - It turns away a request naming a host it did not bind, and every state-changing route carries a token: a session's own answers for that session and no other, and the one minted when the server started answers everywhere.
 - It composes a command and never runs one, the command it hands back is the option's own string, and no command is rendered on the page.

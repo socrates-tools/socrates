@@ -3,13 +3,33 @@ package surface
 import (
 	"net"
 	"net/url"
+	"strconv"
 
 	"github.com/rui-ktei/socrates/internal/refusal"
 )
 
-const DefaultAddress = "127.0.0.1:18018"
+const (
+	windowTopPort  = 18018
+	windowPorts    = 10
+	windowHost     = "127.0.0.1"
+	windowBasePort = windowTopPort - windowPorts + 1
+)
+
+var DefaultAddress = inTheWindow(windowTopPort)
 
 const localhostName = "localhost"
+
+func inTheWindow(port int) string {
+	return net.JoinHostPort(windowHost, strconv.Itoa(port))
+}
+
+func WindowAddresses() []string {
+	addresses := make([]string, 0, windowPorts)
+	for port := windowTopPort; port >= windowBasePort; port-- {
+		addresses = append(addresses, inTheWindow(port))
+	}
+	return addresses
+}
 
 func CheckLoopback(address string) error {
 	host, port, err := net.SplitHostPort(address)
@@ -45,6 +65,15 @@ func CheckFree(address string) error {
 		return refusal.New(portIsHeldByAnother, address)
 	}
 	return listener.Close()
+}
+
+func FirstFreeIn(addresses []string) (string, error) {
+	for _, address := range addresses {
+		if CheckFree(address) == nil {
+			return address, nil
+		}
+	}
+	return "", refusal.New(everyPortInTheWindowIsHeld, addresses[len(addresses)-1], addresses[0])
 }
 
 func CheckOpenable(address string) error {
