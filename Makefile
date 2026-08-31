@@ -42,7 +42,7 @@ verify:
 	$(MAKE) fixtures-diff
 
 test:
-	go test -race ./...
+	go test -race -timeout 30m ./...
 
 lint:
 	@unformatted=$$(gofmt -l .); \

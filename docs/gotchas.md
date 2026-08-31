@@ -184,6 +184,11 @@ Enabling it over the API answers "Advanced security has not been purchased", whi
 The analysis is correct and the schedule is left in place, because code scanning is free for a public repository and the workflow starts reporting the moment this one is public.
 Until then the weekly failure is the reminder, and nothing else in verification depends on it.
 
+**Go's default per-package timeout is 10 minutes, and the end-to-end package outgrew it.**
+The package that drives real binaries also produces a release snapshot, which compiles the releaser and cross-compiles three binaries for four targets.
+On a macOS runner with a cold build cache that lands either side of 10 minutes, so the run failed as `panic: test timed out` in whichever test happened to be under way rather than in the slow one.
+`make test` states its own timeout, and a package that hangs still fails rather than running forever.
+
 **The releaser the `Makefile` pins has to build under the toolchain the module asks for.**
 A verification run sets `GOTOOLCHAIN=local`, so `go run` cannot fetch a newer toolchain for a tool whose own `go.mod` asks for one.
 Locally the switch is silent and the release snapshot succeeds; on a runner the same command fails with "requires go >= 1.27.0 (running go 1.26.7; GOTOOLCHAIN=local)".
