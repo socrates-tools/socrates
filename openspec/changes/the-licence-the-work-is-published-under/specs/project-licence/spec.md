@@ -8,6 +8,10 @@ Those terms SHALL be the MIT licence, and the copyright line SHALL name the hold
 The terms SHALL be stated in that one file.
 No source file SHALL carry a licence header, because a header is a comment and this repository's source carries none, and a header would say on every file what the root file already says once.
 
+What is forbidden is a header stating the work's own terms.
+A notice for a work socrates borrowed is required by the requirement below, and the check SHALL NOT catch one.
+The repository SHALL recognise a borrowed notice by its citing the notice file, because a rule that cannot tell the two apart makes two requirements contradict each other in whichever file has to carry both.
+
 A reader SHALL be able to learn the terms without running anything, reading a second file, or asking.
 
 #### Scenario: The root states the terms
@@ -19,6 +23,11 @@ A reader SHALL be able to learn the terms without running anything, reading a se
 
 - **WHEN** every source file in the repository is read
 - **THEN** none opens with a licence header, and the check that holds this fails when one is added
+
+#### Scenario: A borrowed work's notice is not the header this forbids
+
+- **WHEN** a source file opens with a comment carrying a borrowed work's notice and citing the notice file
+- **THEN** the check passes for it, and still fails for a header stating the work's own terms
 
 ### Requirement: Everything embedded carries the notice its own licence requires
 
@@ -42,6 +51,9 @@ The notice SHALL be a condition of what the binary distributes rather than a des
 ### Requirement: The shipped bundle keeps the notices of what it bundles
 
 The bundler SHALL NOT delete legal comments from the client bundle it produces.
+
+Where a bundled work ships no notice of its own, the notice SHALL be written where the bundler collects it from, so that what the bundler is forbidden from deleting exists to be deleted.
+A setting that preserves notices proves nothing while there is no notice to preserve.
 
 What is asserted SHALL be the bytes that ship rather than the setting that produced them.
 A test on the setting passes for a bundler that was configured correctly and then failed, and the thing the licence attaches to is the artifact, not the configuration.

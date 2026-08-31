@@ -9,7 +9,8 @@ Three things about the current shape decide most of this design.
 So a change to the bundler is a change to a generated file, and both have to move together.
 
 `highlight.js` is the only runtime dependency in `web/package.json` and it is BSD-3-Clause.
-Its notice reaches the bundle only as a legal comment, which is exactly what `none` deletes.
+It ships no legal comment of its own: nothing under its `lib` carries `/*!`, `//!`, `@license`, `@preserve` or the word copyright, so building with `legalComments: 'eof'` produces the same bytes as `none` and carries no notice either way.
+This was measured rather than assumed, and it is why moving the setting is necessary and not sufficient.
 
 The four `web/fonts/*.woff2` files are IBM Plex, under OFL-1.1.
 They are binary, so no comment can live inside them, and the licence's requirement is that the notice accompanies the copy rather than that it be embedded in it.
@@ -51,6 +52,32 @@ esbuild's options put the comments inline where they were, at the end of the fil
 `inline` keeps every comment where it was, which is correct and larger; `eof` collects them at the end and is what a reader auditing the bundle would look for.
 
 The CSS bundle gets the same treatment, and carries nothing today, which is the point of asserting on the shipped bytes rather than on the setting.
+
+### The notice the bundle carries is written in the client source, not in the bundler
+
+Since `highlight.js` ships no legal comment, something has to write the one the bundler carries.
+
+esbuild offers two places.
+A `banner` is inserted verbatim into the output and survives `legalComments: 'none'`, which was measured.
+A `/*!` comment in `web/src/surface.js` is collected at the end of the bundle under `eof` and deleted under `none`, which was also measured.
+
+The comment in the client source is chosen because it is the only one of the two the setting acts on.
+With a banner, `eof` would be a setting nothing in the suite defends: somebody could set it back to `none` and every test would still pass, which is the check nobody has broken on purpose.
+With the comment, the scenario that a bundler deleting notices fails the suite is a scenario a person can actually run, and it fails naming the notice that went missing.
+
+The comment sits at the top of the file that imports `highlight.js`, which is where a reader looking for what the client pulls in already is.
+
+### A borrowed work's notice is not the header the repository forbids
+
+The decision above puts a comment carrying somebody else's copyright line at the top of a source file, which the check from the requirement above would otherwise report.
+
+The two requirements are about different things.
+One forbids restating socrates' own terms on every file, because the root file states them once.
+The other requires a borrowed work's notice to travel with the copy, which means being in the copy.
+
+The check tells them apart by whether the comment cites the notice file.
+A header that states terms and cites nothing is the header that is forbidden; a comment that names a borrowed work and points at `NOTICE` for the text is the notice that is required.
+That rule is mechanical, and it fails in the direction that matters: a licence header pasted on a file cites no notice file and is still reported.
 
 ### The notice file is `NOTICE` and it carries full text, not references
 

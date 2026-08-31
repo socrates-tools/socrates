@@ -186,6 +186,17 @@ Until you do, serving a page says so.
 - **It is not a daemon.** One detached process per round and a directory of files. Nothing to install, nothing to keep running, nothing to restart.
 - **It does not tell the reviewer what you told it about how the change came to be.** Only the change, and optionally the one line of intent you chose to state. The skill says the same thing to the session, because a session that believes such a channel exists will go looking for it.
 
+## The terms
+
+socrates is published under the MIT licence, and `LICENSE` at the root states it in full.
+
+`NOTICE` beside it is the other half: everything a shipped binary carries that socrates did not author, with the licence each is published under and that licence's full text.
+That is the client bundle's third-party libraries and the font faces embedded with it, and the Go modules `cmd/socrates` and `cmd/agora` link in.
+A test fails while anything embedded is not accounted for there, so a new asset cannot arrive without its notice.
+
+The terms are stated in those two files and nowhere else.
+No source file carries a licence header, because a header is a comment and this repository's source carries none.
+
 ## The layers
 
 This repository is built in layers, specified in `openspec/` before they are implemented.

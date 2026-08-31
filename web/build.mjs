@@ -42,7 +42,7 @@ await build({
   outdir: bundle,
   loader: { '.woff2': 'file' },
   assetNames: 'fonts/[name]',
-  legalComments: 'none',
+  legalComments: 'eof',
   logLevel: 'warning',
 })
 

@@ -6,14 +6,17 @@ import (
 	"strings"
 )
 
-//go:embed bundle
-var bundled embed.FS
+const sumFile = "bundle.sum"
 
-//go:embed bundle.sum
-var sum string
+//go:embed bundle bundle.sum
+var embedded embed.FS
+
+func Embedded() fs.FS {
+	return embedded
+}
 
 func Files() fs.FS {
-	held, err := fs.Sub(bundled, "bundle")
+	held, err := fs.Sub(embedded, "bundle")
 	if err != nil {
 		panic(err)
 	}
@@ -21,5 +24,9 @@ func Files() fs.FS {
 }
 
 func Sum() string {
-	return strings.TrimSpace(sum)
+	held, err := fs.ReadFile(embedded, sumFile)
+	if err != nil {
+		panic(err)
+	}
+	return strings.TrimSpace(string(held))
 }
