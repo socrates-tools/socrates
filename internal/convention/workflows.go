@@ -13,6 +13,10 @@ const WorkflowsDirectory = ".github/workflows"
 
 var targetsReachingTheRealCLI = []string{"fixtures", "live-smoke"}
 
+var tagsReachingTheRealCLI = []string{"record", "livesmoke"}
+
+var buildTagsNamed = regexp.MustCompile(`-tags[= ]([A-Za-z0-9_,]+)`)
+
 var credentialsTheRealCLIReads = []string{"ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN"}
 
 const TheEntryPoint = "verify"
@@ -79,6 +83,13 @@ func WorkflowsReachingTheRealCLI(root string) (WorkflowReach, error) {
 		for _, target := range targetsReachingTheRealCLI {
 			if invocationOf(target).Match(content) {
 				reach.Reaching = append(reach.Reaching, fmt.Sprintf("%s runs make %s, which reaches the real CLI", name, target))
+			}
+		}
+		for _, tagged := range buildTagsNamed.FindAllStringSubmatch(string(content), -1) {
+			for _, tag := range strings.Split(tagged[1], ",") {
+				if slices.Contains(tagsReachingTheRealCLI, tag) {
+					reach.Reaching = append(reach.Reaching, fmt.Sprintf("%s compiles the %s tag, which is behind the paths that reach the real CLI", name, tag))
+				}
 			}
 		}
 		for _, credential := range credentialsTheRealCLIReads {

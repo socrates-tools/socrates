@@ -10,6 +10,7 @@ import (
 	"github.com/socrates-devtool/socrates/internal/testing/source"
 )
 
+// scenario: A verification run reaches no reviewer CLI
 func TestNoWorkflowReachesTheRealCLI(t *testing.T) {
 	reach, err := convention.WorkflowsReachingTheRealCLI(source.Root(t))
 	if err != nil {
@@ -80,6 +81,21 @@ func TestAWorkflowNamingTheCredentialIsReported(t *testing.T) {
 	want := []string{"keyed.yml names ANTHROPIC_API_KEY, which is a credential the real CLI reads"}
 	if diff := cmp.Diff(want, reach.Reaching); diff != "" {
 		t.Errorf("what a workflow naming the credential reports differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestAWorkflowCompilingATagThatReachesTheRealCLIIsReported(t *testing.T) {
+	root := t.TempDir()
+	writeWorkflow(t, root, "tagged.yml", "steps:\n  - run: go test -tags livesmoke ./internal/fidelity/\n")
+
+	reach, err := convention.WorkflowsReachingTheRealCLI(root)
+	if err != nil {
+		t.Fatalf("reading a fabricated workflow: %v", err)
+	}
+
+	want := []string{"tagged.yml compiles the livesmoke tag, which is behind the paths that reach the real CLI"}
+	if diff := cmp.Diff(want, reach.Reaching); diff != "" {
+		t.Errorf("what a workflow compiling the live smoke tag reports differs (-want +got):\n%s", diff)
 	}
 }
 

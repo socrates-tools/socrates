@@ -6,13 +6,20 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: verification-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   platforms:
     runs-on: ubuntu-latest
     outputs:
       supported: ${{ steps.stated.outputs.supported }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Read the platforms socrates states it supports
         id: stated
@@ -26,17 +33,22 @@ jobs:
         platform: ${{ fromJSON(needs.platforms.outputs.supported) }}
     runs-on: ${{ matrix.platform.runner }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
 
+      - uses: browser-actions/setup-chrome@48ad923757ca74d66703209fe939badbdf80f2f4 # v2.2.0
+        id: browser
+        with:
+          chrome-version: '152.0.7977.64'
+
       - name: Name the browser that drives the page
         run: |
-          browser="$(command -v google-chrome || command -v chromium || true)"
-          if [ -z "$browser" ]; then
-            echo 'no browser is installed, and the surface page is driven by a real one' >&2
+          browser='${{ steps.browser.outputs.chrome-path }}'
+          if [ ! -x "$browser" ]; then
+            echo 'no browser was installed, and the surface page is driven by a real one' >&2
             exit 1
           fi
           "$browser" --version
@@ -45,7 +57,7 @@ jobs:
       - name: Run every gate a contributor runs
         run: make verify
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version-file: web/.node-version
 
