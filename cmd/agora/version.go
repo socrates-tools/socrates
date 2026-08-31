@@ -9,6 +9,7 @@ import (
 const recordedUncommitted = "yes"
 
 var (
+	version     string
 	commit      string
 	uncommitted string
 )
@@ -29,8 +30,14 @@ func described() string {
 	if commit == "" {
 		return recordedNoCommit
 	}
-	if uncommitted == recordedUncommitted {
-		return fmt.Sprintf(builtFromDirtyTree, commit)
+	if version == "" {
+		if uncommitted == recordedUncommitted {
+			return fmt.Sprintf(builtBetweenReleasesFromDirtyTree, commit)
+		}
+		return fmt.Sprintf(builtBetweenReleases, commit)
 	}
-	return fmt.Sprintf(builtFrom, commit)
+	if uncommitted == recordedUncommitted {
+		return fmt.Sprintf(builtFromDirtyTree, version, commit)
+	}
+	return fmt.Sprintf(builtFrom, version, commit)
 }

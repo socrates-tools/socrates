@@ -8,7 +8,7 @@ const (
 	pollShort    = "Wait for the person to send on one page, and print what they answered"
 	endShort     = "Close the exchange one page is holding"
 	stopShort    = "Shut the surface down, taking every page with it, and free the port"
-	versionShort = "Say which build this is, by the commit it was built from"
+	versionShort = "Say which release this is, and which commit it was built from"
 
 	documentUsage = "the document to serve, or - to read it from standard input"
 	addressUsage  = "the loopback address to bind, such as 127.0.0.1:0"
@@ -29,7 +29,9 @@ const (
 	nobodyAnswered       = "nobody answered"
 	writingTheAnswer     = "writing out what came back: %w"
 
-	builtFrom          = "agora %s"
-	builtFromDirtyTree = "agora %s, built from a working tree with uncommitted changes"
-	recordedNoCommit   = "agora recorded no commit when it was linked, so which build this is cannot be read from the binary: build it with make install"
+	builtFrom                         = "agora %s, built from %s"
+	builtFromDirtyTree                = "agora %s, built from %s, a working tree with uncommitted changes"
+	builtBetweenReleases              = "agora, a development build from %s, which is no released version"
+	builtBetweenReleasesFromDirtyTree = "agora, a development build from %s, a working tree with uncommitted changes, which is no released version"
+	recordedNoCommit                  = "agora recorded no commit when it was linked, so which build this is cannot be read from the binary: build it with make install"
 )

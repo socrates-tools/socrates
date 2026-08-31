@@ -13,7 +13,7 @@ const (
 	logsShort      = "Print what a review recorded, for a person to read afterwards"
 	cancelShort    = "Stop a review and say that nothing was decided"
 	skillShort     = "Install the skill that teaches a coding session to drive a review"
-	versionShort   = "Say which build this is, by the commit it was built from"
+	versionShort   = "Say which release this is, and which commit it was built from"
 	superviseShort = "Conduct a review that socrates review started"
 
 	intentUsage   = "what the person asked for, in their words"

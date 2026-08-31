@@ -84,6 +84,8 @@ Continuous integration runs that same command on every supported platform, so pa
 `make corpus-outcomes` states which outcomes only fixtures reach and never fails for one; rewrite its recorded distribution with `scripts/corpus-outcomes -write` once a move is deliberate.
 `make fixtures-diff` compares the simulator against the recordings and reaches nothing.
 
+`make release` publishes what a tag names, gated on the verification matrix, and `make release-snapshot` produces the same archives locally without publishing anything.
+
 These two reach the real CLI, and nothing in continuous integration runs them:
 
 ```sh
@@ -167,6 +169,15 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - A review is refused where this build cannot reap by process group, before a snapshot is taken and before a reviewer is spawned, naming the missing guarantee and the same way forward the README names.
 - A command that neither spawns nor reaps is not refused there, so a finished run stays readable.
 - `platforms.json` is generated from the statement, and a platform on one side and not the other fails the suite in both directions.
+
+**What a release is**
+
+- A binary reports the release it was linked from beside the commit stamp, the version is set by the linker from the tag rather than written in the source, and a build that is not at a tag says it is a development build instead of borrowing the nearest one.
+- What a release builds is the supported set and no others, and a target on one side and not the other fails the suite.
+- One archive carries the tool under both of its names, the second binary, `LICENSE` and `NOTICE`, and the two names come from one build so they cannot be at different commits.
+- Every job that publishes needs the job that ran the verification matrix, so a tag on a commit whose verification did not pass produces nothing.
+- A release carries a checksum, a keyless signature over the checksums, a bill of materials and build provenance, and nothing in the release path reaches the real CLI.
+- Each release is recorded in `CHANGELOG.md`, written by hand, in terms of what it means to somebody who has the previous one.
 
 **The terms the work is published under**
 

@@ -3,15 +3,19 @@ SURFACE := bin/agora
 MODULE := github.com/socrates-devtool/socrates
 SHORT_NAME := scrat
 LINTER := github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
+RELEASER := github.com/goreleaser/goreleaser/v2@v2.18.0
 
 INSTALL_DIR = $(firstword $(shell go env GOBIN) $(shell go env GOPATH)/bin)
 
 COMMIT = $(shell git rev-parse --short=7 HEAD 2>/dev/null)
 UNCOMMITTED = $(if $(shell git status --porcelain 2>/dev/null),yes,)
-STAMP = -X $(MODULE)/internal/version.commit=$(COMMIT) -X $(MODULE)/internal/version.uncommitted=$(UNCOMMITTED)
-SURFACE_STAMP = -X main.commit=$(COMMIT) -X main.uncommitted=$(UNCOMMITTED)
+VERSION = $(shell git describe --tags --exact-match 2>/dev/null)
+STAMP = -X $(MODULE)/internal/version.version=$(VERSION) -X $(MODULE)/internal/version.commit=$(COMMIT) -X $(MODULE)/internal/version.uncommitted=$(UNCOMMITTED)
+SURFACE_STAMP = -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.uncommitted=$(UNCOMMITTED)
 
-.PHONY: build install verify test lint fmt skill assets platforms scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
+TARGETS := build install release release-snapshot verify test lint fmt skill assets platforms scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
+
+.PHONY: $(TARGETS)
 
 build:
 	go build -ldflags '$(STAMP)' -o $(BINARY) ./cmd/socrates
@@ -22,6 +26,12 @@ install:
 	ln -sf socrates $(INSTALL_DIR)/$(SHORT_NAME)
 	$(INSTALL_DIR)/socrates skill
 	go install -ldflags '$(SURFACE_STAMP)' ./cmd/agora
+
+release:
+	go run $(RELEASER) release --clean
+
+release-snapshot:
+	go run $(RELEASER) release --snapshot --clean --skip=publish,sign,sbom
 
 verify:
 	$(MAKE) lint

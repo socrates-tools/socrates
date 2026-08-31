@@ -1,0 +1,111 @@
+version: 2
+
+project_name: socrates
+
+builds:
+  - id: socrates
+    main: ./cmd/socrates
+    binary: socrates
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -X github.com/socrates-devtool/socrates/internal/version.version={{ if .IsSnapshot }}{{ else }}{{ .Tag }}{{ end }}
+      - -X github.com/socrates-devtool/socrates/internal/version.commit={{ .ShortCommit }}
+
+  - id: scrat
+    main: ./cmd/socrates
+    binary: scrat
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -X github.com/socrates-devtool/socrates/internal/version.version={{ if .IsSnapshot }}{{ else }}{{ .Tag }}{{ end }}
+      - -X github.com/socrates-devtool/socrates/internal/version.commit={{ .ShortCommit }}
+
+  - id: agora
+    main: ./cmd/agora
+    binary: agora
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -X main.version={{ if .IsSnapshot }}{{ else }}{{ .Tag }}{{ end }}
+      - -X main.commit={{ .ShortCommit }}
+
+archives:
+  - id: socrates
+    ids:
+      - socrates
+      - scrat
+      - agora
+    formats:
+      - tar.gz
+    name_template: socrates_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    files:
+      - src: LICENSE
+      - src: NOTICE
+
+checksum:
+  name_template: checksums.txt
+
+sboms:
+  - id: archives
+    artifacts: archive
+
+signs:
+  - id: checksums
+    cmd: cosign
+    signature: ${artifact}.sig
+    certificate: ${artifact}.pem
+    args:
+      - sign-blob
+      - --yes
+      - --output-signature=${signature}
+      - --output-certificate=${certificate}
+      - ${artifact}
+    artifacts: checksum
+    output: true
+
+snapshot:
+  version_template: '{{ .ShortCommit }}-snapshot'
+
+changelog:
+  disable: true
+
+release:
+  draft: false
+  prerelease: auto
+  footer: |
+    Verify a download against this repository without trusting whoever pushed the tag:
+
+    ```sh
+    sha256sum --check --ignore-missing checksums.txt
+    cosign verify-blob checksums.txt \
+      --certificate checksums.txt.pem \
+      --signature checksums.txt.sig \
+      --certificate-identity-regexp 'https://github.com/socrates-devtool/socrates/.*' \
+      --certificate-oidc-issuer https://token.actions.githubusercontent.com
+    gh attestation verify socrates_*.tar.gz --repo socrates-devtool/socrates
+    ```

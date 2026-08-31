@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -12,7 +13,12 @@ import (
 	"github.com/socrates-devtool/socrates/internal/testing/source"
 )
 
-const saysUncommitted = "uncommitted changes"
+const (
+	saysUncommitted = "uncommitted changes"
+	aReleaseTag     = "v9.9.9"
+)
+
+var aSemanticVersion = regexp.MustCompile(`v[0-9]+\.[0-9]+\.[0-9]+`)
 
 func TestTheBuildSaysWhichCommitItCameFrom(t *testing.T) {
 	root := requireMake(t)
@@ -58,6 +64,44 @@ func TestABuildThatRecordedNoCommitSaysSo(t *testing.T) {
 	}
 	if strings.Contains(printed, gitSaid(t, root, "rev-parse", "--short=7", "HEAD")) {
 		t.Errorf("a binary linked without the stamp named a commit anyway: %q", printed)
+	}
+}
+
+func TestATaggedBuildReportsItsVersion(t *testing.T) {
+	root := requireMake(t)
+	tagged := aCopyOfTheSource(t, root)
+	gitSaid(t, tagged, "tag", aReleaseTag)
+
+	printed := versionOf(t, made(t, tagged))
+	if !strings.Contains(printed, aReleaseTag) {
+		t.Errorf("a binary built from a commit tagged %s reports %q, which names no release", aReleaseTag, printed)
+	}
+	if commit := gitSaid(t, tagged, "rev-parse", "--short=7", "HEAD"); !strings.Contains(printed, commit) {
+		t.Errorf("a binary built from a tagged commit stopped naming the commit %s: %q", commit, printed)
+	}
+	if strings.Contains(printed, saysUncommitted) {
+		t.Errorf("a binary built from a clean tagged tree says the tree held uncommitted changes: %q", printed)
+	}
+}
+
+func TestAnUntaggedBuildDoesNotClaimAVersion(t *testing.T) {
+	root := requireMake(t)
+	untagged := aCopyOfTheSource(t, root)
+	gitSaid(t, untagged, "tag", aReleaseTag)
+	gitSaid(t, untagged, "-c", "user.name=A Person", "-c", "user.email=person@example.com", "commit", "--quiet", "--allow-empty", "-m", "a commit past the tag")
+
+	printed := versionOf(t, made(t, untagged))
+	if !strings.Contains(printed, "development build") {
+		t.Errorf("a binary built one commit past %s reports %q, which does not say it is a development build", aReleaseTag, printed)
+	}
+	if strings.Contains(printed, aReleaseTag) {
+		t.Errorf("a binary built one commit past %s borrowed that tag: %q", aReleaseTag, printed)
+	}
+	if named := aSemanticVersion.FindString(printed); named != "" {
+		t.Errorf("a binary built from no tag names %s as its version: %q", named, printed)
+	}
+	if commit := gitSaid(t, untagged, "rev-parse", "--short=7", "HEAD"); !strings.Contains(printed, commit) {
+		t.Errorf("a binary built from no tag stopped naming the commit %s: %q", commit, printed)
 	}
 }
 
@@ -124,10 +168,52 @@ func gitSaid(t *testing.T, root string, arguments ...string) string {
 	command := exec.Command("git", arguments...)
 	command.Dir = root
 
-	var out bytes.Buffer
+	var out, failures bytes.Buffer
 	command.Stdout = &out
+	command.Stderr = &failures
 	if err := command.Run(); err != nil {
-		t.Fatalf("git %s in %s: %v", strings.Join(arguments, " "), root, err)
+		t.Fatalf("git %s in %s: %v: %s", strings.Join(arguments, " "), root, err, failures.String())
 	}
 	return strings.TrimSpace(out.String())
+}
+
+func aCopyOfTheSource(t *testing.T, root string) string {
+	t.Helper()
+
+	directory := t.TempDir()
+	listed := gitSaid(t, root, "ls-files", "-z", "--cached", "--others", "--exclude-standard")
+
+	copied := 0
+	for relative := range strings.SplitSeq(listed, "\x00") {
+		if relative == "" {
+			continue
+		}
+
+		from := filepath.Join(root, filepath.FromSlash(relative))
+		held, err := os.ReadFile(from)
+		if err != nil {
+			continue
+		}
+		mode, err := os.Stat(from)
+		if err != nil {
+			t.Fatalf("reading the mode of %s: %v", relative, err)
+		}
+
+		to := filepath.Join(directory, filepath.FromSlash(relative))
+		if err := os.MkdirAll(filepath.Dir(to), 0o755); err != nil {
+			t.Fatalf("making room for %s: %v", relative, err)
+		}
+		if err := os.WriteFile(to, held, mode.Mode().Perm()); err != nil {
+			t.Fatalf("writing %s: %v", relative, err)
+		}
+		copied++
+	}
+	if copied == 0 {
+		t.Fatalf("nothing was copied out of %s, so what is built there is not this source", root)
+	}
+
+	gitSaid(t, directory, "-c", "init.defaultBranch=main", "init", "--quiet")
+	gitSaid(t, directory, "add", "--all")
+	gitSaid(t, directory, "-c", "user.name=A Person", "-c", "user.email=person@example.com", "commit", "--quiet", "-m", "the committed tree")
+	return directory
 }

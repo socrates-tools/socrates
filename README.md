@@ -13,10 +13,42 @@ The asymmetry is the whole point.
 The author has the context and does the patching.
 The reviewer has independence and has written none of it.
 
+## Installing it
+
+socrates needs `git` and the `claude` CLI 2.1.169 or later on your `PATH`.
+That floor is where `--safe-mode` arrived, which is the one mechanism keeping your machine's customisations out of a reviewer, and socrates keeps no fallback for a CLI that does not know it.
+
+A release archive is the shortest way in.
+Each one carries `socrates`, `scrat` and `agora`, along with `LICENSE` and `NOTICE`, so extracting one gives you what installing from source gives you.
+
+```sh
+tag=$(gh release view --repo socrates-devtool/socrates --json tagName --jq .tagName)
+gh release download "$tag" --repo socrates-devtool/socrates --pattern "socrates_*_$(uname -s | tr 'A-Z' 'a-z')_*.tar.gz" --pattern checksums.txt
+sha256sum --check --ignore-missing checksums.txt
+tar -xzf socrates_*.tar.gz -C ~/.local/bin socrates scrat agora
+socrates skill
+```
+
+Check the download against this repository rather than against whoever pushed the tag.
+The checksums carry a keyless signature, and every archive carries build provenance saying which workflow and which commit produced it:
+
+```sh
+gh release download "$tag" --repo socrates-devtool/socrates --pattern 'checksums.txt.*'
+cosign verify-blob checksums.txt \
+  --certificate checksums.txt.pem \
+  --signature checksums.txt.sig \
+  --certificate-identity-regexp 'https://github.com/socrates-devtool/socrates/.*' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+gh attestation verify socrates_*.tar.gz --repo socrates-devtool/socrates
+```
+
+`go install github.com/socrates-devtool/socrates/cmd/socrates@latest` works too, and gives you `socrates` alone: no `scrat`, no `agora`, and no version stamp, because nothing links one in.
+
+`CHANGELOG.md` says what each release means to somebody who has the previous one.
+
 ## The first run
 
-socrates needs Go 1.26 or later, `git`, and the `claude` CLI 2.1.169 or later on your `PATH`.
-That floor is where `--safe-mode` arrived, which is the one mechanism keeping your machine's customisations out of a reviewer, and socrates keeps no fallback for a CLI that does not know it.
+Building from source needs Go 1.26 or later:
 
 ```sh
 make build                     # bin/socrates
@@ -24,26 +56,7 @@ bin/socrates review --intent "add the parser I asked for"
 ```
 
 `make install` puts it on your `PATH` under both of its names: `socrates`, and `scrat` for the short one.
-They are one binary, so the two can never be at different commits, and `socrates version` says which commit that is.
-
-`review` prints the run identifier and returns while the review runs:
-
-```
-20260819T101500-ab12cd34
-follow it with: socrates status 20260819T101500-ab12cd34
-```
-
-Then either poll it or wait for it:
-
-```sh
-socrates status                   # a few lines, and an exit code you can branch on
-socrates findings                 # what it found, as socrates classified it
-socrates findings --json          # the same, with every effective action resolved
-socrates review --wait            # block until the verdict, and exit with its code
-socrates cancel                   # stop a review and say that nothing was decided
-```
-
-Naming no run means the most recent run for the repository you are standing in.
+They are one binary, so the two can never be at different commits, and `socrates version` says which release that is and which commit it was built from.
 
 ## The platforms it holds on
 
