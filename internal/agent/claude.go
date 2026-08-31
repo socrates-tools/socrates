@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rui-ktei/socrates/internal/process"
-	"github.com/rui-ktei/socrates/internal/runlog"
+	"github.com/socrates-devtool/socrates/internal/process"
+	"github.com/socrates-devtool/socrates/internal/runlog"
 )
 
 const (

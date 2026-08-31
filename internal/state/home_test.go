@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rui-ktei/socrates/internal/refusal"
-	"github.com/rui-ktei/socrates/internal/state"
+	"github.com/socrates-devtool/socrates/internal/refusal"
+	"github.com/socrates-devtool/socrates/internal/state"
 )
 
 func TestTheSurfacesDirectoryIsUnderTheStatedHome(t *testing.T) {

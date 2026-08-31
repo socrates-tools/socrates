@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/rui-ktei/socrates/internal/follow"
-	"github.com/rui-ktei/socrates/internal/presentation"
-	"github.com/rui-ktei/socrates/internal/report"
-	"github.com/rui-ktei/socrates/internal/terminal"
+	"github.com/socrates-devtool/socrates/internal/follow"
+	"github.com/socrates-devtool/socrates/internal/presentation"
+	"github.com/socrates-devtool/socrates/internal/report"
+	"github.com/socrates-devtool/socrates/internal/terminal"
 	"github.com/spf13/cobra"
 )
 

@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rui-ktei/socrates/internal/exit"
-	"github.com/rui-ktei/socrates/internal/runstate"
-	"github.com/rui-ktei/socrates/internal/state"
-	"github.com/rui-ktei/socrates/internal/surface"
-	"github.com/rui-ktei/socrates/internal/testing/harness"
+	"github.com/socrates-devtool/socrates/internal/exit"
+	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/socrates-devtool/socrates/internal/state"
+	"github.com/socrates-devtool/socrates/internal/surface"
+	"github.com/socrates-devtool/socrates/internal/testing/harness"
 )
 
 func TestOneVariableMovesEverything(t *testing.T) {

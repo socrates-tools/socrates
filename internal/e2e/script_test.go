@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/rogpeppe/go-internal/testscript"
-	"github.com/rui-ktei/socrates/internal/claudesim"
-	"github.com/rui-ktei/socrates/internal/state"
-	"github.com/rui-ktei/socrates/internal/testing/source"
+	"github.com/socrates-devtool/socrates/internal/claudesim"
+	"github.com/socrates-devtool/socrates/internal/state"
+	"github.com/socrates-devtool/socrates/internal/testing/source"
 )
 
 func TestTheCommandLineBehavesAsItsScriptsSay(t *testing.T) {

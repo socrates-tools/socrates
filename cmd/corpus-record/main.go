@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/rui-ktei/socrates/internal/corpus"
-	"github.com/rui-ktei/socrates/internal/corpus/runs"
-	"github.com/rui-ktei/socrates/internal/runstore"
-	"github.com/rui-ktei/socrates/internal/state"
+	"github.com/socrates-devtool/socrates/internal/corpus"
+	"github.com/socrates-devtool/socrates/internal/corpus/runs"
+	"github.com/socrates-devtool/socrates/internal/runstore"
+	"github.com/socrates-devtool/socrates/internal/state"
 )
 
 const dateLayout = "2006-01-02"

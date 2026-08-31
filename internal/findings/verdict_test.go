@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rui-ktei/socrates/internal/findings"
-	"github.com/rui-ktei/socrates/internal/runstate"
-	"github.com/rui-ktei/socrates/internal/testing/source"
+	"github.com/socrates-devtool/socrates/internal/findings"
+	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/socrates-devtool/socrates/internal/testing/source"
 )
 
 func TestNoFindingsAtAll(t *testing.T) {

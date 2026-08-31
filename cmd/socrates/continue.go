@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/rui-ktei/socrates/internal/reviewer"
+	"github.com/socrates-devtool/socrates/internal/reviewer"
 	"github.com/spf13/cobra"
 )
 

@@ -1,6 +1,6 @@
 BINARY := bin/socrates
 SURFACE := bin/agora
-MODULE := github.com/rui-ktei/socrates
+MODULE := github.com/socrates-devtool/socrates
 SHORT_NAME := scrat
 
 INSTALL_DIR = $(firstword $(shell go env GOBIN) $(shell go env GOPATH)/bin)

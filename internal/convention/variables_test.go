@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/rui-ktei/socrates/internal/convention"
-	"github.com/rui-ktei/socrates/internal/testing/source"
+	"github.com/socrates-devtool/socrates/internal/convention"
+	"github.com/socrates-devtool/socrates/internal/testing/source"
 )
 
 func TestNoUserFacingStringNamesAVariableTheBinariesDoNotRead(t *testing.T) {

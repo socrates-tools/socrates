@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/rui-ktei/socrates/internal/runlog"
+	"github.com/socrates-devtool/socrates/internal/runlog"
 )
 
 const shortened = 7

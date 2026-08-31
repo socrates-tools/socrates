@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rui-ktei/socrates/internal/coverage"
+	"github.com/socrates-devtool/socrates/internal/coverage"
 )
 
 const specification = `## ADDED Requirements

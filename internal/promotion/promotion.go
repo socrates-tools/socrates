@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/rui-ktei/socrates/internal/coverage"
+	"github.com/socrates-devtool/socrates/internal/coverage"
 )
 
 type Condition string

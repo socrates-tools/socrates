@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rui-ktei/socrates/internal/coverage"
+	"github.com/socrates-devtool/socrates/internal/coverage"
 )
 
 func main() {

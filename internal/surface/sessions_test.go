@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rui-ktei/socrates/internal/refusal"
-	"github.com/rui-ktei/socrates/internal/surface"
+	"github.com/socrates-devtool/socrates/internal/refusal"
+	"github.com/socrates-devtool/socrates/internal/surface"
 )
 
 func TestASessionTheSurfaceNeverMintedIsRefused(t *testing.T) {

@@ -1,6 +1,6 @@
 package fidelity
 
-import "github.com/rui-ktei/socrates/internal/findings"
+import "github.com/socrates-devtool/socrates/internal/findings"
 
 type Request struct {
 	Name   string

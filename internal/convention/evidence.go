@@ -15,7 +15,9 @@ import (
 var ContractsTestsRead = map[string]string{
 	filepath.Join("internal", "agent", "boundary_test.go"):        "the rule that one package alone names the vendor's binary, which is a structural invariant of this module rather than a claim about behaviour",
 	filepath.Join("internal", "claudesim", "failure_test.go"):     "the file the simulator wrote into a temporary directory, which is the observable side effect that scenario asks for",
+	filepath.Join("internal", "convention", "account_test.go"):    "the account this project answers to, where the source is the subject of the check and not a proxy for anything else",
 	filepath.Join("internal", "convention", "comments_test.go"):   "this repository's no-commentary convention, where the source is the subject of the check and not a proxy for anything else",
+	filepath.Join("internal", "convention", "context_test.go"):    "the normative context itself, which is a document of this repository rather than a proxy for behaviour",
 	filepath.Join("internal", "convention", "evidence_test.go"):   "this convention itself, which is a property of the test suite",
 	filepath.Join("internal", "convention", "ignorance_test.go"):  "the rule that the surface names nothing of the other tool, which is a property of this repository's source rather than a proxy for behaviour",
 	filepath.Join("internal", "convention", "palette_test.go"):    "the rule that the page paints from one stated palette, which is a property of this repository's source rather than a proxy for behaviour",

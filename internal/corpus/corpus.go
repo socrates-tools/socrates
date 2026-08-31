@@ -11,10 +11,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/rui-ktei/socrates/internal/findings"
+	"github.com/socrates-devtool/socrates/internal/findings"
 )
 
-const ModulePath = "github.com/rui-ktei/socrates"
+const ModulePath = "github.com/socrates-devtool/socrates"
 
 const Directory = "internal/corpus/answers"
 

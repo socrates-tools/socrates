@@ -12,15 +12,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rui-ktei/socrates/internal/process"
-	"github.com/rui-ktei/socrates/internal/runlog"
-	"github.com/rui-ktei/socrates/internal/runstate"
-	"github.com/rui-ktei/socrates/internal/runstore"
-	"github.com/rui-ktei/socrates/internal/snapshot"
-	"github.com/rui-ktei/socrates/internal/state"
-	"github.com/rui-ktei/socrates/internal/testing/gitrepo"
-	"github.com/rui-ktei/socrates/internal/testing/simulator"
-	"github.com/rui-ktei/socrates/internal/testing/source"
+	"github.com/socrates-devtool/socrates/internal/process"
+	"github.com/socrates-devtool/socrates/internal/runlog"
+	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/socrates-devtool/socrates/internal/runstore"
+	"github.com/socrates-devtool/socrates/internal/snapshot"
+	"github.com/socrates-devtool/socrates/internal/state"
+	"github.com/socrates-devtool/socrates/internal/testing/gitrepo"
+	"github.com/socrates-devtool/socrates/internal/testing/simulator"
+	"github.com/socrates-devtool/socrates/internal/testing/source"
 )
 
 const (

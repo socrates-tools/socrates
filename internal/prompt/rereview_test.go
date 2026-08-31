@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rui-ktei/socrates/internal/dialogue"
-	"github.com/rui-ktei/socrates/internal/findings"
+	"github.com/socrates-devtool/socrates/internal/dialogue"
+	"github.com/socrates-devtool/socrates/internal/findings"
 )
 
 func secondRound() Request {

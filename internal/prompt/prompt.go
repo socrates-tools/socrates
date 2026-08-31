@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/rui-ktei/socrates/internal/dialogue"
-	"github.com/rui-ktei/socrates/internal/findings"
-	"github.com/rui-ktei/socrates/internal/hygiene"
-	"github.com/rui-ktei/socrates/internal/testquality"
+	"github.com/socrates-devtool/socrates/internal/dialogue"
+	"github.com/socrates-devtool/socrates/internal/findings"
+	"github.com/socrates-devtool/socrates/internal/hygiene"
+	"github.com/socrates-devtool/socrates/internal/testquality"
 )
 
 const DefaultCeiling = 128 << 10

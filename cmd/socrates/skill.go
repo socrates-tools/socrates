@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/rui-ktei/socrates/internal/skill"
+	"github.com/socrates-devtool/socrates/internal/skill"
 	"github.com/spf13/cobra"
 )
 

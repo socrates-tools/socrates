@@ -2,19 +2,19 @@ schema: spec-driven
 
 context: |
   socrates is a Go tool that puts an independent reviewer in front of unreviewed
-  local changes. The design document it implements is the artifact
-  `Socrates` (claude.ai artifact 8ae5e7eb-710f-4bf9-849c-a5947e0c78a0), which is
-  an audit of which `no-mistakes` mechanisms carry across, adapt, or stay behind.
-  Everything normative from it is carried into `openspec/`; where the two
-  disagree, `openspec/` wins, because the design document is a snapshot of one
-  afternoon's reasoning and this directory is what implementation follows.
+  local changes. `openspec/` is the sole normative source for its design:
+  `openspec/specs` for what is required and why, and the design documents of the
+  archived changes for the decisions behind it. Nothing outside this repository
+  is normative, and a reader who has only this repository has all of it.
 
-  The binary is `scrat`. The project is `socrates`.
+  The binary is `socrates`, and `scrat` is a second name for it that `make
+  install` puts beside it. The project is `socrates`. `agora` is a second and
+  separate program in the same repository.
 
   ## What socrates is
 
   Your main coding session implements something. You now have unreviewed local
-  changes. You run `scrat review`. socrates freezes the working tree into a
+  changes. You run `socrates review`. socrates freezes the working tree into a
   commit nothing can move, spawns a detached reviewer session against that
   snapshot, and waits. The reviewer returns structured findings. Your main
   session, which still holds the whole implementation context, applies the
@@ -55,8 +55,9 @@ context: |
 
   ## Architecture, already decided
 
-  - **One Go binary**, `scrat`, built from `cmd/scrat`. cobra for the command
-    surface. Go 1.25 or later, because `testing/synctest` is stable there and the
+  - **One Go binary for the review**, `socrates`, built from `cmd/socrates` and
+    installed under the second name `scrat`. cobra for the command surface. Go
+    1.25 or later, because `testing/synctest` is stable there and the
     time-dependent parts are tested with it.
   - **Run state is a directory of files, not a database.** One directory per run
     under the user's state directory, holding one subdirectory per round, and a
@@ -81,7 +82,7 @@ context: |
     exploration turns; above it the reviewer gets the changed-file list and reads
     for itself. One knob, honest at both ends.
   - **No TUI, no web portal, no multiplexer integration.** The reviewer writes a
-    structured log and `scrat` is the only way to look at it. That keeps socrates
+    structured log and `socrates` is the only way to look at it. That keeps it
     portable to a plain terminal and to the VS Code integrated terminal by
     construction, and testable with no terminal at all.
 
@@ -137,7 +138,7 @@ context: |
 
   The weighting is charon's, and it is deliberate rather than a compromise.
 
-  - **Local end to end is the primary suite.** A run drives the real `scrat`
+  - **Local end to end is the primary suite.** A run drives the real `socrates`
     binary against a real temporary git repository, doing real snapshotting, real
     process spawning and real file layout. Exactly three things are substituted:
     the coding agent (a simulator binary), the clock (`testing/synctest`) and
@@ -210,7 +211,7 @@ context: |
   3. `a-rejection-is-a-claim`: the dialogue on the core. Rounds, written
      rebuttals, the round cap, and what escalates immediately.
   4. `the-loop-an-agent-can-drive`: the skill on the dialogue. The generated
-     `/scrat` skill that teaches a session the loop layer 3 made possible.
+     `/socrates` skill that teaches a session the loop layer 3 made possible.
 
   Layers 2 and 3 are independent of each other and both depend on 1. Layer 4
   depends on 3.

@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rui-ktei/socrates/internal/findings"
-	"github.com/rui-ktei/socrates/internal/process"
-	"github.com/rui-ktei/socrates/internal/runstate"
-	"github.com/rui-ktei/socrates/internal/testing/harness"
+	"github.com/socrates-devtool/socrates/internal/findings"
+	"github.com/socrates-devtool/socrates/internal/process"
+	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/socrates-devtool/socrates/internal/testing/harness"
 )
 
 func TestAMissingFindingsDocumentIsAFailure(t *testing.T) {

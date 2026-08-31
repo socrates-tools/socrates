@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rui-ktei/socrates/internal/corpus"
+	"github.com/socrates-devtool/socrates/internal/corpus"
 )
 
 const ModulePath = corpus.ModulePath

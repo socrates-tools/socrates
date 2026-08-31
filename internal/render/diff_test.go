@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rui-ktei/socrates/internal/document"
-	"github.com/rui-ktei/socrates/internal/render"
+	"github.com/socrates-devtool/socrates/internal/document"
+	"github.com/socrates-devtool/socrates/internal/render"
 	"golang.org/x/net/html"
 )
 

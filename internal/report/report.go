@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/rui-ktei/socrates/internal/dialogue"
-	"github.com/rui-ktei/socrates/internal/exit"
-	"github.com/rui-ktei/socrates/internal/findings"
-	"github.com/rui-ktei/socrates/internal/runstate"
-	"github.com/rui-ktei/socrates/internal/runstore"
+	"github.com/socrates-devtool/socrates/internal/dialogue"
+	"github.com/socrates-devtool/socrates/internal/exit"
+	"github.com/socrates-devtool/socrates/internal/findings"
+	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/socrates-devtool/socrates/internal/runstore"
 )
 
 type Counts struct {

@@ -1,6 +1,6 @@
 ## Why
 
-The module is `github.com/rui-ktei/socrates`, and the project is moving to an organisation, `github.com/socrates-devtool`.
+The module is published under the author's personal account, and the project is moving to an organisation, `github.com/socrates-devtool`.
 For a Go project the module path is not metadata: it is the import path in 448 places across 181 files, it is the address `go install` resolves, and it is what `Makefile` stamps into the build through `MODULE`.
 A project published under one account and importable only under another is a project whose first instruction to a stranger is wrong.
 

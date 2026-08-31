@@ -6,8 +6,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/rui-ktei/socrates/internal/corpus/outcomes"
-	"github.com/rui-ktei/socrates/internal/runstate"
+	"github.com/socrates-devtool/socrates/internal/corpus/outcomes"
+	"github.com/socrates-devtool/socrates/internal/runstate"
 )
 
 func TestNamingCountsTheTestsThatNameAnOutcome(t *testing.T) {

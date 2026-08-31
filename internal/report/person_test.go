@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rui-ktei/socrates/internal/report"
-	"github.com/rui-ktei/socrates/internal/runstate"
+	"github.com/socrates-devtool/socrates/internal/report"
+	"github.com/socrates-devtool/socrates/internal/runstate"
 )
 
 const beyondAnsweringDocument = `{

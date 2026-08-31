@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/rui-ktei/socrates/internal/refusal"
+	"github.com/socrates-devtool/socrates/internal/refusal"
 )
 
 const (

@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rui-ktei/socrates/internal/corpus"
-	"github.com/rui-ktei/socrates/internal/findings"
-	"github.com/rui-ktei/socrates/internal/runstate"
-	"github.com/rui-ktei/socrates/internal/testing/harness"
+	"github.com/socrates-devtool/socrates/internal/corpus"
+	"github.com/socrates-devtool/socrates/internal/findings"
+	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/socrates-devtool/socrates/internal/testing/harness"
 )
 
 func TestTheCleanJourney(t *testing.T) {

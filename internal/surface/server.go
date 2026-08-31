@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rui-ktei/socrates/internal/assets"
-	"github.com/rui-ktei/socrates/internal/document"
-	"github.com/rui-ktei/socrates/internal/refusal"
-	"github.com/rui-ktei/socrates/internal/render"
+	"github.com/socrates-devtool/socrates/internal/assets"
+	"github.com/socrates-devtool/socrates/internal/document"
+	"github.com/socrates-devtool/socrates/internal/refusal"
+	"github.com/socrates-devtool/socrates/internal/render"
 )
 
 const (

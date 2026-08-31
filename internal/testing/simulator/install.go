@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rui-ktei/socrates/internal/claudesim"
-	"github.com/rui-ktei/socrates/internal/testing/source"
+	"github.com/socrates-devtool/socrates/internal/claudesim"
+	"github.com/socrates-devtool/socrates/internal/testing/source"
 )
 
 const invokedAs = "claude"

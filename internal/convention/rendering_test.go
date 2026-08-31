@@ -4,11 +4,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/rui-ktei/socrates/internal/agent"
-	"github.com/rui-ktei/socrates/internal/convention"
-	"github.com/rui-ktei/socrates/internal/reviewer"
-	"github.com/rui-ktei/socrates/internal/runlog"
-	"github.com/rui-ktei/socrates/internal/testing/source"
+	"github.com/socrates-devtool/socrates/internal/agent"
+	"github.com/socrates-devtool/socrates/internal/convention"
+	"github.com/socrates-devtool/socrates/internal/reviewer"
+	"github.com/socrates-devtool/socrates/internal/runlog"
+	"github.com/socrates-devtool/socrates/internal/testing/source"
 )
 
 func TestOnlyOnePlaceTurnsAnEventIntoALinePeopleRead(t *testing.T) {

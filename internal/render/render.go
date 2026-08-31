@@ -8,9 +8,9 @@ import (
 	"html/template"
 	"strings"
 
-	"github.com/rui-ktei/socrates/internal/document"
-	"github.com/rui-ktei/socrates/internal/sanitise"
-	"github.com/rui-ktei/socrates/internal/stylesheet"
+	"github.com/socrates-devtool/socrates/internal/document"
+	"github.com/socrates-devtool/socrates/internal/sanitise"
+	"github.com/socrates-devtool/socrates/internal/stylesheet"
 )
 
 const (

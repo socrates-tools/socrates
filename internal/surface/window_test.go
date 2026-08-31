@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rui-ktei/socrates/internal/surface"
+	"github.com/socrates-devtool/socrates/internal/surface"
 )
 
 func portOf(t *testing.T, address string) int {

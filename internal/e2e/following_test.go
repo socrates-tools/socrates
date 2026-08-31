@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rui-ktei/socrates/internal/runstate"
-	"github.com/rui-ktei/socrates/internal/testing/harness"
+	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/socrates-devtool/socrates/internal/testing/harness"
 )
 
 func TestFollowingAReviewToACleanVerdict(t *testing.T) {

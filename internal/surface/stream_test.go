@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rui-ktei/socrates/internal/surface"
+	"github.com/socrates-devtool/socrates/internal/surface"
 )
 
 func events(t *testing.T, held *standing, within time.Duration) <-chan string {

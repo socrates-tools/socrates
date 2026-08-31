@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rui-ktei/socrates/internal/runstate"
-	"github.com/rui-ktei/socrates/internal/runstore"
-	"github.com/rui-ktei/socrates/internal/snapshot"
-	"github.com/rui-ktei/socrates/internal/testing/gitrepo"
+	"github.com/socrates-devtool/socrates/internal/runstate"
+	"github.com/socrates-devtool/socrates/internal/runstore"
+	"github.com/socrates-devtool/socrates/internal/snapshot"
+	"github.com/socrates-devtool/socrates/internal/testing/gitrepo"
 )
 
 func TestAnUntrackedFileIsInTheSnapshot(t *testing.T) {

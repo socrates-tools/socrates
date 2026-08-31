@@ -39,7 +39,7 @@ A 181-file diff in which 180 files changed one line and one file changed its beh
 
 ### The archive is left alone
 
-Two archived documents name `github.com/rui-ktei/socrates`, and one links an issue in the old repository.
+Two archived documents name the module under the personal account, and one links an issue in the old repository.
 
 They are left as they are.
 An archived change is not documentation that has gone stale; it is the record of a decision, and the path it names is the path that existed when the decision was taken.

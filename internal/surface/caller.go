@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/rui-ktei/socrates/internal/refusal"
+	"github.com/socrates-devtool/socrates/internal/refusal"
 )
 
 const reachTimeout = 5 * time.Second

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/rui-ktei/socrates/internal/fidelity"
+	"github.com/socrates-devtool/socrates/internal/fidelity"
 )
 
 func TestARunThatAnsweredIsRecorded(t *testing.T) {

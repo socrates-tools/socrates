@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rui-ktei/socrates/internal/refusal"
-	"github.com/rui-ktei/socrates/internal/state"
-	"github.com/rui-ktei/socrates/internal/surface"
+	"github.com/socrates-devtool/socrates/internal/refusal"
+	"github.com/socrates-devtool/socrates/internal/state"
+	"github.com/socrates-devtool/socrates/internal/surface"
 )
 
 func TestTheSurfacesStateSitsUnderTheDirectoryItIsGiven(t *testing.T) {

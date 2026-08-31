@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rui-ktei/socrates/internal/version"
+	"github.com/socrates-devtool/socrates/internal/version"
 )
 
 const recordedCommit = "7f3a9c1"

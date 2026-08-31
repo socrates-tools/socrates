@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rui-ktei/socrates/internal/testing/gitrepo"
+	"github.com/socrates-devtool/socrates/internal/testing/gitrepo"
 )
 
 func TestWorktreeCreationFails(t *testing.T) {
