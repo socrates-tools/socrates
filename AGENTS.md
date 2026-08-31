@@ -150,6 +150,14 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - No source file and no live specification names a code-hosting account other than the organisation's; an archived change is exempt, because the account it names is the account that existed when the decision was taken.
 - `openspec/config.yaml` names the binaries, commands and directories the repository has, and cites no source a reader cannot reach.
 
+**The terms the work is published under**
+
+- `LICENSE` states MIT in full and names the holder, and no source file opens with a licence header.
+- A comment carrying a borrowed work's notice and citing `NOTICE` is not that header, and one that states terms and cites nothing still is.
+- `NOTICE` names everything a shipped binary carries that socrates did not author, with each licence's full text rather than a link: the client bundle's libraries, the font faces embedded beside it, and the modules the two binaries link in.
+- Every file `internal/assets` embeds is accounted for in `NOTICE`, read from what is embedded rather than from `web/`.
+- The bundle that ships carries the copyright notice of every library bundled into it, asserted against the shipped bytes, and a bundler set to delete legal comments fails the suite.
+
 **The surface**
 
 - It binds a loopback address; nothing widens it, and an address that is not one is refused before any server starts.
