@@ -40,9 +40,11 @@ No task requires a particular archive size, a particular digest, or a particular
 
 ## 5. The first release
 
-- [ ] 5.1 Tag `v0.1.0`, run the release, and record which artifacts it produced and that the verification over them passes
+- [x] 5.1 Tag `v0.1.0`, run the release, and record which artifacts it produced and that the verification over them passes
 
-  Run once and withdrawn, then blocked. The release published four archives, `checksums.txt`, `checksums.txt.bundle` and one bill of materials per archive, and the provenance step was refused as above. It was deleted so that `CHANGELOG.md` could stop claiming provenance the release does not carry. The tag was cut again and the publication job could not start: the account had reached its Actions spending limit, which a private repository reaches quickly because a macOS minute is billed as ten. The tag stands and the run is waiting for the limit or for the repository to be public.
-- [ ] 5.2 Verify a downloaded archive extracts to a working `socrates`, `scrat` and `agora` on a supported platform, and record it
+  `v0.1.0` on `9b9a1fb`. The verification matrix passed on Linux and on macOS, and the release then published ten artifacts: four archives, one bill of materials beside each, `checksums.txt`, and `checksums.txt.bundle`. The provenance step signed and was refused, as recorded in `docs/gotchas.md`, because GitHub stores an attestation for a public repository only.
 
-  Done against the withdrawn release and to be redone against the published one. `socrates_0.1.0_linux_amd64.tar.gz` checksummed against `checksums.txt`, its signature verified with `cosign verify-blob --bundle` against the workflow's identity and the Actions issuer, and it extracted to `socrates`, `scrat` and `agora`, all three reporting `v0.1.0, built from d4716e2`, beside `LICENSE` and `NOTICE`.
+  It took three attempts to get there, and neither of the first two published anything. The first was withdrawn so that `CHANGELOG.md` could stop claiming provenance the release does not carry. The second could not start its publication job at all: the account had reached its Actions spending limit, which a private repository reaches quickly because a macOS minute is billed as ten.
+- [x] 5.2 Verify a downloaded archive extracts to a working `socrates`, `scrat` and `agora` on a supported platform, and record it
+
+  `socrates_0.1.0_linux_amd64.tar.gz` downloaded on Linux, matched against `checksums.txt`, and its checksums verified with `cosign verify-blob --bundle` against the release workflow's identity and the Actions issuer: `Verified OK`. It extracted to `socrates`, `scrat` and `agora` beside `LICENSE` and `NOTICE`, all three reporting `v0.1.0, built from 9b9a1fb`, and the tool answered `--help`.
