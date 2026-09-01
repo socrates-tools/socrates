@@ -179,10 +179,9 @@ The other direction would fail permanently and be turned off within a week.
 ## Continuous integration
 
 **Code scanning cannot report while the repository is private and unlicensed.**
-`.github/workflows/codeql.yml` builds the database and runs every query, and then the upload is refused with "Advanced Security must be enabled for this repository to use code scanning".
-Enabling it over the API answers "Advanced security has not been purchased", which is what a private repository on a plan without it answers.
-The analysis is correct and the schedule is left in place, because code scanning is free for a public repository and the workflow starts reporting the moment this one is public.
-Until then the weekly failure is the reminder, and nothing else in verification depends on it.
+The analysis runs to the end and the upload is refused with "Advanced Security must be enabled for this repository to use code scanning", and enabling it over the API answers "Advanced security has not been purchased", which is what a private repository on a plan without it answers.
+So nothing here analyses the code: a result no reader can reach is a weekly failure that teaches nobody anything, and a failure nobody acts on is worse than an absence somebody can see.
+Code scanning is free for a public repository, so a workflow that analyses the code belongs with making this one public.
 
 **Go's default per-package timeout is 10 minutes, and the end-to-end package outgrew it.**
 The package that drives real binaries also produces a release snapshot, which compiles the releaser and cross-compiles three binaries for four targets.
@@ -205,16 +204,16 @@ The verification jobs had already run, so the tag exists and nothing is publishe
 
 **Build provenance is refused while the repository is private.**
 `actions/attest-build-provenance` signs the archives and then fails to store the attestation, saying the feature is not available for the account and that the way to it is to upgrade the billing plan or make the repository public.
-The step is left in the release and left failing, the same way the code-scanning upload is, because it starts working the moment the repository is public and its failure is the reminder until then.
+The step is left in the release and left failing, because it starts working the moment the repository is public and its failure is the reminder until then.
 Everything before it publishes: the archives, the checksums, the cosign bundle and the bills of materials are all on the release.
 
 **Private vulnerability reporting cannot be enabled while the repository is private.**
 `PUT /repos/{owner}/{repo}/private-vulnerability-reporting` answers 404 rather than 403, which reads as a wrong path rather than as a feature that is not there.
 It is available for public repositories only, so `SECURITY.md` names the channel and does not claim it is enabled, and enabling it belongs with making the repository public.
 
-**A private repository's CodeQL job needs `actions: read`.**
+**A CodeQL job on a private repository needs `actions: read`.**
 Without it the analysis runs to the end and then fails with "Resource not accessible by integration" against the workflow-runs endpoint, which reads as a bug in the action rather than as a permission.
-`security-events: write` alone is enough on a public repository and is not enough here.
+`security-events: write` alone is enough on a public repository, and it is not enough on a private one.
 
 **A checked box in a change's `tasks.md` is what makes its scenarios a gate.**
 `make scenario-coverage` counts a change as under way as soon as one box is checked, and then every scenario in that change needs a test naming it.
