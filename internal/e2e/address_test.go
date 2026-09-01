@@ -199,13 +199,28 @@ func aHeldLoopbackAddress(t *testing.T) string {
 	return listener.Addr().String()
 }
 
-func (s *surfaced) boundNothing(named string) {
+func windowAddressesNothingHolds(t *testing.T) []string {
+	t.Helper()
+
+	var free []string
+	for _, address := range surface.WindowAddresses() {
+		listener, err := net.Listen("tcp", address)
+		if err != nil {
+			continue
+		}
+		listener.Close()
+		free = append(free, address)
+	}
+	return free
+}
+
+func (s *surfaced) boundNothing(named string, free []string) {
 	s.t.Helper()
 
 	if _, err := os.Stat(filepath.Join(s.surfaceHome(), "surface.json")); err == nil {
 		s.t.Errorf("refusing %s left a surface behind, and it starts no server", named)
 	}
-	for _, address := range surface.WindowAddresses() {
+	for _, address := range free {
 		if address == named {
 			continue
 		}
@@ -223,6 +238,7 @@ func TestAStatedAddressThatIsHeldIsRefusedRatherThanWalked(t *testing.T) {
 
 	held := standing(t)
 
+	free := windowAddressesNothingHolds(t)
 	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", taken)
 	if code == 0 {
 		t.Fatalf("a caller stated the held address %s and a page was served at %q", taken, printed)
@@ -230,7 +246,7 @@ func TestAStatedAddressThatIsHeldIsRefusedRatherThanWalked(t *testing.T) {
 	if !strings.Contains(failures, taken) {
 		t.Errorf("refusing a stated address that is held does not name it: %s", failures)
 	}
-	held.boundNothing(taken)
+	held.boundNothing(taken, free)
 }
 
 func TestAConfiguredBindThatIsHeldIsRefusedRatherThanWalked(t *testing.T) {
@@ -240,6 +256,7 @@ func TestAConfiguredBindThatIsHeldIsRefusedRatherThanWalked(t *testing.T) {
 	held.configure("bind: " + taken + "\n")
 	held.bindsWhatIsConfigured()
 
+	free := windowAddressesNothingHolds(t)
 	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-")
 	if code == 0 {
 		t.Fatalf("an operator stated the held bind %s and a page was served at %q", taken, printed)
@@ -247,7 +264,7 @@ func TestAConfiguredBindThatIsHeldIsRefusedRatherThanWalked(t *testing.T) {
 	if !strings.Contains(failures, taken) {
 		t.Errorf("refusing a configured bind that is held does not name it: %s", failures)
 	}
-	held.boundNothing(taken)
+	held.boundNothing(taken, free)
 }
 
 func TestAStatedReachedAtAddressPinsThePortToo(t *testing.T) {
@@ -257,6 +274,7 @@ func TestAStatedReachedAtAddressPinsThePortToo(t *testing.T) {
 	held.configure("reached_at: " + reachedAt + "\n")
 	held.bindsWhatIsConfigured()
 
+	free := windowAddressesNothingHolds(t)
 	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-")
 	if code == 0 {
 		t.Fatalf("an operator stated where the surface is reached at, the port at the top of the window is held, and a page was served at %q", printed)
@@ -264,7 +282,7 @@ func TestAStatedReachedAtAddressPinsThePortToo(t *testing.T) {
 	if !strings.Contains(failures, addresses[0]) {
 		t.Errorf("refusing a held port an operator committed to does not name it: %s", failures)
 	}
-	held.boundNothing(addresses[0])
+	held.boundNothing(addresses[0], free)
 }
 
 func TestTheDefaultBindIsAFixedLoopbackPort(t *testing.T) {
