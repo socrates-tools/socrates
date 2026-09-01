@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/ktei/socrates/internal/guidance"
 	"github.com/ktei/socrates/internal/platform"
 	"github.com/ktei/socrates/internal/process"
 	"github.com/ktei/socrates/internal/refusal"
@@ -30,6 +31,8 @@ const (
 	EventRoundParked  = "round-parked"
 	EventRoundStarted = "round-started"
 	EventResponse     = "response-recorded"
+
+	EventGuidanceUnread = "guidance-unread"
 )
 
 type Beginning struct {
@@ -58,6 +61,12 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 		return nil, err
 	}
 
+	guide, err := guidance.At(ctx, taken.RepositoryRoot, taken.Base)
+	if err != nil {
+		return nil, err
+	}
+	reached := guide.Reached(taken.Changed)
+
 	if err := beginning.Store.Sweep(beginning.StartedAt, beginning.Retention); err != nil {
 		return nil, err
 	}
@@ -68,6 +77,7 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 		Base:           taken.Base,
 		Snapshot:       taken.Commit,
 		Intent:         beginning.Intent,
+		ReviewGuide:    reached,
 	})
 	if err != nil {
 		return nil, err
@@ -84,6 +94,16 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 		},
 	}); err != nil {
 		return nil, err
+	}
+
+	if reached == guidance.OnlyInTheChange {
+		if err := beginning.record(run, runlog.Event{
+			Kind:    EventGuidanceUnread,
+			Subject: run.Name,
+			Fields:  map[string]any{"guide": guidance.Path},
+		}); err != nil {
+			return nil, err
+		}
 	}
 
 	if taken.NothingToReview() {

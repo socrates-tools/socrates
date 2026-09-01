@@ -15,6 +15,7 @@ const (
 	unexpectedToolsKind   = "agent-unexpected-tools"
 	unexpectedSourcesKind = "agent-unexpected-sources"
 	toolsUnreportedKind   = "agent-tools-unreported"
+	guidanceUnreadKind    = "guidance-unread"
 	rotatedKind           = "log-rotated"
 
 	repositoryField   = "repository"
@@ -36,6 +37,7 @@ const (
 	findingField      = "finding"
 	resolutionField   = "resolution"
 	unansweredField   = "unanswered"
+	guideField        = "guide"
 
 	runStartedSentence        = "the run started on %s: snapshot %s against base %s"
 	runEndedSentence          = "the run ended as %s: %s"
@@ -50,6 +52,7 @@ const (
 	unexpectedToolsSentence   = "the reviewer held tools socrates did not ask for: %s, and nothing here bounds what those reach outside the snapshot worktree"
 	unexpectedSourcesSentence = "the reviewer's session had connected sources of tools socrates asked for none of: %s, and their tools can arrive after socrates read the session, so what is recorded beside this is not all the reviewer held"
 	toolsUnreportedSentence   = "the reviewer's session never said what tools it held, so what it had is not known: socrates asked for %s"
+	guidanceUnreadSentence    = "this change adds %s and the base commit does not carry it, so this reviewer was not given it: commit the guide, and the next review reads it"
 	rotationNotice            = "earlier events were discarded when the log reached its ceiling, so this rendering does not begin where the run did"
 
 	unknownSentence = "%s on %s"

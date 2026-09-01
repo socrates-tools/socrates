@@ -51,7 +51,10 @@ context: |
     recovery, no monotonic state revisions.
   - **No trust boundary.** Only the person whose machine this is can invoke it on
     their own repository, so there is no pinned trusted default-branch SHA and no
-    trusted-versus-pushed field split.
+    trusted-versus-pushed field split. What socrates does read out of a reviewed
+    repository it reads at the run's base commit, and that is not a defence
+    against a stranger: it keeps the session that wrote the change from also
+    writing the rules the change is judged by.
 
   ## Architecture, already decided
 
@@ -228,9 +231,4 @@ context: |
   - **A pre-push hook.** A slash command is cooperative and can be forgotten. The
     same reviewer wired to a hook restores enforcement without changing anything
     below it, which is why it is deferred rather than foreclosed.
-  - **Repository-scoped review guidance.** The reviewer loads user-level settings
-    only, so it does not know the project's conventions. The answer is a narrow
-    socrates-owned channel, a repository file socrates itself reads and appends
-    to the reviewer prompt, and never a re-enabling of arbitrary project
-    instructions on a session reading untrusted input.
   - **A second agent implementation.** One new file behind the existing seam.

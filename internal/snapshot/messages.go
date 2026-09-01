@@ -9,6 +9,7 @@ const (
 	creatingAnIndexDirectory = "creating a directory for the snapshot's own index: %w"
 	removing                 = "removing %s: %w"
 	gitFailed                = "git %s in %s: %s"
+	unreadableTreeEntry      = "the tree entry for %s at %s does not say how large it is: %s"
 
 	aFilesystemThatEnforcesNothing = "the filesystem holding the snapshot worktree does not enforce write permissions"
 	theSealDoesNotHold             = "the snapshot worktree at %s can still be written to after every write permission in it was cleared, so either its filesystem does not enforce them or this process is root and ignores them, and socrates cannot promise that the change a reviewer read is the change that was frozen: run socrates review as a user other than root, or set SOCRATES_HOME to a directory on a filesystem that enforces permissions"

@@ -31,6 +31,7 @@ What socrates is:
 - `internal/findings` - the findings contract, the reviewer's schema, the classification and the verdict rule.
 - `internal/dialogue` - what a round leads to, which rounds a person reads, the round cap, and the response document.
 - `internal/hygiene` - model output neutralised before it re-enters a prompt.
+- `internal/guidance` - the one file socrates reads out of the repository under review, the commit it is read at, and the ceiling it is held to.
 - `internal/prompt` - the delivered prompt, assembled from named sections.
 - `internal/testquality` - the test-quality rule, shared by every role that needs it.
 - `internal/platform` - the one place the supported platforms are stated, and the basis on which one qualifies.
@@ -104,6 +105,8 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - Nothing writes in it: no run state, no configuration, no log.
 - Every round is snapshotted afresh against the run's original base, and snapshot commits are content-addressed.
 - A write in the snapshot worktree is refused by the filesystem, and the worktree is compared against its commit after the round.
+- One file is read out of it, `.socrates/review-guide.md`, at the run's base commit and never from the working tree or the snapshot, so a guide the change writes governs the next run rather than this one.
+- That guide is bounded, neutralised on the way into the prompt, and additive: it withdraws no rule socrates delivers, and nothing socrates decides is derived from a word of it.
 
 **The reviewer**
 

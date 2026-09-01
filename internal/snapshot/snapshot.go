@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/ktei/socrates/internal/refusal"
@@ -119,6 +120,50 @@ func take(ctx context.Context, root, base string) (Snapshot, error) {
 	taken.Commit = commit
 	taken.Changed = lines(changed)
 	return taken, nil
+}
+
+func FileAt(ctx context.Context, repositoryRoot, commit, path string) ([]byte, bool, error) {
+	listed, err := git(ctx, repositoryRoot, nil, "ls-tree", commit, "--", path)
+	if err != nil {
+		return nil, false, err
+	}
+	if !namesABlob(listed) {
+		return nil, false, nil
+	}
+
+	content, err := gitOutput(ctx, repositoryRoot, nil, "cat-file", "blob", commit+":"+path)
+	if err != nil {
+		return nil, false, err
+	}
+	return []byte(content), true, nil
+}
+
+func BlobSizeAt(ctx context.Context, repositoryRoot, commit, path string) (int64, bool, error) {
+	listed, err := git(ctx, repositoryRoot, nil, "ls-tree", "--long", commit, "--", path)
+	if err != nil {
+		return 0, false, err
+	}
+	if !namesABlob(listed) {
+		return 0, false, nil
+	}
+
+	fields := strings.Fields(listed)
+	if len(fields) < 4 {
+		return 0, false, fmt.Errorf(unreadableTreeEntry, path, commit, listed)
+	}
+	size, err := strconv.ParseInt(fields[3], 10, 64)
+	if err != nil {
+		return 0, false, fmt.Errorf(unreadableTreeEntry, path, commit, listed)
+	}
+	return size, true, nil
+}
+
+func namesABlob(listed string) bool {
+	if listed == "" {
+		return false
+	}
+	fields := strings.Fields(listed)
+	return len(fields) > 1 && fields[1] == "blob"
 }
 
 func Changed(ctx context.Context, repositoryRoot, base, commit string) ([]string, error) {

@@ -226,6 +226,7 @@ socrates is not affiliated with, endorsed by or sponsored by Anthropic.
 
 One optional file, at `~/.socrates/config.yaml`, beside the runs, read by both binaries.
 socrates never creates it, never reads configuration out of the repository under review, and refuses rather than quietly running on defaults when the file will not parse.
+The one file socrates does read out of a repository is the review guide below, and it configures nothing.
 
 ```yaml
 roles:
@@ -242,6 +243,34 @@ surface:
 ```
 
 The `surface` block is what an operator states about the page a person reads: the loopback address it binds, and the address a person is handed where that is not the one it bound.
+
+## Telling the reviewer what your project expects
+
+The reviewer arrives knowing nothing about your project, and that is deliberate.
+It loads no `CLAUDE.md`, no project or local settings and no skills, because all of those are written by the thing under review.
+
+One file is the exception, and socrates reads it itself rather than letting the CLI load it:
+
+```sh
+mkdir -p .socrates
+$EDITOR .socrates/review-guide.md
+git add .socrates/review-guide.md && git commit -m "what a reviewer should know about this repository"
+```
+
+Write what a reviewer would otherwise get wrong about this repository: the conventions it holds itself to, what a test here is expected to prove, what a directory is for.
+Keep it under 16 KiB, which is where socrates refuses the review rather than delivering part of a guide.
+
+Three things are worth knowing before writing one:
+
+- **It takes effect once committed.**
+  socrates reads the guide at the commit your change is measured against, never from your working tree, so the session that wrote the change cannot also write the rules it is judged by.
+  A review that finds a guide only in the change says so, and the next review reads it.
+- **It adds, and it removes nothing.**
+  It cannot switch off a rule socrates delivers, redefine a severity or an action, exempt a file, or ask for a finding to be withheld.
+  `clean` means the same thing in every repository, and a guide is not a way to make it mean less.
+- **socrates reads no word of it.**
+  It is carried into one section of the reviewer's prompt and nowhere else.
+  No verdict, exit code or classification comes from anything it says.
 
 ## Reading the page from another machine
 

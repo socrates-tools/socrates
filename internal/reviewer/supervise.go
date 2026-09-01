@@ -12,6 +12,7 @@ import (
 	"github.com/ktei/socrates/internal/agent"
 	"github.com/ktei/socrates/internal/dialogue"
 	"github.com/ktei/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/guidance"
 	"github.com/ktei/socrates/internal/prompt"
 	"github.com/ktei/socrates/internal/runlog"
 	"github.com/ktei/socrates/internal/runstate"
@@ -65,6 +66,11 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		return supervision.end(run, runstate.Failed, err.Error())
 	}
 
+	guide, err := guidance.At(ctx, run.Repository, run.Base)
+	if err != nil {
+		return supervision.end(run, runstate.Failed, err.Error())
+	}
+
 	asked := prompt.Build(prompt.Request{
 		Intent:     run.Intent,
 		Repository: run.Repository,
@@ -74,6 +80,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		Diff:       reviewed.diff,
 		Ceiling:    supervision.Ceiling,
 		Prior:      prior,
+		Guidance:   guide.Text,
 	})
 
 	run.Diff = asked.Diff
