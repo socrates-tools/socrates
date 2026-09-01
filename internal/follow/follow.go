@@ -175,10 +175,14 @@ func logPath(store runstore.Store, name string) string {
 	return filepath.Join(store.Path(name), runlog.FileName)
 }
 
+type recorded struct {
+	line  []byte
+	event runlog.Event
+}
+
 type tail struct {
 	path      string
-	delivered int
-	rotations int
+	delivered []byte
 }
 
 func (t *tail) more() ([]runlog.Event, bool, error) {
@@ -192,27 +196,38 @@ func (t *tail) more() ([]runlog.Event, bool, error) {
 		return nil, true, err
 	}
 
-	rotations := 0
-	kept := 0
-	for position, event := range held {
-		if event.Kind == runlog.EventRotated {
-			rotations++
-			kept = position
+	fresh := held[t.resume(held):]
+	if len(fresh) == 0 {
+		return nil, true, nil
+	}
+	t.delivered = fresh[len(fresh)-1].line
+
+	events := make([]runlog.Event, len(fresh))
+	for position, held := range fresh {
+		events[position] = held.event
+	}
+	return events, true, nil
+}
+
+func (t *tail) resume(held []recorded) int {
+	if t.delivered == nil {
+		return 0
+	}
+	for position := len(held) - 1; position >= 0; position-- {
+		if bytes.Equal(held[position].line, t.delivered) {
+			return position + 1
 		}
 	}
+	return fromTheLastRotation(held)
+}
 
-	if rotations > t.rotations {
-		t.rotations = rotations
-		t.delivered = len(held)
-		return held[kept:], true, nil
+func fromTheLastRotation(held []recorded) int {
+	for position := len(held) - 1; position >= 0; position-- {
+		if held[position].event.Kind == runlog.EventRotated {
+			return position
+		}
 	}
-
-	if t.delivered > len(held) {
-		t.delivered = len(held)
-	}
-	fresh := held[t.delivered:]
-	t.delivered = len(held)
-	return fresh, true, nil
+	return 0
 }
 
 func (t *tail) read() ([]byte, bool, error) {
@@ -226,13 +241,13 @@ func (t *tail) read() ([]byte, bool, error) {
 	return content, true, nil
 }
 
-func (t *tail) parse(content []byte) ([]runlog.Event, error) {
-	var events []runlog.Event
+func (t *tail) parse(content []byte) ([]recorded, error) {
+	var held []recorded
 
 	for {
 		line, rest, complete := bytes.Cut(content, []byte("\n"))
 		if !complete {
-			return events, nil
+			return held, nil
 		}
 		content = rest
 
@@ -241,8 +256,8 @@ func (t *tail) parse(content []byte) ([]runlog.Event, error) {
 		}
 		var event runlog.Event
 		if err := json.Unmarshal(line, &event); err != nil {
-			return events, fmt.Errorf(unreadableLine, t.path, err)
+			return held, fmt.Errorf(unreadableLine, t.path, err)
 		}
-		events = append(events, event)
+		held = append(held, recorded{line: bytes.Clone(line), event: event})
 	}
 }

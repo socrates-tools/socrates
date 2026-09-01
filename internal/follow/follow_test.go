@@ -1,7 +1,10 @@
 package follow_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -167,6 +170,54 @@ func TestARotatedLogIsFollowedFromWhatItKept(t *testing.T) {
 	}
 }
 
+func TestARotationTheFollowerNeverSawStillEndsIt(t *testing.T) {
+	store, name := run(t, nil)
+	rotated := runlog.Event{At: time.Now().UTC(), Kind: runlog.EventRotated, Subject: runlog.FileName}
+	emitted := func(position int) runlog.Event {
+		return runlog.Event{At: time.Now().UTC(), Kind: "agent-started", Subject: "reviewer", Fields: map[string]any{"position": position}}
+	}
+	ended := runlog.Event{
+		At:      time.Now().UTC(),
+		Kind:    "run-ended",
+		Subject: name,
+		Fields:  map[string]any{"state": string(runstate.Clean), "reason": "nothing blocking"},
+	}
+
+	hold(t, store, name, emitted(1), rotated, emitted(2), rotated, emitted(3))
+
+	scrolled := false
+	sink := follow.Sink{Events: func([]runlog.Event) error {
+		if scrolled {
+			return nil
+		}
+		scrolled = true
+		hold(t, store, name, emitted(2), emitted(3), rotated, emitted(4), ended)
+		return nil
+	}}
+
+	type outcome struct {
+		state runstate.State
+		err   error
+	}
+	stopped := make(chan outcome, 1)
+	go func() {
+		state, err := following(store, name).Until(context.Background(), sink)
+		stopped <- outcome{state: state, err: err}
+	}()
+
+	select {
+	case reached := <-stopped:
+		if reached.err != nil {
+			t.Fatalf("following a log whose rotation markers scrolled out: %v", reached.err)
+		}
+		if reached.state != runstate.Clean {
+			t.Errorf("the follower stopped at %s, want %s", reached.state, runstate.Clean)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("the follower is still waiting for events a log that already ended will never write again")
+	}
+}
+
 func TestWatchingImmediatelyAfterStarting(t *testing.T) {
 	store, name := run(t, nil)
 
@@ -299,6 +350,25 @@ func load(t *testing.T, store runstore.Store, name string) *runstore.Run {
 func write(t *testing.T, store runstore.Store, name string, event runlog.Event) {
 	t.Helper()
 	writeWith(t, store, name, 0, event)
+}
+
+func hold(t *testing.T, store runstore.Store, name string, events ...runlog.Event) {
+	t.Helper()
+
+	var written bytes.Buffer
+	for _, event := range events {
+		line, err := json.Marshal(event)
+		if err != nil {
+			t.Fatalf("encoding a %s event: %v", event.Kind, err)
+		}
+		written.Write(line)
+		written.WriteByte('\n')
+	}
+
+	path := filepath.Join(store.Path(name), runlog.FileName)
+	if err := os.WriteFile(path, written.Bytes(), 0o644); err != nil {
+		t.Fatalf("putting %d events in %s: %v", len(events), path, err)
+	}
 }
 
 func writeWith(t *testing.T, store runstore.Store, name string, ceiling int64, event runlog.Event) {
