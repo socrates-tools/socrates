@@ -222,6 +222,8 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - A caller's stylesheet is reduced from a parse that reached the end of its input, every selector it keeps is scoped to the illustration, and the page admits it by a hash of exactly the bytes it embedded.
 - What a caller paints is contained by the illustration, so a rule inside one decides nothing about where the page's own controls land.
 - Delivery happens once, waiting is bounded, collection is per session, and the server stops once it has held no session for the idle period.
+- A stream is told where the exchange stands when it connects rather than only when something next changes, so a client that missed a revision catches up rather than waiting on a change that has already happened.
+- The end of an exchange stops the page offering to answer and not the page listening, so a caller who writes again reaches the page the person is already looking at, and only the test about reloading reloads before it asserts.
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.
 - An element it hides paints nothing, every colour it paints is a token stated once, and every text meets a contrast floor under both preferences.
 - Nothing in it names review, finding, verdict, round, or run as a noun.

@@ -267,6 +267,10 @@ func within(decision, selector string) string {
 	return fmt.Sprintf(`.decision[data-decision="%s"] %s`, decision, selector)
 }
 
+func reachedThePage(decision string) string {
+	return fmt.Sprintf(`!!document.querySelector('.decision[data-decision="%s"]')`, decision)
+}
+
 func nothingLeftTheMachine(t *testing.T, address string, reaching []string) {
 	t.Helper()
 

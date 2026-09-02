@@ -320,11 +320,12 @@ func (s *Server) live(writer http.ResponseWriter, request *http.Request) {
 	waiting := one.exchange.Changed()
 	flusher.Flush()
 
+	said := ""
 	for {
-		if one.exchange.Over() {
-			_, _ = io.WriteString(writer, "event: closed\ndata: yes\n\n")
+		if standing := whereItStands(one.exchange.Standing()); standing != said {
+			_, _ = io.WriteString(writer, standing)
 			flusher.Flush()
-			return
+			said = standing
 		}
 
 		select {
@@ -335,14 +336,14 @@ func (s *Server) live(writer http.ResponseWriter, request *http.Request) {
 		case <-waiting:
 		}
 		waiting = one.exchange.Changed()
-
-		if one.exchange.Over() {
-			continue
-		}
-		_, revision := one.exchange.Document()
-		_, _ = io.WriteString(writer, "event: revision\ndata: "+strconv.Itoa(revision)+"\n\n")
-		flusher.Flush()
 	}
+}
+
+func whereItStands(revision int, over bool) string {
+	if over {
+		return "event: closed\ndata: yes\n\n"
+	}
+	return "event: revision\ndata: " + strconv.Itoa(revision) + "\n\n"
 }
 
 func (s *Server) answer(writer http.ResponseWriter, request *http.Request, one *held) {

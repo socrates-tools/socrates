@@ -26,6 +26,7 @@ var ContractsTestsRead = map[string]string{
 	filepath.Join("internal", "convention", "palette_test.go"):     "the rule that the page paints from one stated palette, which is a property of this repository's source rather than a proxy for behaviour",
 	filepath.Join("internal", "convention", "platforms_test.go"):   "the rule that the supported platforms are stated once, where the source, what a release builds and what a person reads are the subjects of the check and not proxies for behaviour",
 	filepath.Join("internal", "convention", "reach_test.go"):       "what socrates itself reaches and what is compiled out of the ordinary suite, which is a structural invariant of this module",
+	filepath.Join("internal", "convention", "reloading_test.go"):   "the rule that only a test about reloading reloads the page, which is a property of the test suite",
 	filepath.Join("internal", "convention", "release_test.go"):     "what a release builds and what its archives carry, which is a property of this repository's release configuration and reads no Go file at all",
 	filepath.Join("internal", "convention", "rendering_test.go"):   "the rule that one place alone turns an event into a line, which is a structural invariant of this module",
 	filepath.Join("internal", "convention", "variables_test.go"):   "the rule that a message names only a variable the source reads, where the source is the subject of the check and not a proxy for anything else",

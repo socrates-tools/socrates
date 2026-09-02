@@ -78,6 +78,12 @@ func (e *Exchange) Revise(read document.Document) int {
 	return e.revision
 }
 
+func (e *Exchange) Standing() (int, bool) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	return e.revision, e.over
+}
+
 func (e *Exchange) Over() bool {
 	e.mu.Lock()
 	defer e.mu.Unlock()

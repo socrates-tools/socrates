@@ -11,6 +11,8 @@ import (
 
 const somethingLiveOnThePage = `Array.from(document.querySelectorAll('button, .choice, textarea')).some((held) => !held.disabled)`
 
+const everythingOnThePageIsLive = `Array.from(document.querySelectorAll('button, .choice, textarea')).every((held) => !held.disabled)`
+
 func (s *surfaced) ended(t *testing.T, page *reader) {
 	t.Helper()
 
@@ -177,31 +179,48 @@ func TestAFinishWithNothingUncommittedIsNotAskedAbout(t *testing.T) {
 	}
 }
 
+func answersWhatTheCallerAskedAgain(t *testing.T, held *surfaced, page *reader, how string) {
+	t.Helper()
+
+	page.evaluate(chose("c-3", 0), nil)
+	page.click(within("c-3", ".commit"))
+	page.click(".send")
+
+	delivered, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		var said string
+		page.evaluate(`document.querySelector('.state').textContent`, &said)
+		t.Fatalf("an answer sent from %s was not delivered, and the page says %q", how, said)
+	}
+	if len(delivered.Decisions) != 1 || delivered.Decisions[0].ID != "c-3" {
+		t.Errorf("what %s delivered is %+v", how, delivered.Decisions)
+	}
+
+	var said string
+	page.evaluate(`document.querySelector('.state').textContent`, &said)
+	if strings.Contains(said, "not accepted") {
+		t.Errorf("an answer sent from %s was refused: %q", how, said)
+	}
+}
+
 func TestANewDocumentReopensAnEndedPage(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+	held.ended(t, page)
+
+	held.serveAgain(oneDecisionReply)
+	page.waitFor(reachedThePage("c-3"))
+
+	answersWhatTheCallerAskedAgain(t, held, page, "the page the caller asked again on, without it being reloaded")
+}
+
+func TestAReloadedPageStillReopens(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 	held.ended(t, page)
 
 	held.serveAgain(oneDecisionReply)
 	page.reload()
 
-	page.evaluate(chose("c-3", 0), nil)
-	page.click(within("c-3", ".commit"))
-	page.click(".send")
-	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
-
-	var said string
-	page.evaluate(`document.querySelector('.state').textContent`, &said)
-	if strings.Contains(said, "not accepted") {
-		t.Errorf("an answer sent from the page the caller asked again on was refused: %q", said)
-	}
-
-	delivered, arrived := held.awaiting(5 * time.Second)
-	if !arrived {
-		t.Fatal("an answer sent from the page the caller asked again on was not delivered")
-	}
-	if len(delivered.Decisions) != 1 || delivered.Decisions[0].ID != "c-3" {
-		t.Errorf("what the page the caller asked again on delivered is %+v", delivered.Decisions)
-	}
+	answersWhatTheCallerAskedAgain(t, held, page, "the page the caller asked again on, reloaded")
 }
 
 func TestServingAgainOntoAnEndedExchangeYieldsAnAnswerablePage(t *testing.T) {
@@ -260,8 +279,7 @@ func TestAPollOverAnEndedExchangeLeavesItEnded(t *testing.T) {
 		t.Errorf("a poll over an ended exchange delivered something further: %+v", delivered)
 	}
 
-	page.reload()
-	rendersClosed(t, page, "a page reloaded after a poll over an ended exchange")
+	rendersClosed(t, page, "a page after a poll over an ended exchange")
 }
 
 func TestAPersonWhoFinishesEarlyIsToldBeforeTheirAnswerGoes(t *testing.T) {
@@ -342,23 +360,75 @@ func TestAPageOpenedForTheFirstTimeAfterTheEndRendersClosed(t *testing.T) {
 	rendersClosed(t, opening(t, address), "a page opened for the first time onto an ended exchange")
 }
 
-func TestAPageServedClosedFollowsNothing(t *testing.T) {
-	// scenario: A stream opened after the end is told at once
+func TestAPageServedClosedFollowsWhatComesNext(t *testing.T) {
+	// scenario: A new document reopens an ended page
 	held := standing(t)
 	address := held.serve(twoDecisionDocument)
 
 	held.end(held.opened)
 
 	page := opening(t, address)
-	asked := page.requests.all()
+	held.serveAgain(oneDecisionReply)
+	page.waitFor(reachedThePage("c-3"))
 
-	for _, reaching := range asked {
+	answersWhatTheCallerAskedAgain(t, held, page, "a page opened onto an ended exchange the caller then asked again on")
+
+	streams := []string{}
+	for _, reaching := range page.requests.all() {
 		if strings.HasSuffix(reaching, "/live") {
-			t.Errorf("a page served closed opened a stream that can only be told what it already knows, and it reopens one every few seconds: %v", asked)
-			break
+			streams = append(streams, reaching)
 		}
 	}
-	if len(asked) < 3 {
-		t.Errorf("the page issued %d requests, and a check that saw almost nothing would pass forever: %v", len(asked), asked)
+	if len(streams) != 1 {
+		t.Errorf("the page opened %d streams, and one held open is what reaches it without it reopening one every few seconds: %v", len(streams), streams)
+	}
+}
+
+func TestThePageStopsSayingTheExchangeIsOver(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+	held.ended(t, page)
+	rendersClosed(t, page, "a page whose exchange the person ended")
+
+	held.serveAgain(oneDecisionReply)
+	page.waitFor(reachedThePage("c-3"))
+
+	var said string
+	page.evaluate(`document.querySelector('.state').textContent`, &said)
+	if strings.Contains(strings.ToLower(said), "over") {
+		t.Errorf("a page the caller asked again on still says %q", said)
+	}
+
+	var operable bool
+	page.evaluate(everythingOnThePageIsLive, &operable)
+	if !operable {
+		t.Error("a page the caller asked again on carries a control that would not take an answer")
+	}
+}
+
+func TestAnAnswerCommittedBeforeTheEndIsNotCarriedIntoWhatComesNext(t *testing.T) {
+	// scenario: A new document reopens an ended page
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.click(within("c-1", ".commit"))
+	page.click(".finish")
+	page.waitFor(`document.querySelector('.send').disabled === true`)
+	if _, arrived := held.awaiting(5 * time.Second); !arrived {
+		t.Fatal("finishing delivered nothing")
+	}
+
+	held.serveAgain(oneDecisionReply)
+	page.waitFor(reachedThePage("c-3"))
+
+	page.click(".send")
+
+	delivered, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("sending from the page the caller asked again on delivered nothing")
+	}
+	for _, decided := range delivered.Decisions {
+		if decided.ID == "c-1" {
+			t.Errorf("an answer committed before the exchange ended was carried into content that does not hold it: %+v", decided)
+		}
 	}
 }

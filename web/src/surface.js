@@ -281,10 +281,10 @@ async function take(revision) {
     }
   }
   bind()
+  takeUpWhetherItIsOver()
   for (const named of committed.keys()) {
     restore(named)
   }
-  takeUpWhetherItIsOver()
   say(closed ? exchangeIsOver : 'A reply arrived, and this page is showing it.')
 }
 
@@ -306,10 +306,6 @@ function restore(named) {
 }
 
 function follow() {
-  if (closed) {
-    return
-  }
-
   const live = new EventSource(`${base()}/live`)
   live.addEventListener('revision', (event) => {
     const revision = Number(event.data)
@@ -318,7 +314,6 @@ function follow() {
     }
   })
   live.addEventListener('closed', () => {
-    live.close()
     close()
     say(exchangeIsOver)
   })
