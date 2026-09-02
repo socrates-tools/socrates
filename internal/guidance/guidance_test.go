@@ -161,7 +161,7 @@ func TestAStatedGuidanceCeilingIsWhatTheGuideIsHeldTo(t *testing.T) {
 		t.Fatalf("the guide built for this test is %d bytes, and it has to be under the %d byte default", len(guide), guidance.DefaultCeiling)
 	}
 
-	under, err := guidance.At(context.Background(), repository.Root, base, len(guide)-1)
+	under, err := guidance.At(context.Background(), repository.Root, base, int64(len(guide)-1))
 	if err != nil {
 		t.Fatalf("reading the guide under a stated ceiling: %v", err)
 	}
@@ -169,7 +169,7 @@ func TestAStatedGuidanceCeilingIsWhatTheGuideIsHeldTo(t *testing.T) {
 		t.Error("a guide over the stated ceiling was carried, and the default is what held it")
 	}
 
-	over, err := guidance.At(context.Background(), repository.Root, base, len(guide))
+	over, err := guidance.At(context.Background(), repository.Root, base, int64(len(guide)))
 	if err != nil {
 		t.Fatalf("reading the guide at a stated ceiling: %v", err)
 	}

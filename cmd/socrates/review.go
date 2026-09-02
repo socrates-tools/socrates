@@ -56,7 +56,7 @@ func newReviewCommand(code *int) *cobra.Command {
 				Binary:          binary,
 				StartedAt:       time.Now(),
 				Retention:       settings.RunRetention,
-				GuidanceCeiling: settings.GuidanceCeiling,
+				GuidanceCeiling: int64(settings.GuidanceCeiling),
 			})
 			if err != nil {
 				return err

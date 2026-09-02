@@ -103,3 +103,5 @@ A guard added and asserted in one step is a guard nobody has seen fail.
 - [x] 13.4 Name the run's field `ReviewGuide` and serialise it as `review_guide`, so nothing competes with the `guidance` key `findings --json` already publishes
 - [x] 13.5 Enumerate `EventGuidanceUnread` and `EventGuidanceOverTheCeiling` in `TestEveryKindTheCoreWritesIsRendered`, so the guard that catches an unrendered kind covers the kinds this change adds
 - [x] 13.6 Bring `proposal.md` and this task list back in step with what was built, since `openspec/` is the normative source and a stale one is worse than none
+- [x] 13.7 Resolve the guidance ceiling once at `Begin`, record it on the run, and have every later round read it from there rather than loading configuration again. Covers `The ceiling a run began with is the one every round is held to`
+- [ ] 13.8 The over-the-ceiling branch still tells a person to edit down a guide their change deleted. Left as stated: it is an `info` on a narrow path, and telling a deletion from an edit that brings the guide under the ceiling needs the snapshot commit read as well as the base

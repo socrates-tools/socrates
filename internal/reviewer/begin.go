@@ -43,7 +43,7 @@ type Beginning struct {
 	Binary          string
 	StartedAt       time.Time
 	Retention       time.Duration
-	GuidanceCeiling int
+	GuidanceCeiling int64
 }
 
 func OuterRun() string {
@@ -74,12 +74,13 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 	}
 
 	run, err := beginning.Store.Create(runstore.Start{
-		StartedAt:      beginning.StartedAt,
-		RepositoryRoot: taken.RepositoryRoot,
-		Base:           taken.Base,
-		Snapshot:       taken.Commit,
-		Intent:         beginning.Intent,
-		ReviewGuide:    reached,
+		StartedAt:       beginning.StartedAt,
+		RepositoryRoot:  taken.RepositoryRoot,
+		Base:            taken.Base,
+		Snapshot:        taken.Commit,
+		Intent:          beginning.Intent,
+		ReviewGuide:     reached,
+		GuidanceCeiling: guide.Ceiling,
 	})
 	if err != nil {
 		return nil, err

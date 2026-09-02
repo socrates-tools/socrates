@@ -103,6 +103,10 @@ It is a default rather than a fixed number, settable as `guidance_ceiling` besid
 The round cap is the precedent for a number nothing configures, and it does not apply here: the cap bounds a dialogue that spends money and can loop, while this bounds how much of a person's own reviewer they spend on their own conventions.
 It was worth being firm about while an oversized guide refused the review, because then the number decided whether reviews happened at all. Once over the ceiling only drops the guidance, the number decides nothing but attention, and that is the person's to spend.
 
+The ceiling a run is held to is resolved once, when the run begins, and recorded on the run.
+A fixed base is not on its own enough to hold the guidance still: reading configuration afresh each round would let somebody raise the ceiling while a run is parked and hand round two guidance round one was never given, with the run's own record still saying the guide was over the ceiling.
+Both halves of what the reviewer is given, the text and the bound on it, therefore come from the run rather than from whatever the configuration says at the moment a round starts.
+
 What matters is which side states it. The file is `~/.socrates/config.yaml`, outside every repository, so raising the ceiling is a decision by whoever runs the review and never by the thing being reviewed. A repository stating one reaches nothing, exactly as it reaches nothing about the diff ceiling. The anchor and the additive rule are untouched by it.
 
 Over the ceiling, the guide is not carried at all.

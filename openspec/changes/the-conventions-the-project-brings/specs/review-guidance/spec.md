@@ -56,7 +56,12 @@ Without this the session that wrote the code also writes the rules the code is j
 The base commit is the anchor `no-mistakes` gets from a trusted default branch, and socrates has it already: it is the state the change is measured against, and by construction no part of the change authored it.
 
 Every round of a run SHALL read the same base, which is the run's original base.
-The guidance is therefore fixed for the whole of a run and cannot change between the rounds of a dialogue.
+
+The ceiling a run is held to SHALL be resolved when the run begins, recorded on the run, and read from there by every later round, rather than loaded again from configuration each round.
+A fixed base alone does not hold the guidance still: a ceiling read afresh would let a person raise it while a run is parked and hand the next round guidance the first round was never given, while the run's own record still said the guide was over the ceiling.
+Both the text and the bound on it therefore come from the run.
+
+The guidance is fixed for the whole of a run and cannot change between the rounds of a dialogue.
 
 #### Scenario: A guide the change adds does not govern that change
 
@@ -72,6 +77,11 @@ The guidance is therefore fixed for the whole of a run and cannot change between
 
 - **WHEN** a second round is invoked on a run whose repository changed the guide after the run began
 - **THEN** the second round's delivered prompt carries the same guidance the first round's did
+
+#### Scenario: The ceiling a run began with is the one every round is held to
+
+- **WHEN** a run's first round is held to a ceiling that leaves the guide out, the person raises that ceiling while the run is parked, and a later round is invoked
+- **THEN** the later round is held to the ceiling the run began with and is given what the first round was given
 
 ### Requirement: The guidance adds to socrates' rules and removes none of them
 

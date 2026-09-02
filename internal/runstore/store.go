@@ -32,20 +32,21 @@ type Reviewed struct {
 }
 
 type Run struct {
-	Name        string           `json:"name"`
-	Repository  string           `json:"repository"`
-	Base        string           `json:"base"`
-	Snapshot    string           `json:"snapshot"`
-	Worktree    string           `json:"worktree,omitempty"`
-	Intent      string           `json:"intent,omitempty"`
-	ReviewGuide guidance.Outcome `json:"review_guide"`
-	Diff        prompt.Delivery  `json:"diff,omitempty"`
-	StartedAt   time.Time        `json:"started_at"`
-	State       runstate.State   `json:"state"`
-	Verdict     *Verdict         `json:"verdict,omitempty"`
-	Reviewer    int              `json:"reviewer,omitempty"`
-	Agent       int              `json:"agent,omitempty"`
-	Reviews     []Reviewed       `json:"reviews,omitempty"`
+	Name            string           `json:"name"`
+	Repository      string           `json:"repository"`
+	Base            string           `json:"base"`
+	Snapshot        string           `json:"snapshot"`
+	Worktree        string           `json:"worktree,omitempty"`
+	Intent          string           `json:"intent,omitempty"`
+	ReviewGuide     guidance.Outcome `json:"review_guide"`
+	GuidanceCeiling int64            `json:"guidance_ceiling,omitempty"`
+	Diff            prompt.Delivery  `json:"diff,omitempty"`
+	StartedAt       time.Time        `json:"started_at"`
+	State           runstate.State   `json:"state"`
+	Verdict         *Verdict         `json:"verdict,omitempty"`
+	Reviewer        int              `json:"reviewer,omitempty"`
+	Agent           int              `json:"agent,omitempty"`
+	Reviews         []Reviewed       `json:"reviews,omitempty"`
 }
 
 func (r *Run) Snapshotted(round int, base, snapshot string) {
@@ -100,12 +101,13 @@ func (r *Run) transition(state runstate.State, verdict *Verdict) error {
 }
 
 type Start struct {
-	StartedAt      time.Time
-	RepositoryRoot string
-	Base           string
-	Snapshot       string
-	Intent         string
-	ReviewGuide    guidance.Outcome
+	StartedAt       time.Time
+	RepositoryRoot  string
+	Base            string
+	Snapshot        string
+	Intent          string
+	ReviewGuide     guidance.Outcome
+	GuidanceCeiling int64
 }
 
 type Store struct {
@@ -213,14 +215,15 @@ func (s Store) Create(start Start) (*Run, error) {
 	}
 
 	run := &Run{
-		Name:        Name(start.StartedAt, key),
-		Repository:  filepath.Clean(absolute),
-		Base:        start.Base,
-		Snapshot:    start.Snapshot,
-		Intent:      start.Intent,
-		ReviewGuide: start.ReviewGuide,
-		StartedAt:   start.StartedAt.UTC().Truncate(time.Second),
-		State:       runstate.Starting,
+		Name:            Name(start.StartedAt, key),
+		Repository:      filepath.Clean(absolute),
+		Base:            start.Base,
+		Snapshot:        start.Snapshot,
+		Intent:          start.Intent,
+		ReviewGuide:     start.ReviewGuide,
+		GuidanceCeiling: start.GuidanceCeiling,
+		StartedAt:       start.StartedAt.UTC().Truncate(time.Second),
+		State:           runstate.Starting,
 	}
 
 	if err := os.MkdirAll(s.root, 0o755); err != nil {

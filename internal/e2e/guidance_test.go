@@ -204,6 +204,41 @@ func TestTheGuidanceDoesNotMoveBetweenRounds(t *testing.T) {
 	}
 }
 
+func TestTheCeilingARunBeganWithIsTheOneEveryRoundIsHeldTo(t *testing.T) {
+	session := harness.Start(t)
+	guide := strings.Repeat("a convention the base commit states\n", 40)
+	commitTheGuide(session, guide)
+	writeConfiguration(t, session, "guidance_ceiling: "+strconv.Itoa(len(guide)-1)+"\n")
+
+	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
+
+	held := session.Recorded(name)
+	if held.ReviewGuide != guidance.OverTheCeiling {
+		t.Fatalf("round 1 records the guidance as %q, and this test needs it left out by the ceiling", held.ReviewGuide)
+	}
+
+	writeConfiguration(t, session, "guidance_ceiling: "+strconv.Itoa(len(guide)+1024)+"\n")
+
+	session.Repository.Write("internal/added.go", answeredBetter)
+	respond(t, session, name, "--finding", "f1", "--fixed", "--note", "an empty document now answers minus one")
+	respond(t, session, name, "--finding", "f2", "--fixed", "--note", "the loop backs off now")
+
+	if out, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
+		t.Fatalf("socrates continue --wait exited %d: %s\n%s", code, failures, out)
+	}
+
+	invocations := session.Simulator.Invocations()
+	if len(invocations) != 2 {
+		t.Fatalf("the reviewer was invoked %d times, want twice", len(invocations))
+	}
+	if _, present := prompt.BodyOf(prompt.Sections(invocations[1].Prompt), prompt.GuidanceHeading); present {
+		t.Error("a ceiling raised while the run was parked handed round 2 guidance round 1 never saw")
+	}
+	if session.Recorded(name).ReviewGuide != guidance.OverTheCeiling {
+		t.Error("the run stopped recording what it was actually held to")
+	}
+}
+
 func TestTheGuidanceDecidesNothingSocratesDecides(t *testing.T) {
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)

@@ -13,9 +13,9 @@ const Path = ".socrates/review-guide.md"
 
 const DefaultCeiling = 16 << 10
 
-func ceiling(stated int) int64 {
+func ceiling(stated int64) int64 {
 	if stated > 0 {
-		return int64(stated)
+		return stated
 	}
 	return DefaultCeiling
 }
@@ -37,23 +37,25 @@ type Guide struct {
 	TooLarge  bool
 }
 
-func At(ctx context.Context, repositoryRoot, base string, stated int) (Guide, error) {
+func At(ctx context.Context, repositoryRoot, base string, stated int64) (Guide, error) {
+	held := ceiling(stated)
+
 	size, present, err := snapshot.BlobSizeAt(ctx, repositoryRoot, base, Path)
 	if err != nil {
-		return Guide{}, fmt.Errorf(readingTheGuide, Path, base, err)
+		return Guide{Ceiling: held}, fmt.Errorf(readingTheGuide, Path, base, err)
 	}
 	if !present {
-		return Guide{}, nil
+		return Guide{Ceiling: held}, nil
 	}
-	if size > ceiling(stated) {
-		return Guide{Size: size, Ceiling: ceiling(stated), AtTheBase: true, TooLarge: true}, nil
+	if size > held {
+		return Guide{Size: size, Ceiling: held, AtTheBase: true, TooLarge: true}, nil
 	}
 
 	content, _, err := snapshot.FileAt(ctx, repositoryRoot, base, Path)
 	if err != nil {
-		return Guide{}, fmt.Errorf(readingTheGuide, Path, base, err)
+		return Guide{Ceiling: held}, fmt.Errorf(readingTheGuide, Path, base, err)
 	}
-	return Guide{Text: hygiene.Neutralise(string(content)), Size: size, Ceiling: ceiling(stated), AtTheBase: true}, nil
+	return Guide{Text: hygiene.Neutralise(string(content)), Size: size, Ceiling: held, AtTheBase: true}, nil
 }
 
 func (g Guide) Reached(changed []string) Outcome {

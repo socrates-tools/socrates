@@ -35,12 +35,11 @@ func newSuperviseCommand() *cobra.Command {
 			defer events.Close()
 
 			return reviewer.Supervise(command.Context(), reviewer.Supervision{
-				Store:           store,
-				Name:            name,
-				Process:         os.Getpid(),
-				Ceiling:         settings.DiffCeiling,
-				GuidanceCeiling: settings.GuidanceCeiling,
-				Recorder:        events,
+				Store:    store,
+				Name:     name,
+				Process:  os.Getpid(),
+				Ceiling:  settings.DiffCeiling,
+				Recorder: events,
 				NewAgent: func(recorder runlog.Recorder) (agent.Agent, error) {
 					return agent.NewClaude(agent.Options{
 						Recorder: recorder,
