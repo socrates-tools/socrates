@@ -472,6 +472,139 @@ const namedAndUnnamed = `{
   ]
 }`
 
+const glancedDocument = `{
+  "title": "one thing to settle",
+  "preamble": "what follows is what was seen",
+  "source": [
+    {"id": "c-1", "name": "the read is unlocked", "severity": "error", "audience": "needs a person", "location": "internal/cache/read.go:41"},
+    {"id": "c-2", "name": "the write counts twice", "severity": "warning", "audience": "the author patches", "location": "internal/cache/write.go:12"},
+    {"id": "c-3", "name": "the log line says nothing", "severity": "info", "audience": "the author patches", "location": "internal/cache/read.go:80"}
+  ],
+  "decisions": [
+    {
+      "id": "c-1",
+      "question": "should the cache be read before the lock is taken",
+      "meaning": "two callers arriving together read the same stale entry",
+      "mode": "single-choice",
+      "options": [
+        {"label": "take the lock first", "meaning": "correctness first", "command": "patch c-1"},
+        {"label": "leave it", "meaning": "acceptable here", "command": "agree c-1"}
+      ]
+    }
+  ]
+}`
+
+const nothingToAnswerDocument = `{
+  "title": "nothing to settle",
+  "preamble": "what follows is what was seen",
+  "source": [
+    {"id": "c-1", "name": "the read is unlocked", "severity": "warning", "audience": "the author patches", "location": "internal/cache/read.go:41"},
+    {"id": "c-2", "name": "the write counts twice", "severity": "info", "audience": "the author patches", "location": "internal/cache/write.go:12"}
+  ]
+}`
+
+const framing = `(() => {
+  const surface = getComputedStyle(document.querySelector('main.surface'));
+  const heading = getComputedStyle(document.querySelector('.heading h1'));
+  const entry = getComputedStyle(document.querySelector('.entry'));
+  return {
+    paper: getComputedStyle(document.body).backgroundColor,
+    ink: getComputedStyle(document.body).color,
+    family: getComputedStyle(document.body).fontFamily,
+    width: surface.maxWidth,
+    padding: surface.padding,
+    title: heading.fontSize,
+    entryFace: entry.backgroundColor,
+    entryRule: entry.borderTopColor,
+    entryText: entry.color,
+  };
+})()`
+
+type framed struct {
+	Paper     string `json:"paper"`
+	Ink       string `json:"ink"`
+	Family    string `json:"family"`
+	Width     string `json:"width"`
+	Padding   string `json:"padding"`
+	Title     string `json:"title"`
+	EntryFace string `json:"entryFace"`
+	EntryRule string `json:"entryRule"`
+	EntryText string `json:"entryText"`
+}
+
+func TestThePageSaysNobodyIsWaiting(t *testing.T) {
+	held := standing(t)
+	page := openingNothingToAnswer(t, held.serve(nothingToAnswerDocument))
+
+	var said string
+	page.evaluate(`document.querySelector('.nothing-said').textContent`, &said)
+	for _, wanted := range []string{"nothing", "waiting"} {
+		if !strings.Contains(strings.ToLower(said), wanted) {
+			t.Errorf("a page with nothing to answer says %q, and it says there is nothing to answer and that nobody is waiting", said)
+		}
+	}
+
+	var offered []string
+	page.evaluate(`Array.from(document.querySelectorAll('input, textarea, button, select, form')).map((held) => held.tagName + '.' + String(held.className))`, &offered)
+	if len(offered) != 0 {
+		t.Errorf("a page with nothing to answer offers %v, and there is nothing on it to answer and nothing to send", offered)
+	}
+}
+
+func TestTheFrameIsTheSameFrame(t *testing.T) {
+	held := standing(t)
+	asking := opening(t, held.serve(glancedDocument))
+
+	var whenAsked framed
+	asking.evaluate(framing, &whenAsked)
+
+	quiet := standing(t)
+	reading := openingNothingToAnswer(t, quiet.serve(nothingToAnswerDocument))
+
+	var whenRead framed
+	reading.evaluate(framing, &whenRead)
+
+	if diff := cmp.Diff(whenAsked, whenRead); diff != "" {
+		t.Errorf("a page that is read and a page that is answered are framed differently (-answered +read):\n%s", diff)
+	}
+
+	for _, preference := range []string{"light", "dark"} {
+		reading.emulate(preference)
+
+		var weighed weighed
+		reading.evaluate(measuringTheContrast, &weighed)
+		if weighed.Measured < 8 {
+			t.Fatalf("under a %s preference only %d texts were measured on a page with nothing to answer", preference, weighed.Measured)
+		}
+		for _, failing := range weighed.Failing {
+			t.Errorf("under a %s preference %s, and the floor the page is held to is %v", preference, failing, contrastFloor)
+		}
+	}
+}
+
+func TestAnEntryTakesThePersonToTheDecision(t *testing.T) {
+	// scenario: An entry leads to the decision that covers it
+	held := standing(t)
+	page := opening(t, held.serve(glancedDocument))
+
+	var listed []string
+	page.evaluate(`Array.from(document.querySelectorAll('.entry .entry-name')).map((held) => held.textContent.trim())`, &listed)
+
+	want := []string{"the read is unlocked", "the write counts twice", "the log line says nothing"}
+	if diff := cmp.Diff(want, listed); diff != "" {
+		t.Errorf("what a person sees at a glance differs (-want +got):\n%s", diff)
+	}
+
+	page.click(`.entry a.entry-name`)
+	page.waitFor(`location.hash === '#decision-c-1'`)
+
+	var reached string
+	page.evaluate(`document.querySelector(location.hash).dataset.decision`, &reached)
+	if reached != "c-1" {
+		t.Errorf("following the entry arrived at %q, and the decision covering it is %q", reached, "c-1")
+	}
+}
+
 func TestADecisionIsShownUnderTheNameItsSourceGivesIt(t *testing.T) {
 	_, page := read(t, namedAndUnnamed)
 

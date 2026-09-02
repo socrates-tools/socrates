@@ -29,7 +29,7 @@ What socrates is:
 - `internal/runstore` - run directories, `run.json`, run selection, rounds, retention.
 - `internal/runstate` - the states and which are terminal.
 - `internal/findings` - the findings contract, the reviewer's schema, the classification and the verdict rule.
-- `internal/dialogue` - what a round leads to, which rounds a person reads, the round cap, and the response document.
+- `internal/dialogue` - what a round leads to, which rounds wait on a person, the round cap, and the response document.
 - `internal/hygiene` - model output neutralised before it re-enters a prompt.
 - `internal/guidance` - the one file socrates reads out of the repository under review, the commit it is read at, and the ceiling it is held to.
 - `internal/prompt` - the delivered prompt, assembled from named sections.
@@ -121,7 +121,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - `clean` requires a findings document that parsed; a missing, dead or unparseable one is `failed`, and `failed` is never merged with `escalated`.
 - A failure carries the account the agent gave of it, bounded, quoted for a person and never matched on.
 - `findings.EffectiveAction` is the one reader of a finding's raw action.
-- `dialogue.After` is the one rule for what a round leads to, and `dialogue.APersonReads` the one rule for which rounds a person reads.
+- `dialogue.After` is the one rule for what a round leads to, and `dialogue.AwaitsAPerson` the one rule for which rounds wait on a person.
 - A finding that asks a person parks the round rather than ending the run.
 - A rejection and a decision are claims a fresh reviewer judges, never suppressions: the reason is required, and no prompt asks a reviewer to withhold a finding.
 - A recorded response is appended, never rewritten.
@@ -129,7 +129,8 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 
 **What a person reads**
 
-- socrates states that a round is one a person reads and does nothing further about the page: no command, flag or run record names one.
+- Every round of a run that ended in `clean`, `awaiting-response` or `escalated` is handed over as a page, and a run that failed or was stopped is handed over as nothing whatever its rounds got as far as.
+- socrates states whether a round waits on a person and does nothing further about the page: no command, flag or run record names one, and it states nothing about whether a page is served.
 - `internal/presentation` is the one place an event becomes a line, and `internal/exit` owns the exit-code table.
 - A follower stops on the run's record or on the log, waits bounded for a log that does not exist yet, and stops on a parked round.
 - `status`, `watch` and `logs` stay three commands.
@@ -139,6 +140,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 
 - `internal/skill` is its one source, and the committed copy is generated from it.
 - It names nothing the binary does not offer, lists every state a run rests in, teaches polling at a stated cadence, names `socrates watch` once and outside the loop, says once that the address `agora serve` prints holds the session `agora poll` is given and that the session is kept for the whole review, and says whose a question is.
+- Every branch that reached a result serves a page, `failed` and `cancelled` name none, and the session waits only where socrates says the round waits on a person.
 - `dialogue.ResponseRules` and `skill.PageBar` are each stated once and rendered where they are needed.
 - It says every control carries the command it becomes and that the page shows that command to nobody, and it names each decision from the finding's identifier rather than titling it.
 - The loop it describes is driven end to end through the real binary, not read.
@@ -213,6 +215,8 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - It composes a command and never runs one, the command it hands back is the option's own string, and no command is rendered on the page.
 - It writes only under socrates' home, in a directory of its own beside the runs, and it resolves no home and reads no configuration file of its own.
 - A caller writes a document rather than a page, and the name, severity, audience and location come from the source a decision cites.
+- A document may hold no decision, and one holding no decision, no source entry and no preamble is refused.
+- Every entry of the source is rendered ahead of the decisions, and a page with nothing to answer offers neither control and says so.
 - Every decision carries a free-text field that no document field can remove.
 - A caller's fragment is reduced to a fixed allowlist before it is embedded, and every name it carries is prefixed by the surface.
 - A caller's stylesheet is reduced from a parse that reached the end of its input, every selector it keeps is scoped to the illustration, and the page admits it by a hash of exactly the bytes it embedded.

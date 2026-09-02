@@ -18,7 +18,7 @@ const beyondAnsweringDocument = `{
   "risk_rationale": "the approach may be wrong rather than the code"
 }`
 
-func TestARoundAPersonReadsSaysSo(t *testing.T) {
+func TestARoundThatWaitsOnAPersonSaysSo(t *testing.T) {
 	for _, reported := range []struct {
 		named    string
 		state    runstate.State
@@ -35,23 +35,23 @@ func TestARoundAPersonReadsSaysSo(t *testing.T) {
 			if err != nil {
 				t.Fatalf("reading the findings of %s: %v", name, err)
 			}
-			if !read.ReadByAPerson {
-				t.Errorf("%s is not reported as a round a person reads, so nothing downstream knows to put it in front of one", reported.named)
+			if !read.AwaitsAPerson {
+				t.Errorf("%s is not reported as a round that waits on a person, so nothing downstream knows to wait for what they answer", reported.named)
 			}
 
 			printed := strings.Join(read.Lines(), "\n")
-			if !strings.Contains(printed, "read by a person") {
-				t.Errorf("%s does not say the round is one a person reads:\n%s", reported.named, printed)
+			if !strings.Contains(printed, "awaits a person") {
+				t.Errorf("%s does not say the round waits on a person:\n%s", reported.named, printed)
 			}
 
-			if field := jsonOf(t, read)["read_by_a_person"]; field != true {
+			if field := jsonOf(t, read)["awaits_a_person"]; field != true {
 				t.Errorf("%s reports %v in the object socrates prints, so a caller has to read prose", reported.named, field)
 			}
 		})
 	}
 }
 
-func TestARoundTheAuthorAnswersAloneSaysNothingAboutAPersonReadingIt(t *testing.T) {
+func TestARoundTheAuthorAnswersAloneSaysNothingAboutWaiting(t *testing.T) {
 	for _, reported := range []struct {
 		named    string
 		state    runstate.State
@@ -69,22 +69,33 @@ func TestARoundTheAuthorAnswersAloneSaysNothingAboutAPersonReadingIt(t *testing.
 			if err != nil {
 				t.Fatalf("reading the findings of %s: %v", name, err)
 			}
-			if read.ReadByAPerson {
-				t.Errorf("%s is reported as a round a person reads, so a person is handed a round that asks them nothing", reported.named)
+			if read.AwaitsAPerson {
+				t.Errorf("%s is reported as a round that waits on a person, so the session stops for an answer nobody was asked for", reported.named)
 			}
 
 			printed := strings.Join(read.Lines(), "\n")
-			if strings.Contains(printed, "read by a person") {
-				t.Errorf("%s says the round is one a person reads:\n%s", reported.named, printed)
+			if strings.Contains(printed, "awaits a person") {
+				t.Errorf("%s says the round waits on a person:\n%s", reported.named, printed)
 			}
-			if _, carried := jsonOf(t, read)["read_by_a_person"]; carried {
+			if _, carried := jsonOf(t, read)["awaits_a_person"]; carried {
 				t.Errorf("%s carries the field in the object socrates prints", reported.named)
+			}
+
+			for field := range jsonOf(t, read) {
+				if namesAPage(field) {
+					t.Errorf("%s reports %q, and whether a round is handed over as a page is nothing socrates states", reported.named, field)
+				}
+			}
+			for _, line := range read.Lines() {
+				if namesAPage(line) {
+					t.Errorf("%s prints %q, and nothing socrates says would stop the round being handed over as a page", reported.named, line)
+				}
 			}
 		})
 	}
 }
 
-func TestScratStatusDoesNotCarryIt(t *testing.T) {
+func TestScratStatusDoesNotCarryTheWait(t *testing.T) {
 	store, name := run(t, runstate.AwaitingResponse, questioningDocument)
 
 	status, err := report.StatusOf(store, name)
@@ -93,12 +104,21 @@ func TestScratStatusDoesNotCarryIt(t *testing.T) {
 	}
 
 	printed := strings.Join(status.Lines(), "\n")
-	if strings.Contains(printed, "read by a person") {
+	if strings.Contains(printed, "awaits a person") {
 		t.Errorf("status carries what only the command read once needs, and everything it prints lands in a polling session's context:\n%s", printed)
 	}
-	if _, carried := jsonOf(t, status)["read_by_a_person"]; carried {
+	if _, carried := jsonOf(t, status)["awaits_a_person"]; carried {
 		t.Error("the status object carries the field, and status is what a waiting session calls in a loop")
 	}
+}
+
+func namesAPage(named string) bool {
+	for _, page := range []string{"page", "artifact", "html", "publish", "render"} {
+		if strings.Contains(strings.ToLower(named), page) {
+			return true
+		}
+	}
+	return false
 }
 
 func jsonOf(t *testing.T, reported any) map[string]any {

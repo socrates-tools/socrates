@@ -44,7 +44,17 @@ type view struct {
 	Over       bool
 	Policy     string
 	Stylesheet template.CSS
+	Source     []entryView
 	Decisions  []decisionView
+}
+
+type entryView struct {
+	ID       string
+	Name     string
+	Severity string
+	Audience string
+	Location string
+	Decided  bool
 }
 
 type decisionView struct {
@@ -93,10 +103,33 @@ func viewOf(read document.Document, frame Frame) view {
 		Stylesheet: template.CSS(painted),
 	}
 
+	decided := map[string]bool{}
+	for _, decision := range read.Decisions {
+		decided[decision.ID] = true
+	}
+
+	for _, entry := range read.Source {
+		shown.Source = append(shown.Source, entryViewOf(entry, decided[entry.ID]))
+	}
 	for _, decision := range read.Decisions {
 		shown.Decisions = append(shown.Decisions, decisionViewOf(decision))
 	}
 	return shown
+}
+
+func entryViewOf(entry document.Entry, decided bool) entryView {
+	name := entry.Name
+	if strings.TrimSpace(name) == "" {
+		name = entry.ID
+	}
+	return entryView{
+		ID:       entry.ID,
+		Name:     name,
+		Severity: entry.Severity,
+		Audience: entry.Audience,
+		Location: entry.Location,
+		Decided:  decided,
+	}
 }
 
 func policyAdmitting(painted string) string {

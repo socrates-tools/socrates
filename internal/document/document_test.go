@@ -47,6 +47,7 @@ func briefly(read document.Document) string {
 }
 
 func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
+	// scenario: A document that asks something is validated as before
 	for _, refused := range []struct {
 		named  string
 		broken func(*document.Document)
@@ -83,9 +84,9 @@ func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
 			names:  []string{"decision 1"},
 		},
 		{
-			named:  "a document holding no decision",
+			named:  "a document holding nothing at all",
 			broken: func(d *document.Document) { d.Decisions = nil },
-			names:  []string{"decision"},
+			names:  []string{"decision", "source", "preamble"},
 		},
 		{
 			named: "a stylesheet larger than the stated size",
@@ -109,6 +110,45 @@ func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func nothingToDecide() document.Document {
+	return document.Document{
+		Title:    "nothing to settle",
+		Preamble: "what follows is what was seen",
+		Source: []document.Entry{
+			{ID: "c-1", Name: "the first thing", Severity: "warning", Audience: "the author patches", Location: "internal/cache/read.go:41"},
+			{ID: "c-2", Name: "the second thing", Severity: "info", Audience: "the author patches", Location: "internal/cache/write.go:12"},
+		},
+	}
+}
+
+func TestADocumentHoldingNoDecisionIsRead(t *testing.T) {
+	read, err := document.Read(raw(t, nothingToDecide()))
+	if err != nil {
+		t.Fatalf("reading a document holding no decision: %v", err)
+	}
+	if diff := cmp.Diff(nothingToDecide(), read); diff != "" {
+		t.Errorf("what reading a document holding no decision gives back differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestADocumentHoldingOnlyAPreambleIsRead(t *testing.T) {
+	written := nothingToDecide()
+	written.Source = nil
+
+	if _, err := document.Read(raw(t, written)); err != nil {
+		t.Fatalf("reading a document holding only a title and a preamble: %v", err)
+	}
+}
+
+func TestADocumentHoldingOnlyASourceIsRead(t *testing.T) {
+	written := nothingToDecide()
+	written.Preamble = ""
+
+	if _, err := document.Read(raw(t, written)); err != nil {
+		t.Fatalf("reading a document holding only a title and a source: %v", err)
 	}
 }
 

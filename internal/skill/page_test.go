@@ -9,10 +9,17 @@ import (
 
 const (
 	pageHeading      = "## The page a person reads"
+	cleanHeading     = "### clean"
+	failedHeading    = "### failed"
 	escalatedHeading = "### escalated"
 	parkedHeading    = "### awaiting-response"
+	cancelledHeading = "### cancelled"
 	waitingStep      = "poll " + inlineCode + "socrates status"
 )
+
+var branchesThatHaveAResult = []string{cleanHeading, escalatedHeading, parkedHeading}
+
+var branchesThatHaveNone = []string{failedHeading, cancelledHeading}
 
 func TestTheBarIsStatedOnceAndRenderedFromThere(t *testing.T) {
 	document := skill.Document()
@@ -64,7 +71,7 @@ func TestTheBarIsStatedBeforeTheBranchesThatReferToIt(t *testing.T) {
 	if bar < 0 {
 		t.Fatal("the skill does not state the bar at all")
 	}
-	for _, branch := range []string{escalatedHeading, parkedHeading} {
+	for _, branch := range branchesThatHaveAResult {
 		at := strings.Index(document, branch)
 		if at < 0 {
 			t.Fatalf("the skill has no %s branch", branch)
@@ -74,20 +81,20 @@ func TestTheBarIsStatedBeforeTheBranchesThatReferToIt(t *testing.T) {
 		}
 	}
 
-	for _, branch := range []string{escalatedHeading, parkedHeading} {
+	for _, branch := range branchesThatHaveAResult {
 		if strings.Contains(sectionOf(t, document, branch), "Length is not thoroughness") {
 			t.Errorf("%s restates the bar, and the copy in front of the session is the one that gets softened", branch)
 		}
 	}
 }
 
-func TestBothBranchesSayToServeThePage(t *testing.T) {
+func TestEveryBranchThatHasAResultSaysToServeThePage(t *testing.T) {
 	document := skill.Document()
 
-	for _, branch := range []string{escalatedHeading, parkedHeading} {
+	for _, branch := range branchesThatHaveAResult {
 		section := strings.ToLower(sectionOf(t, document, branch))
 		if !strings.Contains(section, "page") {
-			t.Errorf("%s says nothing about a page, and it is a branch where a person is the reader:\n%s", branch, section)
+			t.Errorf("%s says nothing about a page, and every round that reached a result is handed over as one:\n%s", branch, section)
 		}
 		for _, said := range []string{"agora serve", "address"} {
 			if !strings.Contains(section, said) {
@@ -96,9 +103,28 @@ func TestBothBranchesSayToServeThePage(t *testing.T) {
 		}
 	}
 
+	for _, branch := range branchesThatHaveNone {
+		section := strings.ToLower(sectionOf(t, document, branch))
+		if strings.Contains(section, "page") {
+			t.Errorf("%s names a page, and no review completed there, so the page would hold the one line socrates already printed:\n%s", branch, section)
+		}
+	}
+
+	t.Run("The clean branch drafts inline", func(t *testing.T) {
+		clean := strings.ToLower(sectionOf(t, document, cleanHeading))
+		for _, said := range []string{"draft it here, in this session", "nothing follows a run that is over"} {
+			if !strings.Contains(clean, said) {
+				t.Errorf("the clean branch does not say %q, so nothing says why the drafting is not delegated:\n%s", said, clean)
+			}
+		}
+		if strings.Contains(clean, "delegate") {
+			t.Errorf("the clean branch delegates, and a fresh subagent costs its own start-up where nothing follows:\n%s", clean)
+		}
+	})
+
 	t.Run("The escalated branch drafts inline", func(t *testing.T) {
 		escalated := strings.ToLower(sectionOf(t, document, escalatedHeading))
-		for _, said := range []string{"draft it here", "the run is over"} {
+		for _, said := range []string{"draft it here, in this session", "for the same reason", "nothing follows an escalated run"} {
 			if !strings.Contains(escalated, said) {
 				t.Errorf("the escalated branch does not say %q, so nothing says why the drafting is not delegated:\n%s", said, escalated)
 			}
@@ -110,7 +136,15 @@ func TestBothBranchesSayToServeThePage(t *testing.T) {
 
 	t.Run("The parked branch delegates", func(t *testing.T) {
 		parked := strings.ToLower(sectionOf(t, document, parkedHeading))
-		for _, said := range []string{"delegate", "subagent", "read again on every one of those turns", "socrates findings --json", "the document and a sentence"} {
+		for _, said := range []string{
+			"delegate",
+			"subagent",
+			"whichever of the two it holds",
+			"read again on every one of those turns",
+			"what costs you is the finding prose rather than who answers it",
+			"socrates findings --json",
+			"the document and a sentence",
+		} {
 			if !strings.Contains(parked, said) {
 				t.Errorf("the parked branch does not say %q, so the drafting lands in the context that is about to patch:\n%s", said, parked)
 			}
@@ -127,11 +161,35 @@ func TestBothBranchesSayToServeThePage(t *testing.T) {
 	})
 }
 
+func TestTheSkillSaysWhichBranchesWait(t *testing.T) {
+	document := skill.Document()
+	page := strings.ToLower(sectionOf(t, document, pageHeading))
+
+	for _, said := range []string{
+		`prints a line beginning "awaits a person"`,
+		"where it says so, wait for them",
+		"where it says nothing, hand over the address and get on with the work",
+	} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so a session waits on every page or on none:\n%s", said, page)
+		}
+	}
+
+	for _, waiting := range []string{escalatedHeading, parkedHeading} {
+		if !strings.Contains(strings.ToLower(sectionOf(t, document, waiting)), "agora poll") {
+			t.Errorf("%s does not say to wait on the page, and socrates reports rounds of it as ones that await a person", waiting)
+		}
+	}
+	if clean := strings.ToLower(sectionOf(t, document, cleanHeading)); strings.Contains(clean, "agora poll") {
+		t.Errorf("the clean branch waits on the page, and it stops a session for an answer nobody was asked for:\n%s", clean)
+	}
+}
+
 func TestTheSessionDoesNotDecideTheConditionItself(t *testing.T) {
 	page := sectionOf(t, skill.Document(), pageHeading)
 
-	if !strings.Contains(page, "read by a person") {
-		t.Error("the skill does not name the line socrates prints, so a session has to decide for itself which rounds a person reads")
+	if !strings.Contains(page, "awaits a person") {
+		t.Error("the skill does not name the line socrates prints, so a session has to decide for itself which rounds wait on a person")
 	}
 	for _, invented := range []string{"unanswered", "escalated", "awaiting-response", "count of"} {
 		if strings.Contains(strings.ToLower(page), invented) {
@@ -140,19 +198,35 @@ func TestTheSessionDoesNotDecideTheConditionItself(t *testing.T) {
 	}
 }
 
-func TestARoundTheAuthorAnswersAloneGetsNoPage(t *testing.T) {
+func TestARoundTheAuthorAnswersAloneGetsAPageNobodyWaitsOn(t *testing.T) {
 	parked := sectionOf(t, skill.Document(), parkedHeading)
 
-	patching, _, found := strings.Cut(parked, "A finding it reports as needing a person")
-	if !found {
-		t.Fatalf("the parked branch does not split the work in two:\n%s", parked)
-	}
-	if strings.Contains(strings.ToLower(patching), "page") {
-		t.Errorf("the half of the parked branch a session answers alone names a page:\n%s", patching)
+	for _, said := range []string{
+		"Hand the round over as a page whichever of the two it holds",
+		"where it says nothing, get on with the patching and leave the page for them to read whenever they like",
+	} {
+		if !strings.Contains(parked, said) {
+			t.Errorf("the parked branch does not say %q, so a round the author answers alone reaches nobody or stops the loop:\n%s", said, parked)
+		}
 	}
 	for _, said := range []string{"socrates respond", "socrates continue"} {
 		if !strings.Contains(parked, said) {
 			t.Errorf("the parked branch no longer says %q", said)
+		}
+	}
+}
+
+func TestARoundWithNothingToAnswerIsAPageWithNothingToAnswer(t *testing.T) {
+	page := sectionOf(t, skill.Document(), pageHeading)
+
+	for _, said := range []string{
+		"the document holds no decision at all",
+		"nothing on it to answer",
+		"nobody is waiting on it",
+		"Do not invent a decision to fill such a page",
+	} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so a round with nothing to answer is a page with a decision nobody asked for:\n%s", said, page)
 		}
 	}
 }
@@ -200,7 +274,7 @@ func TestTheSkillSaysHowAnAnswerReachesTheRun(t *testing.T) {
 	}
 }
 
-func TestThePageIsServedLocallyAndPublishedNowhere(t *testing.T) {
+func TestAPageIsServedLocallyAndPublishedNowhere(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
 	if !strings.Contains(page, "agora serve") {
@@ -318,6 +392,15 @@ func TestTheDecisionsAreInFullAndTheRestIsAList(t *testing.T) {
 			t.Errorf("the page section does not say %q, so the only thing the person has to act on is buried among the rest", said)
 		}
 	}
+	for _, said := range []string{
+		"rather than prose you write",
+		"every entry of it, whether or not a decision cites that entry",
+		"retype none of them",
+	} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so the list is one the session writes and one that can disagree with its own terminal:\n%s", said, page)
+		}
+	}
 }
 
 func sectionOf(t *testing.T, document, heading string) string {
@@ -376,7 +459,7 @@ func TestTheSkillSaysToCarryTheSessionFromServeToPoll(t *testing.T) {
 	}
 }
 
-func TestASecondRoundReachesThePageThePersonAlreadyHas(t *testing.T) {
+func TestALaterRoundReachesThePageThePersonAlreadyHas(t *testing.T) {
 	document := skill.Document()
 	page := sectionOf(t, document, pageHeading)
 
@@ -393,6 +476,13 @@ func TestASecondRoundReachesThePageThePersonAlreadyHas(t *testing.T) {
 
 	if counted := strings.Count(document, "Keep that session for the whole review"); counted != 1 {
 		t.Errorf("the skill says to keep the session %d times, want once, where the session is already stated", counted)
+	}
+
+	for _, branch := range branchesThatHaveAResult {
+		section := sectionOf(t, document, branch)
+		if !strings.Contains(section, "unless an earlier round of this run already gave them one") {
+			t.Errorf("%s says to hand over the address with no condition on it, and a branch reached as the second round hands over a second address:\n%s", branch, section)
+		}
 	}
 }
 

@@ -38,6 +38,17 @@ const oneDecisionDocument = `{
   ]
 }`
 
+const nothingToDecideDocument = `{
+  "title": "nothing to settle",
+  "preamble": "what follows is what was seen",
+  "source": [
+    {"id": "c-1", "name": "the read is unlocked", "severity": "warning", "audience": "the author patches", "location": "internal/cache/read.go:41"},
+    {"id": "c-2", "name": "the write counts twice", "severity": "info", "audience": "the author patches", "location": "internal/cache/write.go:12"}
+  ]
+}`
+
+const nothingAtAllDocument = `{"title": "nothing to settle"}`
+
 type surfaced struct {
 	t      *testing.T
 	binary string
@@ -314,6 +325,46 @@ func TestServeReturnsBeforeThePersonHasReadAnything(t *testing.T) {
 	}
 	if !strings.Contains(string(page), "should the cache be read before the lock is taken") {
 		t.Errorf("the page at the printed address is not the document that was served:\n%s", page)
+	}
+}
+
+func TestADocumentWithNothingToDecideIsServed(t *testing.T) {
+	held := standing(t)
+
+	address := held.serve(nothingToDecideDocument)
+
+	answered, err := http.Get(address)
+	if err != nil {
+		t.Fatalf("reaching the address agora serve printed: %v", err)
+	}
+	defer answered.Body.Close()
+
+	page, err := io.ReadAll(answered.Body)
+	if err != nil {
+		t.Fatalf("reading the page: %v", err)
+	}
+	if answered.StatusCode != http.StatusOK {
+		t.Fatalf("a document holding no decision was served with %d", answered.StatusCode)
+	}
+	for _, held := range []string{"nothing to settle", "what follows is what was seen"} {
+		if !strings.Contains(string(page), held) {
+			t.Errorf("the page does not carry %q, and it renders what the document holds:\n%s", held, page)
+		}
+	}
+}
+
+func TestADocumentWithNothingAtAllIsRefused(t *testing.T) {
+	held := standing(t)
+
+	printed, failures, code := held.reading(nothingAtAllDocument, "serve", "--document", "-")
+	if code == 0 {
+		t.Fatalf("a document holding nothing at all was served at %q", printed)
+	}
+	if !strings.Contains(failures, "hold nothing") {
+		t.Errorf("refusing a document holding nothing at all does not say the page would hold nothing: %s", failures)
+	}
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
+		t.Error("a refused document left a session behind, and it starts no server")
 	}
 }
 

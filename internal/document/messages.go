@@ -4,7 +4,7 @@ const (
 	readingTheDocument             = "reading the document: %w"
 	moreThanOneDocument            = "the document is followed by more content than one document"
 	theDocumentStatesNothingFor    = "the document states no %q, so the page would have nothing to head it with"
-	noDecisions                    = "the document holds no decision, so there would be nothing for a person to answer"
+	theDocumentHoldsNothing        = "the document holds no decision, no source entry and no preamble, so the page would hold nothing under its title"
 	theStylesheetIsTooLarge        = "the document carries a stylesheet of %d bytes, and at most %d of one is embedded. Cut it to what the illustrations need"
 	decisionAt                     = "decision %d"
 	decisionNamed                  = "decision %q"

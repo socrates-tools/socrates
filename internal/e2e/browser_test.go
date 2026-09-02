@@ -95,6 +95,8 @@ type reader struct {
 	context  context.Context
 	requests *recorded
 	refused  *recorded
+	ready    string
+	painted  string
 }
 
 type recorded struct {
@@ -115,6 +117,16 @@ func (r *recorded) all() []string {
 }
 
 func opening(t *testing.T, address string, options ...chromedp.ExecAllocatorOption) *reader {
+	t.Helper()
+	return openingFor(t, address, ".send", ".commit", options...)
+}
+
+func openingNothingToAnswer(t *testing.T, address string, options ...chromedp.ExecAllocatorOption) *reader {
+	t.Helper()
+	return openingFor(t, address, ".nothing-said", ".nothing-said", options...)
+}
+
+func openingFor(t *testing.T, address, ready, painted string, options ...chromedp.ExecAllocatorOption) *reader {
 	t.Helper()
 
 	profile, err := os.MkdirTemp("/tmp", "ag")
@@ -157,13 +169,13 @@ func opening(t *testing.T, address string, options ...chromedp.ExecAllocatorOpti
 		}
 	})
 
-	held := &reader{t: t, context: bounded, requests: requests, refused: refused}
+	held := &reader{t: t, context: bounded, requests: requests, refused: refused, ready: ready, painted: painted}
 	held.do(
 		network.Enable(),
 		log.Enable(),
 		chromedp.Navigate(address),
 		chromedp.WaitReady("body", chromedp.ByQuery),
-		chromedp.WaitReady(".send", chromedp.ByQuery),
+		chromedp.WaitReady(ready, chromedp.ByQuery),
 	)
 	held.settled()
 	return held
@@ -181,7 +193,7 @@ func (r *reader) settled() {
 	r.t.Helper()
 
 	var bound bool
-	r.do(chromedp.Poll("!!document.querySelector('.commit') && !!window.getComputedStyle(document.body).backgroundColor", &bound))
+	r.do(chromedp.Poll("!!document.querySelector('"+r.painted+"') && !!window.getComputedStyle(document.body).backgroundColor", &bound))
 }
 
 func (r *reader) reload() {
@@ -190,7 +202,7 @@ func (r *reader) reload() {
 	r.do(
 		chromedp.Reload(),
 		chromedp.WaitReady("body", chromedp.ByQuery),
-		chromedp.WaitReady(".send", chromedp.ByQuery),
+		chromedp.WaitReady(r.ready, chromedp.ByQuery),
 	)
 	r.settled()
 }

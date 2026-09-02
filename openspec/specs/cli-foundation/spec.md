@@ -2,7 +2,9 @@
 
 ## Purpose
 TBD - created by archiving change a-review-nobody-authored. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: The binary is `socrates`, the short name is `scrat`, and it does one thing
 
 socrates SHALL ship exactly one binary, named `socrates` after the product.
@@ -384,28 +386,31 @@ Either would be the same command reached two ways, and the reason they are separ
 - **WHEN** the three commands are run against one terminal run
 - **THEN** all three report the same verdict and exit with the same code
 
-### Requirement: `scrat findings` says whether the round is one a person reads
+### Requirement: `scrat findings` says whether the round waits on a person
 
-`scrat findings` SHALL report whether the round it is printing is one a person reads, as one line for a reader and one field in the object `--json` prints.
+`scrat findings` SHALL report whether the round it is printing waits on a person, as one line for a reader and one field in the object `--json` prints.
 
 It SHALL report it from the one rule that decides it, and SHALL NOT restate the condition.
+
+The line and the field SHALL name the wait rather than the reading.
+Every round that completed a review is handed over as a page, so a fact reported as whether a person reads the round would be true of every round it is printed for and would decide nothing.
+What still needs deciding is whether the session stops at the page, and that is what is reported.
 
 `scrat status` SHALL NOT carry it.
 `status` is called in a loop and everything it prints lands in the waiting session's context, which is the scarcest resource in the system.
 `findings` is read once, on exactly the branches where the fact is needed, and is already where socrates tells the author the rules.
 
-#### Scenario: A round a person reads says so
+#### Scenario: A round that waits on a person says so
 
 - **WHEN** `scrat findings` is run against a run that escalated, or against a parked round holding a finding a person answers
-- **THEN** it says the round is one a person reads, and the field is in the object `--json` prints
+- **THEN** it says the round waits on a person, and the field is in the object `--json` prints
 
-#### Scenario: A round the author answers alone says nothing about a person reading it
+#### Scenario: A round the author answers alone says nothing about waiting
 
 - **WHEN** `scrat findings` is run against a clean run, or against a parked round whose findings the author answers alone
-- **THEN** it does not say the round is one a person reads
+- **THEN** it does not say the round waits on a person, and it says nothing that would stop the session handing the round over as a page
 
-#### Scenario: `scrat status` does not carry it
+#### Scenario: `scrat status` does not carry the wait
 
-- **WHEN** the lines and the JSON object of `scrat status` are examined for a run whose round is one a person reads
+- **WHEN** the lines and the JSON object of `scrat status` are examined for a run whose round waits on a person
 - **THEN** neither carries it, and what `status` prints is what it printed before
-

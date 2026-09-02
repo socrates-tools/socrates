@@ -19,7 +19,7 @@ func After(classified findings.Classification, round int) runstate.State {
 	return runstate.AwaitingResponse
 }
 
-func APersonReads(classified findings.Classification, state runstate.State) bool {
+func AwaitsAPerson(classified findings.Classification, state runstate.State) bool {
 	switch state {
 	case runstate.Escalated:
 		return true

@@ -25,7 +25,7 @@ type reportedFinding struct {
 type reportedRound struct {
 	Run           string            `json:"run"`
 	State         string            `json:"state"`
-	ReadByAPerson bool              `json:"read_by_a_person"`
+	AwaitsAPerson bool              `json:"awaits_a_person"`
 	Findings      []reportedFinding `json:"findings"`
 }
 
@@ -152,7 +152,7 @@ func everyFindingAsADecision(read reportedRound) []map[string]any {
 	return decisions
 }
 
-func TestARoundAPersonReadsIsHandedOverAsAPage(t *testing.T) {
+func TestARoundThatWaitsOnAPersonIsWaitedOn(t *testing.T) {
 	driven := driving(t, dialogueScenario(unanswerableFinding, nothingFoundAgain), answeredWrongly)
 	name := driven.review("count the characters of a document")
 
@@ -161,13 +161,13 @@ func TestARoundAPersonReadsIsHandedOverAsAPage(t *testing.T) {
 		t.Fatalf("a round escalating for a finding no answer addresses left the run %s", state)
 	}
 
-	if reported := driven.findings(name); !strings.Contains(reported, readByAPerson) {
-		t.Fatalf("socrates does not report the round as one a person reads:\n%s", reported)
+	if reported := driven.findings(name); !strings.Contains(reported, awaitsAPerson) {
+		t.Fatalf("socrates does not report the round as one that waits on a person:\n%s", reported)
 	}
 
 	read := driven.reported(name)
-	if !read.ReadByAPerson {
-		t.Fatalf("socrates findings --json does not report the round as one a person reads: %+v", read)
+	if !read.AwaitsAPerson {
+		t.Fatalf("socrates findings --json does not report the round as one that waits on a person: %+v", read)
 	}
 	if len(read.Findings) == 0 {
 		t.Fatal("socrates findings --json reported no finding, so there is nothing to hand over")
@@ -183,7 +183,7 @@ func TestARoundAPersonReadsIsHandedOverAsAPage(t *testing.T) {
 		var shown bool
 		page.evaluate(fmt.Sprintf(`!!document.querySelector('.decision[data-decision="%s"]')`, finding.ID), &shown)
 		if !shown {
-			t.Errorf("the page the person was handed does not hold %s, which socrates reported for them to read", finding.ID)
+			t.Errorf("the page the person was handed does not hold %s, which socrates reported for them to answer", finding.ID)
 		}
 	}
 

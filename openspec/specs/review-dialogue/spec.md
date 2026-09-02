@@ -2,7 +2,9 @@
 
 ## Purpose
 TBD - created by archiving change a-rejection-is-a-claim. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: What happens after a round is one pure rule
 
 The state a run reaches after a completed round SHALL be a pure function of the classified findings and the round number:
@@ -276,11 +278,11 @@ A second response to the same finding SHALL replace the first, and the replaceme
 - **WHEN** a finding already responded to is responded to again
 - **THEN** the later response is what the next reviewer receives, and the run records that it was replaced
 
-### Requirement: Which rounds a person reads is one rule beside the routing rule
+### Requirement: Which rounds wait on a person is one rule beside the routing rule
 
-Whether a completed round is one a person reads SHALL be a pure function of the classified findings and the state that round led to, in the same package as the rule that decided that state.
+Whether a completed round waits on a person SHALL be a pure function of the classified findings and the state that round led to, in the same package as the rule that decided that state.
 
-A round is one a person reads where socrates is finished and the findings are the person's, and where the round cannot move until a person answers:
+A round waits on a person where the round cannot move until a person answers:
 
 - `escalated`: always
 - `awaiting-response` holding at least one finding that a person answers: always
@@ -288,40 +290,44 @@ A round is one a person reads where socrates is finished and the findings are th
 - `clean`: never
 - any other state a run can hold: never
 
+The rule SHALL decide the wait and SHALL NOT decide whether a page is served.
+Every round that completed a review is handed over as a page, so the question the rule answers is which of those pages the session stops at, not which of them exist.
+The rule it replaces answered both, and the two answers are not the same answer: a clean round is one nobody is waiting on and still one a person wants to read.
+Reading a page is the person's to do whenever they like, and waiting on one is the session's to do only where an answer is owed.
+
 It SHALL take the state rather than the round number.
 The round number would make it re-decide the routing that has already been decided and recorded, and a rule that recomputes an answer somebody has stored can disagree with the stored one.
 Reading the state is reading that one decision's result, which is the property this requirement is for.
 
-A `clean` round is never one a person reads even where it returned findings, because nothing is being asked of anybody and there is no decision to put in front of them.
-A state that is not the outcome of a completed round is never one either, so a failed run and a cancelled run need no case of their own anywhere else.
+A `clean` round waits on nobody even where it returned findings, because nothing is being asked of anybody and there is no decision to put in front of them.
+A state that is not the outcome of a completed round waits on nobody either, so a failed run and a cancelled run need no case of their own anywhere else.
 
 The rule SHALL be decided by this one function and SHALL NOT be re-derived anywhere from the run's state and its counts.
-Both facts a re-derivation would read are already reported, so the second reader is the cheap thing to write and the expensive thing to be wrong about: two places computing who a round is for can disagree, and the disagreement is silent, because a round nobody renders is not a round anybody notices was not rendered.
+Both facts a re-derivation would read are already reported, so the second reader is the cheap thing to write and the expensive thing to be wrong about: two places computing whether a round waits can disagree, and the disagreement is silent, because a session that waits on a round nobody will answer stops for good, and a session that does not wait on one that is owed an answer patches around the person.
 
 The rule SHALL be testable against its whole input space rather than sampled, and it SHALL reach no filesystem, no clock and no process.
 
-#### Scenario: An escalated round is one a person reads
+#### Scenario: An escalated round waits on a person
 
 - **WHEN** a round leads to `escalated`, whether by a blocking finding whose own action asks for nothing or by the round cap
-- **THEN** it is one a person reads
+- **THEN** it waits on a person
 
-#### Scenario: A parked round holding a question is one a person reads
+#### Scenario: A parked round holding a question waits on a person
 
 - **WHEN** a round parks and at least one of the findings it waits on is answered by a person
-- **THEN** it is one a person reads
+- **THEN** it waits on a person
 
-#### Scenario: A parked round the author answers alone is not one a person reads
+#### Scenario: A parked round the author answers alone waits on nobody
 
 - **WHEN** a round parks and every finding it waits on is one the author patches or rejects
-- **THEN** it is not one a person reads
+- **THEN** it waits on nobody
 
-#### Scenario: A clean round is not one a person reads
+#### Scenario: A clean round waits on nobody
 
 - **WHEN** a round leads to `clean`, with or without findings that block nothing
-- **THEN** it is not one a person reads
+- **THEN** it waits on nobody
 
 #### Scenario: The rule is decided over its whole input space
 
 - **WHEN** the rule is exercised across every combination of classified findings and every state a run can hold
-- **THEN** it agrees with the routing rule for every state that rule can reach, and answers that no person reads a round in any state that rule cannot reach
-
+- **THEN** it agrees with the routing rule for every state that rule can reach, and answers that no round waits on a person in any state that rule cannot reach

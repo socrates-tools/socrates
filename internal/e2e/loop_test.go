@@ -470,7 +470,7 @@ func TestTheLoopCarriesTheSessionFromServeToPollAndReachesAVerdict(t *testing.T)
 	driven.namedNothingTheSkillDoesNot()
 }
 
-func TestASecondRoundAPersonReadsReachesThePageTheyAlreadyHave(t *testing.T) {
+func TestALaterRoundIsWrittenToThePageThePersonAlreadyHas(t *testing.T) {
 	driven := driving(t, dialogueScenario(questionOfIntent, questionAtTheCap), answeredWrongly)
 	name := driven.review("count the characters of a document")
 

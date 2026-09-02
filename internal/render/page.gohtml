@@ -15,6 +15,22 @@
 {{if .Preamble}}<p class="preamble">{{.Preamble}}</p>{{end}}
 </header>
 
+{{if .Source}}
+<nav class="glance" aria-label="What was seen">
+<ol class="entries">
+{{range .Source}}
+<li class="entry">
+{{if .Decided}}<a class="entry-name" href="#decision-{{.ID}}">{{.Name}}</a>{{else}}<span class="entry-name">{{.Name}}</span>{{end}}
+{{if .Severity}}<span class="severity" data-severity="{{.Severity}}">{{.Severity}}</span>{{end}}
+{{if .Audience}}<span class="audience">{{.Audience}}</span>{{end}}
+{{if .Location}}<span class="location">{{.Location}}</span>{{end}}
+</li>
+{{end}}
+</ol>
+</nav>
+{{end}}
+
+{{if .Decisions}}
 <ol class="decisions">
 {{range .Decisions}}
 <li class="decision" id="decision-{{.ID}}" data-decision="{{.ID}}" data-mode="{{.Mode}}" data-state="{{if $.Over}}closed{{else}}open{{end}}">
@@ -106,6 +122,11 @@
 </div>
 <p class="state" role="status" aria-live="polite">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
 </section>
+{{else}}
+<section class="nothing">
+<p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>
+</section>
+{{end}}
 </main>
 <script src="/assets/surface.js"></script>
 </body>

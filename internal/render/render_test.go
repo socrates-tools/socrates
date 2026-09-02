@@ -411,11 +411,18 @@ func everyCardCarriesTheField(page *html.Node) bool {
 }
 
 func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
-	read := oneDecision(document.Many)
+	read := citingASource()
+	read.Decisions[0].Mode = document.Many
 	read.Decisions[0].Fragment = document.Fragment{Markup: `<form><input name="smuggled"><button>publish</button></form>`}
 	read.Decisions[0].Evidence = document.Evidence{Patch: "--- a/x\n+++ b/x\n@@ -1,2 +1,2 @@\n-old\n+new\n"}
 
 	page := rendered(t, read)
+
+	for _, leading := range elements(page, "a") {
+		if held := attribute(leading, "href"); !strings.HasPrefix(held, "#") {
+			t.Errorf("the page offers a link to %q, and reading the source moves a person within the page they are on", held)
+		}
+	}
 
 	var parts []string
 	for _, control := range elements(page, "input", "textarea", "button", "select", "form", "output", "dialog") {
@@ -442,6 +449,170 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 	}
 	if !slices.Equal(want, parts) {
 		t.Errorf("the controls the page offers are %v, want %v", parts, want)
+	}
+}
+
+func citingASource() document.Document {
+	read := oneDecision(document.One)
+	read.Source = []document.Entry{
+		{ID: "c-1", Name: "the read is unlocked", Severity: "error", Audience: "a person", Location: "internal/cache/read.go:41"},
+		{ID: "c-2", Name: "the write counts twice", Severity: "warning", Audience: "the author patches", Location: "internal/cache/write.go:12"},
+		{ID: "c-3", Severity: "info", Audience: "the author patches", Location: "internal/cache/read.go:80"},
+	}
+	return read
+}
+
+func nothingToDecide() document.Document {
+	read := citingASource()
+	read.Decisions = nil
+	return read
+}
+
+func entriesIn(page *html.Node) []*html.Node {
+	var found []*html.Node
+	for _, held := range elements(page, "li") {
+		if hasClass(held, "entry") {
+			found = append(found, held)
+		}
+	}
+	return found
+}
+
+func TestTheSourceIsReadBeforeTheDecisions(t *testing.T) {
+	page := rendered(t, citingASource())
+
+	entries := entriesIn(page)
+	if len(entries) != 3 {
+		t.Fatalf("a document citing three source entries rendered %d of them", len(entries))
+	}
+
+	for position, expected := range [][]string{
+		{"the read is unlocked", "error", "a person", "internal/cache/read.go:41"},
+		{"the write counts twice", "warning", "the author patches", "internal/cache/write.go:12"},
+		{"c-3", "info", "the author patches", "internal/cache/read.go:80"},
+	} {
+		for _, wanted := range expected {
+			if !strings.Contains(text(entries[position]), wanted) {
+				t.Errorf("entry %d does not carry %q:\n%s", position+1, wanted, text(entries[position]))
+			}
+		}
+	}
+
+	written, err := render.Page(citingASource(), render.Frame{Base: "/sessions/a1b2c3d4", Token: "a-token", Revision: 1})
+	if err != nil {
+		t.Fatalf("rendering the page: %v", err)
+	}
+	listed := strings.Index(written, `class="entries"`)
+	decided := strings.Index(written, `class="decisions"`)
+	if listed < 0 || decided < 0 || listed > decided {
+		t.Errorf("the list is at %d and the decisions at %d, and a person reads the list first", listed, decided)
+	}
+}
+
+func TestAnEntryNoDecisionCitesIsStillShown(t *testing.T) {
+	page := rendered(t, citingASource())
+
+	var named []string
+	for _, entry := range entriesIn(page) {
+		named = append(named, strings.TrimSpace(text(entry)))
+	}
+	if len(named) != 3 {
+		t.Fatalf("three entries and one decision rendered %d entries: %v", len(named), named)
+	}
+
+	cards := 0
+	for _, held := range elements(page, "li") {
+		if hasClass(held, "decision") {
+			cards++
+		}
+	}
+	if cards != 1 {
+		t.Errorf("three entries and one decision rendered %d decisions, and an entry a decision covers is not a second decision", cards)
+	}
+}
+
+func TestAnEntryLeadsToTheDecisionThatCoversIt(t *testing.T) {
+	page := rendered(t, citingASource())
+
+	leading := map[string]string{}
+	for _, entry := range entriesIn(page) {
+		for _, link := range elements(entry, "a") {
+			leading[strings.TrimSpace(text(link))] = attribute(link, "href")
+		}
+	}
+
+	if leading["the read is unlocked"] != "#decision-c-1" {
+		t.Errorf("the entry a decision covers leads to %q, and the decision is rendered at %q", leading["the read is unlocked"], "#decision-c-1")
+	}
+	if len(leading) != 1 {
+		t.Errorf("%d entries lead somewhere, and only the one a decision covers has anywhere to lead: %v", len(leading), leading)
+	}
+
+	held := false
+	for _, card := range elements(page, "li") {
+		if hasClass(card, "decision") && attribute(card, "id") == "decision-c-1" {
+			held = true
+		}
+	}
+	if !held {
+		t.Error("the entry leads to an identifier the page does not carry")
+	}
+}
+
+func TestTheListIsNotTheCallersProse(t *testing.T) {
+	read := citingASource()
+	read.Preamble = "there were three things and none of them matters"
+
+	page := rendered(t, read)
+
+	for _, entry := range entriesIn(page) {
+		if strings.Contains(text(entry), "none of them matters") {
+			t.Errorf("an entry carries the preamble the caller wrote:\n%s", text(entry))
+		}
+	}
+	for _, wanted := range []string{"the read is unlocked", "the write counts twice", "c-3"} {
+		held := false
+		for _, entry := range entriesIn(page) {
+			if strings.Contains(text(entry), wanted) {
+				held = true
+			}
+		}
+		if !held {
+			t.Errorf("the list does not carry %q, and what it lists comes from the entries", wanted)
+		}
+	}
+}
+
+func TestADocumentCitingNoSourceListsNothing(t *testing.T) {
+	page := rendered(t, oneDecision(document.One))
+
+	if entries := entriesIn(page); len(entries) != 0 {
+		t.Errorf("a document citing no source listed %d entries", len(entries))
+	}
+	for _, held := range elements(page, "nav") {
+		t.Errorf("a document citing no source rendered a <nav class=%q>", attribute(held, "class"))
+	}
+}
+
+func TestAPageWithNothingToAnswerOffersNeitherControl(t *testing.T) {
+	// scenario: A page with nothing to answer offers neither of the two
+	page := rendered(t, nothingToDecide())
+
+	for _, control := range elements(page, "input", "textarea", "button", "select", "form", "output", "dialog") {
+		t.Errorf("a page holding no decision offers a <%s class=%q>, and there is nothing on it to answer and nothing to send",
+			control.Data, attribute(control, "class"))
+	}
+
+	said := ""
+	for _, held := range elements(page, "p") {
+		if hasClass(held, "nothing-said") {
+			said = strings.TrimSpace(text(held))
+		}
+	}
+	for _, wanted := range []string{"nothing", "waiting"} {
+		if !strings.Contains(strings.ToLower(said), wanted) {
+			t.Errorf("a page holding no decision says %q, and it says there is nothing to answer and that nobody is waiting", said)
+		}
 	}
 }
 

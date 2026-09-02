@@ -12,19 +12,19 @@ import (
 	"github.com/ktei/socrates/internal/testing/harness"
 )
 
-const readByAPerson = "read by a person"
+const awaitsAPerson = "awaits a person"
 
-func TestSocratesSaysWhichRoundsAPersonReadsAndOnlyThose(t *testing.T) {
+func TestSocratesSaysWhichRoundsWaitOnAPersonAndOnlyThose(t *testing.T) {
 	for _, driven := range []struct {
 		named    string
 		scenario string
 		state    runstate.State
-		reads    bool
+		waits    bool
 	}{
-		{named: "a round escalating for a finding no answer addresses", scenario: dialogueScenario(unanswerableFinding, nothingFoundAgain), state: runstate.Escalated, reads: true},
-		{named: "a round parked on a question about intent", scenario: dialogueScenario(questionOfIntent, nothingFoundAgain), state: runstate.AwaitingResponse, reads: true},
-		{named: "a round parked on findings the author patches", scenario: dialogueScenario(patchableFindings, nothingFoundAgain), state: runstate.AwaitingResponse, reads: false},
-		{named: "a round that found nothing blocking", scenario: dialogueScenario(nothingFoundAgain, nothingFoundAgain), state: runstate.Clean, reads: false},
+		{named: "a round escalating for a finding no answer addresses", scenario: dialogueScenario(unanswerableFinding, nothingFoundAgain), state: runstate.Escalated, waits: true},
+		{named: "a round parked on a question about intent", scenario: dialogueScenario(questionOfIntent, nothingFoundAgain), state: runstate.AwaitingResponse, waits: true},
+		{named: "a round parked on findings the author patches", scenario: dialogueScenario(patchableFindings, nothingFoundAgain), state: runstate.AwaitingResponse, waits: false},
+		{named: "a round that found nothing blocking", scenario: dialogueScenario(nothingFoundAgain, nothingFoundAgain), state: runstate.Clean, waits: false},
 	} {
 		t.Run(driven.named, func(t *testing.T) {
 			journey := driving(t, driven.scenario, answeredWrongly)
@@ -36,12 +36,12 @@ func TestSocratesSaysWhichRoundsAPersonReadsAndOnlyThose(t *testing.T) {
 			}
 
 			reported := journey.findings(name)
-			if said := strings.Contains(reported, readByAPerson); said != driven.reads {
-				t.Errorf("%s says the round is one a person reads: %t, want %t:\n%s", driven.named, said, driven.reads, reported)
+			if said := strings.Contains(reported, awaitsAPerson); said != driven.waits {
+				t.Errorf("%s says the round waits on a person: %t, want %t:\n%s", driven.named, said, driven.waits, reported)
 			}
 
 			polled, _, _ := journey.run("status", name)
-			if strings.Contains(polled, readByAPerson) {
+			if strings.Contains(polled, awaitsAPerson) {
 				t.Errorf("the command a session polls in a loop carries what only the command read once needs:\n%s", polled)
 			}
 
@@ -86,7 +86,7 @@ func TestTheSurfaceDoesNotGrow(t *testing.T) {
 }
 
 func TestNoRoleSocratesSpawnsWritesForAReader(t *testing.T) {
-	// scenario: Nothing socrates spawns drafts the page
+	// scenario: Nothing socrates spawns drafts a page
 	session := harness.Start(t)
 	session.Simulator.Scenario(dialogueScenario(questionOfIntent, nothingFoundAgain))
 	session.Repository.Write("internal/added.go", answeredWrongly)

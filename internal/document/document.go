@@ -93,8 +93,8 @@ func Validate(read Document) error {
 	if strings.TrimSpace(read.Title) == "" {
 		return fmt.Errorf(theDocumentStatesNothingFor, "title")
 	}
-	if len(read.Decisions) == 0 {
-		return errors.New(noDecisions)
+	if len(read.Decisions) == 0 && len(read.Source) == 0 && strings.TrimSpace(read.Preamble) == "" {
+		return errors.New(theDocumentHoldsNothing)
 	}
 	if len(read.Stylesheet) > StylesheetCeiling {
 		return fmt.Errorf(theStylesheetIsTooLarge, len(read.Stylesheet), StylesheetCeiling)
