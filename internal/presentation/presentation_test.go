@@ -67,6 +67,7 @@ func TestEveryKindTheCoreWritesIsRendered(t *testing.T) {
 		reviewer.EventRoundParked,
 		reviewer.EventResponse,
 		reviewer.EventGuidanceUnread,
+		reviewer.EventGuidanceOverTheCeiling,
 		agent.EventStarted,
 		agent.EventCompleted,
 		agent.EventFailed,

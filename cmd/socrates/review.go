@@ -50,12 +50,13 @@ func newReviewCommand(code *int) *cobra.Command {
 			}
 
 			run, err := reviewer.Begin(command.Context(), reviewer.Beginning{
-				Directory: directory,
-				Intent:    intent,
-				Store:     store,
-				Binary:    binary,
-				StartedAt: time.Now(),
-				Retention: settings.RunRetention,
+				Directory:       directory,
+				Intent:          intent,
+				Store:           store,
+				Binary:          binary,
+				StartedAt:       time.Now(),
+				Retention:       settings.RunRetention,
+				GuidanceCeiling: settings.GuidanceCeiling,
 			})
 			if err != nil {
 				return err

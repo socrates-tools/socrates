@@ -23,12 +23,13 @@ import (
 const firstRound = 1
 
 type Supervision struct {
-	Store    runstore.Store
-	Name     string
-	Process  int
-	Ceiling  int
-	Recorder runlog.Recorder
-	NewAgent func(runlog.Recorder) (agent.Agent, error)
+	Store           runstore.Store
+	Name            string
+	Process         int
+	Ceiling         int
+	GuidanceCeiling int
+	Recorder        runlog.Recorder
+	NewAgent        func(runlog.Recorder) (agent.Agent, error)
 }
 
 func Supervise(ctx context.Context, supervision Supervision) error {
@@ -66,7 +67,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		return supervision.end(run, runstate.Failed, err.Error())
 	}
 
-	guide, err := guidance.At(ctx, run.Repository, run.Base)
+	guide, err := guidance.At(ctx, run.Repository, run.Base, supervision.GuidanceCeiling)
 	if err != nil {
 		return supervision.end(run, runstate.Failed, err.Error())
 	}

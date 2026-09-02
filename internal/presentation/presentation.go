@@ -62,6 +62,8 @@ func sentence(event runlog.Event) string {
 		return fmt.Sprintf(unexpectedSourcesSentence, stated(held, sourcesField))
 	case guidanceUnreadKind:
 		return fmt.Sprintf(guidanceUnreadSentence, stated(held, guideField))
+	case guidanceTooLargeKind:
+		return fmt.Sprintf(guidanceTooLargeSentence, stated(held, guideField), counted(held, sizeField), counted(held, ceilingField))
 	case toolsUnreportedKind:
 		return fmt.Sprintf(toolsUnreportedSentence, stated(held, askedForField))
 	default:

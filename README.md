@@ -234,6 +234,7 @@ roles:
     model: opus
     effort: high
 diff_ceiling: 131072
+guidance_ceiling: 16384
 agent_deadline: 30m
 log_ceiling: 1048576
 run_retention: 336h
@@ -258,7 +259,9 @@ git add .socrates/review-guide.md && git commit -m "what a reviewer should know 
 ```
 
 Write what a reviewer would otherwise get wrong about this repository: the conventions it holds itself to, what a test here is expected to prove, what a directory is for.
-Keep it under 16 KiB, which is where socrates refuses the review rather than delivering part of a guide.
+Keep it under 16 KiB, or state your own ceiling with `guidance_ceiling` in `~/.socrates/config.yaml`.
+A guide over the ceiling is carried whole or not at all, so socrates carries none of it, runs the review anyway, and tells you the size and the ceiling.
+The ceiling is yours to set and not the repository's: it lives in your own configuration, outside every repository socrates reviews.
 
 Three things are worth knowing before writing one:
 

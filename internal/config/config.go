@@ -16,12 +16,13 @@ import (
 )
 
 type Config struct {
-	Roles         agent.Configuration `yaml:"roles"`
-	DiffCeiling   int                 `yaml:"diff_ceiling"`
-	AgentDeadline time.Duration       `yaml:"agent_deadline"`
-	LogCeiling    int64               `yaml:"log_ceiling"`
-	RunRetention  time.Duration       `yaml:"run_retention"`
-	Surface       Surface             `yaml:"surface"`
+	Roles           agent.Configuration `yaml:"roles"`
+	DiffCeiling     int                 `yaml:"diff_ceiling"`
+	GuidanceCeiling int                 `yaml:"guidance_ceiling"`
+	AgentDeadline   time.Duration       `yaml:"agent_deadline"`
+	LogCeiling      int64               `yaml:"log_ceiling"`
+	RunRetention    time.Duration       `yaml:"run_retention"`
+	Surface         Surface             `yaml:"surface"`
 }
 
 type Surface struct {
@@ -73,6 +74,7 @@ func (c Config) validate() error {
 		value int64
 	}{
 		{name: "diff_ceiling", value: int64(c.DiffCeiling)},
+		{name: "guidance_ceiling", value: int64(c.GuidanceCeiling)},
 		{name: "agent_deadline", value: int64(c.AgentDeadline)},
 		{name: "log_ceiling", value: c.LogCeiling},
 		{name: "run_retention", value: int64(c.RunRetention)},

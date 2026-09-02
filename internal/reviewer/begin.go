@@ -32,16 +32,18 @@ const (
 	EventRoundStarted = "round-started"
 	EventResponse     = "response-recorded"
 
-	EventGuidanceUnread = "guidance-unread"
+	EventGuidanceUnread         = "guidance-unread"
+	EventGuidanceOverTheCeiling = "guidance-over-the-ceiling"
 )
 
 type Beginning struct {
-	Directory string
-	Intent    string
-	Store     runstore.Store
-	Binary    string
-	StartedAt time.Time
-	Retention time.Duration
+	Directory       string
+	Intent          string
+	Store           runstore.Store
+	Binary          string
+	StartedAt       time.Time
+	Retention       time.Duration
+	GuidanceCeiling int
 }
 
 func OuterRun() string {
@@ -61,7 +63,7 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 		return nil, err
 	}
 
-	guide, err := guidance.At(ctx, taken.RepositoryRoot, taken.Base)
+	guide, err := guidance.At(ctx, taken.RepositoryRoot, taken.Base, beginning.GuidanceCeiling)
 	if err != nil {
 		return nil, err
 	}
@@ -96,11 +98,20 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 		return nil, err
 	}
 
-	if reached == guidance.OnlyInTheChange {
+	switch reached {
+	case guidance.OnlyInTheChange:
 		if err := beginning.record(run, runlog.Event{
 			Kind:    EventGuidanceUnread,
 			Subject: run.Name,
 			Fields:  map[string]any{"guide": guidance.Path},
+		}); err != nil {
+			return nil, err
+		}
+	case guidance.OverTheCeiling:
+		if err := beginning.record(run, runlog.Event{
+			Kind:    EventGuidanceOverTheCeiling,
+			Subject: run.Name,
+			Fields:  map[string]any{"guide": guidance.Path, "size": guide.Size, "ceiling": guide.Ceiling},
 		}); err != nil {
 			return nil, err
 		}

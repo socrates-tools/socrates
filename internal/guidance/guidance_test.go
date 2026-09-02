@@ -2,12 +2,10 @@ package guidance_test
 
 import (
 	"context"
-	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/ktei/socrates/internal/guidance"
-	"github.com/ktei/socrates/internal/refusal"
 	"github.com/ktei/socrates/internal/testing/gitrepo"
 )
 
@@ -41,7 +39,7 @@ func TestARepositoryWithNoGuide(t *testing.T) {
 	repository := gitrepo.New(t)
 	base := repository.Head()
 
-	read, err := guidance.At(context.Background(), repository.Root, base)
+	read, err := guidance.At(context.Background(), repository.Root, base, 0)
 	if err != nil {
 		t.Fatalf("a repository with no guide answered an error: %v", err)
 	}
@@ -56,63 +54,64 @@ func TestARepositoryWithNoGuide(t *testing.T) {
 	}
 }
 
-func TestAGuideOverTheCeilingIsRefused(t *testing.T) {
+func TestAGuideOverTheCeilingIsNotCarried(t *testing.T) {
 	repository := gitrepo.New(t)
-	oversized := strings.Repeat("a convention nobody needs stated twice\n", 1+guidance.Ceiling/38)
+	oversized := strings.Repeat("a convention nobody needs stated twice\n", 1+guidance.DefaultCeiling/38)
 	repository.Write(guidance.Path, oversized)
 	base := repository.Commit("a guide over the ceiling")
 
-	if len(oversized) <= guidance.Ceiling {
-		t.Fatalf("the guide built for this test is %d bytes, which is not over the %d byte ceiling", len(oversized), guidance.Ceiling)
+	if len(oversized) <= guidance.DefaultCeiling {
+		t.Fatalf("the guide built for this test is %d bytes, which is not over the %d byte ceiling", len(oversized), guidance.DefaultCeiling)
 	}
 
-	_, err := guidance.At(context.Background(), repository.Root, base)
-	if err == nil {
-		t.Fatal("a guide over the ceiling was carried")
+	read := at(t, repository, base)
+	if read.Text != "" {
+		t.Errorf("a guide over the ceiling answered %d bytes of text", len(read.Text))
 	}
-	if !refusal.Is(err) {
-		t.Errorf("a guide over the ceiling failed rather than refusing: %v", err)
+	if !read.TooLarge {
+		t.Error("a guide over the ceiling does not read as one")
 	}
-	for _, named := range []string{guidance.Path, strconv.Itoa(len(oversized)), strconv.Itoa(guidance.Ceiling)} {
-		if !strings.Contains(err.Error(), named) {
-			t.Errorf("the refusal does not name %q: %s", named, err)
-		}
+	if read.Size != int64(len(oversized)) {
+		t.Errorf("the guide reads as %d bytes, and it is %d on disk", read.Size, len(oversized))
+	}
+	if outcome := read.Reached(nil); outcome != guidance.OverTheCeiling {
+		t.Errorf("a guide over the ceiling reached %q, want %q", outcome, guidance.OverTheCeiling)
 	}
 }
 
 func TestAGuideAtTheCeilingIsCarriedWhole(t *testing.T) {
 	repository := gitrepo.New(t)
-	exact := strings.Repeat("x", guidance.Ceiling)
+	exact := strings.Repeat("x", guidance.DefaultCeiling)
 	repository.Write(guidance.Path, exact)
 	base := repository.Commit("a guide at the ceiling")
 
 	read := at(t, repository, base)
-	if len(read.Text) != guidance.Ceiling {
-		t.Errorf("a guide of exactly the ceiling was carried as %d bytes, want %d", len(read.Text), guidance.Ceiling)
+	if len(read.Text) != guidance.DefaultCeiling {
+		t.Errorf("a guide of exactly the ceiling was carried as %d bytes, want %d", len(read.Text), guidance.DefaultCeiling)
 	}
 }
 
-func TestOneByteOverTheCeilingIsRefused(t *testing.T) {
+func TestOneByteOverTheCeilingIsNotCarried(t *testing.T) {
 	repository := gitrepo.New(t)
-	repository.Write(guidance.Path, strings.Repeat("x", guidance.Ceiling+1))
+	repository.Write(guidance.Path, strings.Repeat("x", guidance.DefaultCeiling+1))
 	base := repository.Commit("a guide one byte over the ceiling")
 
-	if _, err := guidance.At(context.Background(), repository.Root, base); err == nil {
+	if read := at(t, repository, base); read.Text != "" {
 		t.Error("a guide one byte over the ceiling was carried")
 	}
 }
 
 func TestTheCeilingIsMeasuredBeforeNeutralisation(t *testing.T) {
 	repository := gitrepo.New(t)
-	collapsible := strings.Repeat(strings.Repeat(" ", 64)+"a line neutralisation collapses\n", 1+guidance.Ceiling/96)
+	collapsible := strings.Repeat(strings.Repeat(" ", 64)+"a line neutralisation collapses\n", 1+guidance.DefaultCeiling/96)
 	repository.Write(guidance.Path, collapsible)
 	base := repository.Commit("a guide that only crosses the ceiling before it is neutralised")
 
-	if len(collapsible) <= guidance.Ceiling {
-		t.Fatalf("the guide built for this test is %d bytes, which is not over the %d byte ceiling", len(collapsible), guidance.Ceiling)
+	if len(collapsible) <= guidance.DefaultCeiling {
+		t.Fatalf("the guide built for this test is %d bytes, which is not over the %d byte ceiling", len(collapsible), guidance.DefaultCeiling)
 	}
 
-	if _, err := guidance.At(context.Background(), repository.Root, base); err == nil {
+	if read := at(t, repository, base); read.Text != "" {
 		t.Error("a guide over the ceiling was carried because neutralisation would have brought it under one")
 	}
 }
@@ -145,9 +144,50 @@ func TestAGuideAtTheBaseIsReachedAsCarried(t *testing.T) {
 func at(t *testing.T, repository *gitrepo.Repository, base string) guidance.Guide {
 	t.Helper()
 
-	read, err := guidance.At(context.Background(), repository.Root, base)
+	read, err := guidance.At(context.Background(), repository.Root, base, 0)
 	if err != nil {
 		t.Fatalf("reading the guide at %s: %v", base, err)
 	}
 	return read
+}
+
+func TestAStatedGuidanceCeilingIsWhatTheGuideIsHeldTo(t *testing.T) {
+	repository := gitrepo.New(t)
+	guide := strings.Repeat("a convention\n", 200)
+	repository.Write(guidance.Path, guide)
+	base := repository.Commit("a guide between two ceilings")
+
+	if len(guide) >= guidance.DefaultCeiling {
+		t.Fatalf("the guide built for this test is %d bytes, and it has to be under the %d byte default", len(guide), guidance.DefaultCeiling)
+	}
+
+	under, err := guidance.At(context.Background(), repository.Root, base, len(guide)-1)
+	if err != nil {
+		t.Fatalf("reading the guide under a stated ceiling: %v", err)
+	}
+	if !under.TooLarge {
+		t.Error("a guide over the stated ceiling was carried, and the default is what held it")
+	}
+
+	over, err := guidance.At(context.Background(), repository.Root, base, len(guide))
+	if err != nil {
+		t.Fatalf("reading the guide at a stated ceiling: %v", err)
+	}
+	if over.TooLarge {
+		t.Error("a guide exactly at the stated ceiling was not carried")
+	}
+}
+
+func TestAnUnstatedCeilingIsTheDefault(t *testing.T) {
+	repository := gitrepo.New(t)
+	repository.Write(guidance.Path, strings.Repeat("x", guidance.DefaultCeiling+1))
+	base := repository.Commit("a guide over the default")
+
+	read := at(t, repository, base)
+	if read.Ceiling != guidance.DefaultCeiling {
+		t.Errorf("an unstated ceiling read as %d, want the default %d", read.Ceiling, guidance.DefaultCeiling)
+	}
+	if !read.TooLarge {
+		t.Error("a guide over the default ceiling was carried when nothing stated a ceiling")
+	}
 }

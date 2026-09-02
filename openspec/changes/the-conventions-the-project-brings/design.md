@@ -25,7 +25,7 @@ It is the same asymmetry the rest of socrates is built on, applied to one more i
 
 - A team's conventions arrive with a clone and reach every review of that repository.
 - The version of those conventions that reviews a change is one no part of that change authored.
-- The channel cannot grow into a general one: one file, one section, one ceiling, no configuration.
+- The channel cannot grow into a general one: one file at one fixed path, one section, and one ceiling the person sets rather than the repository.
 - The `agent-seam` requirement and the `config.yaml` roadmap note stop disagreeing, and the reading that survives is written down.
 
 **Non-Goals:**
@@ -80,30 +80,42 @@ Alternatives considered:
 The cost is that the first version of a guide takes one commit to take effect.
 That is stated, recorded and shown to the person rather than left to be discovered, which is the third recorded outcome below.
 
-### One fixed path, and no configuration
+### One fixed path
 
 `.socrates/review-guide.md`, relative to the repository root.
 
 A directory rather than a single dotfile, because if a second thing is ever read out of a reviewed repository it belongs beside this one rather than adding a second root-level file.
 Nothing socrates writes goes there, in that repository or any other, and the name is the same as socrates' home for the same reason both binaries share one home: one tool, one name.
 
-Nothing configures the path, and nothing configures the ceiling.
-The precedent is the round cap, which is two, which nothing configures, and which refuses a configuration file that names one.
-`internal/config` already decodes with unknown fields refused, so a configuration naming either is refused by the mechanism that is already there rather than by a new check.
+Nothing configures the path.
+A configurable path is a way to point socrates at a file the repository's own tooling generates, which is the working-tree read wearing a hat, and one fixed name is also how somebody arriving at a repository knows where to look.
+`internal/config` already decodes with unknown fields refused, so a configuration naming a path is refused by the mechanism that is already there rather than by a new check.
 
-A configurable path would also be a way to point socrates at a file the repository's own tooling generates, which is the working-tree read wearing a hat.
+The ceiling is different, and the next decision says why.
 
-### The ceiling is fixed, small, and refuses rather than truncates
+### The ceiling defaults small, is the person's to raise, and over it the guidance is dropped rather than the review
 
 The diff ceiling is 128 KiB and it bounds the change itself.
-Guidance competes with the change for the reviewer's attention, so it is bounded an order of magnitude lower: **16 KiB**.
-That is already more convention than any project states usefully inside a review prompt, and a project whose conventions do not fit is asking the reviewer to read a document rather than telling it what to look for.
+Guidance competes with the change for the reviewer's attention, so it defaults an order of magnitude lower: **16 KiB**.
+That is already more convention than most projects state usefully inside a review prompt.
 
-Over the ceiling refuses the review.
+It is a default rather than a fixed number, settable as `guidance_ceiling` beside `diff_ceiling`.
+The round cap is the precedent for a number nothing configures, and it does not apply here: the cap bounds a dialogue that spends money and can loop, while this bounds how much of a person's own reviewer they spend on their own conventions.
+It was worth being firm about while an oversized guide refused the review, because then the number decided whether reviews happened at all. Once over the ceiling only drops the guidance, the number decides nothing but attention, and that is the person's to spend.
+
+What matters is which side states it. The file is `~/.socrates/config.yaml`, outside every repository, so raising the ceiling is a decision by whoever runs the review and never by the thing being reviewed. A repository stating one reaches nothing, exactly as it reaches nothing about the diff ceiling. The anchor and the additive rule are untouched by it.
+
+Over the ceiling, the guide is not carried at all.
 Truncating would deliver part of a maintainer's rules while telling the reviewer they are the rules, which is the silent-wrong-answer shape socrates refuses everywhere it can name one.
-Refusing is loud, names the file, its size and the ceiling, and is fixed by editing a file the person owns.
+Whole or nothing.
 
-Measured on the bytes read from the base commit, before neutralisation, so that the number in the refusal is the number the person sees on disk.
+What is dropped is the guidance, not the review.
+Refusing the review was the first shape of this decision and it was wrong: the guide is always read at the base, so an oversized guide at the base refuses every review in that repository, including the review of the change that shrinks it, until somebody commits a smaller one unreviewed.
+It would also let one person's oversized guide hold up everybody else's work in progress, which is a cost paid by people who did not write it.
+The ceiling exists to bound what the reviewer's attention is spent on, and that job is done by not carrying the guide.
+The run records `over-the-ceiling` distinctly from `none`, and the person is told the size, the ceiling and that the next review carries it, so nothing about it is quiet.
+
+Measured on the size the base commit's tree entry records, before anything is read, so an enormous file at that path is refused without being loaded at all and the number the person is shown is the number on disk.
 
 ### Neutralised on the existing mechanism, not a new one
 

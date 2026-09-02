@@ -281,27 +281,50 @@ func TestAGuideCarryingConflictMarkers(t *testing.T) {
 	}
 }
 
-func TestAGuideOverTheCeilingIsRefusedBeforeAReviewerIsSpawned(t *testing.T) {
+func TestAGuideOverTheCeilingIsNotCarriedAndTheReviewStillRuns(t *testing.T) {
 	// scenario: An oversized guide is never shortened
 	session := harness.Start(t)
-	oversized := strings.Repeat("a convention nobody needs stated twice\n", 1+guidance.Ceiling/38)
+	oversized := strings.Repeat("a convention nobody needs stated twice\n", 1+guidance.DefaultCeiling/38)
 	commitTheGuide(session, oversized)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	_, failures, code := session.Socrates("review")
-	if code == 0 {
-		t.Fatal("a review ran against a guide over the ceiling")
+	name := session.Review()
+	run := session.WaitForTerminal(name)
+
+	if run.State == runstate.Failed {
+		t.Fatalf("a guide over the ceiling failed the review: %s", reason(run))
 	}
-	for _, named := range []string{guidance.Path, strconv.Itoa(len(oversized)), strconv.Itoa(guidance.Ceiling)} {
-		if !strings.Contains(failures, named) {
-			t.Errorf("the refusal does not name %q: %s", named, failures)
+
+	delivered := session.Simulator.OnlyInvocation().Prompt
+	if _, present := prompt.BodyOf(prompt.Sections(delivered), prompt.GuidanceHeading); present {
+		t.Error("a guide over the ceiling was delivered as a section anyway")
+	}
+	if strings.Contains(delivered, "a convention nobody needs stated twice") {
+		t.Error("part of a guide over the ceiling reached the reviewer")
+	}
+}
+
+func TestAGuideOverTheCeilingIsReportedToThePerson(t *testing.T) {
+	session := harness.Start(t)
+	oversized := strings.Repeat("a convention nobody needs stated twice\n", 1+guidance.DefaultCeiling/38)
+	commitTheGuide(session, oversized)
+	session.Repository.Write("internal/added.go", "package internal\n")
+
+	name := session.Review()
+	run := session.WaitForTerminal(name)
+
+	if run.ReviewGuide != guidance.OverTheCeiling {
+		t.Errorf("the run records the guidance as %q, want %q", run.ReviewGuide, guidance.OverTheCeiling)
+	}
+
+	told := strings.Join(presentation.Lines(session.Events(name)), "\n")
+	for _, named := range []string{guidance.Path, strconv.Itoa(len(oversized)), strconv.Itoa(guidance.DefaultCeiling)} {
+		if !strings.Contains(told, named) {
+			t.Errorf("what a person reads does not name %q:\n%s", named, told)
 		}
 	}
-	if names := session.Names(); len(names) != 0 {
-		t.Errorf("a refused review left the runs %v behind", names)
-	}
-	if invocations := session.Simulator.Invocations(); len(invocations) != 0 {
-		t.Errorf("a reviewer was spawned for a refused review, and it was given %d prompts", len(invocations))
+	if !strings.Contains(told, "the next review carries it") {
+		t.Errorf("what a person reads does not say a smaller guide is carried next time:\n%s", told)
 	}
 }
 
@@ -403,13 +426,12 @@ func TestANewlyWrittenGuideIsReportedToThePerson(t *testing.T) {
 	}
 }
 
-func TestNothingConfiguresThePathOrTheCeiling(t *testing.T) {
+func TestNothingConfiguresThePath(t *testing.T) {
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	for _, stated := range []string{
 		"guidance_path: docs/review.md\n",
-		"guidance_ceiling: 1048576\n",
 		"guidance:\n  path: docs/review.md\n",
 		"review_guide: docs/review.md\n",
 	} {
@@ -423,6 +445,48 @@ func TestNothingConfiguresThePathOrTheCeiling(t *testing.T) {
 		if !strings.Contains(failures, named) {
 			t.Errorf("refusing %q does not name the field socrates does not have: %s", named, failures)
 		}
+	}
+}
+
+func TestTheCeilingIsThePersonsToStateNotTheRepositorys(t *testing.T) {
+	session := harness.Start(t)
+	guide := strings.Repeat("a convention\n", 200)
+	commitTheGuide(session, guide)
+	session.Repository.Write(".socrates/config.yaml", "guidance_ceiling: 1\n")
+	session.Repository.Write("socrates.yaml", "guidance_ceiling: 1\n")
+	session.Repository.Write("internal/added.go", "package internal\n")
+
+	writeConfiguration(t, session, "guidance_ceiling: "+strconv.Itoa(len(guide)-1)+"\n")
+
+	lowered := session.Review()
+	run := session.WaitForTerminal(lowered)
+	if run.ReviewGuide != guidance.OverTheCeiling {
+		t.Errorf("the person lowered the ceiling under the guide and the run records %q", run.ReviewGuide)
+	}
+
+	waitForTheNextSecond()
+	writeConfiguration(t, session, "guidance_ceiling: "+strconv.Itoa(len(guide))+"\n")
+
+	raised := session.Review()
+	if again := session.WaitForTerminal(raised); again.ReviewGuide != guidance.Carried {
+		t.Errorf("the person raised the ceiling over the guide and the run records %q", again.ReviewGuide)
+	}
+	if !strings.Contains(session.Simulator.Invocations()[1].Prompt, "a convention") {
+		t.Error("the guide did not reach the reviewer under a ceiling that admits it")
+	}
+}
+
+func TestANegativeGuidanceCeilingIsRefused(t *testing.T) {
+	session := harness.Start(t)
+	session.Repository.Write("internal/added.go", "package internal\n")
+	writeConfiguration(t, session, "guidance_ceiling: -1\n")
+
+	_, failures, code := session.Socrates("review")
+	if code == 0 {
+		t.Error("a negative guidance ceiling was accepted")
+	}
+	if !strings.Contains(failures, "guidance_ceiling") {
+		t.Errorf("refusing a negative guidance ceiling does not name it: %s", failures)
 	}
 }
 

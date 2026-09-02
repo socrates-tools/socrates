@@ -11,6 +11,7 @@ socrates SHALL read `.socrates/review-guide.md`, relative to the repository root
 
 That path SHALL be fixed.
 Nothing SHALL configure it, name a second file, name a directory of files, or scope a file to a subset of the change.
+A configurable path would be a way to point socrates at a file the repository's own tooling generates, which is reading the working tree wearing a hat.
 A repository that wants a reviewer to know something writes it in the one file, and a reviewer is told the same thing about every change to that repository.
 `no-mistakes` scopes its guidance by glob because a contributor there can delete a maintainer's rule from their own review by widening an ignore list, and socrates has no ignore list for that attack to use.
 
@@ -34,9 +35,9 @@ Where the file is absent, or holds nothing once it has been read and neutralised
 - **WHEN** the file is present at the base commit and holds only whitespace
 - **THEN** the review proceeds as though there were no file, and the delivered prompt carries no guidance section
 
-#### Scenario: Nothing configures the path or the ceiling
+#### Scenario: Nothing configures the path
 
-- **WHEN** a configuration file names a guidance path, a second guidance file, or a guidance ceiling
+- **WHEN** a configuration file names a guidance path or a second guidance file
 - **THEN** socrates refuses it, naming the field it does not have
 
 #### Scenario: Reading the guide writes nothing
@@ -127,22 +128,47 @@ Two emptiness tests, one on what was read and one on what is delivered, therefor
 - **WHEN** the guide's text carries conflict markers
 - **THEN** the delivered prompt carries the guidance with them removed, on the same mechanism a re-embedded finding goes through
 
-### Requirement: The guidance is bounded, and a guide over the ceiling refuses the review
+### Requirement: A guide over the ceiling is not carried, and the review still runs
 
-The guidance SHALL be held to a fixed byte ceiling, measured on what was read from the base commit.
+The guidance SHALL be held to a fixed byte ceiling, measured on the size the base commit records for the file and before any of it is read.
 
-A guide over the ceiling SHALL refuse the review, naming the file, its size and the ceiling, and no round SHALL run.
-It SHALL NOT be shortened, summarised or delivered in part.
-Half a maintainer's rules delivered silently is a reviewer told rules that do not exist as stated, and it is the failure socrates refuses everywhere it can name one.
+A guide over the ceiling SHALL NOT be carried, and SHALL NOT be shortened, summarised or delivered in part.
+Half a maintainer's rules delivered silently is a reviewer told rules that do not exist as stated, so the guide is carried whole or not at all.
 
-The ceiling SHALL be smaller than the diff ceiling and SHALL NOT be configurable, for the reason the round cap is not: it bounds what the reviewer's attention is spent on, and a project whose conventions do not fit it is asking for a document rather than for guidance.
+The review SHALL proceed with no guidance rather than being refused.
+Refusing would stop every review in that repository until somebody committed a smaller guide unreviewed, including the review of the change that shrinks it, and one person's oversized guide would hold up everybody else's work in progress.
+The ceiling exists to bound what the reviewer's attention is spent on, not to stop reviews.
 
-The refusal SHALL happen before a reviewer is spawned, and SHALL say what to do about it.
+The run SHALL record that the guide was over the ceiling, distinctly from there being no guide, and the person SHALL be told its size, the ceiling, and that the next review carries it once it is smaller.
 
-#### Scenario: A guide over the ceiling is refused
+The ceiling SHALL default below the diff ceiling, because guidance competes with the change for the reviewer's attention and the change is what the review is for.
+
+It SHALL be settable by the person, in socrates' own configuration file, and SHALL NOT be settable by a repository.
+The file that states it lives outside every repository, so raising the ceiling is the decision of whoever runs the review rather than of the thing being reviewed, and the anchor is untouched by it.
+What a stated ceiling buys is a project whose conventions genuinely need more room, and the worst it costs is a person spending more of their own reviewer's attention on their own conventions.
+
+A stated ceiling SHALL apply to every repository and every run, on the footing the diff ceiling already has, and a repository file naming one SHALL reach nothing.
+A ceiling that is not a size SHALL be refused with the rest of the configuration rather than quietly replaced by the default.
+
+#### Scenario: The ceiling is the person's to state, not the repository's
+
+- **WHEN** the person's configuration states a guidance ceiling and a file in the repository under review states a different one
+- **THEN** the guide is held to what the person stated, and what the repository states reaches nothing
+
+#### Scenario: An unstated ceiling is the default
+
+- **WHEN** no configuration states a guidance ceiling
+- **THEN** the guide is held to the default, and a guide over it is not carried
+
+#### Scenario: A guide over the ceiling is not carried
 
 - **WHEN** a review runs against a repository whose base commit carries a guide larger than the ceiling
-- **THEN** socrates refuses, naming the file, its size and the ceiling, no reviewer is spawned, and no round is recorded
+- **THEN** the review proceeds, the delivered prompt carries no guidance section, and no part of the guide reaches the reviewer
+
+#### Scenario: A guide over the ceiling is reported to the person
+
+- **WHEN** a guide over the ceiling is met
+- **THEN** the run records that it was over the ceiling rather than that there was none, and a person reading the run is told the file, its size, the ceiling, and that the next review carries it
 
 #### Scenario: A guide at the ceiling is carried whole
 
