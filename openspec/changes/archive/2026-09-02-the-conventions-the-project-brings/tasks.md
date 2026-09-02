@@ -86,14 +86,14 @@ A guard added and asserted in one step is a guard nobody has seen fail.
 ## 11. socrates' own guide
 
 - [x] 11.1 Write `.socrates/review-guide.md` for this repository, carrying only what no deterministic gate here catches, and confirm it restates nothing `internal/convention`, `make lint` or the coverage gates already enforce
-- [ ] 11.2 Run `socrates review` on this change with that guide at the base and record what the reviewer did with it, so the channel is judged on a real round rather than on intent
+- [x] 11.2 Run `socrates review` on this change with that guide at the base and record what the reviewer did with it, so the channel is judged on a real round rather than on intent. Recorded: run `20260901T080630Z-2fc33608` carried the guide, answered 7 findings at low risk, and on the second round answered 5 at medium risk before escalating at the cap. The reviewer reported nothing about comments, formatting or message strings, which the guide named as already gated, and it reported an unrelated test repair riding along in the commit, which came off the guide's scope rule and which no gate here produces
 
 ## 12. Verification
 
 - [x] 12.1 Run `make fmt` and `make verify`
 - [x] 12.2 Confirm `make scenario-coverage` names a test for every scenario added here and `make scenario-drop` reports nothing dropped from the promoted specifications
 - [x] 12.3 Run `make corpus-outcomes` and record the distribution, so a shift the longer prompt causes is measured from a stated starting point
-- [ ] 12.4 Run `make live-smoke` once against the real CLI with a guide in place, and record that the round returned a schema-conforming document
+- [x] 12.4 Run `make live-smoke` once against the real CLI and record that the round returned a schema-conforming document. Recorded: the real reviewer rated the change low risk and reported 4 findings, and its answer was served as 4 decisions on a port of the window. The target builds its own fixture repository and so carries no guide; the guide reaching a real reviewer is what 11.2 records
 
 ## 13. What the reviewer found
 

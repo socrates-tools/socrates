@@ -42,6 +42,10 @@ An unknown role SHALL be a programming error caught at construction, not a silen
 The implementation shipped SHALL invoke the `claude` binary in print mode with a streaming JSON output format, supply the JSON schema on the command line, and take the structured output from the terminal `result` event of the stream.
 
 It SHALL load user-level settings only, and SHALL NOT load the reviewed repository's own project or local settings, because those are authored by the thing under review.
+What is refused there is what the vendor would load on its own account: the repository's project and local settings, and the agent instructions, memory and skills that arrive with them.
+They are refused because nothing bounds them, nothing anchors them to a version the change under review did not write, and they reach the session as instructions rather than as something quoted to it.
+A file socrates reads itself is a different thing, and `review-guidance` specifies the one there is: read at the base commit, bounded, neutralised, delivered inside a section as the project's own words, and deciding nothing.
+The distinction is which side reads it, on what terms, and from which commit, rather than whether the text came from the repository at all.
 
 A call that failed SHALL carry the account the agent gave of its own failure, where the agent gave one.
 That terminal event is where the CLI says why the work did not happen, and the agent's error stream is where a process complains about its arguments, its environment and its own startup.
@@ -158,7 +162,12 @@ Neither this requirement nor the seal removes the comparison after the round, wh
 #### Scenario: Project settings are not loaded
 
 - **WHEN** a reviewer is invoked against a repository that carries its own agent instructions
-- **THEN** the recorded invocation restricts settings to user level, and the reviewer's prompt contains none of the repository's instructions
+- **THEN** the recorded invocation restricts settings to user level, and the reviewer's prompt carries none of the repository's agent instructions
+
+#### Scenario: The one file socrates reads is not the vendor loading the repository
+
+- **WHEN** a reviewer is invoked against a repository carrying both its own agent instructions and the guidance file socrates reads
+- **THEN** the recorded invocation restricts settings to user level, the prompt carries none of the repository's agent instructions, and the guidance reaches the prompt in its own section
 
 #### Scenario: A stream that ends mid-event
 
