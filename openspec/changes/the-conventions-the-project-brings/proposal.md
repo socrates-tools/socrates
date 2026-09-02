@@ -44,10 +44,12 @@ Resolves ktei/socrates#2.
 - **It is neutralised on the way into the prompt**, on the mechanism model output already goes through, because it is untrusted text entering a prompt from outside socrates.
   That is what stops a guide forging a section heading and reading as socrates' own instruction.
 
-- **It is bounded**, and a guide over the ceiling refuses the review naming the file and the ceiling rather than delivering part of one.
+- **It is bounded**, and a guide over the ceiling is carried whole or not at all rather than in part.
   Half a maintainer's rules, silently, is the failure socrates refuses everywhere else.
+  What is dropped is the guidance and not the review: the review runs, the run records that the guide was over the ceiling, and the person is told its size and the ceiling.
+  The ceiling defaults to 16 KiB and the person can state their own, in their own configuration file and never in the repository under review.
 
-- **What happened is recorded in the run**: that guidance was carried, that there was none, or that the change adds a guide the base commit does not have and it did not reach this reviewer.
+- **What happened is recorded in the run**: that guidance was carried, that there was none, that the change adds a guide the base commit does not have, or that the guide was over the ceiling.
   The third is the one that would otherwise be a silent surprise, because it is what a person sees the first time they write the file.
 
 - **The `agent-seam` scenario is reworded** to say what it always meant: the repository's own agent instructions are not loaded, by the vendor, on the vendor's account.
@@ -70,14 +72,15 @@ It contributes text to one section, on socrates' terms, and every knob remains u
 
 ## Impact
 
-- **New** `internal/guidance`: the path, the read at the base commit, the ceiling, the refusal, and the three outcomes a run records.
+- **New** `internal/guidance`: the path, the read at the base commit, the ceiling, and the outcomes a run records.
 - `internal/snapshot`: reading a file at a commit becomes an exported operation, so that git invocation stays in the one package that does it.
 - `internal/prompt`: one more section in the fixed order, with socrates' own framing around the guidance and the existing neutraliser applied to it.
 - `internal/reviewer`: reads the guidance once per round from the run's original base and passes it to the prompt.
 - `internal/runstore`, `internal/presentation`: the outcome recorded and the line a person reads for it.
 - `internal/e2e`: a repository whose base carries a guide, one whose change adds a guide the base does not have, and one whose guide is over the ceiling.
-- **No change to** `internal/findings`, `internal/dialogue`, `internal/hygiene`, `internal/agent`, the findings schema, the classification, the verdict rule, the round cap, the diff ceiling, or any command's arguments.
-- **No new configuration.** The path is fixed, the ceiling is fixed, and `~/.socrates/config.yaml` gains nothing.
+- `internal/hygiene`: neutralising is made idempotent, so the text a run records and the text a reviewer is given cannot differ by a second pass.
+- **No change to** `internal/findings`, `internal/dialogue`, `internal/agent`, the findings schema, the classification, the verdict rule, the round cap, the diff ceiling, or any command's arguments.
+- **One new setting.** The path is fixed and nothing configures it. `~/.socrates/config.yaml` gains `guidance_ceiling` beside `diff_ceiling`, user-level like every other setting, so a repository still states nothing about how it is reviewed.
 - **Nothing is written in the repository under review**, and `.socrates/` there is a directory socrates only ever reads.
 
 ## Dependencies

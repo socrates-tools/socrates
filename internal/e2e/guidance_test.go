@@ -343,7 +343,7 @@ func TestGuidanceCarriedIsRecorded(t *testing.T) {
 
 func TestAGuideThatNeutralisesToNothingIsNoGuidance(t *testing.T) {
 	session := harness.Start(t)
-	commitTheGuide(session, "<<<<<<<\n=======\n>>>>>>>\n#\n")
+	commitTheGuide(session, "## #\n<<<<<<<\n=======\n>>>>>>>\n#\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	name := session.Review()

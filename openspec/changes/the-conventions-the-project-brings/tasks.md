@@ -17,12 +17,12 @@ A guard added and asserted in one step is a guard nobody has seen fail.
 
 ## 2. `internal/guidance`
 
-- [x] 2.1 Add `internal/guidance` holding the fixed path `.socrates/review-guide.md` and the fixed 16 KiB ceiling, both unexported from anywhere else, and verify the path and ceiling are stated in exactly one place
-- [x] 2.2 Read the guide at a given base commit and answer one of three outcomes: carried, none, or present in the change and not at the base. Verify each against a temporary repository built for it
+- [x] 2.1 Add `internal/guidance` holding the fixed path `.socrates/review-guide.md` and the 16 KiB default ceiling, and verify each is stated in exactly one place
+- [x] 2.2 Read the guide at a given base commit and answer one of four outcomes: carried, none, present in the change and not at the base, or over the ceiling. Verify each against a temporary repository built for it
 - [x] 2.3 Return whitespace-only content as no guidance rather than as guidance holding nothing, and verify with a guide holding only blank lines. Covers `A guide holding nothing`
-- [x] 2.4 Refuse a guide over the ceiling, naming the file, its size and the ceiling, on `internal/refusal` as every other refusal is, and verify the refusal carries all three. Covers `A guide over the ceiling is refused`
+- [x] 2.4 Carry no part of a guide over the ceiling, answer its size and the ceiling it was held to, and let the review run. Covers `A guide over the ceiling is not carried`
 - [x] 2.5 Carry a guide of exactly the ceiling whole, and verify the boundary from both sides. Covers `A guide at the ceiling is carried whole`
-- [x] 2.6 Confirm the size is measured on the bytes read from the base commit and before neutralisation, and verify with a guide that crosses the ceiling only before neutralisation collapses it
+- [x] 2.6 Read the size from the base commit's tree entry before any of the guide is read, so an oversized guide is never loaded, and verify with a guide that crosses the ceiling only before neutralisation would collapse it
 - [x] 2.7 Put every string the package emits in its own `messages.go`, and confirm none carries an em dash
 
 ## 3. The section the reviewer reads
@@ -51,7 +51,7 @@ A guard added and asserted in one step is a guard nobody has seen fail.
 ## 6. Neutralisation
 
 - [x] 6.1 Assert a guide whose lines would open a prompt section delivers the same set of sections socrates assembled, with the guide's text inside the guidance section. Covers `A guide cannot open a section`
-- [x] 6.2 Assert a guide carrying conflict markers is delivered with them removed, on `internal/hygiene` unchanged and with no second mechanism added. Covers `A guide carrying conflict markers`
+- [x] 6.2 Assert a guide carrying conflict markers is delivered with them removed, on `internal/hygiene` and with no second mechanism added. Covers `A guide carrying conflict markers`
 - [x] 6.3 Confirm the guide on disk is unchanged after the round, since socrates never writes in the repository under review
 - [x] 6.4 Take the neutralisation out and confirm 6.1 and 6.2 both fail
 
@@ -66,8 +66,8 @@ A guard added and asserted in one step is a guard nobody has seen fail.
 
 ## 8. Nothing configures it
 
-- [x] 8.1 Assert a configuration file naming a guidance path is refused, naming the field socrates does not have, on the unknown-field refusal `internal/config` already applies. Covers `Nothing configures the path or the ceiling`
-- [x] 8.2 Assert the same for a configuration file naming a guidance ceiling or a second guidance file. Covers `Nothing configures the path or the ceiling`
+- [x] 8.1 Assert a configuration file naming a guidance path is refused, naming the field socrates does not have, on the unknown-field refusal `internal/config` already applies. Covers `Nothing configures the path`
+- [x] 8.2 Add `guidance_ceiling` to the user's configuration file, assert a stated ceiling is what the guide is held to while a repository stating one reaches nothing, and assert a negative one is refused with the rest of the configuration. Covers `The ceiling is the person's to state, not the repository's`, `An unstated ceiling is the default`
 - [x] 8.3 Confirm the diff ceiling still applies to every repository and every run with no per-repository override, and that no repository file reaches any other setting
 
 ## 9. The seam, restated rather than reopened
@@ -94,3 +94,12 @@ A guard added and asserted in one step is a guard nobody has seen fail.
 - [x] 12.2 Confirm `make scenario-coverage` names a test for every scenario added here and `make scenario-drop` reports nothing dropped from the promoted specifications
 - [x] 12.3 Run `make corpus-outcomes` and record the distribution, so a shift the longer prompt causes is measured from a stated starting point
 - [ ] 12.4 Run `make live-smoke` once against the real CLI with a guide in place, and record that the round returned a schema-conforming document
+
+## 13. What the reviewer found
+
+- [x] 13.1 Neutralise once rather than twice, by making `hygiene.Neutralise` idempotent and asserting it, so the text a run records and the text a reviewer is given cannot differ by a second pass
+- [x] 13.2 Read the guide's size from the base commit's tree entry, so a guide over the ceiling is refused without being loaded
+- [x] 13.3 Answer `only-in-the-change` only where the base carried nothing at the path, so a change that removes or empties a guide is not reported as one that adds it
+- [x] 13.4 Name the run's field `ReviewGuide` and serialise it as `review_guide`, so nothing competes with the `guidance` key `findings --json` already publishes
+- [x] 13.5 Enumerate `EventGuidanceUnread` and `EventGuidanceOverTheCeiling` in `TestEveryKindTheCoreWritesIsRendered`, so the guard that catches an unrendered kind covers the kinds this change adds
+- [x] 13.6 Bring `proposal.md` and this task list back in step with what was built, since `openspec/` is the normative source and a stale one is worse than none

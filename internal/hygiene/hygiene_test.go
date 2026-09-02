@@ -61,3 +61,25 @@ func TestNeutralisingIsIdempotent(t *testing.T) {
 		t.Errorf("neutralising twice differs from once:\nonce:  %q\ntwice: %q", once, twice)
 	}
 }
+
+func TestNeutralisingTwiceAnswersWhatNeutralisingOnceDid(t *testing.T) {
+	for _, field := range []string{
+		"## #",
+		"# ## #",
+		"#",
+		"## ",
+		"### a heading a project wrote",
+		"#not a heading",
+		"<<<<<<< HEAD\n=======\n>>>>>>> theirs",
+		"  indented   text  \r\nand another line",
+		"",
+		"   ",
+		"## <<<<<<< #",
+	} {
+		once := hygiene.Neutralise(field)
+		if twice := hygiene.Neutralise(once); twice != once {
+			t.Errorf("neutralising %q answered %q, and neutralising that answered %q: what is recorded and what is delivered are then decided from different text",
+				field, once, twice)
+		}
+	}
+}

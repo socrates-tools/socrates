@@ -21,6 +21,17 @@ func collapsed(line string) string {
 }
 
 func withoutHeadingMarker(line string) string {
+	stripped := line
+	for {
+		shorter := withoutOneHeadingMarker(stripped)
+		if shorter == stripped {
+			return stripped
+		}
+		stripped = shorter
+	}
+}
+
+func withoutOneHeadingMarker(line string) string {
 	named := strings.TrimLeft(line, headingMarker)
 	if len(named) == len(line) {
 		return line
