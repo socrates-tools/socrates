@@ -140,7 +140,7 @@ func TestHowToIllustrateIsStatedBesideWhenTo(t *testing.T) {
 
 	bar := strings.Index(document, skill.PageBar)
 	mechanism := strings.Index(document, "A decision may also carry one illustration")
-	rest := strings.Index(document, "The findings a person answers go on the page in full.")
+	rest := strings.Index(document, "Every finding in the round gets a card of its own.")
 	if bar < 0 || mechanism < 0 || rest < 0 {
 		t.Fatal("the skill states either the bar or the mechanism nowhere at all")
 	}

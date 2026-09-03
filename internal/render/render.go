@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"html/template"
+	"slices"
 	"strings"
 
 	"github.com/ktei/socrates/internal/document"
@@ -22,6 +23,8 @@ const (
 )
 
 var Illustration = stylesheet.Scope{Selector: "." + PaintedClass, Prefix: NamePrefix}
+
+var mostSevereFirst = []string{"error", "warning", "info"}
 
 //go:embed page.gohtml
 var pageSource string
@@ -114,7 +117,21 @@ func viewOf(read document.Document, frame Frame) view {
 	for _, decision := range read.Decisions {
 		shown.Decisions = append(shown.Decisions, decisionViewOf(decision))
 	}
+
+	slices.SortStableFunc(shown.Source, func(one, other entryView) int {
+		return rankOf(one.Severity) - rankOf(other.Severity)
+	})
+	slices.SortStableFunc(shown.Decisions, func(one, other decisionView) int {
+		return rankOf(one.Severity) - rankOf(other.Severity)
+	})
 	return shown
+}
+
+func rankOf(severity string) int {
+	if at := slices.Index(mostSevereFirst, severity); at >= 0 {
+		return at
+	}
+	return len(mostSevereFirst)
 }
 
 func entryViewOf(entry document.Entry, decided bool) entryView {

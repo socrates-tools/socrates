@@ -216,17 +216,24 @@ func TestARoundTheAuthorAnswersAloneGetsAPageNobodyWaitsOn(t *testing.T) {
 	}
 }
 
-func TestARoundWithNothingToAnswerIsAPageWithNothingToAnswer(t *testing.T) {
+func TestARoundWithNothingToAnswerIsStillARoundInFull(t *testing.T) {
 	page := sectionOf(t, skill.Document(), pageHeading)
 
 	for _, said := range []string{
-		"the document holds no decision at all",
-		"nothing on it to answer",
-		"nobody is waiting on it",
-		"Do not invent a decision to fill such a page",
+		"every finding is still a card and none of them carries an option",
+		"Nothing on it is theirs to answer, so nobody is waiting on it",
+		"rounds in full rather than rounds worth less",
 	} {
 		if !strings.Contains(page, said) {
-			t.Errorf("the page section does not say %q, so a round with nothing to answer is a page with a decision nobody asked for:\n%s", said, page)
+			t.Errorf("the page section does not say %q, so a round with nothing to answer is handed over as less than the round:\n%s", said, page)
+		}
+	}
+	for _, withdrawn := range []string{
+		"the document holds no decision at all",
+		"a short list",
+	} {
+		if strings.Contains(page, withdrawn) {
+			t.Errorf("the page section still says %q, and every finding in the round is a card:\n%s", withdrawn, page)
 		}
 	}
 }
@@ -384,21 +391,71 @@ func TestWhenToRecommendIsStatedOnce(t *testing.T) {
 	}
 }
 
-func TestTheDecisionsAreInFullAndTheRestIsAList(t *testing.T) {
+func TestEveryFindingInTheRoundIsACard(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
-	for _, said := range []string{"in full", "short list"} {
+	for _, said := range []string{
+		"every finding in the round gets a card of its own",
+		"not the ones a person answers in full and the rest as a line in a list",
+		"not a sentence in the preamble",
+		"signs off on the round rather than on the part of it that survived triage",
+	} {
 		if !strings.Contains(page, said) {
-			t.Errorf("the page section does not say %q, so the only thing the person has to act on is buried among the rest", said)
+			t.Errorf("the page section does not say %q, so a finding the person never sees in full is a line somebody else wrote:\n%s", said, page)
 		}
 	}
-	for _, said := range []string{
+	for _, owned := range []string{
 		"rather than prose you write",
 		"every entry of it, whether or not a decision cites that entry",
 		"retype none of them",
 	} {
+		if strings.Contains(page, owned) {
+			t.Errorf("the page section restates %q, and the surface owns how the source reaches the page:\n%s", owned, page)
+		}
+	}
+}
+
+func TestAResolvedFindingIsStatedRatherThanAsked(t *testing.T) {
+	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+
+	for _, said := range []string{
+		"a finding you have already resolved is a card that states something rather than one that asks anything",
+		"what the finding was and what resolved it",
+		"carries the diff where the diff is what makes the resolution clear",
+		"carries no options",
+	} {
 		if !strings.Contains(page, said) {
-			t.Errorf("the page section does not say %q, so the list is one the session writes and one that can disagree with its own terminal:\n%s", said, page)
+			t.Errorf("the page section does not say %q, so a finding already put right reads as one still owed an answer:\n%s", said, page)
+		}
+	}
+}
+
+func TestTheReasonForOfferingNoOptionsIsGiven(t *testing.T) {
+	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+
+	for _, said := range []string{
+		"a control that changes nothing reads as a question the person still has to answer",
+		"something is still expected of them",
+		"states no mode either",
+		"still carries the field a person writes in",
+	} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so the rule about a settled card is one a session can talk itself out of:\n%s", said, page)
+		}
+	}
+}
+
+func TestForegroundingSurvivesWithoutDemotingAnything(t *testing.T) {
+	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+
+	for _, said := range []string{
+		"the order the cards arrive in and the absence of controls",
+		"most severe first and informational last",
+		"the first card they meet",
+		"shorten no finding, reduce none of them to a list, and omit none",
+	} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so foregrounding is bought by demoting a finding:\n%s", said, page)
 		}
 	}
 }

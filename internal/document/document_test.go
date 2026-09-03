@@ -74,11 +74,6 @@ func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
 			names:  []string{"drop it", "d-1"},
 		},
 		{
-			named:  "a decision with no options and no field of its own to answer in",
-			broken: func(d *document.Document) { d.Decisions[0].Options = nil },
-			names:  []string{"d-1"},
-		},
-		{
 			named:  "a decision with no identifier",
 			broken: func(d *document.Document) { d.Decisions[0].ID = "" },
 			names:  []string{"decision 1"},
@@ -149,6 +144,111 @@ func TestADocumentHoldingOnlyASourceIsRead(t *testing.T) {
 
 	if _, err := document.Read(raw(t, written)); err != nil {
 		t.Fatalf("reading a document holding only a title and a source: %v", err)
+	}
+}
+
+func statingSomething() document.Document {
+	written := whole()
+	written.Decisions[0].Options = nil
+	written.Decisions[0].Mode = ""
+	return written
+}
+
+func TestADecisionMayStateSomethingRatherThanAsk(t *testing.T) {
+	read, err := document.Read(raw(t, statingSomething()))
+	if err != nil {
+		t.Fatalf("reading a document holding a decision that asks nothing: %v", err)
+	}
+	if len(read.Decisions) != 1 {
+		t.Fatalf("a document holding one decision that asks nothing came back with %d", len(read.Decisions))
+	}
+	if len(read.Decisions[0].Options) != 0 {
+		t.Errorf("a decision that asks nothing came back offering %d options", len(read.Decisions[0].Options))
+	}
+	if read.Decisions[0].Question != statingSomething().Decisions[0].Question {
+		t.Errorf("what the decision states came back as %q", read.Decisions[0].Question)
+	}
+}
+
+func TestAModeOnADecisionWithNoOptionsIsRefusedBeforeServing(t *testing.T) {
+	for _, stated := range document.Modes() {
+		t.Run(string(stated), func(t *testing.T) {
+			written := statingSomething()
+			written.Decisions[0].Mode = stated
+
+			read, err := document.Read(raw(t, written))
+			if err == nil {
+				t.Fatalf("a decision offering nothing and stating the mode %q validated: %s", stated, briefly(read))
+			}
+			for _, named := range []string{"d-1", string(stated)} {
+				if !strings.Contains(err.Error(), named) {
+					t.Errorf("refusing a mode on a decision with no options does not name %q: %v", named, err)
+				}
+			}
+		})
+	}
+}
+
+func TestADecisionWithOptionsStillRequiresItsMode(t *testing.T) {
+	written := whole()
+	written.Decisions[0].Mode = ""
+
+	read, err := document.Read(raw(t, written))
+	if err == nil {
+		t.Fatalf("a decision offering options and stating no mode validated: %s", briefly(read))
+	}
+	if !strings.Contains(err.Error(), "d-1") {
+		t.Errorf("refusing a decision that states no mode does not name it: %v", err)
+	}
+}
+
+func TestAnUnknownEvidenceLanguageIsRefusedBeforeServing(t *testing.T) {
+	written := whole()
+	written.Decisions[0].Evidence = document.Evidence{Language: "prolog", Code: "read(X) :- lock(X).\n"}
+
+	read, err := document.Read(raw(t, written))
+	if err == nil {
+		t.Fatalf("a document naming a language the page cannot highlight validated: %s", briefly(read))
+	}
+	for _, named := range []string{"d-1", "prolog"} {
+		if !strings.Contains(err.Error(), named) {
+			t.Errorf("refusing an unknown evidence language does not name %q: %v", named, err)
+		}
+	}
+	for _, known := range []string{"csharp", "diff", "go"} {
+		if !strings.Contains(err.Error(), known) {
+			t.Errorf("refusing an unknown evidence language does not name %q, and the way forward is in the message: %v", known, err)
+		}
+	}
+}
+
+func TestEvidenceWithNoLanguageIsServed(t *testing.T) {
+	written := whole()
+	written.Decisions[0].Evidence = document.Evidence{Code: "entry, held := cache.Read(key)\n"}
+
+	read, err := document.Read(raw(t, written))
+	if err != nil {
+		t.Fatalf("reading a document carrying evidence that names no language: %v", err)
+	}
+	if read.Decisions[0].Evidence.Language != "" {
+		t.Errorf("evidence naming no language came back naming %q", read.Decisions[0].Evidence.Language)
+	}
+}
+
+func TestEveryLanguageTheDocumentKnowsIsServed(t *testing.T) {
+	// scenario: The languages a caller actually passes are highlighted
+	known := document.Languages()
+	if len(known) == 0 {
+		t.Fatal("the document contract knows no language at all, so this test proves nothing")
+	}
+
+	for _, named := range known {
+		written := whole()
+		written.Decisions[0].Evidence = document.Evidence{Language: named, Code: "one line\n"}
+
+		if _, err := document.Read(raw(t, written)); err != nil {
+			t.Errorf("a document naming the language %q is refused, and the page highlights it: %v", named, err)
+		}
 	}
 }
 

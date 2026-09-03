@@ -10,7 +10,7 @@ import (
 )
 
 func TestTheDocumentContractImportsNothingOutward(t *testing.T) {
-	allowed := []string{"bytes", "encoding/json", "errors", "fmt", "slices", "strings"}
+	allowed := []string{"bytes", "embed", "encoding/json", "errors", "fmt", "slices", "strings"}
 
 	for _, imported := range source.Imports(t, source.Root(t), filepath.Join("internal", "document")) {
 		if strings.HasPrefix(imported, source.ModulePath) {

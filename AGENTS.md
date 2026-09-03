@@ -49,7 +49,7 @@ What socrates is:
 What agora is:
 
 - `cmd/agora` - the binary: `serve`, `poll`, `end`, `stop`, `version`, and nothing else.
-- `internal/document` - what a caller writes for the surface to render, and what it copies rather than accepts.
+- `internal/document` - what a caller writes for the surface to render, what it copies rather than accepts, and the languages the page can highlight.
 - `internal/sanitise` - a caller's HTML fragment reduced to a fixed allowlist, and every name it carries prefixed.
 - `internal/stylesheet` - a caller's stylesheet read as a parse, reduced to a fixed allowlist, and scoped to the illustration.
 - `internal/render` - a document to one HTML page, and a patch to the rows of a split diff.
@@ -143,6 +143,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - Every branch that reached a result serves a page, `failed` and `cancelled` name none, and the session waits only where socrates says the round waits on a person.
 - `dialogue.ResponseRules` and `skill.PageBar` are each stated once and rendered where they are needed.
 - It says every control carries the command it becomes and that the page shows that command to nobody, and it names each decision from the finding's identifier rather than titling it.
+- It says every finding in the round gets a card of its own, that a finding the session resolved states what resolved it and offers no options, and that what foregrounds the rest is the severity order rather than shortening, listing or omitting anything.
 - The loop it describes is driven end to end through the real binary, not read.
 
 **The binaries**
@@ -216,8 +217,11 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - It writes only under socrates' home, in a directory of its own beside the runs, and it resolves no home and reads no configuration file of its own.
 - A caller writes a document rather than a page, and the name, severity, audience and location come from the source a decision cites.
 - A document may hold no decision, and one holding no decision, no source entry and no preamble is refused.
-- Every entry of the source is rendered ahead of the decisions, and a page with nothing to answer offers neither control and says so.
-- Every decision carries a free-text field that no document field can remove.
+- A decision may carry no options, and such a card states something and offers no control a person could mistake for a choice; one carrying no options and stating a mode is refused.
+- Every entry of the source is rendered ahead of the decisions, and both are ordered by the severity the source carries, most severe first, informational last, an unstated severity after all of them, and ties in the order the document listed them.
+- The order is the surface's, so no field of a document reaches it, and a page with nothing to answer offers neither control and says so.
+- Every decision carries a free-text field that no document field can remove, including one that offers no options.
+- The languages the page highlights are the bundled library's common set, stated once and generated from `web/`, and a document naming one outside it is refused while one naming none renders as plain text.
 - A caller's fragment is reduced to a fixed allowlist before it is embedded, and every name it carries is prefixed by the surface.
 - A caller's stylesheet is reduced from a parse that reached the end of its input, every selector it keeps is scoped to the illustration, and the page admits it by a hash of exactly the bytes it embedded.
 - What a caller paints is contained by the illustration, so a rule inside one decides nothing about where the page's own controls land.

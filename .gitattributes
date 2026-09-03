@@ -16,6 +16,7 @@ Makefile text eol=lf
 *.ico binary
 
 internal/assets/bundle/** linguist-generated
+internal/document/languages.json linguist-generated
 .claude/skills/socrates/SKILL.md linguist-generated
 platforms.json linguist-generated
 

@@ -2,26 +2,7 @@
     Copyright (c) 2006, Ivan Sagalaev.
     The full text, and every other notice this binary carries, is in NOTICE at
     the root of the repository this was built from. */
-import hljs from 'highlight.js/lib/core'
-import bash from 'highlight.js/lib/languages/bash'
-import css from 'highlight.js/lib/languages/css'
-import go from 'highlight.js/lib/languages/go'
-import java from 'highlight.js/lib/languages/java'
-import javascript from 'highlight.js/lib/languages/javascript'
-import json from 'highlight.js/lib/languages/json'
-import markdown from 'highlight.js/lib/languages/markdown'
-import python from 'highlight.js/lib/languages/python'
-import rust from 'highlight.js/lib/languages/rust'
-import sql from 'highlight.js/lib/languages/sql'
-import typescript from 'highlight.js/lib/languages/typescript'
-import xml from 'highlight.js/lib/languages/xml'
-import yaml from 'highlight.js/lib/languages/yaml'
-
-for (const [name, language] of Object.entries({
-  bash, css, go, java, javascript, json, markdown, python, rust, sql, typescript, xml, yaml,
-})) {
-  hljs.registerLanguage(name, language)
-}
+import hljs from 'highlight.js/lib/common'
 
 const committed = new Map()
 const exchangeIsOver = 'The exchange is over. Nothing further will be sent from this page.'

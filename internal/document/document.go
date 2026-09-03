@@ -123,11 +123,14 @@ func Validate(read Document) error {
 		if strings.TrimSpace(decision.Question) == "" {
 			return fmt.Errorf(statesNothingFor, named, "question")
 		}
-		if !slices.Contains(modes, decision.Mode) {
-			return fmt.Errorf(unknownMode, named, decision.Mode, modes)
+		if stated := decision.Evidence.Language; stated != "" && !slices.Contains(languages, stated) {
+			return fmt.Errorf(unknownLanguage, named, stated, languages)
 		}
-		if len(decision.Options) == 0 {
-			return fmt.Errorf(noOptions, named)
+		if len(decision.Options) == 0 && decision.Mode != "" {
+			return fmt.Errorf(aModeWithoutOptions, named, decision.Mode)
+		}
+		if len(decision.Options) > 0 && !slices.Contains(modes, decision.Mode) {
+			return fmt.Errorf(unknownMode, named, decision.Mode, modes)
 		}
 		recommended := 0
 		for offered, option := range decision.Options {

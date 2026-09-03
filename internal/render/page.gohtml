@@ -74,6 +74,7 @@
 <div class="evidence illustration"><div class="painted">{{.Fragment}}</div></div>
 {{end}}
 
+{{if .Options}}
 <fieldset class="options">
 <legend>{{if .Multiple}}Choose as many as apply{{else}}Choose one{{end}}</legend>
 {{$decision := .}}
@@ -88,6 +89,7 @@
 </label>
 {{end}}
 </fieldset>
+{{end}}
 
 <label class="words">
 <span class="words-label">In your own words</span>

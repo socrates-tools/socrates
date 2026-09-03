@@ -364,6 +364,92 @@ func TestADocumentThatMarksNothingIsUnaffected(t *testing.T) {
 	}
 }
 
+func statingSomething() document.Document {
+	read := oneDecision(document.One)
+	read.Decisions[0].Options = nil
+	read.Decisions[0].Mode = ""
+	return read
+}
+
+func cardsIn(page *html.Node) []*html.Node {
+	var found []*html.Node
+	for _, held := range elements(page, "li") {
+		if hasClass(held, "decision") {
+			found = append(found, held)
+		}
+	}
+	return found
+}
+
+func TestADecisionWithNoOptionsRendersAsACardThatAsksNothing(t *testing.T) {
+	page := rendered(t, statingSomething())
+
+	cards := cardsIn(page)
+	if len(cards) != 1 {
+		t.Fatalf("one decision that asks nothing rendered %d cards", len(cards))
+	}
+
+	card := cards[0]
+	for _, stated := range []string{
+		"should the cache be read before the lock is taken",
+		"two callers arriving together read the same stale entry",
+	} {
+		if !strings.Contains(text(card), stated) {
+			t.Errorf("the card does not carry %q:\n%s", stated, text(card))
+		}
+	}
+
+	if offered := optionsIn(page); len(offered) != 0 {
+		t.Errorf("a decision that asks nothing rendered %d options", len(offered))
+	}
+	for _, control := range elements(card, "input", "select", "fieldset", "legend") {
+		t.Errorf("a decision that asks nothing renders a <%s class=%q>, and nothing on it is a choice",
+			control.Data, attribute(control, "class"))
+	}
+	for _, said := range []string{"Choose one", "Choose as many as apply"} {
+		if strings.Contains(text(card), said) {
+			t.Errorf("a decision that asks nothing says %q, and there is nothing on it to choose among", said)
+		}
+	}
+}
+
+func TestADecisionWithNoOptionsStillCarriesTheField(t *testing.T) {
+	read := statingSomething()
+	fields := reflect.ValueOf(&read.Decisions[0]).Elem()
+
+	for position := range fields.NumField() {
+		named := fields.Type().Field(position).Name
+		t.Run(named, func(t *testing.T) {
+			emptied := statingSomething()
+			held := reflect.ValueOf(&emptied.Decisions[0]).Elem().Field(position)
+			held.Set(reflect.Zero(held.Type()))
+
+			if !everyCardCarriesTheField(rendered(t, emptied)) {
+				t.Errorf("emptying %s removed the field a person writes in", named)
+			}
+		})
+	}
+
+	page := rendered(t, read)
+	if !everyCardCarriesTheField(page) {
+		t.Fatal("a decision that asks nothing renders no field for a person to write in")
+	}
+
+	for _, written := range elements(page, "textarea") {
+		if !hasClass(written, "words-field") {
+			continue
+		}
+		if held := attribute(written, "rows"); held != "3" {
+			t.Errorf("the field a person writes in is %q rows, and its size is the surface's", held)
+		}
+	}
+	for _, labelled := range elements(page, "span") {
+		if hasClass(labelled, "words-label") && strings.TrimSpace(text(labelled)) != "In your own words" {
+			t.Errorf("the field a person writes in is labelled %q, and its label is the surface's", text(labelled))
+		}
+	}
+}
+
 func TestTheFreeTextFieldCannotBeSuppressed(t *testing.T) {
 	for _, mode := range document.Modes() {
 		t.Run(string(mode), func(t *testing.T) {
@@ -466,6 +552,145 @@ func nothingToDecide() document.Document {
 	read := citingASource()
 	read.Decisions = nil
 	return read
+}
+
+func listedLeastSevereFirst() document.Document {
+	read := document.Document{
+		Title: "three things to settle",
+		Source: []document.Entry{
+			{ID: "c-3", Name: "the log line says nothing", Severity: "info", Audience: "the author patches", Location: "internal/cache/read.go:80"},
+			{ID: "c-2", Name: "the write counts twice", Severity: "warning", Audience: "the author patches", Location: "internal/cache/write.go:12"},
+			{ID: "c-1", Name: "the read is unlocked", Severity: "error", Audience: "a person", Location: "internal/cache/read.go:41"},
+		},
+	}
+	for _, entry := range read.Source {
+		read.Decisions = append(read.Decisions, document.Decision{
+			ID:       entry.ID,
+			Name:     entry.Name,
+			Severity: entry.Severity,
+			Audience: entry.Audience,
+			Location: entry.Location,
+			Question: "what should be done about " + entry.ID,
+			Mode:     document.One,
+			Options:  []document.Option{{Label: "leave it", Meaning: "acceptable here", Command: "agree " + entry.ID}},
+		})
+	}
+	return read
+}
+
+func cardsRead(page *html.Node) []string {
+	var named []string
+	for _, card := range cardsIn(page) {
+		named = append(named, attribute(card, "data-decision"))
+	}
+	return named
+}
+
+func entriesRead(page *html.Node) []string {
+	var named []string
+	for _, entry := range entriesIn(page) {
+		named = append(named, attribute(elements(entry, "a", "span")[0], "href")+strings.TrimSpace(text(entry)))
+	}
+	return named
+}
+
+func severitiesRead(within []*html.Node) []string {
+	var read []string
+	for _, held := range within {
+		stated := ""
+		for _, badge := range elements(held, "span") {
+			if hasClass(badge, "severity") {
+				stated = attribute(badge, "data-severity")
+			}
+		}
+		read = append(read, stated)
+	}
+	return read
+}
+
+func TestTheMostSevereCardIsTheFirstAPersonMeets(t *testing.T) {
+	page := rendered(t, listedLeastSevereFirst())
+
+	want := []string{"c-1", "c-2", "c-3"}
+	if got := cardsRead(page); !slices.Equal(want, got) {
+		t.Errorf("the cards arrive as %v, want %v, and a person triages by severity", got, want)
+	}
+	if got := severitiesRead(cardsIn(page)); !slices.Equal([]string{"error", "warning", "info"}, got) {
+		t.Errorf("the cards arrive carrying the severities %v", got)
+	}
+}
+
+func TestTheSourceListIsOrderedTheSameWay(t *testing.T) {
+	read := listedLeastSevereFirst()
+	page := rendered(t, read)
+
+	want := []string{"error", "warning", "info"}
+	if got := severitiesRead(entriesIn(page)); !slices.Equal(want, got) {
+		t.Errorf("the entries are listed carrying the severities %v, want %v", got, want)
+	}
+
+	written, err := render.Page(read, render.Frame{Base: "/sessions/a1b2c3d4", Token: "a-token", Revision: 1})
+	if err != nil {
+		t.Fatalf("rendering the page: %v", err)
+	}
+	listed := strings.Index(written, `class="entries"`)
+	decided := strings.Index(written, `class="decisions"`)
+	if listed < 0 || decided < 0 || listed > decided {
+		t.Errorf("the list is at %d and the decisions at %d, and ordering them changed which comes first", listed, decided)
+	}
+}
+
+func TestEqualSeveritiesKeepTheOrderTheDocumentListedThem(t *testing.T) {
+	read := listedLeastSevereFirst()
+	for position := range read.Source {
+		read.Source[position].Severity = "warning"
+		read.Decisions[position].Severity = "warning"
+	}
+
+	page := rendered(t, read)
+
+	want := []string{"c-3", "c-2", "c-1"}
+	if got := cardsRead(page); !slices.Equal(want, got) {
+		t.Errorf("three decisions of one severity arrive as %v, want the order the document listed them %v", got, want)
+	}
+	if got := entriesRead(page); len(got) != 3 || !strings.Contains(got[0], "the log line says nothing") {
+		t.Errorf("three entries of one severity are listed as %v, want the order the document listed them", got)
+	}
+}
+
+func TestTheCallerCannotOrderThePage(t *testing.T) {
+	read := listedLeastSevereFirst()
+	read.Decisions[0].Question = "the informational one the caller listed first"
+
+	page := rendered(t, read)
+
+	cards := cardsIn(page)
+	if len(cards) != 3 {
+		t.Fatalf("three decisions rendered %d cards", len(cards))
+	}
+	if named := attribute(cards[0], "data-decision"); named != "c-1" {
+		t.Errorf("the first card a person meets is %q, and the error is %q", named, "c-1")
+	}
+	if strings.Contains(text(cards[0]), "the informational one the caller listed first") {
+		t.Errorf("the card the caller listed first is the card a person meets first:\n%s", text(cards[0]))
+	}
+}
+
+func TestAnEntryWhoseSourceStatesNoSeveritySortsLast(t *testing.T) {
+	read := listedLeastSevereFirst()
+	read.Source = append([]document.Entry{{ID: "c-0", Name: "nobody classified this one", Audience: "the author patches"}}, read.Source...)
+
+	page := rendered(t, read)
+
+	want := []string{"error", "warning", "info", ""}
+	if got := severitiesRead(entriesIn(page)); !slices.Equal(want, got) {
+		t.Errorf("the entries are listed carrying the severities %v, want %v, and an unclassified entry is not evidence of unimportance", got, want)
+	}
+
+	last := entriesIn(page)[3]
+	if !strings.Contains(text(last), "nobody classified this one") {
+		t.Errorf("the entry listed last is %q", strings.TrimSpace(text(last)))
+	}
 }
 
 func entriesIn(page *html.Node) []*html.Node {

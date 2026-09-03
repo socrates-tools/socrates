@@ -67,7 +67,7 @@ Some rounds hold something only a person can act on, and those are the ones you 
 That line is what decides it. Do not work it out for yourself from the state or from any count, because a round you decide wrongly about is one you stop at for an answer nobody was asked for, or one you patch around the person.
 Where it says so, wait for them. Where it says nothing, hand over the address and get on with the work, because a page nobody is being asked to answer is a page nobody has to open before you carry on.
 
-The document is one decision per finding a person answers, each citing the entry it came from:
+The document is one decision per finding in the round, each citing the entry it came from:
 
     {"title": "...", "preamble": "...",
      "source":    [{"id": "f3", "name": "Finding 3", "severity": "error", "audience": "needs a person", "location": "src/api/windows.py:41"}],
@@ -76,9 +76,9 @@ The document is one decision per finding a person answers, each citing the entry
                     "options": [{"label": "...", "meaning": "...", "command": "socrates respond --finding f3 --decided --reason \"...\"",
                                  "recommended": true}]}]}
 
-Where the round holds nothing a person answers, the document holds no decision at all: a title, a sentence or two, and the source.
-Serve that the same way and hand over the address. The page says for itself that there is nothing on it to answer and that nobody is waiting on it.
-Do not invent a decision to fill such a page. An option that records nothing is one a person can spend their attention wondering about.
+Where the round holds nothing a person answers, every finding is still a card and none of them carries an option.
+Serve that the same way and hand over the address. Nothing on it is theirs to answer, so nobody is waiting on it.
+A clean run and a round you answered alone are rounds in full rather than rounds worth less. Such a page is what was found and what was done about it, which is the whole of what those rounds have to hand over.
 
 One option of a decision may carry |"recommended": true|, and at most one: a document marking two is refused before anything is served.
 The page reads that option first and says on it, in words, that it is the one you would take.
@@ -106,9 +106,23 @@ Hold the page to this:
 
 ` + theIllustration + `
 
-The findings a person answers go on the page in full.
-The rest of the round goes on it as a short list, so the person can see the whole of it without reading the whole of it.
-That list is the |source| you cite rather than prose you write: the surface renders every entry of it, whether or not a decision cites that entry, so give it every finding |socrates findings --json| reported and retype none of them.`
+Every finding in the round gets a card of its own.
+Not the ones a person answers in full and the rest as a line in a list, and not a sentence in the preamble either: a person signs off on the round rather than on the part of it that survived triage, and prose in a preamble is where a reader's eye goes last.
+Shorten no finding, reduce none of them to a list, and omit none.
+
+A finding you have already resolved is a card that states something rather than one that asks anything.
+It says what the finding was and what resolved it, and it carries the diff where the diff is what makes the resolution clear:
+
+    {"id": "f1", "question": "the lock deleted itself while another request held it",
+     "meaning": "the deletion is gone, and the entry is dropped by whichever reader took it last",
+     "evidence": {"patch": "..."}}
+
+Such a card carries no options, and states no mode either: a document giving a mode to a decision that offers nothing is refused before anything is served.
+A control that changes nothing reads as a question the person still has to answer, and the one thing it reliably tells them is that something is still expected of them.
+The card still carries the field a person writes in, because reading what somebody else decided is when a person most wants to say something about it.
+
+What separates what needs the person from what does not is the order the cards arrive in and the absence of controls on the ones that do not.
+The surface orders both the source and the cards by severity, most severe first and informational last, so the thing to act on is the first card they meet, and nothing you write reorders that.`
 
 	loopHeading = "## The loop"
 

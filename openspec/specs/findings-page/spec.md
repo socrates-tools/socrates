@@ -48,29 +48,6 @@ The line about diagrams says "and not otherwise", so without a line of its own a
 - **WHEN** the bar is rendered
 - **THEN** the line about what a person sees and the line about diagrams each appear once and neither restates the other
 
-### Requirement: The page foregrounds what the person has to act on
-
-The page SHALL give the findings a person answers in full, and the rest of the round as a short list.
-
-A parked round holding one question about intent and five mechanical defects is one decision and five things the session is already fixing.
-A page that treats all six evenly buries the only thing the person has to act on, and a page that drops the five leaves them unable to see what else was found.
-
-Where the round holds nothing a person answers, the page SHALL be that short list and the account of what was reviewed, and nothing more.
-A clean run and a round the author patches alone are rounds with nothing to act on, so a page for one of them that presented anything as a decision would be inventing one.
-
-The short list SHALL be taken from what socrates reported rather than retyped by the session, on the same footing as the name, severity and audience a decision carries.
-A list the session retypes is a list that can disagree with the terminal, and it is the part of the page that exists precisely so the person can see what else was found.
-
-#### Scenario: The decisions are in full and the rest is a list
-
-- **WHEN** the skill describes a page for a round holding both findings a person answers and findings the author patches
-- **THEN** it says the first are given in full and the second are listed briefly
-
-#### Scenario: A round with nothing to answer is a page with nothing to answer
-
-- **WHEN** a page is served for a clean run, or for a parked round whose findings the author answers alone
-- **THEN** it holds the round as a short list and presents nothing as a decision
-
 ### Requirement: The page is read only, and the terminal is where the person acts
 
 Every control the page carries SHALL carry the command it becomes, the surface SHALL hand that command back to the session, and the page SHALL NOT show it to the person.
@@ -271,3 +248,48 @@ The surface holds it until it has been idle, so a person who reads a clean revie
 
 - **WHEN** a page is served for a round that waits on nobody and the person never opens it
 - **THEN** the session patches, records and continues, or reports and stops, exactly as it would have with no page at all
+
+### Requirement: The page carries the whole round, one card per finding
+
+The page SHALL carry every finding in the round, one card for each.
+No finding SHALL be reduced to a line in a list or a sentence in the preamble.
+
+The source list the surface renders SHALL remain what it is, an index of everything found, and SHALL NOT be what stands in for a finding the person never sees in full.
+
+The page SHALL foreground what the person has to act on by the order the cards arrive in and by the absence of controls on the findings they do not.
+
+A parked round holding one question about intent and five mechanical defects is one decision and five things the session is already fixing.
+A page that treats all six evenly buries the only thing the person has to act on, and a page that drops the five leaves them unable to see what else was found.
+What separates them is that the severest card is the first the person meets, and that a finding the session resolved carries no option for them to weigh.
+
+The skill SHALL say that a finding the session resolved is put on the page as what the finding was and what resolved it, and that the diff goes on it where the diff is what makes the resolution clear.
+
+The skill SHALL say that such a finding carries no options, and SHALL say why: an option on a settled finding is a control that changes nothing, and a person reads it as a question still owed an answer.
+
+Where the round holds nothing a person answers, the page SHALL still carry every finding as a card, and SHALL present none of them as a decision.
+A clean run and a round the author patched alone are rounds with nothing to act on, and a card that asks nothing is not a decision: it is the account of what was found and what was done, which is the whole of what those rounds have to hand over.
+
+#### Scenario: Every finding in the round is a card
+
+- **WHEN** the skill describes a page for a round holding both findings a person answers and findings the author resolved
+- **THEN** it says every finding in the round gets a card of its own, and none is reduced to a line in a list or a sentence in the preamble
+
+#### Scenario: A resolved finding is stated rather than asked
+
+- **WHEN** the skill describes a card for a finding the session already resolved
+- **THEN** it says the card states what the finding was and what resolved it, carries the diff where that is what makes it clear, and offers no options
+
+#### Scenario: The reason for offering no options is given
+
+- **WHEN** the skill says a resolved finding carries no options
+- **THEN** it says that a control which changes nothing reads as a question the person still has to answer
+
+#### Scenario: A round with nothing to answer is still a round in full
+
+- **WHEN** the skill describes a page for a clean run, or for a parked round whose findings the author answers alone
+- **THEN** it says every finding is still a card, that none carries an option, and that nothing is presented as a decision
+
+#### Scenario: Foregrounding survives without demoting anything
+
+- **WHEN** the skill describes how the page separates what needs the person from what does not
+- **THEN** it names the severity order and the absence of controls, and does not tell the session to shorten, list or omit any finding

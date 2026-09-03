@@ -1,11 +1,13 @@
 package e2e_test
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/ktei/socrates/internal/surface"
 )
 
 const shortWindow = 500 * time.Millisecond
@@ -446,6 +448,93 @@ func TestMarkingIsNotChoosing(t *testing.T) {
 	}
 	for _, decided := range delivered.Decisions {
 		t.Errorf("a decision nobody touched was delivered: %+v", decided)
+	}
+}
+
+const askingNothingDocument = `{
+  "title": "what was put right",
+  "preamble": "what follows is what was seen and what was done about it",
+  "source": [
+    {"id": "c-1", "name": "the lock deleted itself", "severity": "error", "audience": "the author patches", "location": "internal/cache/read.go:41"},
+    {"id": "c-2", "name": "the write counts twice", "severity": "warning", "audience": "the author patches", "location": "internal/cache/write.go:12"}
+  ],
+  "decisions": [
+    {
+      "id": "c-1",
+      "question": "the lock deleted itself while another request held it",
+      "meaning": "the deletion is gone, and the entry is dropped by whichever reader took it last",
+      "evidence": {
+        "language": "go",
+        "patch": "--- a/internal/cache/read.go\n+++ b/internal/cache/read.go\n@@ -39,3 +39,2 @@ func Read(key string) Entry {\n func Read(key string) Entry {\n-\tdelete(locks, key)\n \treturn store[key]\n }\n"
+      }
+    },
+    {
+      "id": "c-2",
+      "question": "the write counted itself twice",
+      "meaning": "the metric is now incremented once, at the end of the write"
+    }
+  ]
+}`
+
+func TestAnAnnotationOnADecisionThatAskedNothingComesBack(t *testing.T) {
+	const inTheirOwnWords = "the second one reads better than the finding did"
+
+	held := standing(t)
+	page := opening(t, held.serve(askingNothingDocument))
+
+	page.write(within("c-1", ".words-field"), inTheirOwnWords)
+	page.click(within("c-1", ".commit"))
+	page.click(".finish")
+	page.waitFor(`document.querySelector('.send').disabled === true`)
+
+	printed, failures, code := held.poll()
+	if code != 0 {
+		t.Fatalf("agora poll exited %d: %s", code, failures)
+	}
+
+	var answered surface.Answered
+	if err := json.Unmarshal([]byte(printed), &answered); err != nil {
+		t.Fatalf("reading back what agora poll printed: %v\n%s", err, printed)
+	}
+	if len(answered.Decisions) != 1 {
+		t.Fatalf("writing on one decision that asked nothing came back as %d answers:\n%s", len(answered.Decisions), printed)
+	}
+
+	said := answered.Decisions[0]
+	if said.ID != "c-1" {
+		t.Errorf("what came back is attached to %q, and it was written on %q", said.ID, "c-1")
+	}
+	if said.Words != inTheirOwnWords {
+		t.Errorf("what the person wrote came back as %q, want %q verbatim", said.Words, inTheirOwnWords)
+	}
+	if len(said.Chosen) != 0 {
+		t.Errorf("a decision that offered nothing came back with %v chosen", said.Chosen)
+	}
+	if len(said.Commands) != 0 {
+		t.Errorf("a decision that offered nothing came back carrying the commands %v", said.Commands)
+	}
+}
+
+func TestAPageOfCardsThatAskNothingOffersNoControls(t *testing.T) {
+	held := standing(t)
+	page := opening(t, held.serve(askingNothingDocument))
+
+	var cards []string
+	page.evaluate(`Array.from(document.querySelectorAll('.decision')).map((held) => held.dataset.decision)`, &cards)
+	if diff := cmp.Diff([]string{"c-1", "c-2"}, cards); diff != "" {
+		t.Errorf("what a document whose every decision asks nothing renders differs (-want +got):\n%s", diff)
+	}
+
+	var offered []string
+	page.evaluate(`Array.from(document.querySelectorAll('.decision .choice, .decision .options, .decision legend')).map((held) => held.tagName + '.' + String(held.className))`, &offered)
+	if len(offered) != 0 {
+		t.Errorf("a page whose every card asks nothing offers %v, and there is nothing on any of them to choose among", offered)
+	}
+
+	var carried bool
+	page.evaluate(`Array.from(document.querySelectorAll('.decision')).every((held) => !!held.querySelector('.words-field'))`, &carried)
+	if !carried {
+		t.Error("a card that asks nothing carries no field for a person to write in")
 	}
 }
 
