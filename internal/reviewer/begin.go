@@ -187,8 +187,7 @@ func record(store runstore.Store, run *runstore.Run, event runlog.Event) error {
 	if err != nil {
 		return err
 	}
-	defer events.Close()
-	return events.Record(event)
+	return errors.Join(events.Record(event), events.Close())
 }
 
 func spawnSupervisor(binary, directory, name string) error {
@@ -196,7 +195,7 @@ func spawnSupervisor(binary, directory, name string) error {
 	if err != nil {
 		return fmt.Errorf(openingTheSupervisorLog, err)
 	}
-	defer log.Close()
+	defer func() { _ = log.Close() }()
 
 	command := exec.Command(binary, SuperviseCommand, name)
 	command.Dir = directory

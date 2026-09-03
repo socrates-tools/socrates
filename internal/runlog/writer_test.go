@@ -47,7 +47,7 @@ func TestAChattyReviewerDoesNotFillTheDisk(t *testing.T) {
 	if err != nil {
 		t.Fatalf("opening %s: %v", path, err)
 	}
-	defer writer.Close()
+	defer func() { _ = writer.Close() }()
 
 	for count := range 400 {
 		if err := writer.Record(runlog.Event{Kind: "agent-output", Subject: "reviewer", Fields: map[string]any{"count": count}}); err != nil {
@@ -95,7 +95,7 @@ func TestTheWriterKeepsWritingAcrossARotation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("opening %s: %v", path, err)
 	}
-	defer writer.Close()
+	defer func() { _ = writer.Close() }()
 
 	before, err := os.Stat(path)
 	if err != nil {

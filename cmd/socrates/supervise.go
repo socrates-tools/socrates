@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 
@@ -32,9 +33,7 @@ func newSuperviseCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			defer events.Close()
-
-			return reviewer.Supervise(command.Context(), reviewer.Supervision{
+			supervised := reviewer.Supervise(command.Context(), reviewer.Supervision{
 				Store:    store,
 				Name:     name,
 				Process:  os.Getpid(),
@@ -48,6 +47,7 @@ func newSuperviseCommand() *cobra.Command {
 					})
 				},
 			})
+			return errors.Join(supervised, events.Close())
 		},
 	}
 }

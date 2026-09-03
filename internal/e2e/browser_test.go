@@ -133,7 +133,7 @@ func openingFor(t *testing.T, address, ready, painted string, options ...chromed
 	if err != nil {
 		t.Fatalf("making somewhere short for the browser to keep its profile: %v", err)
 	}
-	t.Cleanup(func() { os.RemoveAll(profile) })
+	t.Cleanup(func() { _ = os.RemoveAll(profile) })
 
 	allocated := append([]chromedp.ExecAllocatorOption{
 		chromedp.ExecPath(browserPath(t)),

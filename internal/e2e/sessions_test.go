@@ -36,7 +36,7 @@ func fetched(t *testing.T, address string) (int, string) {
 	if err != nil {
 		t.Fatalf("reaching %s: %v", address, err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 
 	said, err := io.ReadAll(answered.Body)
 	if err != nil {
@@ -180,7 +180,7 @@ func TestStoppingIsTheServerNotASession(t *testing.T) {
 	for _, address := range []string{firstAddress, secondAddress} {
 		answered, err := http.Get(address)
 		if err == nil {
-			answered.Body.Close()
+			_ = answered.Body.Close()
 			t.Errorf("%s still answers after the server was stopped", address)
 		}
 	}
@@ -208,7 +208,7 @@ func TestAServeWhosePortSomethingElseHoldsIsRefused(t *testing.T) {
 	if err != nil {
 		t.Fatalf("holding a loopback port the surface will be asked for: %v", err)
 	}
-	defer listener.Close()
+	defer func() { _ = listener.Close() }()
 	taken := listener.Addr().String()
 
 	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", taken)
@@ -300,7 +300,7 @@ func TestAStrangerOnThePortIsNotMistakenForTheSurface(t *testing.T) {
 	}
 
 	stranger := aStrangerAnsweringOn(t, bound)
-	defer stranger.Close()
+	defer func() { _ = stranger.Close() }()
 
 	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", bound)
 	if code == 0 {

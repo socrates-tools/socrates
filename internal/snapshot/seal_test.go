@@ -55,7 +55,7 @@ func TestAReviewerCannotModifyAFile(t *testing.T) {
 	if !errors.Is(err, fs.ErrPermission) {
 		t.Errorf("opening %s to append returned %v, want a permission error", held, err)
 		if err == nil {
-			appended.Close()
+			_ = appended.Close()
 		}
 	}
 

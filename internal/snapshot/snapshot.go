@@ -88,7 +88,7 @@ func take(ctx context.Context, root, base string) (Snapshot, error) {
 	if err != nil {
 		return Snapshot{}, fmt.Errorf(creatingAnIndexDirectory, err)
 	}
-	defer os.RemoveAll(indexDirectory)
+	defer func() { _ = os.RemoveAll(indexDirectory) }()
 
 	ownIndex := []string{"GIT_INDEX_FILE=" + filepath.Join(indexDirectory, "index")}
 

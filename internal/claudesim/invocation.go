@@ -63,10 +63,12 @@ func Append(path string, invocation Invocation) error {
 	if err != nil {
 		return fmt.Errorf("opening %s: %w", path, err)
 	}
-	defer file.Close()
-
 	if _, err := file.Write(append(encoded, '\n')); err != nil {
+		_ = file.Close()
 		return fmt.Errorf("writing to %s: %w", path, err)
+	}
+	if err := file.Close(); err != nil {
+		return fmt.Errorf("closing %s: %w", path, err)
 	}
 	return nil
 }
@@ -76,7 +78,7 @@ func ReadLog(path string) ([]Invocation, error) {
 	if err != nil {
 		return nil, fmt.Errorf("opening %s: %w", path, err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	var invocations []Invocation
 	scanner := bufio.NewScanner(file)

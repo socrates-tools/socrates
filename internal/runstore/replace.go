@@ -13,14 +13,14 @@ func replaceFile(path string, content []byte) error {
 	if err != nil {
 		return fmt.Errorf(creatingATemporaryFile, directory, err)
 	}
-	defer os.Remove(temporary.Name())
+	defer func() { _ = os.Remove(temporary.Name()) }()
 
 	if _, err := temporary.Write(content); err != nil {
-		temporary.Close()
+		_ = temporary.Close()
 		return fmt.Errorf(writing, temporary.Name(), err)
 	}
 	if err := temporary.Sync(); err != nil {
-		temporary.Close()
+		_ = temporary.Close()
 		return fmt.Errorf(flushing, temporary.Name(), err)
 	}
 	if err := temporary.Close(); err != nil {

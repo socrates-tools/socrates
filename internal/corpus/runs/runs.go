@@ -86,7 +86,7 @@ func routingOf(store runstore.Store, run string, round int) (map[string]string, 
 	if err != nil {
 		return nil, fmt.Errorf(readingTheLog, path, err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	routing := map[string]string{}
 	reached := firstRound

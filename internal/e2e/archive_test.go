@@ -90,13 +90,13 @@ func unpack(archive, into string) error {
 	if err != nil {
 		return err
 	}
-	defer held.Close()
+	defer func() { _ = held.Close() }()
 
 	uncompressed, err := gzip.NewReader(held)
 	if err != nil {
 		return err
 	}
-	defer uncompressed.Close()
+	defer func() { _ = uncompressed.Close() }()
 
 	carried := tar.NewReader(uncompressed)
 	for {
@@ -125,7 +125,7 @@ func unpack(archive, into string) error {
 			return err
 		}
 		if _, err := io.Copy(file, carried); err != nil {
-			file.Close()
+			_ = file.Close()
 			return err
 		}
 		if err := file.Close(); err != nil {

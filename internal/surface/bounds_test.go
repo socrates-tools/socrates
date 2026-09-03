@@ -149,7 +149,7 @@ func TestAnIdleServerStops(t *testing.T) {
 	if err != nil {
 		t.Fatalf("the port the stopped server held is not free: %v", err)
 	}
-	listener.Close()
+	_ = listener.Close()
 }
 
 func TestASessionACallerIsWaitingOnIsNotCollected(t *testing.T) {

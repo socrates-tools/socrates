@@ -37,7 +37,7 @@ func Open(path string, ceiling int64) (*Writer, error) {
 
 	written, err := file.Stat()
 	if err != nil {
-		file.Close()
+		_ = file.Close()
 		return nil, fmt.Errorf(measuring, path, err)
 	}
 

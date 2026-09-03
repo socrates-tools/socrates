@@ -134,7 +134,7 @@ func (r Round) appendLine(line []byte) error {
 		return fmt.Errorf(creating, r.ResponsesPath(), err)
 	}
 	if _, err := file.Write(line); err != nil {
-		file.Close()
+		_ = file.Close()
 		return fmt.Errorf(writing, r.ResponsesPath(), err)
 	}
 	if err := file.Close(); err != nil {

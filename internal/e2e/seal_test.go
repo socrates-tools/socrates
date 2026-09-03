@@ -111,7 +111,7 @@ func enforced(t *testing.T, directory string) bool {
 	if err != nil {
 		return true
 	}
-	written.Close()
+	_ = written.Close()
 
 	if err := os.Chmod(sealed, 0o755); err != nil {
 		t.Fatalf("restoring the write bits of %s: %v", sealed, err)

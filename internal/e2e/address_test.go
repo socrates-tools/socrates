@@ -83,7 +83,7 @@ func untilThePortIsFree(t *testing.T, address string) {
 	for {
 		listener, err := net.Listen("tcp", address)
 		if err == nil {
-			listener.Close()
+			_ = listener.Close()
 			return
 		}
 		if time.Now().After(deadline) {
@@ -114,7 +114,7 @@ func holdingTheWindowDownTo(t *testing.T, ports int) []string {
 		if err != nil {
 			t.Skipf("something else already holds %s, so a window walked past a held port cannot be read here: %v", address, err)
 		}
-		t.Cleanup(func() { listener.Close() })
+		t.Cleanup(func() { _ = listener.Close() })
 	}
 	return addresses
 }
@@ -138,7 +138,7 @@ func TestAHeldDefaultIsTheNextPortDownRatherThanARefusal(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reaching the page the surface walked down to: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 	if answered.StatusCode != http.StatusOK {
 		t.Errorf("the page at %s answered with %d", printed, answered.StatusCode)
 	}
@@ -195,7 +195,7 @@ func aHeldLoopbackAddress(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("holding a loopback address: %v", err)
 	}
-	t.Cleanup(func() { listener.Close() })
+	t.Cleanup(func() { _ = listener.Close() })
 	return listener.Addr().String()
 }
 
@@ -208,7 +208,7 @@ func windowAddressesNothingHolds(t *testing.T) []string {
 		if err != nil {
 			continue
 		}
-		listener.Close()
+		_ = listener.Close()
 		free = append(free, address)
 	}
 	return free
@@ -229,7 +229,7 @@ func (s *surfaced) boundNothing(named string, free []string) {
 			s.t.Errorf("refusing %s bound %s instead of taking no port at all", named, address)
 			continue
 		}
-		listener.Close()
+		_ = listener.Close()
 	}
 }
 
@@ -397,7 +397,7 @@ func TestAnAddressNothingAnswersOnIsStillServed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reaching the address the surface bound: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 	if answered.StatusCode != http.StatusOK {
 		t.Errorf("the page the surface bound answered with %d, and the address it states is not one it serves", answered.StatusCode)
 	}
@@ -422,7 +422,7 @@ func TestTheAddressTheSurfaceIsReachedAtIsNotAHostItAdmits(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reaching the surface: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 
 	if answered.StatusCode != http.StatusMisdirectedRequest {
 		t.Errorf("a request naming the address the surface is reached at was answered with %d", answered.StatusCode)
@@ -523,7 +523,7 @@ func TestAPageServedWithNothingStatedSaysWhereItCanBeOpenedFrom(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reaching the address agora serve printed: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 	if answered.StatusCode != http.StatusOK {
 		t.Errorf("the page answered with %d, and what was said is a statement rather than a refusal", answered.StatusCode)
 	}

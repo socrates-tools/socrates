@@ -28,7 +28,7 @@ func events(t *testing.T, held *standing, within time.Duration) <-chan stated {
 	if err != nil {
 		t.Fatalf("opening a stream onto the surface: %v", err)
 	}
-	t.Cleanup(func() { answered.Body.Close() })
+	t.Cleanup(func() { _ = answered.Body.Close() })
 
 	if answered.StatusCode != http.StatusOK {
 		t.Fatalf("a stream onto the surface was answered with %d", answered.StatusCode)

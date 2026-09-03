@@ -378,7 +378,7 @@ func writeWith(t *testing.T, store runstore.Store, name string, ceiling int64, e
 	if err != nil {
 		t.Fatalf("opening the event log: %v", err)
 	}
-	defer writer.Close()
+	defer func() { _ = writer.Close() }()
 
 	if err := writer.Record(event); err != nil {
 		t.Fatalf("recording an event: %v", err)

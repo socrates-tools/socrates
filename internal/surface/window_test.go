@@ -32,7 +32,7 @@ func aWindowOf(t *testing.T, held, free int) []string {
 		if err != nil {
 			t.Fatalf("holding a port the window is walked past: %v", err)
 		}
-		t.Cleanup(func() { listener.Close() })
+		t.Cleanup(func() { _ = listener.Close() })
 		addresses = append(addresses, listener.Addr().String())
 	}
 	for range free {

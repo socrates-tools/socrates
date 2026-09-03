@@ -65,6 +65,26 @@ func TestFormattingFailsBeforeTheSuiteDoes(t *testing.T) {
 	}
 }
 
+func TestAnUncheckedErrorReturnFailsTheLinter(t *testing.T) {
+	unchecked := t.TempDir()
+
+	copyInto(t, filepath.Join(source.Root(t), "Makefile"), filepath.Join(unchecked, "Makefile"))
+	copyInto(t, filepath.Join(source.Root(t), ".golangci.yaml"), filepath.Join(unchecked, ".golangci.yaml"))
+	write(t, filepath.Join(unchecked, "go.mod"), "module unchecked\n\ngo 1.26\n")
+	write(t, filepath.Join(unchecked, "unchecked.go"), "package unchecked\n\nimport \"os\"\n\nfunc Forget(path string) error {\n\tfile, err := os.Create(path)\n\tif err != nil {\n\t\treturn err\n\t}\n\tfile.Close()\n\treturn nil\n}\n")
+
+	out, code := runMake(t, unchecked, "lint")
+	if code == 0 {
+		t.Fatalf("make lint passed against a tree that drops the error a close returns:\n%s", out)
+	}
+	if !strings.Contains(out, "errcheck") {
+		t.Errorf("what a contributor reads does not name the analyser that would have caught the dropped error:\n%s", out)
+	}
+	if !strings.Contains(out, "unchecked.go") {
+		t.Errorf("what a contributor reads does not name the file that drops the error:\n%s", out)
+	}
+}
+
 func runMake(t *testing.T, directory string, arguments ...string) (string, int) {
 	t.Helper()
 

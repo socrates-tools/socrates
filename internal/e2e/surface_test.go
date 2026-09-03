@@ -215,7 +215,7 @@ func (s *surfaced) answerOn(session string, sent surface.Sent) {
 	if err != nil {
 		s.t.Fatalf("reaching the surface: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 	if answered.StatusCode != http.StatusNoContent {
 		said, _ := io.ReadAll(answered.Body)
 		s.t.Fatalf("sending an answer was refused with %d: %s", answered.StatusCode, said)
@@ -314,7 +314,7 @@ func TestServeReturnsBeforeThePersonHasReadAnything(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reaching the address agora serve printed: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 
 	page, err := io.ReadAll(answered.Body)
 	if err != nil {
@@ -337,7 +337,7 @@ func TestADocumentWithNothingToDecideIsServed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reaching the address agora serve printed: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 
 	page, err := io.ReadAll(answered.Body)
 	if err != nil {
@@ -408,7 +408,7 @@ func TestAFragmentOutsideTheAllowlistStillServes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reaching the surface: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 
 	page, err := io.ReadAll(answered.Body)
 	if err != nil {
@@ -468,7 +468,7 @@ func TestADocumentWrittenBeforeTheMarkStillServes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reaching the surface: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 
 	page, err := io.ReadAll(answered.Body)
 	if err != nil {

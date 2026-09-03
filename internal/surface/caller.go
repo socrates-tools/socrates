@@ -34,7 +34,7 @@ func (c *Caller) Reachable(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 	_, _ = io.Copy(io.Discard, answered.Body)
 
 	if answered.StatusCode >= http.StatusBadRequest {
@@ -58,7 +58,7 @@ func (c *Caller) Open(ctx context.Context, raw []byte) (Opened, error) {
 	if err != nil {
 		return Opened{}, fmt.Errorf(reachingTheSurface, err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 
 	if answered.StatusCode >= http.StatusBadRequest {
 		said, _ := io.ReadAll(io.LimitReader(answered.Body, BodyCeiling))
@@ -85,7 +85,7 @@ func (c *Caller) Await(ctx context.Context, session string, within time.Duration
 	if err != nil {
 		return Answered{}, false, fmt.Errorf(reachingTheSurface, err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 
 	if answered.StatusCode == http.StatusNotFound {
 		return Answered{}, false, refusal.New(surfaceHoldsNoSuchSession, session)
@@ -128,7 +128,7 @@ func (c *Caller) post(ctx context.Context, session, address string, body []byte)
 	if err != nil {
 		return fmt.Errorf(reachingTheSurface, err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 
 	if answered.StatusCode == http.StatusNotFound && session != "" {
 		return refusal.New(surfaceHoldsNoSuchSession, session)

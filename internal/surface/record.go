@@ -143,10 +143,10 @@ func replace(path string, written []byte) error {
 	if err != nil {
 		return fmt.Errorf(writingTheRecord, err)
 	}
-	defer os.Remove(beside.Name())
+	defer func() { _ = os.Remove(beside.Name()) }()
 
 	if _, err := beside.Write(written); err != nil {
-		beside.Close()
+		_ = beside.Close()
 		return fmt.Errorf(writingTheRecord, err)
 	}
 	if err := beside.Close(); err != nil {

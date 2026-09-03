@@ -152,7 +152,7 @@ func (s *standing) posting(t *testing.T, address, token string, body []byte) int
 	if err != nil {
 		t.Fatalf("reaching the surface: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 	return answered.StatusCode
 }
 
@@ -163,7 +163,7 @@ func (s *standing) fetch(t *testing.T, address string) (int, string) {
 	if err != nil {
 		t.Fatalf("reaching the surface: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 
 	said, err := io.ReadAll(answered.Body)
 	if err != nil {
@@ -236,7 +236,7 @@ func TestARequestClaimingAnotherHostIsRejected(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reaching the surface: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 
 	if answered.StatusCode != http.StatusMisdirectedRequest {
 		t.Errorf("a request naming another host was answered with %d", answered.StatusCode)
@@ -259,7 +259,7 @@ func TestAnAnswerWithoutTheTokenIsRejected(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reaching the surface: %v", err)
 	}
-	defer answered.Body.Close()
+	defer func() { _ = answered.Body.Close() }()
 
 	if answered.StatusCode != http.StatusForbidden {
 		t.Errorf("an answer carrying no token was answered with %d", answered.StatusCode)

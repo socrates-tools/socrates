@@ -174,7 +174,7 @@ func completed(t *testing.T, document string, logged []runlog.Event) (runstore.S
 	if err != nil {
 		t.Fatalf("writing the event log: %v", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	for _, event := range logged {
 		event.At = time.Date(2026, 8, 21, 1, 2, 4, 0, time.UTC)

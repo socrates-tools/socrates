@@ -100,7 +100,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 	noting := &noteAgentProcess{inner: supervision.Recorder, store: supervision.Store, run: run}
 	reviewing, err := supervision.NewAgent(noting)
 	if err != nil {
-		stream.Close()
+		_ = stream.Close()
 		return err
 	}
 

@@ -70,7 +70,7 @@ func TestTheSimulatorDoesNotRepairARecordedAnswer(t *testing.T) {
 	if err := os.Chdir(elsewhere); err != nil {
 		t.Fatalf("moving to %s: %v", elsewhere, err)
 	}
-	t.Cleanup(func() { os.Chdir(working) })
+	t.Cleanup(func() { _ = os.Chdir(working) })
 
 	first, failures, code := simulate(t, validArguments, "review the change against a9a3207, and report on internal/dialogue/dialogue.go")
 	if code != 0 {
