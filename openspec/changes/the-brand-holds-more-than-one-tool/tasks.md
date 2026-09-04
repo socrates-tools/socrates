@@ -72,9 +72,9 @@ The constants and the module path therefore move together, and the guard is muta
 ## 7. The repository
 
 - [x] 7.1 Run `make fmt` and `make verify`, and verify every gate passes on the renamed tree
-- [ ] 7.2 Transfer the repository to the `socrates-tools` organisation and rename it to `socrates-review`
-- [ ] 7.3 Point the local remote at the new path, and verify `gh repo view` and a fetch both resolve
-- [ ] 7.4 Verify the account check passes against the transferred repository, and that the archive is still exempt from it
+- [x] 7.2 Transfer the repository to the `socrates-tools` organisation and rename it to `socrates-review`
+- [x] 7.3 Point the local remote at the new path, and verify `gh repo view` and a fetch both resolve
+- [x] 7.4 Verify the account check passes against the transferred repository, and that the archive is still exempt from it
 
   `the-door-a-stranger-arrives-at` task 3.3 enables private vulnerability reporting on this repository.
   It is done after 7.2 or it is done twice.
