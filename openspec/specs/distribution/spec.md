@@ -70,16 +70,17 @@ What is built from one machine and what the suite ran on are different claims, a
 
 ### Requirement: An archive gives a person what installing from source gives them
 
-An archive SHALL contain both names the tool answers to and the second binary that ships with it, so that extracting one archive and installing from source arrive at the same place.
+An archive SHALL contain the tool and the second binary that ships with it, so that extracting one archive and installing from source arrive at the same place.
 
 It SHALL also contain the terms the work is published under and the notices for everything it embeds, because those are conditions on the copy and an archive is a copy.
 
-The two names SHALL come from the same build in the same release, so that they cannot be at different commits.
+The tool SHALL appear in the archive under one name.
+An archive holding one binary twice asks the person extracting it which of the two to put on their path, and there is no answer to give them.
 
-#### Scenario: An archive carries both names and the second binary
+#### Scenario: An archive carries the tool and the second binary
 
 - **WHEN** a release archive is extracted
-- **THEN** it contains the tool under both of its names and the second binary, and the two names report the same version and the same commit
+- **THEN** it contains the tool under its one name and the second binary, and no second name for either
 
 #### Scenario: An archive carries the terms and the notices
 

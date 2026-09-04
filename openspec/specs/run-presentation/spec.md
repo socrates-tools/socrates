@@ -2,7 +2,9 @@
 
 ## Purpose
 TBD - created by archiving change one-window-three-needs. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Rendering is a pure function of the events
 
 Turning the event log into something a person reads SHALL be a function from a sequence of events to a sequence of lines, reaching no filesystem, no git, no clock and no terminal.
@@ -25,9 +27,44 @@ The same bytes are summarised by one command, rendered by another and parsed by 
 - **WHEN** the log carries an event of a kind the renderer does not know
 - **THEN** it is rendered legibly rather than dropped, because a reader looking at a failure needs everything that was recorded
 
-### Requirement: `scrat watch` follows a run and stops when it is over
+### Requirement: A follower started too early waits rather than failing
 
-`scrat watch` SHALL render events as they arrive, stop when the run reaches a terminal state, print the verdict, and exit with the verdict's code.
+Where the event log does not exist yet, `socrates-review watch` SHALL wait for it, bounded, reporting the run's state while it waits.
+
+`socrates-review review` returns as soon as the run exists, so a person who runs `watch` immediately arrives before the reviewer has written a byte.
+Failing in that window punishes them for being quick, in exactly the window where they are most likely to try.
+
+Where the wait expires and no reviewer is alive, the follower SHALL report the run as failed rather than continuing to wait.
+
+#### Scenario: Watching immediately after starting
+
+- **WHEN** `socrates-review watch` is run in the moment between the run directory appearing and the reviewer's first event
+- **THEN** it waits, says the run is starting, and then follows normally
+
+#### Scenario: Waiting is bounded
+
+- **WHEN** no event log appears and no reviewer process is alive
+- **THEN** the follower stops within its bound, reports the run as failed, and exits `2`
+
+#### Scenario: A run identifier that does not exist
+
+- **WHEN** `socrates-review watch` is given a run identifier no run has
+- **THEN** it refuses at once, naming the identifier, and exits with the usage code rather than waiting for a run that will never appear
+
+### Requirement: A rotated log says so where it is read
+
+Where a run's event log was rotated, both reading commands SHALL say that earlier events are gone.
+
+A reader looking for the moment something went wrong, in a log that silently lost its beginning, concludes the wrong thing about what socrates did.
+
+#### Scenario: A rotated log is marked
+
+- **WHEN** a run's log rotated during the review and is then rendered
+- **THEN** the rendering says that earlier events were discarded, before the first event it does show
+
+### Requirement: `socrates-review watch` follows a run and stops when it is over
+
+`socrates-review watch` SHALL render events as they arrive, stop when the run reaches a terminal state, print the verdict, and exit with the verdict's code.
 
 It SHALL treat a terminal event in the log and a terminal state in `run.json` as equally sufficient to stop.
 Waiting only for a terminal event is the version that hangs: a run that failed before its reviewer wrote anything has a terminal state and an empty log.
@@ -38,7 +75,7 @@ A follower that treated parking as work in progress would wait for events that a
 
 #### Scenario: Following a review to a clean verdict
 
-- **WHEN** `scrat watch` is run against a review in progress that goes on to find nothing blocking
+- **WHEN** `socrates-review watch` is run against a review in progress that goes on to find nothing blocking
 - **THEN** it renders the events as they arrive, prints the clean verdict, and exits `0`
 
 #### Scenario: Following a review to an escalation
@@ -48,7 +85,7 @@ A follower that treated parking as work in progress would wait for events that a
 
 #### Scenario: A run that failed before writing anything
 
-- **WHEN** `scrat watch` is run against a run whose state is `failed` and whose event log is empty
+- **WHEN** `socrates-review watch` is run against a run whose state is `failed` and whose event log is empty
 - **THEN** it stops at once, prints the failure, and exits `2` rather than waiting
 
 #### Scenario: A follower does not outlive the run
@@ -66,33 +103,9 @@ A follower that treated parking as work in progress would wait for events that a
 - **WHEN** the run is cancelled from another terminal while a follower is attached
 - **THEN** the follower stops, says the run was cancelled, and exits with the code for a cancelled run
 
-### Requirement: A follower started too early waits rather than failing
+### Requirement: `socrates-review logs` reads a finished run and does not follow
 
-Where the event log does not exist yet, `scrat watch` SHALL wait for it, bounded, reporting the run's state while it waits.
-
-`scrat review` returns as soon as the run exists, so a person who runs `watch` immediately arrives before the reviewer has written a byte.
-Failing in that window punishes them for being quick, in exactly the window where they are most likely to try.
-
-Where the wait expires and no reviewer is alive, the follower SHALL report the run as failed rather than continuing to wait.
-
-#### Scenario: Watching immediately after starting
-
-- **WHEN** `scrat watch` is run in the moment between the run directory appearing and the reviewer's first event
-- **THEN** it waits, says the run is starting, and then follows normally
-
-#### Scenario: Waiting is bounded
-
-- **WHEN** no event log appears and no reviewer process is alive
-- **THEN** the follower stops within its bound, reports the run as failed, and exits `2`
-
-#### Scenario: A run identifier that does not exist
-
-- **WHEN** `scrat watch` is given a run identifier no run has
-- **THEN** it refuses at once, naming the identifier, and exits with the usage code rather than waiting for a run that will never appear
-
-### Requirement: `scrat logs` reads a finished run and does not follow
-
-`scrat logs` SHALL render a run's events and exit, without following and without waiting for anything.
+`socrates-review logs` SHALL render a run's events and exit, without following and without waiting for anything.
 
 Where its output is a terminal and a pager is configured, it SHALL page.
 Where its output is not a terminal, it SHALL write plainly, so that the output can be piped, redirected and searched.
@@ -100,32 +113,20 @@ Where a configured pager cannot be started, it SHALL fall back to writing plainl
 
 #### Scenario: Reading a finished run
 
-- **WHEN** `scrat logs` is run against a terminal run
+- **WHEN** `socrates-review logs` is run against a terminal run
 - **THEN** it renders every event the log holds and exits with the verdict's code
 
 #### Scenario: Reading a run still in progress
 
-- **WHEN** `scrat logs` is run against a run that is still reviewing
+- **WHEN** `socrates-review logs` is run against a run that is still reviewing
 - **THEN** it renders what the log holds so far, does not wait, and exits with the code meaning still working
 
 #### Scenario: Piping works
 
-- **WHEN** the output of `scrat logs` is a pipe
+- **WHEN** the output of `socrates-review logs` is a pipe
 - **THEN** no pager is started and the output is plain
 
 #### Scenario: A pager that cannot be started
 
 - **WHEN** the configured pager does not exist
 - **THEN** the output is written plainly and the command still exits with the verdict's code
-
-### Requirement: A rotated log says so where it is read
-
-Where a run's event log was rotated, both reading commands SHALL say that earlier events are gone.
-
-A reader looking for the moment something went wrong, in a log that silently lost its beginning, concludes the wrong thing about what socrates did.
-
-#### Scenario: A rotated log is marked
-
-- **WHEN** a run's log rotated during the review and is then rendered
-- **THEN** the rendering says that earlier events were discarded, before the first event it does show
-

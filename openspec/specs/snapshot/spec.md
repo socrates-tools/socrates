@@ -2,7 +2,9 @@
 
 ## Purpose
 TBD - created by archiving change a-review-nobody-authored. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: A snapshot captures the whole working tree
 
 socrates SHALL freeze the repository's current state into a commit before any reviewer is spawned, and that commit SHALL contain every change the person has made, whether or not the change is tracked.
@@ -104,17 +106,17 @@ Each refusal SHALL name the condition and SHALL exit with the usage code rather 
 
 #### Scenario: Not a repository
 
-- **WHEN** `scrat review` is run in a directory that is not inside a git working tree
+- **WHEN** `socrates-review review` is run in a directory that is not inside a git working tree
 - **THEN** it refuses, saying so, creates no run directory, and exits with the usage code
 
 #### Scenario: A repository with no commits
 
-- **WHEN** `scrat review` is run in a repository whose `HEAD` resolves to no commit
+- **WHEN** `socrates-review review` is run in a repository whose `HEAD` resolves to no commit
 - **THEN** it refuses, saying that there is no base to review against, creates no run directory, and exits with the usage code
 
 #### Scenario: A bare repository
 
-- **WHEN** `scrat review` is run with a bare repository as its working directory
+- **WHEN** `socrates-review review` is run with a bare repository as its working directory
 - **THEN** it refuses, saying there is no working tree to review, and exits with the usage code
 
 ### Requirement: A snapshot in progress leaves nothing behind when it fails
@@ -168,7 +170,7 @@ A refusal is the only honest answer there, because socrates cannot otherwise pro
 #### Scenario: A seal that does not hold is a refusal
 
 - **WHEN** a write into the sealed worktree succeeds, whether because the filesystem enforces nothing or because the process is root
-- **THEN** `scrat review` refuses, naming the worktree and both conditions, exits with the usage code, spawns no reviewer, and leaves nothing behind
+- **THEN** `socrates-review review` refuses, naming the worktree and both conditions, exits with the usage code, spawns no reviewer, and leaves nothing behind
 
 #### Scenario: The seal is lifted when the round ends
 
@@ -220,4 +222,3 @@ A patch that is wrong because of what it sits next to is exactly the kind this l
 
 - **WHEN** the person commits or amends on their branch while a run is awaiting a response
 - **THEN** the run's recorded base commit is still what later rounds are diffed against, and a base that has become unreachable fails the round naming it rather than silently reviewing against something else
-

@@ -90,9 +90,9 @@ Two rounds ending with nothing blocking and one round ending the same way are di
 
 ### Requirement: The skill teaches polling rather than following
 
-The skill SHALL name `scrat status` as the command to wait with, and SHALL say that everything the session reads lands in its own context.
+The skill SHALL name `socrates-review status` as the command to wait with, and SHALL say that everything the session reads lands in its own context.
 
-It SHALL name `scrat watch` only as something to suggest to the person, in another terminal, and SHALL NOT put it in the session's own loop.
+It SHALL name `socrates-review watch` only as something to suggest to the person, in another terminal, and SHALL NOT put it in the session's own loop.
 
 It SHALL name how often to poll, and SHALL say that the wait is bounded by socrates rather than by the session.
 
@@ -103,7 +103,7 @@ Neither is needed, because a reviewer that answers nothing before its deadline e
 #### Scenario: The waiting command is status
 
 - **WHEN** the skill describes waiting for a review
-- **THEN** it names `scrat status` and gives the reason
+- **THEN** it names `socrates-review status` and gives the reason
 
 #### Scenario: The waiting step says how often and for how long
 
@@ -112,18 +112,18 @@ Neither is needed, because a reviewer that answers nothing before its deadline e
 
 #### Scenario: Watch is for the person
 
-- **WHEN** the skill mentions `scrat watch`
+- **WHEN** the skill mentions `socrates-review watch`
 - **THEN** it is as a suggestion for the person in another terminal, and it appears in no loop the session is told to run
 
 ### Requirement: The response rules come from the same source the tool prints
 
-The four response rules the skill states SHALL be read from the same source `scrat findings` prints them from, and a test SHALL compare the two renderings.
+The four response rules the skill states SHALL be read from the same source `socrates-review findings` prints them from, and a test SHALL compare the two renderings.
 
 Two copies of four sentences drift, and the direction is predictable: the copy nobody reads while implementing stays as it was, and the copy in front of the session gets softened.
 
 #### Scenario: One source, two surfaces
 
-- **WHEN** the rules the skill states are compared with the rules `scrat findings` prints
+- **WHEN** the rules the skill states are compared with the rules `socrates-review findings` prints
 - **THEN** they are the same text
 
 #### Scenario: The rules are stated before the findings are read
@@ -174,36 +174,9 @@ A skill naming a flag that does not exist is a session doing something plausible
 - **WHEN** the skill names a command or flag of the surface binary that the surface binary does not offer
 - **THEN** the check fails, and it does so for the same reason and in the same way as for the first binary
 
-### Requirement: `scrat skill` installs it and says where
-
-`scrat skill` SHALL write the skill at user level and print the path it wrote.
-`--to` SHALL write it to a named directory instead, which is what the repository's own generation target uses.
-
-Running it again with the same target SHALL succeed and produce the same result, so that whether it has been run is not a question anybody has to answer.
-
-#### Scenario: Installing names the path
-
-- **WHEN** `scrat skill` is run
-- **THEN** the skill exists at user level and the command printed the path
-
-#### Scenario: Installing twice
-
-- **WHEN** `scrat skill` is run twice
-- **THEN** both succeed, the second says the same thing, and the file is the same
-
-#### Scenario: Installing elsewhere
-
-- **WHEN** `scrat skill --to` names a directory
-- **THEN** the skill is written there and nothing is written at user level
-
-#### Scenario: A directory that cannot be written
-
-- **WHEN** the target directory cannot be written
-- **THEN** the command refuses naming the path and the reason, and exits with the usage code
-
 ### Requirement: A further look is a new run, and only where the person asks
 
-The skill SHALL say that a run has at most two rounds, that a further look is a fresh `scrat review` rather than a third round, and that one is started only where the person asks for it.
+The skill SHALL say that a run has at most two rounds, that a further look is a fresh `socrates-review review` rather than a third round, and that one is started only where the person asks for it.
 
 It SHALL say that the reviewer of a new run is told nothing about the run before it, so the person knows what they are getting.
 That is a cold reading of the code as it now stands, not a continuation of the argument.
@@ -228,31 +201,31 @@ A session that starts a fresh review on its own initiative spends a full review 
 
 ### Requirement: The skill is named for the product
 
-The skill SHALL be named `socrates`, SHALL be installed at `.claude/skills/socrates/`, and SHALL name `socrates` in every invocation its steps give.
+The skill SHALL be named `socrates-review`, SHALL be installed at `.claude/skills/socrates-review/`, and SHALL name `socrates-review` in every invocation its steps give.
 
 Exactly one constant in the source SHALL carry that name, and it SHALL be the one the installer writes the directory from and the one the surface check reads invocations with.
 Two constants would let the skill teach a command name that the check never looks for, and the check that proves every named command exists would go on passing while naming nothing.
 
 #### Scenario: The skill is installed under the product's name
 
-- **WHEN** `socrates skill` is run
-- **THEN** the skill is written at `.claude/skills/socrates/SKILL.md`
+- **WHEN** `socrates-review skill` is run
+- **THEN** the skill is written at `.claude/skills/socrates-review/SKILL.md`
 
 #### Scenario: One constant names the skill and reads its invocations
 
 - **WHEN** the constant that names the skill is changed
 - **THEN** the installer's directory and the invocations the surface check reads both follow it, and no second copy of the name remains
 
-#### Scenario: The skill names the full command
+#### Scenario: The skill names the one name the tool has
 
 - **WHEN** the skill's steps are read
-- **THEN** every invocation in them names `socrates`, and none names the short name
+- **THEN** every invocation in them names `socrates-review`, and the tool has no other name for one to use instead
 
 ### Requirement: The skill writes an invocation as code
 
 The skill SHALL write every invocation it names as code, inline or as an indented block, and the check that reads its invocations SHALL read code alone.
 
-The command and the product are now one word, so a sentence whose subject is the product is indistinguishable from an invocation by any rule that reads prose.
+A sentence whose subject is the tool and an invocation of it are distinguishable by no rule that reads prose.
 Read as prose, `socrates patches nothing` names a command called `patches`, and the check that exists to prove every named command is real would report five commands the binary has never had.
 
 #### Scenario: Prose naming the product is not an invocation
@@ -527,3 +500,30 @@ The three prohibitions keep their reasoning, because a session that is told socr
 
 - **WHEN** the skill is rendered
 - **THEN** the three prohibitions each still carry the reason the session is given them
+
+### Requirement: `socrates-review skill` installs it and says where
+
+`socrates-review skill` SHALL write the skill at user level and print the path it wrote.
+`--to` SHALL write it to a named directory instead, which is what the repository's own generation target uses.
+
+Running it again with the same target SHALL succeed and produce the same result, so that whether it has been run is not a question anybody has to answer.
+
+#### Scenario: Installing names the path
+
+- **WHEN** `socrates-review skill` is run
+- **THEN** the skill exists at user level and the command printed the path
+
+#### Scenario: Installing twice
+
+- **WHEN** `socrates-review skill` is run twice
+- **THEN** both succeed, the second says the same thing, and the file is the same
+
+#### Scenario: Installing elsewhere
+
+- **WHEN** `socrates-review skill --to` names a directory
+- **THEN** the skill is written there and nothing is written at user level
+
+#### Scenario: A directory that cannot be written
+
+- **WHEN** the target directory cannot be written
+- **THEN** the command refuses naming the path and the reason, and exits with the usage code

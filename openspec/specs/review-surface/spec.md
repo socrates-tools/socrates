@@ -27,7 +27,7 @@ Where nothing is in front of the surface those are one address and the distincti
 Where something is, the address the surface bound opens for the process that printed it and for nobody it was served to.
 
 Two binaries in one module is ordinary in Go, and a second repository for a tool with one consumer is overhead with no payer.
-This does not disturb the rule that `socrates` and `scrat` are one program under two names: `agora` is a different program, not a third name.
+This does not disturb the rule that the tool answers to one name: `agora` is a different program, not a second name for `socrates-review`.
 
 #### Scenario: serve returns before the person has read anything
 
@@ -54,10 +54,10 @@ This does not disturb the rule that `socrates` and `scrat` are one program under
 - **WHEN** two sessions are open and the server is stopped
 - **THEN** neither page is reachable, and the port is free
 
-#### Scenario: socrates keeps its two names and gains no third
+#### Scenario: socrates-review has one name and agora is a different program
 
 - **WHEN** the binaries the repository builds are examined
-- **THEN** `socrates` and `scrat` are one program, and `agora` is a separate one
+- **THEN** `socrates-review` answers to one name, and `agora` is a separate program rather than a second name for it
 
 ### Requirement: The surface mints a session and the caller names it thereafter
 

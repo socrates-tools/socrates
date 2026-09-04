@@ -2,7 +2,9 @@
 
 ## Purpose
 TBD - created by archiving change a-review-nobody-authored. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: A run is a directory whose name answers the common question
 
 Every run SHALL own one directory under socrates' home, beside the configuration file rather than under a directory of its own, named `<UTC instant>-<repository key>`, where the instant is second-resolution and lexically sortable and the repository key is derived from the absolute path of the repository root.
@@ -42,7 +44,7 @@ Nothing else in a run directory SHALL be load-bearing, so that a run is legible 
 
 #### Scenario: A started run is on disk immediately
 
-- **WHEN** `scrat review` returns
+- **WHEN** `socrates-review review` returns
 - **THEN** the run directory exists, holds a `run.json` naming the repository and the snapshot commit, and holds `r1`
 
 #### Scenario: Round output is under the round
@@ -184,7 +186,7 @@ The next round checks out the same path, so a run that reads parked while its wo
 
 A failure to tear it down SHALL NOT stop the run being published as parked, and SHALL be recorded against the round.
 A review that completed and cannot be reached by any command is worse than a directory left behind.
-The findings are on disk, `--wait` would poll a run that never leaves `reviewing`, and `scrat cancel` would be the only way out of a review that succeeded.
+The findings are on disk, `--wait` would poll a run that never leaves `reviewing`, and `socrates-review cancel` would be the only way out of a review that succeeded.
 
 The next round SHALL clear whatever stands where its worktree goes before it checks one out.
 Otherwise the dead end is only deferred: the round parks, the author answers, and the next round refuses on the leftover and ends the run failed, which is the same completed review lost one command later.
@@ -213,4 +215,3 @@ Otherwise the dead end is only deferred: the round parks, the author answers, an
 
 - **WHEN** a run has been parked for longer than the retention age and a new run starts
 - **THEN** its directory remains
-

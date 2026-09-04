@@ -2,22 +2,24 @@
 
 ## Purpose
 TBD - created by archiving change a-review-nobody-authored. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: The reviewer runs detached and the caller does not wait
 
-`scrat review` SHALL spawn the reviewer as a process that survives the invoking command, record its identity in the run, and return.
+`socrates-review review` SHALL spawn the reviewer as a process that survives the invoking command, record its identity in the run, and return.
 The session that asked for the review goes back to work; that is the property the whole tool is arranged around.
 
 The spawned process SHALL NOT hold the invoking terminal's standard streams, so that a session which exits does not close the reviewer's output.
 
 #### Scenario: The command returns while the review runs
 
-- **WHEN** `scrat review` is invoked
+- **WHEN** `socrates-review review` is invoked
 - **THEN** it returns before the review has finished, having printed the run identifier, and the reviewer process is still running
 
 #### Scenario: The reviewer survives its caller
 
-- **WHEN** the process that invoked `scrat review` exits
+- **WHEN** the process that invoked `socrates-review review` exits
 - **THEN** the reviewer keeps running and the run reaches a terminal state
 
 ### Requirement: The reviewer and everything it starts are reaped together
@@ -64,12 +66,12 @@ A run can be advanced as well as begun, and a reviewer that can advance a parked
 
 #### Scenario: A review inside a review is refused
 
-- **WHEN** `scrat review` is invoked in a process whose environment carries the marker
+- **WHEN** `socrates-review review` is invoked in a process whose environment carries the marker
 - **THEN** it refuses, names the outer run, creates no run directory, and exits with the usage code
 
 #### Scenario: A round inside a review is refused
 
-- **WHEN** `scrat continue` is invoked on a parked run in a process whose environment carries the marker
+- **WHEN** `socrates-review continue` is invoked on a parked run in a process whose environment carries the marker
 - **THEN** it refuses, names the outer run, starts no round, leaves the run parked, and exits with the usage code
 
 ### Requirement: The reviewer never writes, and socrates proves it
@@ -158,4 +160,3 @@ A run that is still working is a run somebody may want to look at, and a run tha
 
 - **WHEN** a round fails part-way through
 - **THEN** everything the reviewer emitted before the failure is on disk
-

@@ -118,7 +118,7 @@ The stored responses of a round SHALL be append-only, and recording one SHALL NO
 Two invocations recording at the same time is the ordinary case rather than the exotic one, because the author is a session that is encouraged to run independent commands at once.
 A read, an append in memory and a rewrite of the whole document loses whichever claim was written first, silently, and the claim is the entire value of a response.
 Appending also bounds what a crash can damage to the line being written.
-A rewrite can leave a document that neither `scrat respond` nor `scrat continue` can read, on a run that cannot be advanced any other way.
+A rewrite can leave a document that neither `socrates-review respond` nor `socrates-review continue` can read, on a run that cannot be advanced any other way.
 
 #### Scenario: Two answers do not overwrite each other
 
@@ -132,7 +132,7 @@ A rewrite can leave a document that neither `scrat respond` nor `scrat continue`
 
 ### Requirement: Silence does not advance a round
 
-`scrat continue` SHALL refuse while any finding of the current round that holds the change and can be answered has no response, naming which findings are still unanswered and which of them need a person.
+`socrates-review continue` SHALL refuse while any finding of the current round that holds the change and can be answered has no response, naming which findings are still unanswered and which of them need a person.
 
 Silence is neither a fix, nor a rejection, nor a decision.
 A round that advanced on it would present an unpatched, unargued finding to the next reviewer as though it had been dealt with, which is the one outcome worse than not asking.
@@ -140,17 +140,17 @@ A round that advanced past an unanswered question would do worse: it would carry
 
 #### Scenario: Continuing too early
 
-- **WHEN** `scrat continue` is run while two blocking findings have no response
+- **WHEN** `socrates-review continue` is run while two blocking findings have no response
 - **THEN** it refuses, names both, and starts no round
 
 #### Scenario: Continuing when everything is answered
 
 - **WHEN** every blocking finding has a response
-- **THEN** `scrat continue` takes a fresh snapshot and starts the next round
+- **THEN** `socrates-review continue` takes a fresh snapshot and starts the next round
 
 #### Scenario: Continuing with a question unanswered
 
-- **WHEN** `scrat continue` is run while a finding that asks a person has no decision recorded against it
+- **WHEN** `socrates-review continue` is run while a finding that asks a person has no decision recorded against it
 - **THEN** it refuses, names that finding as one needing a person, and starts no round
 
 #### Scenario: Nothing left to review ends the run
@@ -161,7 +161,7 @@ A round that advanced past an unanswered question would do worse: it would carry
 #### Scenario: Non-blocking findings need no response
 
 - **WHEN** the round produced informational findings alongside blocking ones and only the blocking ones have responses
-- **THEN** `scrat continue` proceeds
+- **THEN** `socrates-review continue` proceeds
 
 ### Requirement: The next round is a fresh process that inherits no session
 
@@ -200,7 +200,7 @@ What the first reviewer said, what the author claimed about it, and what the sec
 
 ### Requirement: socrates tells the author the rules when it hands over findings
 
-Where a run is `awaiting-response`, `scrat findings` SHALL print, alongside the findings, the rules the author is being asked to work under:
+Where a run is `awaiting-response`, `socrates-review findings` SHALL print, alongside the findings, the rules the author is being asked to work under:
 
 - The author did not review this code; an independent reviewer did.
 - For each finding, either apply a fix or record a rejection with a concrete reason.
@@ -213,17 +213,17 @@ Putting the rules in front of it, at the moment it has findings in hand, in the 
 
 #### Scenario: The rules arrive with the findings
 
-- **WHEN** `scrat findings` is run against a run awaiting responses
+- **WHEN** `socrates-review findings` is run against a run awaiting responses
 - **THEN** it prints the rules alongside the findings, including the one saying whose a finding that asks a person is
 
 #### Scenario: The rules do not arrive where they do not apply
 
-- **WHEN** `scrat findings` is run against a run that is clean, escalated or failed
+- **WHEN** `socrates-review findings` is run against a run that is clean, escalated or failed
 - **THEN** it prints the findings without the response rules, because no response is being asked for
 
 ### Requirement: A response is a fix, a rejection or a decision, and neither a rejection nor a decision is accepted without a reason
 
-`scrat respond` SHALL record, against one finding identifier, either that it was fixed, with an optional note, or that it is rejected, with a reason, or that a person decided it, with a reason saying what was decided.
+`socrates-review respond` SHALL record, against one finding identifier, either that it was fixed, with an optional note, or that it is rejected, with a reason, or that a person decided it, with a reason saying what was decided.
 
 A rejection's reason SHALL be required and SHALL NOT be accepted empty or blank, and a decision's reason SHALL be required on the same terms.
 A decision SHALL be the only resolution accepted for a finding whose action asks a person, and SHALL NOT be accepted for any other finding.
@@ -238,42 +238,42 @@ A second response to the same finding SHALL replace the first, and the replaceme
 
 #### Scenario: Recording a fix
 
-- **WHEN** `scrat respond` records a finding as fixed
+- **WHEN** `socrates-review respond` records a finding as fixed
 - **THEN** the response is stored against that identifier and the run stays `awaiting-response` until every blocking finding has one
 
 #### Scenario: Recording a rejection
 
-- **WHEN** `scrat respond` records a finding as rejected with a reason
+- **WHEN** `socrates-review respond` records a finding as rejected with a reason
 - **THEN** the reason is stored verbatim against that identifier
 
 #### Scenario: A rejection with no reason
 
-- **WHEN** `scrat respond` records a rejection with an empty or blank reason
+- **WHEN** `socrates-review respond` records a rejection with an empty or blank reason
 - **THEN** it is refused, saying that a rejection is a claim and needs one, and nothing is stored
 
 #### Scenario: Recording a decision
 
-- **WHEN** `scrat respond` records a finding that asks a person as decided, with a reason
+- **WHEN** `socrates-review respond` records a finding that asks a person as decided, with a reason
 - **THEN** the reason is stored verbatim against that identifier, labelled as a decision rather than as a fix
 
 #### Scenario: A decision with no reason
 
-- **WHEN** `scrat respond` records a decision with an empty or blank reason
+- **WHEN** `socrates-review respond` records a decision with an empty or blank reason
 - **THEN** it is refused for the same reason a rejection is, and nothing is stored
 
 #### Scenario: A patch offered where a decision is required
 
-- **WHEN** `scrat respond` records a fix or a rejection against a finding whose action asks a person
+- **WHEN** `socrates-review respond` records a fix or a rejection against a finding whose action asks a person
 - **THEN** it is refused, naming that the finding takes a decision, and nothing is stored
 
 #### Scenario: A decision offered where none was asked for
 
-- **WHEN** `scrat respond` records a decision against a finding whose action asks for a patch
+- **WHEN** `socrates-review respond` records a decision against a finding whose action asks for a patch
 - **THEN** it is refused, naming the resolutions that apply, and nothing is stored
 
 #### Scenario: A response to a finding that does not exist
 
-- **WHEN** `scrat respond` names an identifier the round did not produce
+- **WHEN** `socrates-review respond` names an identifier the round did not produce
 - **THEN** it is refused naming the identifier, and nothing is stored
 
 #### Scenario: Changing a response
