@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ktei/socrates/internal/refusal"
-	"github.com/ktei/socrates/internal/surface"
+	"github.com/socrates-tools/socrates-review/internal/refusal"
+	"github.com/socrates-tools/socrates-review/internal/surface"
 	"github.com/spf13/cobra"
 )
 

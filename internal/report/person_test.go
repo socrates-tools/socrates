@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/report"
-	"github.com/ktei/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/report"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
 )
 
 const beyondAnsweringDocument = `{
@@ -95,7 +95,7 @@ func TestARoundTheAuthorAnswersAloneSaysNothingAboutWaiting(t *testing.T) {
 	}
 }
 
-func TestScratStatusDoesNotCarryTheWait(t *testing.T) {
+func TestSocratesReviewStatusDoesNotCarryTheWait(t *testing.T) {
 	store, name := run(t, runstate.AwaitingResponse, questioningDocument)
 
 	status, err := report.StatusOf(store, name)

@@ -15,10 +15,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ktei/socrates/internal/state"
-	"github.com/ktei/socrates/internal/surface"
-	"github.com/ktei/socrates/internal/testing/gitrepo"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/convention"
+	"github.com/socrates-tools/socrates-review/internal/state"
+	"github.com/socrates-tools/socrates-review/internal/surface"
+	"github.com/socrates-tools/socrates-review/internal/testing/gitrepo"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 const oneDecisionDocument = `{
@@ -81,7 +82,7 @@ func servingSurface(t *testing.T) *surfaced {
 const aPortTheOperatingSystemChooses = "127.0.0.1:0"
 
 func (s *surfaced) surfaceHome() string {
-	return filepath.Join(s.home, "surface")
+	return filepath.Join(state.HomeUnder(s.home), "surface")
 }
 
 func (s *surfaced) bindsWhatIsConfigured() {
@@ -246,40 +247,28 @@ func TestTheSurfaceOffersNothingBeyondTheFive(t *testing.T) {
 	}
 }
 
-func TestSocratesKeepsItsTwoNamesAndGainsNoThird(t *testing.T) {
+func TestSocratesReviewHasOneNameAndAgoraIsADifferentProgram(t *testing.T) {
 	gitrepo.Hermetic(t)
 
 	directory := t.TempDir()
-	socrates := filepath.Join(directory, "socrates")
-	short := filepath.Join(directory, shortName())
+	tool := filepath.Join(directory, convention.Repository)
 	agora := filepath.Join(directory, "agora")
 
-	source.Build(t, "./cmd/socrates", socrates)
+	source.Build(t, "./cmd/socrates-review", tool)
 	source.Build(t, "./cmd/agora", agora)
-	if err := os.Symlink(socrates, short); err != nil {
-		t.Fatalf("linking the second name beside the first: %v", err)
-	}
 
-	underOneName := said(t, socrates, "version")
-	underTheOther := said(t, short, "version")
-	if underOneName != underTheOther {
-		t.Errorf("the two names are not one program:\n%s\n%s", underOneName, underTheOther)
-	}
-	if !strings.Contains(underTheOther, "socrates") {
-		t.Errorf("invoked under its second name the program does not name socrates: %s", underTheOther)
+	underItsName := said(t, tool, "version")
+	if !strings.Contains(underItsName, convention.Repository) {
+		t.Errorf("the tool does not name itself %s: %s", convention.Repository, underItsName)
 	}
 
 	separate := said(t, agora, "version")
-	if strings.Contains(separate, "socrates") {
-		t.Errorf("the surface reports itself as socrates: %s", separate)
+	if strings.Contains(separate, convention.Repository) {
+		t.Errorf("the surface reports itself as the tool: %s", separate)
 	}
 	if !strings.Contains(separate, "agora") {
 		t.Errorf("the surface does not name itself: %s", separate)
 	}
-}
-
-func shortName() string {
-	return string([]rune{'s', 'c', 'r', 'a', 't'})
 }
 
 func said(t *testing.T, binary string, arguments ...string) string {

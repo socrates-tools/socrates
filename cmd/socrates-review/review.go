@@ -6,13 +6,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/ktei/socrates/internal/config"
-	"github.com/ktei/socrates/internal/refusal"
-	"github.com/ktei/socrates/internal/report"
-	"github.com/ktei/socrates/internal/reviewer"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/runstore"
-	"github.com/ktei/socrates/internal/state"
+	"github.com/socrates-tools/socrates-review/internal/config"
+	"github.com/socrates-tools/socrates-review/internal/refusal"
+	"github.com/socrates-tools/socrates-review/internal/report"
+	"github.com/socrates-tools/socrates-review/internal/reviewer"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/runstore"
+	"github.com/socrates-tools/socrates-review/internal/state"
 	"github.com/spf13/cobra"
 )
 

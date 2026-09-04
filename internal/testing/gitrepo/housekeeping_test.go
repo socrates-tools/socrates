@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/testing/gitrepo"
+	"github.com/socrates-tools/socrates-review/internal/testing/gitrepo"
 )
 
 func TestGitStartsNoHousekeepingOfItsOwnInATestRepository(t *testing.T) {

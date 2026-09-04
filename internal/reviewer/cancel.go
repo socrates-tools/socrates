@@ -3,10 +3,10 @@ package reviewer
 import (
 	"context"
 
-	"github.com/ktei/socrates/internal/process"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/runstore"
-	"github.com/ktei/socrates/internal/snapshot"
+	"github.com/socrates-tools/socrates-review/internal/process"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/runstore"
+	"github.com/socrates-tools/socrates-review/internal/snapshot"
 )
 
 func Cancel(ctx context.Context, store runstore.Store, name string) (*runstore.Run, error) {

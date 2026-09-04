@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/convention"
-	"github.com/ktei/socrates/internal/skill"
+	"github.com/socrates-tools/socrates-review/internal/convention"
+	"github.com/socrates-tools/socrates-review/internal/skill"
 )
 
 func TestOneConstantNamesTheSkillAndReadsItsInvocations(t *testing.T) {
@@ -44,14 +44,20 @@ func TestOneConstantNamesTheSkillAndReadsItsInvocations(t *testing.T) {
 	}
 }
 
-func TestTheSkillNamesTheFullCommand(t *testing.T) {
+func TestTheSkillNamesTheOneNameTheToolHas(t *testing.T) {
 	document := skill.Document()
 
-	if strings.Contains(document, convention.ShortName) {
-		t.Errorf("the skill names the short name, and every invocation it gives is the full command:\n%s", document)
+	if skill.Name != convention.Repository {
+		t.Errorf("the skill is named %q and the tool is named %q, so the skill teaches a command that is not the one the tool installs", skill.Name, convention.Repository)
 	}
 	if !strings.Contains(document, skill.Name+" review") {
 		t.Errorf("the skill names no invocation of %s at all", skill.Name)
+	}
+	for _, invocation := range skill.Named() {
+		if invocation.Binary == skill.Name || invocation.Binary == skill.Surface {
+			continue
+		}
+		t.Errorf("the skill writes an invocation under %q, and the tool has no name but %q for one to use instead", invocation.Binary, skill.Name)
 	}
 }
 
@@ -63,7 +69,7 @@ func TestTheSkillIsInstalledUnderTheProductsName(t *testing.T) {
 		t.Fatalf("installing the skill: %v", err)
 	}
 
-	want := filepath.Join(directory, "socrates", skill.FileName)
+	want := filepath.Join(directory, convention.Repository, skill.FileName)
 	if path != want {
 		t.Errorf("the skill is at %s, want %s", path, want)
 	}

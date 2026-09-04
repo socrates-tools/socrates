@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/convention"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/convention"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 const theGuaranteeThatIsMissing = "process group"
@@ -21,7 +21,7 @@ func TestAnUnsupportedPlatformRefusesTheReviewBeforeAnythingStarts(t *testing.T)
 	out, failures, code := session.Socrates("review")
 
 	if code != 3 {
-		t.Fatalf("socrates review exited %d where nothing reaps, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates-review review exited %d where nothing reaps, want the usage code: %s%s", code, out, failures)
 	}
 	for _, said := range []string{theGuaranteeThatIsMissing, convention.TheWayForward} {
 		if !strings.Contains(failures, said) {

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
 )
 
 const fourFindings = `{"findings":[{"id":"f1","severity":"warning","file":"internal/added.go","line":3,"description":"The retry loop never backs off.","action":"auto-fix"},{"id":"f2","severity":"info","file":"internal/added.go","line":1,"description":"This package now owns two spellings of one idea.","action":"no-op"},{"id":"f3","severity":"error","file":"internal/added.go","line":3,"description":"This function does not look like something the product needs.","action":"ask-user"},{"id":"f4","severity":"error","file":"internal/added.go","line":5,"description":"The lock deletes itself while another request still holds it.","action":"auto-fix"}],"risk_level":"high","risk_rationale":"the change may not be wanted at all, and one path answers wrongly without erroring"}`
@@ -23,8 +23,8 @@ func theQuestionAsADecision(read reportedRound) []map[string]any {
 		case "f3":
 			decision["mode"] = "single-choice"
 			decision["options"] = []map[string]any{
-				{"label": "the function stays", "meaning": "the migration reads it", "command": `socrates respond --finding f3 --decided --reason "the endpoint stays, because the migration reads it"`, "recommended": true},
-				{"label": "take it out", "meaning": "nothing reads it", "command": `socrates respond --finding f3 --decided --reason "nothing reads it"`},
+				{"label": "the function stays", "meaning": "the migration reads it", "command": `socrates-review respond --finding f3 --decided --reason "the endpoint stays, because the migration reads it"`, "recommended": true},
+				{"label": "take it out", "meaning": "nothing reads it", "command": `socrates-review respond --finding f3 --decided --reason "nothing reads it"`},
 			}
 		case "f4":
 			decision["meaning"] = "the deletion is gone, and the entry is dropped by whichever reader took it last"

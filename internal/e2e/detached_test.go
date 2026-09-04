@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ktei/socrates/internal/process"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/process"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {
@@ -21,13 +21,13 @@ func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {
 	started := time.Now()
 	out, failures, code := session.Socrates("review", "--intent", "add a thing")
 	if code != 0 {
-		t.Fatalf("socrates review exited %d: %s", code, failures)
+		t.Fatalf("socrates-review review exited %d: %s", code, failures)
 	}
 	returned := time.Since(started)
 
 	name, _, _ := strings.Cut(strings.TrimSpace(out), "\n")
 	if name == "" {
-		t.Fatal("socrates review printed no run identifier")
+		t.Fatal("socrates-review review printed no run identifier")
 	}
 
 	run := session.WaitFor(name, runstate.Reviewing)
@@ -38,7 +38,7 @@ func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {
 		t.Errorf("the reviewer %d is not running, so the command did not return early", run.Reviewer)
 	}
 	if returned > 20*time.Second {
-		t.Errorf("socrates review took %s to return", returned)
+		t.Errorf("socrates-review review took %s to return", returned)
 	}
 
 	t.Run("the reviewer holds none of the invoking terminal's streams", func(t *testing.T) {

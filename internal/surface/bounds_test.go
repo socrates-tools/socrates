@@ -8,7 +8,7 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/ktei/socrates/internal/surface"
+	"github.com/socrates-tools/socrates-review/internal/surface"
 )
 
 func TestNobodyAnswers(t *testing.T) {

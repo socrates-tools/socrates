@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/exit"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/state"
-	"github.com/ktei/socrates/internal/surface"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/exit"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/state"
+	"github.com/socrates-tools/socrates-review/internal/surface"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 func TestOneVariableMovesEverything(t *testing.T) {
@@ -54,7 +54,7 @@ func TestARelativeHomeIsRefused(t *testing.T) {
 	out, failures, code := session.SocratesWith(session.Repository.Root, []string{state.HomeVariable + "=" + relative}, "review")
 
 	if code != exit.Usage {
-		t.Fatalf("socrates review with a relative home exited %d, want the usage code %d: %s%s", code, exit.Usage, out, failures)
+		t.Fatalf("socrates-review review with a relative home exited %d, want the usage code %d: %s%s", code, exit.Usage, out, failures)
 	}
 	if !strings.Contains(failures, state.HomeVariable) || !strings.Contains(failures, relative) {
 		t.Errorf("the refusal reads %q, without naming the variable and the path", failures)
@@ -86,7 +86,7 @@ func TestARunIsFoundBesideTheConfiguration(t *testing.T) {
 
 	_, failures, code := session.Socrates("review")
 	if code != exit.Usage {
-		t.Fatalf("socrates review exited %d with a configuration file beside the runs that does not parse, want %d", code, exit.Usage)
+		t.Fatalf("socrates-review review exited %d with a configuration file beside the runs that does not parse, want %d", code, exit.Usage)
 	}
 	if !strings.Contains(failures, beside) {
 		t.Errorf("the refusal reads %q, and the configuration socrates reads lives beside the runs at %s", failures, beside)
@@ -104,7 +104,7 @@ func TestOneVariableMovesEverythingBothBinariesHave(t *testing.T) {
 	}
 
 	held := servingSurface(t)
-	held.home = session.Home
+	held.home = session.Root
 	held.where = session.Repository.Root
 	held.bindsWhatIsConfigured()
 
@@ -138,7 +138,7 @@ func TestTheSurfaceKeepsADirectoryOfItsOwnInsideThatHome(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	held := servingSurface(t)
-	held.home = session.Home
+	held.home = session.Root
 	held.where = session.Repository.Root
 
 	name := session.Review()

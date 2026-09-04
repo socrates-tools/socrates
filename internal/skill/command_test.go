@@ -4,10 +4,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/skill"
+	"github.com/socrates-tools/socrates-review/internal/skill"
 )
 
-const shapeOfACommand = "is a " + inlineCode + "socrates respond" + inlineCode + " invocation naming the finding its decision cites"
+const shapeOfACommand = "is a " + inlineCode + "socrates-review respond" + inlineCode + " invocation naming the finding its decision cites"
 
 func pageSection(t *testing.T, document string) string {
 	t.Helper()
@@ -136,7 +136,7 @@ func TestTheStandingIsStatedWithTheResponseRules(t *testing.T) {
 	}
 
 	rules := strings.Index(document, rulesHeading)
-	reading := strings.Index(document, "Read "+inlineCode+"socrates findings")
+	reading := strings.Index(document, "Read "+inlineCode+"socrates-review findings")
 	if reading < 0 {
 		t.Fatal("the skill has no step that reads the findings")
 	}

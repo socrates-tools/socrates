@@ -15,7 +15,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ktei/socrates/internal/fidelity"
+	"github.com/socrates-tools/socrates-review/internal/fidelity"
 )
 
 const (

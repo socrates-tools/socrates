@@ -2,7 +2,7 @@
 
 ## What is expected
 
-socrates is a project about reading each other's work honestly, so the standard here is the one the tool itself is built on: judge the change, not the person who wrote it.
+socrates-review is a project about reading each other's work honestly, so the standard here is the one the tool itself is built on: judge the change, not the person who wrote it.
 
 - Say what is wrong with a change and why, and give the reason.
   A rejection with no reason is refused by the tool and it is refused here too.
@@ -22,7 +22,7 @@ There is no email address published for this project, deliberately: nothing here
 Use GitHub instead, which is where everything else about the project already is.
 
 - **Where a report can be public:** open an issue on this repository.
-- **Where it cannot:** [open a draft security advisory](https://github.com/ktei/socrates/security/advisories/new).
+- **Where it cannot:** [open a draft security advisory](https://github.com/socrates-tools/socrates-review/security/advisories/new).
   It is private to you and the maintainer, and it is the one private channel this repository has.
   Say at the top that the report is about conduct rather than a vulnerability, and it will be read the same way.
 

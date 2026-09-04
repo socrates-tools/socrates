@@ -12,16 +12,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/process"
-	"github.com/ktei/socrates/internal/runlog"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/runstore"
-	"github.com/ktei/socrates/internal/snapshot"
-	"github.com/ktei/socrates/internal/state"
-	"github.com/ktei/socrates/internal/testing/gitrepo"
-	"github.com/ktei/socrates/internal/testing/simulator"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/process"
+	"github.com/socrates-tools/socrates-review/internal/runlog"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/runstore"
+	"github.com/socrates-tools/socrates-review/internal/snapshot"
+	"github.com/socrates-tools/socrates-review/internal/state"
+	"github.com/socrates-tools/socrates-review/internal/testing/gitrepo"
+	"github.com/socrates-tools/socrates-review/internal/testing/simulator"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 const (
@@ -39,6 +39,7 @@ type Session struct {
 	Binary     string
 	Repository *gitrepo.Repository
 	Simulator  *simulator.Simulator
+	Root       string
 	Home       string
 	Store      runstore.Store
 }
@@ -54,8 +55,12 @@ func StartFor(t *testing.T, vendor agent.Vendor) *Session {
 	repository := gitrepo.New(t)
 	simulated := simulator.InstallFor(t, vendor)
 
-	home := t.TempDir()
-	t.Setenv(state.HomeVariable, home)
+	root := t.TempDir()
+	t.Setenv(state.HomeVariable, root)
+	home := state.HomeUnder(root)
+	if err := os.MkdirAll(home, 0o755); err != nil {
+		t.Fatalf("making the home the tool writes under: %v", err)
+	}
 
 	session := &Session{
 		t:          t,
@@ -63,6 +68,7 @@ func StartFor(t *testing.T, vendor agent.Vendor) *Session {
 		Binary:     buildSocrates(t),
 		Repository: repository,
 		Simulator:  simulated,
+		Root:       root,
 		Home:       home,
 		Store:      runstore.New(filepath.Join(home, "runs")),
 	}
@@ -104,8 +110,8 @@ func (s *Session) WhereNothingReaps() *Session {
 func buildSocrates(t *testing.T, tags ...string) string {
 	t.Helper()
 
-	binary := filepath.Join(t.TempDir(), "socrates")
-	source.BuildWithTags(t, "./cmd/socrates", binary, tags...)
+	binary := filepath.Join(t.TempDir(), "socrates-review")
+	source.BuildWithTags(t, "./cmd/socrates-review", binary, tags...)
 	return binary
 }
 
@@ -121,15 +127,15 @@ func (s *Session) SocratesIn(directory string, arguments ...string) (string, str
 
 func (s *Session) SocratesReading(input string, arguments ...string) (string, string, int) {
 	s.t.Helper()
-	return s.socrates(s.Repository.Root, nil, strings.NewReader(input), arguments...)
+	return s.socratesReview(s.Repository.Root, nil, strings.NewReader(input), arguments...)
 }
 
 func (s *Session) SocratesWith(directory string, environment []string, arguments ...string) (string, string, int) {
 	s.t.Helper()
-	return s.socrates(directory, environment, nil, arguments...)
+	return s.socratesReview(directory, environment, nil, arguments...)
 }
 
-func (s *Session) socrates(directory string, environment []string, input io.Reader, arguments ...string) (string, string, int) {
+func (s *Session) socratesReview(directory string, environment []string, input io.Reader, arguments ...string) (string, string, int) {
 	s.t.Helper()
 
 	command := exec.Command(s.Binary, arguments...)
@@ -147,7 +153,7 @@ func (s *Session) socrates(directory string, environment []string, input io.Read
 	if err := command.Run(); err != nil {
 		var exited *exec.ExitError
 		if !errors.As(err, &exited) {
-			s.t.Fatalf("running socrates %s: %v", strings.Join(arguments, " "), err)
+			s.t.Fatalf("running socrates-review %s: %v", strings.Join(arguments, " "), err)
 		}
 		code = exited.ExitCode()
 	}
@@ -175,7 +181,7 @@ func (s *Session) Starting(arguments ...string) *Running {
 	command.Stderr = running.failures
 
 	if err := command.Start(); err != nil {
-		s.t.Fatalf("starting socrates %s: %v", strings.Join(arguments, " "), err)
+		s.t.Fatalf("starting socrates-review %s: %v", strings.Join(arguments, " "), err)
 	}
 	go func() { running.finished <- command.Wait() }()
 	s.t.Cleanup(running.stop)
@@ -191,13 +197,13 @@ func (r *Running) Wait() (string, string, int) {
 		if err != nil {
 			var exited *exec.ExitError
 			if !errors.As(err, &exited) {
-				r.t.Fatalf("running socrates %s: %v", strings.Join(r.arguments, " "), err)
+				r.t.Fatalf("running socrates-review %s: %v", strings.Join(r.arguments, " "), err)
 			}
 			code = exited.ExitCode()
 		}
 		return r.out.String(), r.failures.String(), code
 	case <-time.After(terminalWait):
-		r.t.Fatalf("socrates %s is still running after %s", strings.Join(r.arguments, " "), terminalWait)
+		r.t.Fatalf("socrates-review %s is still running after %s", strings.Join(r.arguments, " "), terminalWait)
 		return "", "", 0
 	}
 }
@@ -216,12 +222,12 @@ func (s *Session) Review(arguments ...string) string {
 
 	out, failures, code := s.Socrates(append([]string{"review"}, arguments...)...)
 	if code != 0 {
-		s.t.Fatalf("socrates review exited %d: %s", code, failures)
+		s.t.Fatalf("socrates-review review exited %d: %s", code, failures)
 	}
 
 	name, _, _ := strings.Cut(strings.TrimSpace(out), "\n")
 	if name == "" {
-		s.t.Fatal("socrates review printed no run identifier")
+		s.t.Fatal("socrates-review review printed no run identifier")
 	}
 	return name
 }

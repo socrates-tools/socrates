@@ -1,13 +1,14 @@
-# socrates
+# socrates-review
 
-socrates puts an independent reviewer in front of unreviewed local changes.
-The binary is `socrates`, and `scrat` is a second name for it that `make install` puts beside it.
-Everything socrates prints names `socrates`.
+socrates-review puts an independent reviewer in front of unreviewed local changes.
+The binary is `socrates-review`, and it answers to that one name.
+Everything socrates-review prints names `socrates-review`.
 
 `agora` is a second and separate program in this repository, not a third name.
 It serves one document as one page on a loopback address, waits for a person, and prints what they answered.
-It knows nothing about code review, and nothing socrates does reaches it yet.
-One tool, so one home and one configuration file: both binaries read `~/.socrates/config.yaml` and write under `~/.socrates`, moved by `SOCRATES_HOME`.
+It knows nothing about code review, and nothing socrates-review does reaches it yet.
+One tool, so one home and one configuration file: both binaries read `~/.socrates/review/config.yaml` and write under `~/.socrates/review`.
+`~/.socrates` is the brand's root, holding one directory per tool published under it, and `SOCRATES_HOME` moves the root.
 
 `openspec/` is normative and is where the reasoning lives: `openspec/specs` for what is required and why, and `openspec/changes/archive/*/design.md` for the decisions behind it.
 This file is a map.
@@ -15,27 +16,27 @@ Where the two disagree, `openspec/` wins and this file is what needs fixing.
 
 ## Scope
 
-socrates reviews.
+socrates-review reviews.
 It does not land, verify, render, serve, or wait for a person.
-Committing, pushing, opening a pull request and watching continuous integration are not socrates' and never become socrates'.
+Committing, pushing, opening a pull request and watching continuous integration are not socrates-review's and never become socrates-review's.
 Running the reviewed project's own tests is not in the core layer either, so `clean` means an independent reviewer found nothing blocking, not that the tests pass.
 
 ## Layout
 
-What socrates is:
+What socrates-review is:
 
-- `cmd/socrates` - the binary: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, `version`, and the hidden `supervise`.
+- `cmd/socrates-review` - the binary: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, `version`, and the hidden `supervise`.
 - `internal/snapshot` - the freeze: a temporary index, a commit, a detached worktree, and the seal that makes it unwritable.
 - `internal/runstore` - run directories, `run.json`, run selection, rounds, retention.
 - `internal/runstate` - the states and which are terminal.
 - `internal/findings` - the findings contract, the reviewer's schema, the classification and the verdict rule.
 - `internal/dialogue` - what a round leads to, which rounds wait on a person, the round cap, and the response document.
 - `internal/hygiene` - model output neutralised before it re-enters a prompt.
-- `internal/guidance` - the one file socrates reads out of the repository under review, the commit it is read at, and the ceiling it is held to.
+- `internal/guidance` - the one file socrates-review reads out of the repository under review, the commit it is read at, and the ceiling it is held to.
 - `internal/prompt` - the delivered prompt, assembled from named sections.
 - `internal/testquality` - the test-quality rule, shared by every role that needs it.
 - `internal/platform` - the one place the supported platforms are stated, and the basis on which one qualifies.
-- `internal/agent` - the only package that starts a model process, the reviewer CLIs socrates drives and the basis on which one qualifies, and one file per vendor behind the seam.
+- `internal/agent` - the only package that starts a model process, the reviewer CLIs socrates-review drives and the basis on which one qualifies, and one file per vendor behind the seam.
 - `internal/reviewer` - beginning, supervising, responding, advancing, cancelling.
 - `internal/report` - what `status` and `findings` print.
 - `internal/presentation` - the one place an event becomes a line a person reads.
@@ -107,16 +108,16 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - Every round is snapshotted afresh against the run's original base, and snapshot commits are content-addressed.
 - A write in the snapshot worktree is refused by the filesystem, and the worktree is compared against its commit after the round.
 - One file is read out of it, `.socrates/review-guide.md`, at the run's base commit and never from the working tree or the snapshot, so a guide the change writes governs the next run rather than this one.
-- That guide is bounded, neutralised on the way into the prompt, and additive: it withdraws no rule socrates delivers, and nothing socrates decides is derived from a word of it.
+- That guide is bounded, neutralised on the way into the prompt, and additive: it withdraws no rule socrates-review delivers, and nothing socrates-review decides is derived from a word of it.
 
 **The reviewer**
 
 - `internal/agent` is the only package that starts a model process.
-- The reviewer CLIs socrates drives are stated once, each beside the facts that make it qualify, and support follows from those facts rather than from a list.
+- The reviewer CLIs socrates-review drives are stated once, each beside the facts that make it qualify, and support follows from those facts rather than from a list.
 - A CLI qualifies on three things: the reviewed repository's own instructions can be kept out of the session, a terminal event says whether the work happened and what it said about a failure, and a model is selectable per invocation.
-- Whether the vendor constrains output against the schema is a tier rather than a criterion, because socrates validates the document either way.
-- A configured CLI socrates does not drive is refused by name, naming the guarantee it does not offer, before a snapshot is taken and before a reviewer is spawned.
-- Nothing above the seam names a vendor, a flag or an event shape, and nothing outside socrates shapes a reviewer's answer into the findings document.
+- Whether the vendor constrains output against the schema is a tier rather than a criterion, because socrates-review validates the document either way.
+- A configured CLI socrates-review does not drive is refused by name, naming the guarantee it does not offer, before a snapshot is taken and before a reviewer is spawned.
+- Nothing above the seam names a vendor, a flag or an event shape, and nothing outside socrates-review shapes a reviewer's answer into the findings document.
 - Each vendor's invocation asks for none of the machine's own customisations; the session's tool list and named sources are recorded rather than trusted, and a vendor that reports no inventory produces runs that record that.
 - A round after the first inherits no session: the only cross-round context is the labelled prior findings and recorded responses.
 - Model output is neutralised per field on the way into a prompt, and never on the way to disk.
@@ -136,7 +137,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 **Presentation**
 
 - Every round of a run that ended in `clean`, `awaiting-response` or `escalated` is handed over as a page, and a run that failed or was stopped is handed over as nothing whatever its rounds got as far as.
-- socrates states whether a round waits on a person and does nothing further about the page: no command, flag or run record names one, and it states nothing about whether a page is served.
+- socrates-review states whether a round waits on a person and does nothing further about the page: no command, flag or run record names one, and it states nothing about whether a page is served.
 - `internal/presentation` is the one place an event becomes a line, and `internal/exit` owns the exit-code table.
 - A follower stops on the run's record or on the log, waits bounded for a log that does not exist yet, and stops on a parked round.
 - `status`, `watch` and `logs` stay three commands.
@@ -145,8 +146,8 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 **The skill**
 
 - `internal/skill` is its one source, and the committed copy is generated from it.
-- It names nothing the binary does not offer, lists every state a run rests in, teaches polling at a stated cadence, names `socrates watch` once and outside the loop, says once that the address `agora serve` prints holds the session `agora poll` is given and that the session is kept for the whole review, and says whose a question is.
-- Every branch that reached a result serves a page, `failed` and `cancelled` name none, and the session waits only where socrates says the round waits on a person.
+- It names nothing the binary does not offer, lists every state a run rests in, teaches polling at a stated cadence, names `socrates-review watch` once and outside the loop, says once that the address `agora serve` prints holds the session `agora poll` is given and that the session is kept for the whole review, and says whose a question is.
+- Every branch that reached a result serves a page, `failed` and `cancelled` name none, and the session waits only where socrates-review says the round waits on a person.
 - `dialogue.ResponseRules` and `skill.PageBar` are each stated once and rendered where they are needed.
 - It says every control carries the command it becomes and that the page shows that command to nobody, and it names each decision from the finding's identifier rather than titling it.
 - It says every finding in the round gets a card of its own, that a finding the session resolved states what resolved it and offers no options, and that what foregrounds the rest is the severity order rather than shortening, listing or omitting anything.
@@ -154,9 +155,9 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 
 **The binaries**
 
-- `socrates` and `scrat` are one program under two names, and `agora` is a different program.
+- `socrates-review` answers to one name and nothing is installed beside it, and `agora` is a different program.
 - What a binary says about itself was recorded when it was linked and is never read where it is run.
-- socrates reaches no network outside a build tag, and what is measured is `cmd/socrates` and the packages it reaches rather than this repository.
+- socrates-review reaches no network outside a build tag, and what is measured is `cmd/socrates-review` and the packages it reaches rather than this repository.
 
 **Project identity**
 
@@ -178,7 +179,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 
 **Platform support**
 
-- `internal/platform` states the supported set once, on the basis that reaping by process group is available, the filesystem enforces the seal and the suite runs there rather than on the basis that socrates compiles.
+- `internal/platform` states the supported set once, on the basis that reaping by process group is available, the filesystem enforces the seal and the suite runs there rather than on the basis that socrates-review compiles.
 - The refusal, what a release builds and what a person reads all read that set, and no second copy of it exists in the source.
 - A review is refused where this build cannot reap by process group, before a snapshot is taken and before a reviewer is spawned, naming the missing guarantee and the same way forward the README names.
 - A command that neither spawns nor reaps is not refused there, so a finished run stays readable.
@@ -195,11 +196,11 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 
 **Documentation**
 
-- `README.md` states what socrates needs before it explains how socrates works, and the reviewer CLI, its floor and the account behind it are part of that.
+- `README.md` states what socrates-review needs before it explains how socrates-review works, and the reviewer CLI, its floor and the account behind it are part of that.
 - The toolchain floor a document states is read against `go.mod`, so the two cannot drift.
 - Every binary `make install` puts on a path is explained rather than mentioned.
-- Where what socrates reads goes is stated in both directions: socrates sends nothing, and the reviewer CLI it drives sends the change to its vendor. Neither half is stated without the other.
-- `SECURITY.md` names a private channel and says what socrates does not defend against, including the residual `README.md` already names.
+- Where what socrates-review reads goes is stated in both directions: socrates-review sends nothing, and the reviewer CLI it drives sends the change to its vendor. Neither half is stated without the other.
+- `SECURITY.md` names a private channel and says what socrates-review does not defend against, including the residual `README.md` already names.
 - `CONTRIBUTING.md` says a change starts as a proposal in `openspec/` before it says anything about the toolchain, and it names one verification command rather than the gates.
 - `make help` names every target a document tells a contributor to run.
 - The documents a first change needs are present, and `.editorconfig` and `.gitattributes` match the conventions the source is held to.
@@ -208,7 +209,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 
 - `LICENSE` states MIT in full and names the holder, and no source file opens with a licence header.
 - A comment carrying a borrowed work's notice and citing `NOTICE` is not that header, and one that states terms and cites nothing still is.
-- `NOTICE` names everything a shipped binary carries that socrates did not author, with each licence's full text rather than a link: the client bundle's libraries, the font faces embedded beside it, and the modules the two binaries link in.
+- `NOTICE` names everything a shipped binary carries that socrates-review did not author, with each licence's full text rather than a link: the client bundle's libraries, the font faces embedded beside it, and the modules the two binaries link in.
 - Every file `internal/assets` embeds is accounted for in `NOTICE`, read from what is embedded rather than from `web/`.
 - The bundle that ships carries the copyright notice of every library bundled into it, asserted against the shipped bytes, and a bundler set to delete legal comments fails the suite.
 
@@ -220,7 +221,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - The surface mints a session, `--session` never brings one into existence, and every page and every route of it is served under a path holding that session.
 - It turns away a request naming a host it did not bind, and every state-changing route carries a token: a session's own answers for that session and no other, and the one minted when the server started answers everywhere.
 - It composes a command and never runs one, the command it hands back is the option's own string, and no command is rendered on the page.
-- It writes only under socrates' home, in a directory of its own beside the runs, and it resolves no home and reads no configuration file of its own.
+- It writes only under socrates-review's home, in a directory of its own beside the runs, and it resolves no home and reads no configuration file of its own.
 - A caller writes a document rather than a page, and the name, severity, audience and location come from the source a decision cites.
 - A document may hold no decision, and one holding no decision, no source entry and no preamble is refused.
 - A decision may carry no options, and such a card states something and offers no control a person could mistake for a choice; one carrying no options and stating a mode is refused.
@@ -236,12 +237,12 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - The end of an exchange stops the page offering to answer and not the page listening, so a caller who writes again reaches the page the person is already looking at, and only the test about reloading reloads before it asserts.
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.
 - An element it hides paints nothing, every colour it paints is a token stated once, and every text meets a contrast floor under both preferences.
-- Nothing in it names review, finding, verdict, round, or run as a noun.
+- Nothing in it names review, finding, verdict, round, or run as a noun, and the module path is not part of its vocabulary.
 
 **The suite**
 
 - Every end-to-end scenario runs against every supported vendor's simulator, and a supported vendor with no simulator or no recordings fails the suite.
-- Tests assert on the delivered prompt, never on socrates' own source text, and the prompt's reporting section is generated from `internal/findings`.
+- Tests assert on the delivered prompt, never on socrates-review's own source text, and the prompt's reporting section is generated from `internal/findings`.
 - A test may not prove behaviour by reading implementation source; one that legitimately reads a Go file is named in `convention.ContractsTestsRead`.
 - Every scenario under way is named by a test, and archiving a change may take none out of the promoted specifications.
 - A gate that cannot check what it was asked to check fails rather than reporting a pass.

@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ktei/socrates/internal/config"
-	"github.com/ktei/socrates/internal/document"
-	"github.com/ktei/socrates/internal/process"
-	"github.com/ktei/socrates/internal/refusal"
-	"github.com/ktei/socrates/internal/surface"
+	"github.com/socrates-tools/socrates-review/internal/config"
+	"github.com/socrates-tools/socrates-review/internal/document"
+	"github.com/socrates-tools/socrates-review/internal/process"
+	"github.com/socrates-tools/socrates-review/internal/refusal"
+	"github.com/socrates-tools/socrates-review/internal/surface"
 	"github.com/spf13/cobra"
 )
 

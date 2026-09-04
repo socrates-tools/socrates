@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ktei/socrates/internal/simulation"
+	"github.com/socrates-tools/socrates-review/internal/simulation"
 )
 
 const (

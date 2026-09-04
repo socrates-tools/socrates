@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/dialogue"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/skill"
+	"github.com/socrates-tools/socrates-review/internal/dialogue"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/skill"
 )
 
 const (
@@ -52,8 +52,8 @@ func numberedStep(t *testing.T, document string, number int) string {
 func TestTheWaitingCommandIsStatus(t *testing.T) {
 	waiting := numberedStep(t, skill.Document(), 3)
 
-	if !strings.Contains(waiting, "socrates status") {
-		t.Errorf("the step that waits for a review does not name socrates status:\n%s", waiting)
+	if !strings.Contains(waiting, "socrates-review status") {
+		t.Errorf("the step that waits for a review does not name socrates-review status:\n%s", waiting)
 	}
 	if !strings.Contains(waiting, "context") {
 		t.Errorf("the step that waits for a review does not say why it polls rather than follows:\n%s", waiting)
@@ -76,14 +76,14 @@ func TestTheWaitingStepSaysHowOftenAndForHowLong(t *testing.T) {
 func TestWatchIsForThePerson(t *testing.T) {
 	document := skill.Document()
 
-	if named := strings.Count(document, "socrates watch"); named != 1 {
-		t.Fatalf("the skill names socrates watch %d times, and it is a suggestion for the person rather than a step", named)
+	if named := strings.Count(document, "socrates-review watch"); named != 1 {
+		t.Fatalf("the skill names socrates-review watch %d times, and it is a suggestion for the person rather than a step", named)
 	}
 
-	suggestion := sentenceNaming(document, "socrates watch")
+	suggestion := sentenceNaming(document, "socrates-review watch")
 	for _, stated := range []string{"person", "terminal"} {
 		if !strings.Contains(suggestion, stated) {
-			t.Errorf("the sentence naming socrates watch does not say %q, so it does not read as a suggestion for the person: %q", stated, suggestion)
+			t.Errorf("the sentence naming socrates-review watch does not say %q, so it does not read as a suggestion for the person: %q", stated, suggestion)
 		}
 	}
 
@@ -91,8 +91,8 @@ func TestWatchIsForThePerson(t *testing.T) {
 	if loop < 0 {
 		t.Fatal("the skill has no loop, so there is nothing for the suggestion to stay out of")
 	}
-	if strings.Index(document, "socrates watch") > loop {
-		t.Errorf("socrates watch is named inside the loop the session is told to run: %q", suggestion)
+	if strings.Index(document, "socrates-review watch") > loop {
+		t.Errorf("socrates-review watch is named inside the loop the session is told to run: %q", suggestion)
 	}
 }
 
@@ -179,7 +179,7 @@ func TestTheRulesAreStatedBeforeTheFindingsAreRead(t *testing.T) {
 		stated = max(stated, at)
 	}
 
-	reading := strings.Index(document, "socrates findings")
+	reading := strings.Index(document, "socrates-review findings")
 	if reading < 0 {
 		t.Fatal("the skill never reads the findings, so there is nothing for the rules to come before")
 	}
@@ -210,7 +210,7 @@ func TestARoundIsSpentWithoutAsking(t *testing.T) {
 	if !strings.Contains(said, "Do not ask the person whether the round is worth spending.") {
 		t.Errorf("the parked branch does not say that the round is spent without asking:\n%s", said)
 	}
-	for _, stated := range []string{"unreviewed new code", "socrates continue"} {
+	for _, stated := range []string{"unreviewed new code", "socrates-review continue"} {
 		if !strings.Contains(said, stated) {
 			t.Errorf("the parked branch does not say %q, so a session that answered everything has no reason to spend the round:\n%s", stated, said)
 		}
@@ -234,7 +234,7 @@ func TestAFurtherLookIsANewRun(t *testing.T) {
 		if !strings.Contains(said, "No further round is possible.") {
 			t.Errorf("the escalated branch does not say that no further round is possible, so a session looks for the flag that gives it one:\n%s", said)
 		}
-		if !strings.Contains(said, "fresh "+inlineCode+"socrates review") {
+		if !strings.Contains(said, "fresh "+inlineCode+"socrates-review review") {
 			t.Errorf("the escalated branch names no fresh review as the way to look again:\n%s", said)
 		}
 	})
@@ -259,7 +259,7 @@ func TestAFurtherLookIsANewRun(t *testing.T) {
 func TestTheLoopCloses(t *testing.T) {
 	said := sectionAbout(t, skill.Document(), string(runstate.AwaitingResponse))
 
-	for _, named := range []string{"socrates findings", "socrates respond", "socrates continue", "socrates status"} {
+	for _, named := range []string{"socrates-review findings", "socrates-review respond", "socrates-review continue", "socrates-review status"} {
 		if !strings.Contains(said, named) {
 			t.Errorf("the section about a parked run does not name %s, so the loop does not close:\n%s", named, said)
 		}

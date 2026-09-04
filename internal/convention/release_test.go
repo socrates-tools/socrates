@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/convention"
-	"github.com/ktei/socrates/internal/platform"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/convention"
+	"github.com/socrates-tools/socrates-review/internal/platform"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 var aSemanticVersion = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`)
@@ -50,7 +50,7 @@ func TestATargetOutsideTheSupportedSetIsReported(t *testing.T) {
 	}
 }
 
-func TestTheTwoNamesAreOneProgramInEveryArchive(t *testing.T) {
+func TestAReleaseBuildsTheToolUnderOneNameAndTheSecondBinary(t *testing.T) {
 	root := source.Root(t)
 
 	building, err := convention.AReleaseBuilds(root)
@@ -58,14 +58,13 @@ func TestTheTwoNamesAreOneProgramInEveryArchive(t *testing.T) {
 		t.Fatalf("reading what a release builds: %v", err)
 	}
 
-	full := convention.BuildsProducing(building, "socrates")
-	short := convention.BuildsProducing(building, convention.ShortName)
-	if len(full) != 1 || len(short) != 1 {
-		t.Fatalf("%s produces %d binaries named socrates and %d named %s, and a release carries one of each", convention.ReleaseConfigurationFile, len(full), len(short), convention.ShortName)
+	tool := convention.BuildsProducing(building, convention.Repository)
+	surface := convention.BuildsProducing(building, "agora")
+	if len(tool) != 1 || len(surface) != 1 {
+		t.Fatalf("%s produces %d binaries named %s and %d named agora, and a release carries one of each", convention.ReleaseConfigurationFile, len(tool), convention.Repository, len(surface))
 	}
-
-	for _, disagreeing := range convention.StampDisagreements(full[0], short[0]) {
-		t.Error(disagreeing)
+	if len(building) != 2 {
+		t.Errorf("%s produces %d binaries, and a release carries the tool under its one name beside the second binary", convention.ReleaseConfigurationFile, len(building))
 	}
 
 	archives, err := convention.AReleaseArchives(root)
@@ -77,7 +76,7 @@ func TestTheTwoNamesAreOneProgramInEveryArchive(t *testing.T) {
 	}
 
 	for _, archive := range archives {
-		for _, carried := range []string{full[0].ID, short[0].ID} {
+		for _, carried := range []string{tool[0].ID, surface[0].ID} {
 			if !slices.Contains(archive.Builds, carried) {
 				t.Errorf("the archive %s carries %v, and not %s", archive.ID, archive.Builds, carried)
 			}
@@ -261,18 +260,5 @@ func TestAPublishingJobBehindVerificationIsNotReported(t *testing.T) {
 	}
 	if len(gate.Ungated) != 0 {
 		t.Errorf("a publishing job that needs the verification was reported as ungated: %v", gate.Ungated)
-	}
-}
-
-func TestAStampThatDiffersBetweenTheTwoNamesIsReported(t *testing.T) {
-	one := convention.ReleaseBuild{Binary: "socrates", Compiles: "./cmd/socrates", Stamps: []string{"-X version=a"}}
-	other := convention.ReleaseBuild{Binary: convention.ShortName, Compiles: "./cmd/scrat", Stamps: []string{"-X version=b"}}
-
-	want := []string{
-		"socrates compiles ./cmd/socrates and " + convention.ShortName + " compiles ./cmd/scrat",
-		"socrates and " + convention.ShortName + " are stamped differently, so the two names can report different builds",
-	}
-	if diff := cmp.Diff(want, convention.StampDisagreements(one, other)); diff != "" {
-		t.Errorf("what two names built differently report differs (-want +got):\n%s", diff)
 	}
 }

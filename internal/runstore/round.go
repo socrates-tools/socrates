@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ktei/socrates/internal/dialogue"
-	"github.com/ktei/socrates/internal/findings"
+	"github.com/socrates-tools/socrates-review/internal/dialogue"
+	"github.com/socrates-tools/socrates-review/internal/findings"
 )
 
 const (

@@ -30,8 +30,8 @@ type Scope struct {
 }
 
 var Socrates = Scope{
-	Module: "github.com/ktei/socrates",
-	From:   []string{filepath.Join("cmd", "socrates")},
+	Module: "github.com/socrates-tools/socrates-review",
+	From:   []string{filepath.Join("cmd", Repository)},
 }
 
 type Reach struct {

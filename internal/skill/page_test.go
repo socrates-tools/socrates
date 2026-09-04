@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/skill"
+	"github.com/socrates-tools/socrates-review/internal/skill"
 )
 
 const (
@@ -14,7 +14,7 @@ const (
 	escalatedHeading = "### escalated"
 	parkedHeading    = "### awaiting-response"
 	cancelledHeading = "### cancelled"
-	waitingStep      = "poll " + inlineCode + "socrates status"
+	waitingStep      = "poll " + inlineCode + "socrates-review status"
 )
 
 var branchesThatHaveAResult = []string{cleanHeading, escalatedHeading, parkedHeading}
@@ -142,7 +142,7 @@ func TestEveryBranchThatHasAResultSaysToServeThePage(t *testing.T) {
 			"whichever of the two it holds",
 			"read again on every one of those turns",
 			"what costs you is the finding prose rather than who answers it",
-			"socrates findings --json",
+			"socrates-review findings --json",
 			"the document and a sentence",
 		} {
 			if !strings.Contains(parked, said) {
@@ -209,7 +209,7 @@ func TestARoundTheAuthorAnswersAloneGetsAPageNobodyWaitsOn(t *testing.T) {
 			t.Errorf("the parked branch does not say %q, so a round the author answers alone reaches nobody or stops the loop:\n%s", said, parked)
 		}
 	}
-	for _, said := range []string{"socrates respond", "socrates continue"} {
+	for _, said := range []string{"socrates-review respond", "socrates-review continue"} {
 		if !strings.Contains(parked, said) {
 			t.Errorf("the parked branch no longer says %q", said)
 		}
@@ -245,8 +245,8 @@ func TestThePageIsNotInThePollingLoop(t *testing.T) {
 	if strings.Contains(strings.ToLower(step), "page") {
 		t.Errorf("the step a session runs in a loop names a page, and a page is made once after the run has stopped moving:\n%s", step)
 	}
-	if counted := strings.Count(document, "socrates watch"); counted != 1 {
-		t.Errorf("the skill names socrates watch %d times, want once", counted)
+	if counted := strings.Count(document, "socrates-review watch"); counted != 1 {
+		t.Errorf("the skill names socrates-review watch %d times, want once", counted)
 	}
 }
 
@@ -271,7 +271,7 @@ func TestAControlCarriesItsCommandAndShowsItToNobody(t *testing.T) {
 func TestTheSkillSaysHowAnAnswerReachesTheRun(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
-	for _, said := range []string{"the person answers on the page", "agora poll", "socrates respond", "their own words"} {
+	for _, said := range []string{"the person answers on the page", "agora poll", "socrates-review respond", "their own words"} {
 		if !strings.Contains(page, said) {
 			t.Errorf("the page section does not say %q, so an answer given on the page reaches no run:\n%s", said, page)
 		}
@@ -313,7 +313,7 @@ func TestADecisionIsStillThePersonsToMake(t *testing.T) {
 func TestTheSkillSaysThePageAndTheTerminalUseTheSameIdentifiers(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
-	for _, said := range []string{"identifier", "severity", "audience", "f3", "socrates findings --json"} {
+	for _, said := range []string{"identifier", "severity", "audience", "f3", "socrates-review findings --json"} {
 		if !strings.Contains(page, said) {
 			t.Errorf("the page section does not say %q, so a person naming a finding leaves the session guessing which one", said)
 		}

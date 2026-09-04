@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/skill"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/skill"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 const awaitsAPerson = "awaits a person"

@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/process"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/simulation"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/process"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/simulation"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 const talkativeScenario = "default:\n  events: 60\n  interval: 100ms\n"
@@ -33,7 +33,7 @@ func TestCancellingStopsTheReviewerThatIsAnswering(t *testing.T) {
 	}
 
 	if _, failures, code := session.Socrates("cancel", name); code != 0 {
-		t.Fatalf("socrates cancel exited %d: %s", code, failures)
+		t.Fatalf("socrates-review cancel exited %d: %s", code, failures)
 	}
 
 	run := session.Recorded(name)

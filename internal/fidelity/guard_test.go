@@ -8,10 +8,10 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/corpus"
-	"github.com/ktei/socrates/internal/fidelity"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/corpus"
+	"github.com/socrates-tools/socrates-review/internal/fidelity"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 var behindATag = []string{"record_test.go", "criteria_test.go", "drift_test.go", "livesmoke_test.go"}

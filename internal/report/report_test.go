@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/findings"
-	"github.com/ktei/socrates/internal/report"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/runstore"
+	"github.com/socrates-tools/socrates-review/internal/findings"
+	"github.com/socrates-tools/socrates-review/internal/report"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/runstore"
 )
 
 const escalatingDocument = `{

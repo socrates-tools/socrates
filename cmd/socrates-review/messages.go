@@ -1,12 +1,12 @@
 package main
 
 const (
-	failurePrefix = "socrates: "
+	failurePrefix = "socrates-review: "
 
 	rootShort      = "An independent reviewer for unreviewed local changes"
 	reviewShort    = "Freeze this working tree and have somebody who did not write it review it"
 	statusShort    = "Say what a review is doing, in as few lines as possible"
-	findingsShort  = "Print what a review found, as socrates classified it"
+	findingsShort  = "Print what a review found, as socrates-review classified it"
 	respondShort   = "Record that one finding was fixed, that it is wrong and why, or what a person decided about it"
 	continueShort  = "Snapshot the patched working tree and have a fresh reviewer judge the answers"
 	watchShort     = "Follow a review as it happens and exit with its verdict"
@@ -14,7 +14,7 @@ const (
 	cancelShort    = "Stop a review and say that nothing was decided"
 	skillShort     = "Install the skill that teaches a coding session to drive a review"
 	versionShort   = "Say which release this is, and which commit it was built from"
-	superviseShort = "Conduct a review that socrates review started"
+	superviseShort = "Conduct a review that socrates-review review started"
 
 	intentUsage   = "what the person asked for, in their words"
 	waitUsage     = "block until the review concludes or parks on you, and exit with its status"
@@ -27,14 +27,14 @@ const (
 	noteUsage     = "what was done about the fixed finding, or - to read it from standard input"
 	toUsage       = "the skills directory to write to, instead of the one under your home directory"
 
-	notACommand             = "%q is not a socrates command: run socrates --help to see what socrates does"
-	unusableFlag            = "%s: run socrates --help to see what socrates accepts"
-	reviewTakesNoArguments  = "socrates review takes no arguments, and %q is one: pass what the person asked for with --intent"
-	versionTakesNoArguments = "socrates version takes no arguments, and %q is one: run socrates version on its own to see which build this is"
+	notACommand             = "%q is not a socrates-review command: run socrates-review --help to see what socrates-review does"
+	unusableFlag            = "%s: run socrates-review --help to see what socrates-review accepts"
+	reviewTakesNoArguments  = "socrates-review review takes no arguments, and %q is one: pass what the person asked for with --intent"
+	versionTakesNoArguments = "socrates-review version takes no arguments, and %q is one: run socrates-review version on its own to see which build this is"
 	oneRunAtATime           = "%s names a second run, and a command reports on one: name one run or none at all"
 
-	nameTheFinding        = "socrates respond answers one finding, and none was named: pass --finding with an identifier socrates findings printed"
-	oneAnswerAtATime      = "socrates respond records one answer, and it is a fix, a rejection or a decision: pass exactly one of --%s, --%s or --%s"
+	nameTheFinding        = "socrates-review respond answers one finding, and none was named: pass --finding with an identifier socrates-review findings printed"
+	oneAnswerAtATime      = "socrates-review respond records one answer, and it is a fix, a rejection or a decision: pass exactly one of --%s, --%s or --%s"
 	reasonBelongsToAClaim = "--reason says why a finding is wrong or what a person decided about it, and this answer records a fix: pass --note to say what was done about it"
 	noteBelongsToAFix     = "--note says what was done about a fixed finding, and this answer records that it is %s: pass --reason instead, because that is the claim the next reviewer judges"
 	readingStandardInput  = "reading the reason from standard input: %w"
@@ -45,13 +45,13 @@ const (
 	stillToAnswer        = "%d findings still have none: %s"
 	roundStarted         = "round %d is under way"
 
-	installedTheSkill = "the socrates skill is at %s, and a session that reads it can drive a review itself"
+	installedTheSkill = "the socrates-review skill is at %s, and a session that reads it can drive a review itself"
 
 	stillStarting = "run %s is %s, and its reviewer has written nothing yet"
 
-	followIt         = "follow it with: socrates status %s"
+	followIt         = "follow it with: socrates-review status %s"
 	stoppedIt        = "run %s is cancelled, and nothing was decided about the change"
 	alreadyEnded     = "run %s already ended as %s, so there was nothing to stop"
 	locatingHere     = "locating the working directory: %w"
-	locatingSocrates = "locating socrates itself: %w"
+	locatingSocrates = "locating socrates-review itself: %w"
 )

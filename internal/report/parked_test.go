@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/dialogue"
-	"github.com/ktei/socrates/internal/report"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/runstore"
+	"github.com/socrates-tools/socrates-review/internal/dialogue"
+	"github.com/socrates-tools/socrates-review/internal/report"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/runstore"
 )
 
 const patchableDocument = `{
@@ -128,7 +128,7 @@ func TestTheCountOfWhatAPatchableRoundWantsReachesZero(t *testing.T) {
 	if !strings.Contains(printed, "unanswered: 0") {
 		t.Errorf("the status does not report zero unanswered:\n%s", printed)
 	}
-	if !strings.Contains(printed, "socrates continue") {
+	if !strings.Contains(printed, "socrates-review continue") {
 		t.Errorf("the status does not say the run is ready to continue:\n%s", printed)
 	}
 }

@@ -1,7 +1,7 @@
 package outcomes
 
 const (
-	whatSocratesWouldDo = "what socrates would do with each answer a real reviewer gave"
+	whatSocratesWouldDo = "what socrates-review would do with each answer a real reviewer gave"
 	reachedBy           = "%s: %d recorded"
 	reachedByAndNamed   = "%s: %d recorded, named by %d tests"
 	answerLine          = "  %s"

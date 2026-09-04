@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/corpus"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/runstore"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/corpus"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/runstore"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 const (

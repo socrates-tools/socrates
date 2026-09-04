@@ -9,68 +9,58 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/convention"
-	"github.com/ktei/socrates/internal/testing/harness"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/convention"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
-func TestBothNamesAreInstalledAndReachTheSameBinary(t *testing.T) {
+func TestOneNameIsInstalledAndNothingIsPutBesideIt(t *testing.T) {
 	root := requireMake(t)
 	directory := installed(t, root)
 
-	full := versionOf(t, filepath.Join(directory, "socrates"))
-	short := versionOf(t, filepath.Join(directory, convention.ShortName))
-
-	if full != short {
-		t.Errorf("the two names report different builds: %q and %q", full, short)
+	tool := filepath.Join(directory, convention.Repository)
+	reported := versionOf(t, tool)
+	if commit := gitSaid(t, root, "rev-parse", "--short=7", "HEAD"); !strings.Contains(reported, commit) {
+		t.Errorf("the installed binary reports %q, which does not name the commit %s", reported, commit)
 	}
-	if commit := gitSaid(t, root, "rev-parse", "--short=7", "HEAD"); !strings.Contains(full, commit) {
-		t.Errorf("the installed binary reports %q, which does not name the commit %s", full, commit)
+
+	installedTool, err := os.Stat(tool)
+	if err != nil {
+		t.Fatalf("the tool was not installed under %s: %v", convention.Repository, err)
+	}
+
+	entries, err := os.ReadDir(directory)
+	if err != nil {
+		t.Fatalf("reading what installing put on the path: %v", err)
+	}
+	for _, entry := range entries {
+		if entry.Name() == convention.Repository {
+			continue
+		}
+		beside, err := os.Stat(filepath.Join(directory, entry.Name()))
+		if err != nil {
+			continue
+		}
+		if os.SameFile(installedTool, beside) {
+			t.Errorf("installing put %s beside %s and the two are one binary, and the tool answers to one name", entry.Name(), convention.Repository)
+		}
 	}
 }
 
-func TestTheShortNameIsASecondNameForOneBinary(t *testing.T) {
-	directory := installed(t, requireMake(t))
-
-	entry, err := os.Lstat(filepath.Join(directory, convention.ShortName))
-	if err != nil {
-		t.Fatalf("the short name was not installed: %v", err)
-	}
-	if entry.Mode()&os.ModeSymlink == 0 {
-		t.Errorf("the short name is a %s of its own rather than a second name for the one binary", entry.Mode())
-	}
-
-	full, err := os.Stat(filepath.Join(directory, "socrates"))
-	if err != nil {
-		t.Fatalf("the full name was not installed: %v", err)
-	}
-	reached, err := os.Stat(filepath.Join(directory, convention.ShortName))
-	if err != nil {
-		t.Fatalf("the short name reaches nothing: %v", err)
-	}
-	if !os.SameFile(full, reached) {
-		t.Errorf("the short name reaches something other than the binary the full name is")
-	}
-}
-
-func TestTheShortNameReportsTheFullOne(t *testing.T) {
+func TestWhatItPrintsNamesTheTool(t *testing.T) {
 	session := harness.Start(t)
 
-	directory := t.TempDir()
-	shortName := filepath.Join(directory, convention.ShortName)
-	if err := os.Symlink(session.Binary, shortName); err != nil {
-		t.Fatalf("naming the binary %s: %v", convention.ShortName, err)
-	}
-
-	printed, failures, code := invoked(t, shortName, "kaboom")
+	printed, failures, code := invoked(t, session.Binary, "kaboom")
 	if code != 3 {
-		t.Fatalf("the short name refused an unknown command with %d, want 3: %s", code, failures)
+		t.Fatalf("an unknown command was refused with %d, want 3: %s", code, failures)
 	}
-	if !strings.Contains(failures, "socrates") {
-		t.Errorf("what the short name printed does not name socrates: %q", failures)
+	if !strings.Contains(failures, convention.Repository) {
+		t.Errorf("what it printed does not name %s: %q", convention.Repository, failures)
 	}
-	if strings.Contains(failures+printed, convention.ShortName) {
-		t.Errorf("what the short name printed names the short name back: %q", failures+printed)
+	for _, said := range strings.Fields(printed + failures) {
+		if said == "socrates" || said == "scrat" {
+			t.Errorf("what it printed names %q, and the command a person can type is %s: %q", said, convention.Repository, printed+failures)
+		}
 	}
 }
 

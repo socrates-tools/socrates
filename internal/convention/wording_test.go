@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 func TestARefusalNamesTheNextAction(t *testing.T) {
@@ -27,35 +27,6 @@ func TestNoEmDashReachesAPerson(t *testing.T) {
 
 	for _, dashed := range wording.EmDashes {
 		t.Errorf("%s carries an em dash", dashed)
-	}
-}
-
-func TestNothingSocratesPrintsNamesTheShortName(t *testing.T) {
-	wording, err := UserFacingStrings(source.Root(t))
-	if err != nil {
-		t.Fatalf("reading what socrates says: %v", err)
-	}
-
-	for _, named := range wording.ShortNamed {
-		t.Errorf("%s names the short name, and what socrates prints names socrates", named)
-	}
-}
-
-func TestAStringNamingTheShortNameIsReported(t *testing.T) {
-	root := t.TempDir()
-	write(t, root, filepath.Join("internal", "thing", "messages.go"), `package thing
-
-const named = "run `+ShortName+` --help to see what it does"
-`)
-
-	wording, err := UserFacingStrings(root)
-	if err != nil {
-		t.Fatalf("reading the fabricated package: %v", err)
-	}
-
-	want := []string{filepath.Join("internal", "thing", "messages.go") + ":3"}
-	if diff := cmp.Diff(want, wording.ShortNamed); diff != "" {
-		t.Errorf("the reported uses of the short name differ (-want +got):\n%s", diff)
 	}
 }
 
@@ -140,7 +111,7 @@ func TestARefusalWithNoNextActionIsReported(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, filepath.Join("internal", "thing", "thing.go"), `package thing
 
-import "github.com/ktei/socrates/internal/refusal"
+import "github.com/socrates-tools/socrates-review/internal/refusal"
 
 func Do() error {
 	return refusal.New(somethingWentWrong)
@@ -166,7 +137,7 @@ func TestARefusalThatNamesTheNextActionIsNotReported(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, filepath.Join("internal", "thing", "thing.go"), `package thing
 
-import "github.com/ktei/socrates/internal/refusal"
+import "github.com/socrates-tools/socrates-review/internal/refusal"
 
 func Do() error {
 	return refusal.New(somethingWentWrong)

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/ktei/socrates/internal/opencodesim"
+	"github.com/socrates-tools/socrates-review/internal/opencodesim"
 )
 
 func main() {

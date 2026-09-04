@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/refusal"
-	"github.com/ktei/socrates/internal/state"
+	"github.com/socrates-tools/socrates-review/internal/refusal"
+	"github.com/socrates-tools/socrates-review/internal/state"
 )
 
 func TestTheSurfacesDirectoryIsUnderTheStatedHome(t *testing.T) {
@@ -17,8 +17,8 @@ func TestTheSurfacesDirectoryIsUnderTheStatedHome(t *testing.T) {
 	if err != nil {
 		t.Fatalf("resolving where the surface keeps what it writes: %v", err)
 	}
-	if want := filepath.Join(stated, "surface"); directory != want {
-		t.Errorf("the surface keeps what it writes at %s, and %s states the home is %s", directory, state.HomeVariable, want)
+	if want := filepath.Join(stated, "review", "surface"); directory != want {
+		t.Errorf("the surface keeps what it writes at %s, and %s states the brand's root is %s", directory, state.HomeVariable, want)
 	}
 }
 
@@ -51,5 +51,40 @@ func TestARelativeHomeIsRefusedForTheSurfacesDirectory(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), state.HomeVariable) || !strings.Contains(err.Error(), "somewhere") {
 		t.Errorf("the refusal reads %q, without naming the variable and the path", err)
+	}
+}
+
+func TestTheToolWritesUnderItsOwnDirectoryInTheBrandsRoot(t *testing.T) {
+	own := t.TempDir()
+	t.Setenv(state.HomeVariable, "")
+	t.Setenv("HOME", own)
+	t.Setenv("USERPROFILE", own)
+
+	home, err := state.Home()
+	if err != nil {
+		t.Fatalf("resolving the tool's home with no root stated: %v", err)
+	}
+
+	root := filepath.Join(own, ".socrates")
+	if want := filepath.Join(root, "review"); home != want {
+		t.Errorf("the tool's home is %s, and the brand's root holding a directory named for the tool is %s", home, want)
+	}
+
+	configuration, err := state.Configuration()
+	if err != nil {
+		t.Fatalf("resolving the configuration file: %v", err)
+	}
+	if beside := filepath.Join(root, state.ConfigurationFile); configuration == beside {
+		t.Errorf("the configuration file is %s, which is directly in the brand's root rather than in the tool's directory under it", configuration)
+	}
+
+	runs, err := state.Runs()
+	if err != nil {
+		t.Fatalf("resolving where the runs go: %v", err)
+	}
+	for _, under := range []string{configuration, runs} {
+		if filepath.Dir(under) != home {
+			t.Errorf("%s is not in the tool's directory %s, so removing the tool would not be removing one directory", under, home)
+		}
 	}
 }

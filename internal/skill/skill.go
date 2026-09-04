@@ -6,12 +6,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ktei/socrates/internal/dialogue"
-	"github.com/ktei/socrates/internal/refusal"
+	"github.com/socrates-tools/socrates-review/internal/dialogue"
+	"github.com/socrates-tools/socrates-review/internal/refusal"
 )
 
 const (
-	Name     = "socrates"
+	Name     = "socrates-review"
 	Surface  = "agora"
 	FileName = "SKILL.md"
 

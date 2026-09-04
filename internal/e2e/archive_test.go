@@ -11,11 +11,12 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/convention"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/convention"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 func TestAReleaseArchiveGivesWhatInstallingFromSourceGives(t *testing.T) {
@@ -34,8 +35,9 @@ func TestAReleaseArchiveGivesWhatInstallingFromSourceGives(t *testing.T) {
 		}
 	})
 
-	t.Run("An archive carries both names and the second binary", func(t *testing.T) {
-		for _, named := range []string{"socrates", convention.ShortName, "agora"} {
+	t.Run("An archive carries the tool and the second binary", func(t *testing.T) {
+		carried := []string{convention.Repository, "agora"}
+		for _, named := range carried {
 			entry, err := os.Stat(filepath.Join(extracted, named))
 			if err != nil {
 				t.Errorf("a release archive carries no %s: %v", named, err)
@@ -46,10 +48,18 @@ func TestAReleaseArchiveGivesWhatInstallingFromSourceGives(t *testing.T) {
 			}
 		}
 
-		full := versionOf(t, filepath.Join(extracted, "socrates"))
-		short := versionOf(t, filepath.Join(extracted, convention.ShortName))
-		if full != short {
-			t.Errorf("the two names in one archive report different builds: %q and %q", full, short)
+		entries, err := os.ReadDir(extracted)
+		if err != nil {
+			t.Fatalf("reading what a release archive carries: %v", err)
+		}
+		for _, entry := range entries {
+			held, err := entry.Info()
+			if err != nil || held.Mode().Perm()&0o111 == 0 || held.IsDir() {
+				continue
+			}
+			if !slices.Contains(carried, entry.Name()) {
+				t.Errorf("a release archive carries %s beside %v, and the tool answers to one name", entry.Name(), carried)
+			}
 		}
 	})
 }

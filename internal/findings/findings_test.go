@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/findings"
+	"github.com/socrates-tools/socrates-review/internal/findings"
 )
 
 func TestTheReviewerIsGivenTheSchema(t *testing.T) {

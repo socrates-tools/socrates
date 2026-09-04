@@ -4,18 +4,19 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ktei/socrates/internal/refusal"
+	"github.com/socrates-tools/socrates-review/internal/refusal"
 )
 
 const (
 	HomeVariable      = "SOCRATES_HOME"
-	homeDirectory     = ".socrates"
+	brandDirectory    = ".socrates"
+	toolDirectory     = "review"
 	runsDirectory     = "runs"
 	surfaceDirectory  = "surface"
 	ConfigurationFile = "config.yaml"
 )
 
-func Home() (string, error) {
+func Root() (string, error) {
 	if stated := os.Getenv(HomeVariable); stated != "" {
 		if !filepath.IsAbs(stated) {
 			return "", refusal.New(statedHomeIsRelative, HomeVariable, stated)
@@ -27,7 +28,19 @@ func Home() (string, error) {
 	if err != nil {
 		return "", refusal.Wrapping(err, noHomeDirectory, err, HomeVariable)
 	}
-	return filepath.Join(own, homeDirectory), nil
+	return filepath.Join(own, brandDirectory), nil
+}
+
+func HomeUnder(root string) string {
+	return filepath.Join(root, toolDirectory)
+}
+
+func Home() (string, error) {
+	root, err := Root()
+	if err != nil {
+		return "", err
+	}
+	return HomeUnder(root), nil
 }
 
 func Runs() (string, error) {

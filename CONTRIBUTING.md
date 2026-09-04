@@ -1,4 +1,4 @@
-# Contributing to socrates
+# Contributing to socrates-review
 
 ## A change starts as a proposal
 
@@ -20,13 +20,13 @@ Two gates enforce it mechanically: the scenario-coverage gate fails while a scen
 Both run under the one verification command below.
 
 If you are not sure whether something needs a proposal, open an issue and say what you want to change.
-A bug fix that restores stated behaviour does not need one. Anything that changes what socrates promises does.
+A bug fix that restores stated behaviour does not need one. Anything that changes what socrates-review promises does.
 
 ## Out of scope
 
 `README.md` has a section called "Out of scope", and it is the shortest way to learn what a proposal should not ask for.
-socrates reviews. It does not land, verify, render, serve or wait for a person.
-Committing, pushing, opening a pull request and watching continuous integration are not socrates' and never become socrates'.
+socrates-review reviews. It does not land, verify, render, serve or wait for a person.
+Committing, pushing, opening a pull request and watching continuous integration are not socrates-review's and never become socrates-review's.
 
 ## The toolchain
 

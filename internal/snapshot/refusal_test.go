@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/refusal"
-	"github.com/ktei/socrates/internal/snapshot"
-	"github.com/ktei/socrates/internal/testing/gitrepo"
+	"github.com/socrates-tools/socrates-review/internal/refusal"
+	"github.com/socrates-tools/socrates-review/internal/snapshot"
+	"github.com/socrates-tools/socrates-review/internal/testing/gitrepo"
 )
 
 func TestNotARepository(t *testing.T) {

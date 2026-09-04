@@ -1,6 +1,7 @@
 package convention
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -11,11 +12,30 @@ import (
 )
 
 const (
-	Organisation = "ktei"
-	Repository   = "socrates"
+	Organisation = "socrates-tools"
+	Repository   = "socrates-review"
 )
 
 var ArchivedChanges = filepath.Join("openspec", "changes", "archive")
+
+const moduleDirective = "module"
+
+func ModulePath(root string) (string, error) {
+	held, err := os.ReadFile(filepath.Join(root, "go.mod"))
+	if os.IsNotExist(err) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	for _, line := range strings.Split(string(held), "\n") {
+		stated := strings.Fields(line)
+		if len(stated) == 2 && stated[0] == moduleDirective {
+			return stated[1], nil
+		}
+	}
+	return "", fmt.Errorf("go.mod states no module path")
+}
 
 var codeHostingHosts = []string{"github.com", "gitlab.com", "bitbucket.org", "codeberg.org"}
 

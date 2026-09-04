@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 func TestSocratesHoldsItselfToTheTestQualityRule(t *testing.T) {
@@ -68,7 +68,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 func TestTheRuleExists(t *testing.T) {

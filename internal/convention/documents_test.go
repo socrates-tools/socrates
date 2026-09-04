@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/convention"
-	"github.com/ktei/socrates/internal/platform"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/convention"
+	"github.com/socrates-tools/socrates-review/internal/platform"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 func TestTheRequirementsComeBeforeTheExplanation(t *testing.T) {
@@ -58,7 +58,7 @@ func TestARequirementsSectionThatArrivesLateIsRead(t *testing.T) {
 	if front.Sections[0] == convention.RequirementsHeading {
 		t.Errorf("a document explaining before it states its requirements was read as stating them first: %v", front.Sections)
 	}
-	want := []string{convention.FrontDocumentFile + " states what socrates needs without naming account"}
+	want := []string{convention.FrontDocumentFile + " states what socrates-review needs without naming account"}
 	if diff := cmp.Diff(want, front.Missing); diff != "" {
 		t.Errorf("what a requirements section missing a fact reports differs (-want +got):\n%s", diff)
 	}

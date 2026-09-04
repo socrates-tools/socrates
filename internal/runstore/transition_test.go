@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
 )
 
 func TestATerminalRunDoesNotMove(t *testing.T) {

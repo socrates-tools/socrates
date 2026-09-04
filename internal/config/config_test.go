@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/config"
-	"github.com/ktei/socrates/internal/refusal"
-	"github.com/ktei/socrates/internal/state"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/config"
+	"github.com/socrates-tools/socrates-review/internal/refusal"
+	"github.com/socrates-tools/socrates-review/internal/state"
 )
 
 func TestNoConfigurationFile(t *testing.T) {
@@ -186,8 +186,8 @@ func TestTheConfigurationSitsAtTheTopOfTheHomeOnEveryPlatform(t *testing.T) {
 	if err != nil {
 		t.Fatalf("resolving the configuration path: %v", err)
 	}
-	if want := filepath.Join(stated, "config.yaml"); path != want {
-		t.Errorf("socrates reads %s, and its home is %s", path, want)
+	if want := filepath.Join(stated, "review", "config.yaml"); path != want {
+		t.Errorf("socrates reads %s, and the top of its home under the brand's root is %s", path, want)
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/document"
+	"github.com/socrates-tools/socrates-review/internal/document"
 )
 
 func whole() document.Document {

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/corpus"
-	"github.com/ktei/socrates/internal/simulation"
+	"github.com/socrates-tools/socrates-review/internal/corpus"
+	"github.com/socrates-tools/socrates-review/internal/simulation"
 )
 
 const replayed = "dialogue-layer-first-look"

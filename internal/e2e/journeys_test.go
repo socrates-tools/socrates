@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/corpus"
-	"github.com/ktei/socrates/internal/findings"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/corpus"
+	"github.com/socrates-tools/socrates-review/internal/findings"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 func TestTheCleanJourney(t *testing.T) {
@@ -21,7 +21,7 @@ func TestTheCleanJourney(t *testing.T) {
 
 	printed, failures, code := session.Socrates("review", "--wait", "--intent", "add a parser that accepts anything")
 	if code != 0 {
-		t.Fatalf("socrates review --wait exited %d for a clean review: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates-review review --wait exited %d for a clean review: %s\n%s", code, failures, printed)
 	}
 
 	name := firstLine(printed)
@@ -31,10 +31,10 @@ func TestTheCleanJourney(t *testing.T) {
 	}
 
 	if _, _, statusCode := session.Socrates("status", name); statusCode != 0 {
-		t.Errorf("socrates status of a clean run exited %d, want 0", statusCode)
+		t.Errorf("socrates-review status of a clean run exited %d, want 0", statusCode)
 	}
 	if _, _, findingsCode := session.Socrates("findings", name); findingsCode != 0 {
-		t.Errorf("socrates findings of a clean run exited %d, want 0", findingsCode)
+		t.Errorf("socrates-review findings of a clean run exited %d, want 0", findingsCode)
 	}
 
 	if after := session.Repository.Status(); after != before {
@@ -60,7 +60,7 @@ func TestTheEscalatedJourney(t *testing.T) {
 
 	printed, failures, code := session.Socrates("review", "--wait")
 	if code != 1 {
-		t.Fatalf("socrates review --wait exited %d for a review that escalates: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates-review review --wait exited %d for a review that escalates: %s\n%s", code, failures, printed)
 	}
 
 	name := firstLine(printed)
@@ -81,11 +81,11 @@ func TestTheEscalatedJourney(t *testing.T) {
 
 	readable, _, findingsCode := session.Socrates("findings", name)
 	if findingsCode != 1 {
-		t.Errorf("socrates findings of an escalated run exited %d, want 1", findingsCode)
+		t.Errorf("socrates-review findings of an escalated run exited %d, want 1", findingsCode)
 	}
 	for _, needed := range []string{"needs a person", "can be patched", "informational"} {
 		if !strings.Contains(readable, needed) {
-			t.Errorf("socrates findings does not say who %q is for:\n%s", needed, readable)
+			t.Errorf("socrates-review findings does not say who %q is for:\n%s", needed, readable)
 		}
 	}
 }
@@ -102,7 +102,7 @@ func TestTheJourneyOnARecordedAnswer(t *testing.T) {
 
 	printed, failures, code := session.Socrates("review", "--wait")
 	if code != 4 {
-		t.Fatalf("socrates review --wait exited %d for a recorded answer that parks: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates-review review --wait exited %d for a recorded answer that parks: %s\n%s", code, failures, printed)
 	}
 
 	name := firstLine(printed)
@@ -118,10 +118,10 @@ func TestTheJourneyOnARecordedAnswer(t *testing.T) {
 
 	readable, _, findingsCode := session.Socrates("findings", name)
 	if findingsCode != 4 {
-		t.Errorf("socrates findings of a run parked on a recorded answer exited %d, want 4", findingsCode)
+		t.Errorf("socrates-review findings of a run parked on a recorded answer exited %d, want 4", findingsCode)
 	}
 	if !strings.Contains(readable, "needs a person") {
-		t.Errorf("socrates findings does not say who the recorded findings are for:\n%s", readable)
+		t.Errorf("socrates-review findings does not say who the recorded findings are for:\n%s", readable)
 	}
 }
 
@@ -154,10 +154,10 @@ func TestNoFailureJourneyReportsClean(t *testing.T) {
 
 			printed, _, code := session.Socrates("findings", name)
 			if code != 2 {
-				t.Errorf("socrates findings of a failed run exited %d, want 2", code)
+				t.Errorf("socrates-review findings of a failed run exited %d, want 2", code)
 			}
 			if !strings.Contains(printed, "no review completed") {
-				t.Errorf("socrates findings does not say that no review completed:\n%s", printed)
+				t.Errorf("socrates-review findings does not say that no review completed:\n%s", printed)
 			}
 		})
 	}

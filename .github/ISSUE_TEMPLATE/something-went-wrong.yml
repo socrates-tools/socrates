@@ -1,5 +1,5 @@
 name: Something went wrong
-description: socrates or agora did something you did not expect
+description: socrates-review or agora did something you did not expect
 labels: [bug]
 body:
   - type: markdown
@@ -11,8 +11,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: What socrates version prints
-      placeholder: socrates v0.1.0, built from 1798a6b
+      label: What socrates-review version prints
+      placeholder: socrates-review v0.1.0, built from 1798a6b
     validations:
       required: true
   - type: input
@@ -32,5 +32,5 @@ body:
     id: log
     attributes:
       label: What the run recorded
-      description: The output of `socrates logs <run>`, where there is a run.
+      description: The output of `socrates-review logs <run>`, where there is a run.
       render: text

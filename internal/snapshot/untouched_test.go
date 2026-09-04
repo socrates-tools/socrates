@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/testing/gitrepo"
+	"github.com/socrates-tools/socrates-review/internal/testing/gitrepo"
 )
 
 func TestGitStatusIsUnchanged(t *testing.T) {

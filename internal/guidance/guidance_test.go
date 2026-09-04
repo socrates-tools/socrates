@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/guidance"
-	"github.com/ktei/socrates/internal/testing/gitrepo"
+	"github.com/socrates-tools/socrates-review/internal/guidance"
+	"github.com/socrates-tools/socrates-review/internal/testing/gitrepo"
 )
 
 func TestTheGuideIsReadAtTheBaseCommit(t *testing.T) {

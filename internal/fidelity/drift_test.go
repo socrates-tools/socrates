@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/fidelity"
-	"github.com/ktei/socrates/internal/simulation"
-	"github.com/ktei/socrates/internal/testing/simulator"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/fidelity"
+	"github.com/socrates-tools/socrates-review/internal/simulation"
+	"github.com/socrates-tools/socrates-review/internal/testing/simulator"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 func TestTheSimulatorHasNotDriftedFromTheRealCLI(t *testing.T) {

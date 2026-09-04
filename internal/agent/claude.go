@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ktei/socrates/internal/process"
-	"github.com/ktei/socrates/internal/runlog"
+	"github.com/socrates-tools/socrates-review/internal/process"
+	"github.com/socrates-tools/socrates-review/internal/runlog"
 )
 
 const (

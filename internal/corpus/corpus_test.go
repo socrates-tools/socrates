@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/corpus"
-	"github.com/ktei/socrates/internal/findings"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/corpus"
+	"github.com/socrates-tools/socrates-review/internal/findings"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 // scenario: A live review's answer is kept

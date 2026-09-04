@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/findings"
-	"github.com/ktei/socrates/internal/testquality"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/findings"
+	"github.com/socrates-tools/socrates-review/internal/testquality"
 )
 
 func smallChange() Request {

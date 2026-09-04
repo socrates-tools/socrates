@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/promotion"
+	"github.com/socrates-tools/socrates-review/internal/promotion"
 )
 
 const baseline = `# run-store Specification

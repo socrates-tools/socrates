@@ -42,6 +42,11 @@ type Ignorance struct {
 func WordsOfTheOtherTool(root string, directories []string) (Ignorance, error) {
 	var read Ignorance
 
+	where, err := ModulePath(root)
+	if err != nil {
+		return Ignorance{}, err
+	}
+
 	patterns := make([]*regexp.Regexp, 0, len(wordsOfTheOtherTool))
 	for _, stated := range wordsOfTheOtherTool {
 		patterns = append(patterns, regexp.MustCompile(stated))
@@ -74,8 +79,12 @@ func WordsOfTheOtherTool(root string, directories []string) (Ignorance, error) {
 			}
 
 			for position, line := range strings.Split(string(held), "\n") {
+				vocabulary := line
+				if where != "" {
+					vocabulary = strings.ReplaceAll(line, where, "")
+				}
 				for _, pattern := range patterns {
-					if named := pattern.FindString(line); named != "" {
+					if named := pattern.FindString(vocabulary); named != "" {
 						read.Naming = append(read.Naming, fmt.Sprintf("%s:%d names %q", relative, position+1, named))
 					}
 				}

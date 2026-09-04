@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/findings"
-	"github.com/ktei/socrates/internal/prompt"
-	"github.com/ktei/socrates/internal/simulation"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/findings"
+	"github.com/socrates-tools/socrates-review/internal/prompt"
+	"github.com/socrates-tools/socrates-review/internal/simulation"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 func TestTheParsedTierIsExercisedAtTheWire(t *testing.T) {

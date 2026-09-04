@@ -5,10 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/config"
-	"github.com/ktei/socrates/internal/reviewer"
-	"github.com/ktei/socrates/internal/runlog"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/config"
+	"github.com/socrates-tools/socrates-review/internal/reviewer"
+	"github.com/socrates-tools/socrates-review/internal/runlog"
 	"github.com/spf13/cobra"
 )
 

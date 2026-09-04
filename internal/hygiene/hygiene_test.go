@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/hygiene"
+	"github.com/socrates-tools/socrates-review/internal/hygiene"
 )
 
 func TestNeutralisingOneField(t *testing.T) {

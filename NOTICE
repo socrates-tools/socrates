@@ -1,11 +1,11 @@
-socrates and agora are published under the terms in LICENSE.
-This file is about what they carry that socrates did not author.
+socrates-review and agora are published under the terms in LICENSE.
+This file is about what they carry that socrates-review did not author.
 
 Two kinds of borrowed work reach a shipped binary.
 The first is embedded as an asset by internal/assets, which is the client bundle
 built from web/ and the font faces beside it.
 The second is linked in by the Go compiler, which is the module dependencies
-cmd/socrates and cmd/agora reach.
+cmd/socrates-review and cmd/agora reach.
 Each is named below with the licence it is published under and that licence's
 full text, because the licences these works are published under require the text
 to accompany the copy and a link is not the text.
@@ -20,7 +20,7 @@ What internal/assets embeds, by the path it embeds it under:
   bundle/fonts/IBMPlexMono-600.woff2         IBM Plex Mono, semibold
   bundle.sum                                 the digest of the source the bundle was built from
 
-bundle/surface.js, bundle/surface.css and bundle.sum are socrates' own work,
+bundle/surface.js, bundle/surface.css and bundle.sum are socrates-review's own work,
 written by make assets, and are published under the terms in LICENSE.
 What bundle/surface.js bundles is highlight.js, whose notice is below and whose
 licence text esbuild collects at the end of the bundle itself.
@@ -162,7 +162,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 ==============================================================================
 github.com/spf13/cobra v1.10.2
-Linked into cmd/socrates and cmd/agora.
+Linked into cmd/socrates-review and cmd/agora.
 Apache License, Version 2.0.
 ==============================================================================
 
@@ -343,7 +343,7 @@ Apache License, Version 2.0.
 
 ==============================================================================
 github.com/spf13/pflag v1.0.9
-Linked into cmd/socrates and cmd/agora.
+Linked into cmd/socrates-review and cmd/agora.
 BSD 3-Clause License.
 ==============================================================================
 
@@ -407,7 +407,7 @@ Copyright (c) 2015 Taco de Wolff
 
 ==============================================================================
 go.yaml.in/yaml/v3 v3.0.4
-Linked into cmd/socrates and cmd/agora.
+Linked into cmd/socrates-review and cmd/agora.
 MIT License for the ported libyaml files, Apache License, Version 2.0 for the rest.
 ==============================================================================
 

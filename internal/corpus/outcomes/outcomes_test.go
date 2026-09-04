@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/corpus"
-	"github.com/ktei/socrates/internal/corpus/outcomes"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/corpus"
+	"github.com/socrates-tools/socrates-review/internal/corpus/outcomes"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 const (

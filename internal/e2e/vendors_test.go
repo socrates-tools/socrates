@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 func TestAnUnsupportedCLIIsRefusedBeforeAnythingHappens(t *testing.T) {
@@ -28,7 +28,7 @@ func TestAnUnsupportedCLIIsRefusedBeforeAnythingHappens(t *testing.T) {
 	out, failures, code := session.Socrates("review")
 
 	if code != 3 {
-		t.Fatalf("socrates review exited %d under an unsupported reviewer CLI, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates-review review exited %d under an unsupported reviewer CLI, want the usage code: %s%s", code, out, failures)
 	}
 	if !strings.Contains(failures, turnedAway.Name) {
 		t.Errorf("the refusal reads %q, without naming the CLI that was configured", failures)
@@ -62,7 +62,7 @@ func TestAReviewerCLISocratesDoesNotKnowIsRefusedByName(t *testing.T) {
 	_, failures, code := session.Socrates("review")
 
 	if code != 3 {
-		t.Fatalf("socrates review exited %d under a reviewer CLI socrates does not know, want the usage code: %s", code, failures)
+		t.Fatalf("socrates-review review exited %d under a reviewer CLI socrates does not know, want the usage code: %s", code, failures)
 	}
 	if !strings.Contains(failures, "a-cli-nobody-wrote") {
 		t.Errorf("the refusal reads %q, without naming what was configured", failures)

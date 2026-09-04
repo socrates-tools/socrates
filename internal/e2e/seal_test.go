@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/exit"
-	"github.com/ktei/socrates/internal/process"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/state"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/exit"
+	"github.com/socrates-tools/socrates-review/internal/process"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/state"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 const unenforcingDirectory = "SOCRATES_TEST_UNENFORCING_DIRECTORY"
@@ -34,13 +34,13 @@ func TestASealThatDoesNotHoldIsARefusal(t *testing.T) {
 	out, failures, code := session.SocratesWith(session.Repository.Root, []string{state.HomeVariable + "=" + home}, "review")
 
 	if code != exit.Usage {
-		t.Fatalf("socrates review exited %d on a filesystem that enforces nothing, want the usage code %d: %s%s", code, exit.Usage, out, failures)
+		t.Fatalf("socrates-review review exited %d on a filesystem that enforces nothing, want the usage code %d: %s%s", code, exit.Usage, out, failures)
 	}
 	if !strings.Contains(failures, "worktree") || !strings.Contains(failures, "filesystem") {
 		t.Errorf("the refusal reads %q, without naming the worktree and the filesystem", failures)
 	}
 	if strings.TrimSpace(out) != "" {
-		t.Errorf("socrates review printed %q, so a person is following a run that never started", out)
+		t.Errorf("socrates-review review printed %q, so a person is following a run that never started", out)
 	}
 
 	runs, err := os.ReadDir(filepath.Join(home, "runs"))
@@ -79,7 +79,7 @@ func TestCancellingARunWhoseReviewerWentAwayLiftsTheSeal(t *testing.T) {
 	}
 
 	if _, failures, code := session.Socrates("cancel", name); code != 0 {
-		t.Fatalf("socrates cancel exited %d: %s", code, failures)
+		t.Fatalf("socrates-review cancel exited %d: %s", code, failures)
 	}
 
 	if recorded := session.Recorded(name).State; recorded != runstate.Failed {

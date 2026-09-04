@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/convention"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/convention"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 func TestADocumentThatNamesFewerCLIsThanSocratesSupportsFails(t *testing.T) {

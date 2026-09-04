@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/stylesheet"
+	"github.com/socrates-tools/socrates-review/internal/stylesheet"
 )
 
 var illustration = stylesheet.Scope{Selector: ".painted", Prefix: "drawn-"}

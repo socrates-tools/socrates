@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ktei/socrates/internal/process"
-	"github.com/ktei/socrates/internal/runstore"
+	"github.com/socrates-tools/socrates-review/internal/process"
+	"github.com/socrates-tools/socrates-review/internal/runstore"
 )
 
 const cleanScenario = `

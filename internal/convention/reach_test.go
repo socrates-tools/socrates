@@ -7,12 +7,12 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/convention"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/convention"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 var socratesOwn = []string{
-	filepath.Join("cmd", "socrates"),
+	filepath.Join("cmd", convention.Repository),
 	filepath.Join("internal", "agent"),
 	filepath.Join("internal", "dialogue"),
 	filepath.Join("internal", "findings"),

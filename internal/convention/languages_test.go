@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/convention"
+	"github.com/socrates-tools/socrates-review/internal/convention"
 )
 
 const registering = `var t=r();t.registerLanguage("go",e),t.registerLanguage("diff",n),t.registerLanguage("csharp",a);`

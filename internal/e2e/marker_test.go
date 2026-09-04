@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/reviewer"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/reviewer"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 func TestTheReviewersEnvironmentIsMarked(t *testing.T) {
@@ -37,7 +37,7 @@ func TestARoundInsideAReviewIsRefused(t *testing.T) {
 	)
 
 	if code != 3 {
-		t.Fatalf("socrates continue exited %d, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates-review continue exited %d, want the usage code: %s%s", code, out, failures)
 	}
 	if !strings.Contains(failures, outer) {
 		t.Errorf("the refusal reads %q, without naming the outer run", failures)
@@ -62,7 +62,7 @@ func TestAReviewInsideAReviewIsRefused(t *testing.T) {
 	)
 
 	if code != 3 {
-		t.Fatalf("socrates review exited %d, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates-review review exited %d, want the usage code: %s%s", code, out, failures)
 	}
 	if !strings.Contains(failures, outer) {
 		t.Errorf("the refusal reads %q, without naming the outer run", failures)

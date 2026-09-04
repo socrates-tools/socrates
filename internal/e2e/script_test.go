@@ -5,15 +5,15 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ktei/socrates/internal/simulation"
-	"github.com/ktei/socrates/internal/state"
-	"github.com/ktei/socrates/internal/testing/source"
 	"github.com/rogpeppe/go-internal/testscript"
+	"github.com/socrates-tools/socrates-review/internal/simulation"
+	"github.com/socrates-tools/socrates-review/internal/state"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 func TestTheCommandLineBehavesAsItsScriptsSay(t *testing.T) {
 	binaries := t.TempDir()
-	source.Build(t, "./cmd/socrates", filepath.Join(binaries, "socrates"))
+	source.Build(t, "./cmd/socrates-review", filepath.Join(binaries, "socrates-review"))
 	source.Build(t, "./cmd/claudesim", filepath.Join(binaries, "claudesim"))
 	if err := os.Symlink(filepath.Join(binaries, "claudesim"), filepath.Join(binaries, "claude")); err != nil {
 		t.Fatalf("linking the simulator as claude: %v", err)
@@ -25,7 +25,9 @@ func TestTheCommandLineBehavesAsItsScriptsSay(t *testing.T) {
 			env.Setenv("PATH", binaries+string(os.PathListSeparator)+os.Getenv("PATH"))
 			env.Setenv("HOME", env.WorkDir)
 			env.Setenv("TMPDIR", env.WorkDir)
-			env.Setenv(state.HomeVariable, filepath.Join(env.WorkDir, "home"))
+			root := filepath.Join(env.WorkDir, "home")
+			env.Setenv(state.HomeVariable, root)
+			env.Setenv("TOOL_HOME", state.HomeUnder(root))
 			env.Setenv(simulation.ScenarioVariable, filepath.Join(env.WorkDir, "clean.yaml"))
 			env.Setenv("GIT_CONFIG_GLOBAL", os.DevNull)
 			env.Setenv("GIT_CONFIG_SYSTEM", os.DevNull)

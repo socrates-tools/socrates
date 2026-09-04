@@ -5,10 +5,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ktei/socrates/internal/corpus"
-	"github.com/ktei/socrates/internal/dialogue"
-	"github.com/ktei/socrates/internal/findings"
-	"github.com/ktei/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/corpus"
+	"github.com/socrates-tools/socrates-review/internal/dialogue"
+	"github.com/socrates-tools/socrates-review/internal/findings"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
 )
 
 const DistributionPath = "internal/corpus/outcomes/distribution.txt"

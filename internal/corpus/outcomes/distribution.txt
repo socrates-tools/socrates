@@ -1,4 +1,4 @@
-what socrates would do with each answer a real reviewer gave
+what socrates-review would do with each answer a real reviewer gave
 
 awaiting-response: 10 recorded
   a-security-boundary-restated-first-look

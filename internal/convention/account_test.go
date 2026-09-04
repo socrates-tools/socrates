@@ -3,11 +3,12 @@ package convention_test
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/convention"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/convention"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 func TestNothingNamesAnAccountOtherThanTheOrganisation(t *testing.T) {
@@ -85,5 +86,34 @@ func writeNested(t *testing.T, path, content string) {
 	}
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatalf("writing %s: %v", path, err)
+	}
+}
+
+func TestTheRepositoryIsNamedForTheTool(t *testing.T) {
+	root := source.Root(t)
+
+	path, err := convention.ModulePath(root)
+	if err != nil {
+		t.Fatalf("reading the module path: %v", err)
+	}
+	segments := strings.Split(path, "/")
+	if len(segments) < 3 {
+		t.Fatalf("the module path %q names no organisation and repository", path)
+	}
+
+	named, organisation := segments[len(segments)-1], segments[len(segments)-2]
+	if named != convention.Repository {
+		t.Errorf("the module path ends in %q and the tool installs %q, so the repository is not named for the tool", named, convention.Repository)
+	}
+	if organisation != convention.Organisation {
+		t.Errorf("the module path names %q before the repository, and the organisation is %q", organisation, convention.Organisation)
+	}
+	if organisation == named {
+		t.Errorf("the organisation and the repository are both %q, so the next tool the organisation publishes has no name to take", named)
+	}
+
+	entry, err := os.Stat(filepath.Join(root, "cmd", convention.Repository))
+	if err != nil || !entry.IsDir() {
+		t.Errorf("the tool is built from no cmd/%s, so what the module path names and what the build produces are different names", convention.Repository)
 	}
 }

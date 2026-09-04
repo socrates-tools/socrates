@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/skill"
+	"github.com/socrates-tools/socrates-review/internal/skill"
 )
 
 func TestTheThreeProhibitionsArePresent(t *testing.T) {
@@ -54,7 +54,7 @@ func TestNoChannelIsImpliedForTheAuthorsAccount(t *testing.T) {
 		"cancel":    "stops a run",
 		"logs":      "prints what a run recorded",
 		"skill":     "installs this skill",
-		"supervise": "conducts a review that socrates review started",
+		"supervise": "conducts a review that socrates-review review started",
 		"serve":     "puts a document in front of a person, and knows nothing of any run",
 		"poll":      "waits for what that person answered, and knows nothing of any run",
 		"end":       "closes the exchange",

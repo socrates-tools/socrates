@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ktei/socrates/internal/report"
+	"github.com/socrates-tools/socrates-review/internal/report"
 	"github.com/spf13/cobra"
 )
 

@@ -9,9 +9,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ktei/socrates/internal/document"
-	"github.com/ktei/socrates/internal/sanitise"
-	"github.com/ktei/socrates/internal/stylesheet"
+	"github.com/socrates-tools/socrates-review/internal/document"
+	"github.com/socrates-tools/socrates-review/internal/sanitise"
+	"github.com/socrates-tools/socrates-review/internal/stylesheet"
 )
 
 const (

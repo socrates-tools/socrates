@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ktei/socrates/internal/refusal"
-	"github.com/ktei/socrates/internal/report"
-	"github.com/ktei/socrates/internal/runstore"
-	"github.com/ktei/socrates/internal/snapshot"
+	"github.com/socrates-tools/socrates-review/internal/refusal"
+	"github.com/socrates-tools/socrates-review/internal/report"
+	"github.com/socrates-tools/socrates-review/internal/runstore"
+	"github.com/socrates-tools/socrates-review/internal/snapshot"
 	"github.com/spf13/cobra"
 )
 

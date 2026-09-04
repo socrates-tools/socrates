@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/runlog"
+	"github.com/socrates-tools/socrates-review/internal/runlog"
 )
 
 func opencodeUnderTest(t *testing.T, recorder runlog.Recorder) *opencodeAgent {

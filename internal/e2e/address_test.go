@@ -13,17 +13,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ktei/socrates/internal/surface"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/state"
+	"github.com/socrates-tools/socrates-review/internal/surface"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 func (s *surfaced) configure(stated string) {
 	s.t.Helper()
 
-	if err := os.MkdirAll(s.home, 0o700); err != nil {
+	home := state.HomeUnder(s.home)
+	if err := os.MkdirAll(home, 0o700); err != nil {
 		s.t.Fatalf("making the home the one configuration file is read from: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(s.home, "config.yaml"), []byte(asASurfaceBlock(stated)), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(home, "config.yaml"), []byte(asASurfaceBlock(stated)), 0o600); err != nil {
 		s.t.Fatalf("writing what an operator stated: %v", err)
 	}
 }

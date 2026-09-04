@@ -9,11 +9,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/dialogue"
-	"github.com/ktei/socrates/internal/prompt"
-	"github.com/ktei/socrates/internal/report"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/dialogue"
+	"github.com/socrates-tools/socrates-review/internal/prompt"
+	"github.com/socrates-tools/socrates-review/internal/report"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 const answeredWrongly = "package internal\n\nfunc Answer(document string) int {\n\treturn len(document)\n}\n"
@@ -55,7 +55,7 @@ func respond(t *testing.T, session *harness.Session, arguments ...string) string
 
 	printed, failures, code := session.Socrates(append([]string{"respond"}, arguments...)...)
 	if code != 4 {
-		t.Fatalf("socrates respond %s exited %d: %s\n%s", strings.Join(arguments, " "), code, failures, printed)
+		t.Fatalf("socrates-review respond %s exited %d: %s\n%s", strings.Join(arguments, " "), code, failures, printed)
 	}
 	return printed
 }
@@ -80,7 +80,7 @@ func TestTheDialogueJourney(t *testing.T) {
 
 	t.Run("A parked run has nothing left to tear down", func(t *testing.T) {
 		if _, err := os.Stat(snapshotWorktree(session, name)); !os.IsNotExist(err) {
-			t.Errorf("the round's worktree is still at %s when the run reads parked: the next round checks out that exact path, and socrates continue races the teardown", snapshotWorktree(session, name))
+			t.Errorf("the round's worktree is still at %s when the run reads parked: the next round checks out that exact path, and socrates-review continue races the teardown", snapshotWorktree(session, name))
 		}
 	})
 
@@ -95,7 +95,7 @@ func TestTheDialogueJourney(t *testing.T) {
 		printed, _, _ := session.Socrates("findings", name)
 		for _, rule := range report.ResponseRules() {
 			if !strings.Contains(printed, rule) {
-				t.Errorf("socrates findings does not carry the rule %q:\n%s", rule, printed)
+				t.Errorf("socrates-review findings does not carry the rule %q:\n%s", rule, printed)
 			}
 		}
 	})
@@ -105,13 +105,13 @@ func TestTheDialogueJourney(t *testing.T) {
 	printed := respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all")
 
 	if !strings.Contains(printed, "a response can address") {
-		t.Errorf("socrates respond does not say the round is answered:\n%s", printed)
+		t.Errorf("socrates-review respond does not say the round is answered:\n%s", printed)
 	}
 
 	t.Run("Continuing when everything is answered", func(t *testing.T) {
 		out, failures, code := session.Socrates("continue", name, "--wait")
 		if code != 0 {
-			t.Fatalf("socrates continue --wait exited %d: %s\n%s", code, failures, out)
+			t.Fatalf("socrates-review continue --wait exited %d: %s\n%s", code, failures, out)
 		}
 		if !strings.Contains(out, string(runstate.Clean)) {
 			t.Errorf("the second round did not end the run clean:\n%s", out)
@@ -164,10 +164,10 @@ func TestWaitingReturnsWhenTheRunParks(t *testing.T) {
 
 	printed, failures, code := session.Socrates("review", "--wait")
 	if code != 4 {
-		t.Fatalf("socrates review --wait exited %d for a run that parks: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates-review review --wait exited %d for a run that parks: %s\n%s", code, failures, printed)
 	}
 	if !strings.Contains(printed, string(runstate.AwaitingResponse)) {
-		t.Errorf("socrates review --wait does not say the run is awaiting responses:\n%s", printed)
+		t.Errorf("socrates-review review --wait does not say the run is awaiting responses:\n%s", printed)
 	}
 	for _, verdict := range []string{string(runstate.Clean), string(runstate.Escalated), string(runstate.Failed)} {
 		if strings.Contains(printed, "verdict: "+verdict) {
@@ -185,7 +185,7 @@ func TestTheRejectionAcceptedJourney(t *testing.T) {
 
 	out, failures, code := session.Socrates("continue", name, "--wait")
 	if code != 0 {
-		t.Fatalf("socrates continue --wait exited %d after two rejections: %s\n%s", code, failures, out)
+		t.Fatalf("socrates-review continue --wait exited %d after two rejections: %s\n%s", code, failures, out)
 	}
 
 	run := session.Run(name)
@@ -216,7 +216,7 @@ func TestTheRejectionRefusedJourney(t *testing.T) {
 
 	out, failures, code := session.Socrates("continue", name, "--wait")
 	if code != 1 {
-		t.Fatalf("socrates continue --wait exited %d where the second round found something blocking: %s\n%s", code, failures, out)
+		t.Fatalf("socrates-review continue --wait exited %d where the second round found something blocking: %s\n%s", code, failures, out)
 	}
 
 	run := session.Run(name)
@@ -330,7 +330,7 @@ func TestAnEscalatedRunSaysWhichOfTheTwoReasonsItWas(t *testing.T) {
 
 		printed, _, _ := session.Socrates("status", name)
 		if !strings.Contains(printed, "asking for nothing") {
-			t.Errorf("socrates status does not print which of the two reasons it was:\n%s", printed)
+			t.Errorf("socrates-review status does not print which of the two reasons it was:\n%s", printed)
 		}
 	})
 
@@ -368,7 +368,7 @@ func TestAnEscalatedRunTakesNoResponse(t *testing.T) {
 
 	readable, _, findingsCode := session.Socrates("findings", name)
 	if findingsCode != 1 {
-		t.Errorf("socrates findings of an escalated run exited %d, want 1", findingsCode)
+		t.Errorf("socrates-review findings of an escalated run exited %d, want 1", findingsCode)
 	}
 	for _, rule := range report.ResponseRules() {
 		if strings.Contains(readable, rule) {
@@ -378,7 +378,7 @@ func TestAnEscalatedRunTakesNoResponse(t *testing.T) {
 
 	_, refused, respondCode := session.Socrates("respond", name, "--finding", "f2", "--fixed")
 	if respondCode != 3 {
-		t.Errorf("socrates respond against an escalated run exited %d, want 3", respondCode)
+		t.Errorf("socrates-review respond against an escalated run exited %d, want 3", respondCode)
 	}
 	if !strings.Contains(refused, string(runstate.Escalated)) {
 		t.Errorf("the refusal does not name the run's state: %s", refused)
@@ -401,7 +401,7 @@ func TestTheAuthorEditsBetweenRounds(t *testing.T) {
 	respond(t, session, name, "--finding", "f2", "--fixed", "--note", "there was no loop, so nothing to back off")
 
 	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
-		t.Fatalf("socrates continue --wait exited %d: %s", code, failures)
+		t.Fatalf("socrates-review continue --wait exited %d: %s", code, failures)
 	}
 
 	run := session.Recorded(name)
@@ -477,7 +477,7 @@ func TestARoundWithNothingPatchedStillSnapshots(t *testing.T) {
 
 	before := session.Repository.Status()
 	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
-		t.Fatalf("socrates continue --wait exited %d with nothing patched: %s", code, failures)
+		t.Fatalf("socrates-review continue --wait exited %d with nothing patched: %s", code, failures)
 	}
 	if after := session.Repository.Status(); after != before {
 		t.Errorf("the repository changed:\nbefore:\n%s\nafter:\n%s", before, after)
@@ -586,7 +586,7 @@ func TestTheBaseStillExistsWhenThePersonHasMovedOn(t *testing.T) {
 	}
 
 	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
-		t.Fatalf("socrates continue --wait exited %d after the person committed: %s", code, failures)
+		t.Fatalf("socrates-review continue --wait exited %d after the person committed: %s", code, failures)
 	}
 
 	second, present := session.Recorded(name).Reviewed(2)
@@ -623,7 +623,7 @@ func TestABaseThatHasGoneFailsTheRound(t *testing.T) {
 
 	_, failures, code := session.Socrates("continue", name)
 	if code != 2 {
-		t.Errorf("socrates continue with a base that has gone exited %d, want 2: %s", code, failures)
+		t.Errorf("socrates-review continue with a base that has gone exited %d, want 2: %s", code, failures)
 	}
 	if !strings.Contains(failures, base) {
 		t.Errorf("the failure does not name the base that has gone: %s", failures)
@@ -652,7 +652,7 @@ func TestNoSessionIsCarried(t *testing.T) {
 	respond(t, session, name, "--finding", "f1", "--fixed")
 	respond(t, session, name, "--finding", "f2", "--fixed")
 	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
-		t.Fatalf("socrates continue --wait exited %d: %s", code, failures)
+		t.Fatalf("socrates-review continue --wait exited %d: %s", code, failures)
 	}
 
 	invocations := session.Simulator.Invocations()
@@ -715,7 +715,7 @@ func TestRespondingIsOneFindingAtATime(t *testing.T) {
 	t.Run("One finding per invocation", func(t *testing.T) {
 		documented, _, code := session.Socrates("respond", "--help")
 		if code != 0 {
-			t.Fatalf("socrates respond --help exited %d", code)
+			t.Fatalf("socrates-review respond --help exited %d", code)
 		}
 		for line := range strings.SplitSeq(documented, "\n") {
 			fields := strings.Fields(line)
@@ -724,7 +724,7 @@ func TestRespondingIsOneFindingAtATime(t *testing.T) {
 					continue
 				}
 				if fields[position+1] == "stringArray" || fields[position+1] == "stringSlice" {
-					t.Errorf("socrates respond takes several values for %s: %s", field, line)
+					t.Errorf("socrates-review respond takes several values for %s: %s", field, line)
 				}
 			}
 		}
@@ -736,7 +736,7 @@ func TestRespondingIsOneFindingAtATime(t *testing.T) {
 
 		_, failures, refused := session.Socrates("respond", "f1", "f2", "--fixed")
 		if refused != 3 {
-			t.Errorf("socrates respond took findings as arguments and exited %d, want 3", refused)
+			t.Errorf("socrates-review respond took findings as arguments and exited %d, want 3", refused)
 		}
 		if !strings.Contains(failures, "--finding") {
 			t.Errorf("the refusal does not say that the one finding is named with a flag: %s", failures)
@@ -748,7 +748,7 @@ func TestRespondingIsOneFindingAtATime(t *testing.T) {
 
 		printed, failures, code := session.SocratesReading(reason, "respond", name, "--finding", "f1", "--rejected", "--reason", "-")
 		if code != 4 {
-			t.Fatalf("socrates respond reading its reason from standard input exited %d: %s\n%s", code, failures, printed)
+			t.Fatalf("socrates-review respond reading its reason from standard input exited %d: %s\n%s", code, failures, printed)
 		}
 
 		recorded := readResponses(t, session, name)
@@ -770,7 +770,7 @@ func TestADecisionsReasonFromStandardInput(t *testing.T) {
 
 	printed, failures, code := session.SocratesReading(decided, "respond", name, "--finding", "f1", "--decided", "--reason", "-")
 	if code != 4 {
-		t.Fatalf("socrates respond --decided reading its reason from standard input exited %d: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates-review respond --decided reading its reason from standard input exited %d: %s\n%s", code, failures, printed)
 	}
 
 	recorded := readResponses(t, session, name)
@@ -834,7 +834,7 @@ func TestChangingADecisionKeepsWhatWasSaidFirst(t *testing.T) {
 	printed := respond(t, session, name, "--finding", "f1", "--decided", "--reason", "Vic changed their mind, and the function stays")
 
 	if !strings.Contains(printed, "replaced") {
-		t.Errorf("socrates respond does not say that an earlier decision was replaced:\n%s", printed)
+		t.Errorf("socrates-review respond does not say that an earlier decision was replaced:\n%s", printed)
 	}
 
 	recorded := readResponses(t, session, name)
@@ -925,7 +925,7 @@ func TestRespondRefusesWhatItCannotRecord(t *testing.T) {
 		printed := respond(t, session, name, "--finding", "f1", "--fixed", "--note", "on reflection the reviewer was right")
 
 		if !strings.Contains(printed, "replaced") {
-			t.Errorf("socrates respond does not say that an earlier response was replaced:\n%s", printed)
+			t.Errorf("socrates-review respond does not say that an earlier response was replaced:\n%s", printed)
 		}
 
 		recorded := readResponses(t, session, name)
@@ -952,7 +952,7 @@ func TestRespondingToARunThatIsNotAwaitingResponses(t *testing.T) {
 
 	_, failures, code := session.Socrates("respond", name, "--finding", "f1", "--fixed")
 	if code != 3 {
-		t.Errorf("socrates respond against a clean run exited %d, want 3", code)
+		t.Errorf("socrates-review respond against a clean run exited %d, want 3", code)
 	}
 	if !strings.Contains(failures, string(runstate.Clean)) {
 		t.Errorf("the refusal does not name the run's state: %s", failures)
@@ -968,7 +968,7 @@ func TestContinuingTooEarly(t *testing.T) {
 
 	_, failures, code := session.Socrates("continue", name)
 	if code != 3 {
-		t.Errorf("socrates continue with nothing answered exited %d, want 3: %s", code, failures)
+		t.Errorf("socrates-review continue with nothing answered exited %d, want 3: %s", code, failures)
 	}
 	for _, named := range []string{"f1", "f2"} {
 		if !strings.Contains(failures, named) {
@@ -987,7 +987,7 @@ func TestContinuingTooEarly(t *testing.T) {
 		respond(t, session, name, "--finding", "f2", "--fixed")
 
 		if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
-			t.Fatalf("socrates continue with only the blocking findings answered exited %d: %s", code, failures)
+			t.Fatalf("socrates-review continue with only the blocking findings answered exited %d: %s", code, failures)
 		}
 		if recorded := readResponses(t, session, name); len(recorded.Recorded) != 2 {
 			t.Errorf("the informational finding was made to wait for a response: %+v", recorded)
@@ -1036,10 +1036,10 @@ func TestAParkedRunCanStillBeCancelled(t *testing.T) {
 
 	printed, failures, code := session.Socrates("cancel", name)
 	if code != 0 {
-		t.Fatalf("socrates cancel of a parked run exited %d: %s", code, failures)
+		t.Fatalf("socrates-review cancel of a parked run exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, name) {
-		t.Errorf("socrates cancel does not name the run it stopped:\n%s", printed)
+		t.Errorf("socrates-review cancel does not name the run it stopped:\n%s", printed)
 	}
 
 	run := session.Recorded(name)
@@ -1074,7 +1074,7 @@ func TestRecordingAResponseWritesNothingInTheRepository(t *testing.T) {
 	respond(t, session, name, "--finding", "f1", "--fixed")
 	respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all")
 	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
-		t.Fatalf("socrates continue --wait exited %d: %s", code, failures)
+		t.Fatalf("socrates-review continue --wait exited %d: %s", code, failures)
 	}
 
 	if after := session.Repository.Status(); after != before {
@@ -1099,7 +1099,7 @@ func TestTheStoredRecordIsNotNeutralised(t *testing.T) {
 	respond(t, session, name, "--finding", "f1", "--fixed")
 	printed, failures, code := session.SocratesReading(messy, "respond", name, "--finding", "f2", "--rejected", "--reason", "-")
 	if code != 4 {
-		t.Fatalf("socrates respond exited %d: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates-review respond exited %d: %s\n%s", code, failures, printed)
 	}
 
 	recorded := readResponses(t, session, name)
@@ -1112,7 +1112,7 @@ func TestTheStoredRecordIsNotNeutralised(t *testing.T) {
 	}
 
 	if _, _, continueCode := session.Socrates("continue", name, "--wait"); continueCode != 0 {
-		t.Fatalf("socrates continue --wait exited %d", continueCode)
+		t.Fatalf("socrates-review continue --wait exited %d", continueCode)
 	}
 
 	delivered := session.Simulator.Invocations()[1].Prompt

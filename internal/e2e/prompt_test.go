@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ktei/socrates/internal/findings"
-	"github.com/ktei/socrates/internal/prompt"
-	"github.com/ktei/socrates/internal/testing/harness"
-	"github.com/ktei/socrates/internal/testquality"
+	"github.com/socrates-tools/socrates-review/internal/findings"
+	"github.com/socrates-tools/socrates-review/internal/prompt"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/testquality"
 )
 
 func TestThePromptIsOnDisk(t *testing.T) {
@@ -243,7 +243,7 @@ func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
 
 	documented, _, code := session.Socrates("review", "--help")
 	if code != 0 {
-		t.Fatalf("socrates review --help exited %d", code)
+		t.Fatalf("socrates-review review --help exited %d", code)
 	}
 
 	taking := flagsTakingAValue(documented)
@@ -254,7 +254,7 @@ func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
 	for _, invented := range []string{"--rationale", "--summary", "--notes", "--author-notes", "--session", "--reasoning"} {
 		_, failures, code := session.Socrates("review", invented, "I refactored the parser and it all works")
 		if code == 0 {
-			t.Errorf("socrates review %s was accepted", invented)
+			t.Errorf("socrates-review review %s was accepted", invented)
 		}
 		if !strings.Contains(failures, invented) {
 			t.Errorf("refusing %s does not name it: %s", invented, failures)
@@ -264,7 +264,7 @@ func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
 	const positional = "I refactored the parser and it all works"
 	_, failures, code := session.Socrates("review", positional)
 	if code == 0 {
-		t.Error("socrates review accepted free text as a positional argument")
+		t.Error("socrates-review review accepted free text as a positional argument")
 	}
 	if !strings.Contains(failures, positional) {
 		t.Errorf("refusing a positional argument does not name what was refused: %s", failures)

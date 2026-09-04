@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 func TestAReviewerThatWroteFailsTheRound(t *testing.T) {
@@ -80,7 +80,7 @@ func eventNaming(t *testing.T, session *harness.Session, name, said string) stri
 
 	printed, failures, _ := session.Socrates("logs", name)
 	if printed == "" {
-		t.Fatalf("socrates logs printed nothing for %s: %s", name, failures)
+		t.Fatalf("socrates-review logs printed nothing for %s: %s", name, failures)
 	}
 	return lineSaying(printed, said)
 }

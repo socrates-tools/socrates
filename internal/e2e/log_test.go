@@ -8,11 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/reviewer"
-	"github.com/ktei/socrates/internal/runlog"
-	"github.com/ktei/socrates/internal/runstate"
-	"github.com/ktei/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/reviewer"
+	"github.com/socrates-tools/socrates-review/internal/runlog"
+	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
 func TestAStartedRunIsOnDiskImmediately(t *testing.T) {
@@ -36,7 +36,7 @@ func TestAStartedRunIsOnDiskImmediately(t *testing.T) {
 
 	for _, expected := range []string{"run.json", runlog.FileName, "r1"} {
 		if _, err := os.Stat(filepath.Join(directory, expected)); err != nil {
-			t.Errorf("%s is not in the run directory when socrates review returned: %v", expected, err)
+			t.Errorf("%s is not in the run directory when socrates-review review returned: %v", expected, err)
 		}
 	}
 }

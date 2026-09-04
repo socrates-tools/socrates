@@ -15,12 +15,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/document"
-	"github.com/ktei/socrates/internal/fidelity"
-	"github.com/ktei/socrates/internal/findings"
-	"github.com/ktei/socrates/internal/state"
-	"github.com/ktei/socrates/internal/surface"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/document"
+	"github.com/socrates-tools/socrates-review/internal/fidelity"
+	"github.com/socrates-tools/socrates-review/internal/findings"
+	"github.com/socrates-tools/socrates-review/internal/state"
+	"github.com/socrates-tools/socrates-review/internal/surface"
 )
 
 const smokeDeadline = 10 * time.Minute
@@ -138,8 +138,8 @@ func whatThePersonReads(reported findings.Document) document.Document {
 			Question: finding.Description,
 			Mode:     document.One,
 			Options: []document.Option{
-				{Label: "take it", Command: "socrates respond --finding " + finding.ID + " --fixed"},
-				{Label: "leave it", Command: "socrates respond --finding " + finding.ID + " --rejected"},
+				{Label: "take it", Command: "socrates-review respond --finding " + finding.ID + " --fixed"},
+				{Label: "leave it", Command: "socrates-review respond --finding " + finding.ID + " --rejected"},
 			},
 		})
 	}
@@ -149,7 +149,7 @@ func whatThePersonReads(reported findings.Document) document.Document {
 			ID:       "nothing-found",
 			Question: "the reviewer found nothing blocking, and there is nothing to settle",
 			Mode:     document.One,
-			Options:  []document.Option{{Label: "read it and stop", Command: "socrates status"}},
+			Options:  []document.Option{{Label: "read it and stop", Command: "socrates-review status"}},
 		})
 	}
 	return read

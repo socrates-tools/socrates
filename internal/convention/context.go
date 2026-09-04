@@ -13,7 +13,7 @@ var ContextFile = filepath.Join("openspec", "config.yaml")
 
 const commandDirectory = "cmd"
 
-var buildProducts = []string{"BINARY", "SURFACE", "SHORT_NAME"}
+var buildProducts = []string{"BINARY", "SURFACE"}
 
 var commandNamed = regexp.MustCompile(`\b` + commandDirectory + `/([A-Za-z0-9._-]+)`)
 

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/refusal"
-	"github.com/ktei/socrates/internal/state"
+	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/refusal"
+	"github.com/socrates-tools/socrates-review/internal/state"
 	"go.yaml.in/yaml/v3"
 )
 

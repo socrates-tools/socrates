@@ -3,8 +3,8 @@ package promotion_test
 import (
 	"testing"
 
-	"github.com/ktei/socrates/internal/promotion"
-	"github.com/ktei/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates-review/internal/promotion"
+	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
 func TestArchivingAChangeWouldDropNoScenario(t *testing.T) {

@@ -373,15 +373,3 @@ func BuildsProducing(building []ReleaseBuild, binary string) []ReleaseBuild {
 	}
 	return producing
 }
-
-func StampDisagreements(one, other ReleaseBuild) []string {
-	var disagreeing []string
-
-	if one.Compiles != other.Compiles {
-		disagreeing = append(disagreeing, fmt.Sprintf("%s compiles %s and %s compiles %s", one.Binary, one.Compiles, other.Binary, other.Compiles))
-	}
-	if strings.Join(one.Stamps, "\n") != strings.Join(other.Stamps, "\n") {
-		disagreeing = append(disagreeing, fmt.Sprintf("%s and %s are stamped differently, so the two names can report different builds", one.Binary, other.Binary))
-	}
-	return disagreeing
-}

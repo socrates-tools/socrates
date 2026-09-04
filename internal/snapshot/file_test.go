@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ktei/socrates/internal/snapshot"
-	"github.com/ktei/socrates/internal/testing/gitrepo"
+	"github.com/socrates-tools/socrates-review/internal/snapshot"
+	"github.com/socrates-tools/socrates-review/internal/testing/gitrepo"
 )
 
 func TestAFileIsReadAtTheCommitRatherThanFromTheWorkingTree(t *testing.T) {

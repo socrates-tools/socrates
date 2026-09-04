@@ -5,15 +5,15 @@
 
 # Outside a repository there is nothing to review.
 cd elsewhere
-exec sh -c 'socrates review; echo exit=$?'
+exec sh -c 'socrates-review review; echo exit=$?'
 stdout 'exit=3'
 stderr 'not inside a git working tree'
-stderr 'run socrates review from inside a repository'
+stderr 'run socrates-review review from inside a repository'
 
 # A repository with no commit has no base to review against.
 cd $WORK/fresh
 exec git -c init.defaultBranch=main init --quiet .
-exec sh -c 'socrates review; echo exit=$?'
+exec sh -c 'socrates-review review; echo exit=$?'
 stdout 'exit=3'
 stderr 'no commit for HEAD'
 stderr 'commit something first'
@@ -23,36 +23,36 @@ cd $WORK/repo
 exec git -c init.defaultBranch=main init --quiet .
 exec git add -A
 exec git commit --quiet -m 'the first commit'
-exec sh -c 'socrates status 20200101T000000Z-deadbeef; echo exit=$?'
+exec sh -c 'socrates-review status 20200101T000000Z-deadbeef; echo exit=$?'
 stdout 'exit=3'
 stderr 'there is no run named 20200101T000000Z-deadbeef'
 
 # The stated intent is the only free text a caller may supply.
-exec sh -c 'socrates review "I refactored the parser and it all works"; echo exit=$?'
+exec sh -c 'socrates-review review "I refactored the parser and it all works"; echo exit=$?'
 stdout 'exit=3'
 stderr 'I refactored the parser and it all works'
 stderr '--intent'
 
 # A review inside a review spawns without end, so it is refused.
 env SOCRATES_RUN=20260819T041530Z-ee66fe34
-exec sh -c 'socrates review; echo exit=$?'
+exec sh -c 'socrates-review review; echo exit=$?'
 stdout 'exit=3'
 stderr '20260819T041530Z-ee66fe34'
 env SOCRATES_RUN=
 
 # A configuration file that does not parse is a refusal rather than a silent default.
-mkdir $WORK/home
-cp $WORK/broken.yaml $WORK/home/config.yaml
-exec sh -c 'socrates review; echo exit=$?'
+mkdir $TOOL_HOME
+cp $WORK/broken.yaml $TOOL_HOME/config.yaml
+exec sh -c 'socrates-review review; echo exit=$?'
 stdout 'exit=3'
 stderr 'config.yaml'
 
 -- elsewhere/notes.txt --
 nothing here is a repository
 -- fresh/README.md --
-socrates
+socrates-review
 -- repo/README.md --
-socrates
+socrates-review
 -- broken.yaml --
 roles: [this is not a mapping
 -- clean.yaml --
