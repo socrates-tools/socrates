@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ktei/socrates/internal/agent"
 	"github.com/ktei/socrates/internal/guidance"
 	"github.com/ktei/socrates/internal/process"
 	"github.com/ktei/socrates/internal/prompt"
@@ -44,9 +45,25 @@ type Run struct {
 	StartedAt       time.Time        `json:"started_at"`
 	State           runstate.State   `json:"state"`
 	Verdict         *Verdict         `json:"verdict,omitempty"`
+	ReviewerCLI     string           `json:"reviewer_cli,omitempty"`
+	ReviewerTier    string           `json:"reviewer_tier,omitempty"`
 	Reviewer        int              `json:"reviewer,omitempty"`
 	Agent           int              `json:"agent,omitempty"`
 	Reviews         []Reviewed       `json:"reviews,omitempty"`
+}
+
+func (r Run) Vendor() string {
+	if r.ReviewerCLI == "" {
+		return agent.DefaultVendor
+	}
+	return r.ReviewerCLI
+}
+
+func (r Run) Tier() string {
+	if r.ReviewerCLI == "" {
+		return string(agent.TheDefault().Tier)
+	}
+	return r.ReviewerTier
 }
 
 func (r *Run) Snapshotted(round int, base, snapshot string) {

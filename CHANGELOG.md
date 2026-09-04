@@ -8,6 +8,27 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
+### Added
+
+- socrates now drives `codex` and `opencode` as well as `claude`.
+  If you run one of those and have no Anthropic account, socrates works for you now, and the first thing `README.md` puts in front of you is no longer a coupling.
+  Name the one you want in `reviewer_cli` in `~/.socrates/config.yaml`.
+- Which CLIs socrates drives follows from a stated bar rather than from a list somebody maintains.
+  A CLI qualifies where the reviewed repository's own instructions can be kept out of the reviewer's session, where a terminal event says whether the work happened and what it said about a failure, and where a model is selectable per invocation.
+  `README.md` names the three that clear it, the three that do not, and which capability each of those lacks.
+- A findings document now arrives one of two ways, and both reach the same check.
+  Where the vendor constrains the output against socrates' schema it is used as it stands; where it does not, the reviewer is asked to end its message with the document and socrates extracts it.
+  A document that does not parse or does not satisfy the schema fails the round either way, so `clean` still means what it meant.
+- A run records which reviewer CLI answered and how its document arrived, and `socrates status` prints both.
+
+### Changed
+
+- An absent `reviewer_cli` runs `claude`, so an existing `~/.socrates/config.yaml` needs no edit and nothing about an existing run changes.
+- A run recorded before socrates named a vendor reads as `claude`, because that is what answered.
+- A `model` you state under `roles` is passed to the CLI you named and nothing translates it, because each CLI names its models its own way.
+  Leave it out to let that CLI choose.
+- Naming a reviewer CLI socrates does not drive is refused before a snapshot is taken and before a reviewer is spawned, naming the CLI and the guarantee it does not offer.
+
 ## [0.1.0] - 2026-09-01
 
 The first release anybody other than its author can install.

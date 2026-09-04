@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ktei/socrates/internal/claudesim"
+	"github.com/ktei/socrates/internal/simulation"
 	"github.com/ktei/socrates/internal/state"
 	"github.com/ktei/socrates/internal/testing/source"
 	"github.com/rogpeppe/go-internal/testscript"
@@ -26,7 +26,7 @@ func TestTheCommandLineBehavesAsItsScriptsSay(t *testing.T) {
 			env.Setenv("HOME", env.WorkDir)
 			env.Setenv("TMPDIR", env.WorkDir)
 			env.Setenv(state.HomeVariable, filepath.Join(env.WorkDir, "home"))
-			env.Setenv(claudesim.ScenarioVariable, filepath.Join(env.WorkDir, "clean.yaml"))
+			env.Setenv(simulation.ScenarioVariable, filepath.Join(env.WorkDir, "clean.yaml"))
 			env.Setenv("GIT_CONFIG_GLOBAL", os.DevNull)
 			env.Setenv("GIT_CONFIG_SYSTEM", os.DevNull)
 			env.Setenv("GIT_CONFIG_NOSYSTEM", "1")

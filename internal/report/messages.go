@@ -4,6 +4,7 @@ const (
 	runLine               = "run: %s"
 	stateLine             = "state: %s"
 	roundLine             = "round: %d"
+	reviewerLine          = "reviewer: %s (%s)"
 	verdictLine           = "verdict: %s"
 	countsLine            = "findings: %d in total, %d for the person, %d to patch, %d informational"
 	findingLine           = "%s  %s  %s:%d  %s"

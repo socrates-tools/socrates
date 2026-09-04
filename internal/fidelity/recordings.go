@@ -13,11 +13,12 @@ const (
 	TestdataDirectory  = "testdata"
 	RecordingExtension = ".json"
 
-	recordingsFolder = "recordings"
-	failuresFolder   = "failures"
+	failuresFolder = "failures"
 )
 
-var RecordingsDirectory = filepath.Join(TestdataDirectory, recordingsFolder)
+func RecordingsFor(vendor string) string {
+	return filepath.Join(TestdataDirectory, vendor)
+}
 
 type Recording struct {
 	Name   string
@@ -55,19 +56,19 @@ func Recordings(directory string) ([]Recording, error) {
 	return recordings, nil
 }
 
-func Keep(root, name, stream string, answered error) (string, error) {
+func Keep(root, vendor, name, stream string, answered error) (string, error) {
 	shapes, err := ShapesOf(stream)
 	if err != nil {
 		return "", err
 	}
-	return record(filepath.Join(root, folderFor(answered)), name, shapes)
+	return record(filepath.Join(root, folderFor(vendor, answered)), name, shapes)
 }
 
-func folderFor(answered error) string {
+func folderFor(vendor string, answered error) string {
 	if answered != nil {
-		return failuresFolder
+		return filepath.Join(failuresFolder, vendor)
 	}
-	return recordingsFolder
+	return vendor
 }
 
 func record(directory, name string, shapes []Shape) (string, error) {

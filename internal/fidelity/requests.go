@@ -1,6 +1,9 @@
 package fidelity
 
-import "github.com/ktei/socrates/internal/findings"
+import (
+	"github.com/ktei/socrates/internal/agent"
+	"github.com/ktei/socrates/internal/findings"
+)
 
 type Request struct {
 	Name   string
@@ -20,4 +23,11 @@ func Requests() []Request {
 			Prompt: "Answer with the word ready and nothing else.",
 		},
 	}
+}
+
+func Asked(vendor agent.Vendor, request Request) string {
+	if vendor.Tier != agent.Parsed || len(request.Schema) == 0 {
+		return request.Prompt
+	}
+	return request.Prompt + theSchemaItMustSatisfy + string(request.Schema) + "\n\n" + findings.DeliveryInstruction()
 }

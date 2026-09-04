@@ -1,0 +1,57 @@
+[
+  {
+    "type": "step_finish",
+    "fields": [
+      "part",
+      "part.cost",
+      "part.id",
+      "part.messageID",
+      "part.reason",
+      "part.sessionID",
+      "part.snapshot",
+      "part.tokens",
+      "part.tokens.cache",
+      "part.tokens.cache.read",
+      "part.tokens.cache.write",
+      "part.tokens.input",
+      "part.tokens.output",
+      "part.tokens.reasoning",
+      "part.tokens.total",
+      "part.type",
+      "sessionID",
+      "timestamp",
+      "type"
+    ]
+  },
+  {
+    "type": "step_start",
+    "fields": [
+      "part",
+      "part.id",
+      "part.messageID",
+      "part.sessionID",
+      "part.snapshot",
+      "part.type",
+      "sessionID",
+      "timestamp",
+      "type"
+    ]
+  },
+  {
+    "type": "text",
+    "fields": [
+      "part",
+      "part.id",
+      "part.messageID",
+      "part.sessionID",
+      "part.text",
+      "part.time",
+      "part.time.end",
+      "part.time.start",
+      "part.type",
+      "sessionID",
+      "timestamp",
+      "type"
+    ]
+  }
+]

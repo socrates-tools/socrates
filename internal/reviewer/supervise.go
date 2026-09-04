@@ -28,6 +28,7 @@ type Supervision struct {
 	Process  int
 	Ceiling  int
 	Recorder runlog.Recorder
+	Vendor   agent.Vendor
 	NewAgent func(runlog.Recorder) (agent.Agent, error)
 }
 
@@ -41,6 +42,8 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 	}
 
 	run.Reviewer = supervision.Process
+	run.ReviewerCLI = supervision.Vendor.Name
+	run.ReviewerTier = string(supervision.Vendor.Tier)
 	if err := run.Advance(runstate.Reviewing); err != nil {
 		return err
 	}
@@ -81,6 +84,8 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		Ceiling:    supervision.Ceiling,
 		Prior:      prior,
 		Guidance:   guide.Text,
+
+		DocumentEndsTheMessage: supervision.Vendor.Tier == agent.Parsed,
 	})
 
 	run.Diff = asked.Diff
@@ -108,6 +113,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		Role:       agent.Reviewer,
 		Prompt:     asked.Text,
 		Dir:        run.Worktree,
+		Scratch:    round.Directory,
 		Schema:     json.RawMessage(findings.Schema),
 		Honours:    honoursTheSchema,
 		Transcript: stream,

@@ -17,4 +17,8 @@ const (
 	relativeToTheRoot       = "a file is named relative to the repository root"
 	asTheRepositorySpellsIt = "a file is named as the repository spells it"
 	insideTheRepository     = "a file inside the repository is what a review is about"
+
+	noDocumentInTheFinalMessage = "the reviewer's final message ends with no findings document, so there is nothing to read a verdict from"
+	theLastBlockIsEmpty         = "the reviewer's final message ends with an empty block where the findings document was asked for"
+	theLastBlockIsNotJSON       = "the reviewer's final message ends with a block that is not JSON, so it is not a findings document"
 )

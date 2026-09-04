@@ -13,7 +13,12 @@ import (
 
 var simulatorTrees = []string{
 	filepath.Join("cmd", "claudesim"),
+	filepath.Join("cmd", "codexsim"),
+	filepath.Join("cmd", "opencodesim"),
 	filepath.Join("internal", "claudesim"),
+	filepath.Join("internal", "codexsim"),
+	filepath.Join("internal", "opencodesim"),
+	filepath.Join("internal", "simulation"),
 	filepath.Join("internal", "testing"),
 }
 
@@ -65,4 +70,57 @@ func keys(named map[string]bool) []string {
 		listed = append(listed, name)
 	}
 	return listed
+}
+
+var vendorFlags = []string{
+	"--output-schema",
+	"--json-schema",
+	"--ignore-user-config",
+	"--setting-sources",
+	"--safe-mode",
+	"--sandbox",
+	"--variant",
+	"project_doc_max_bytes",
+	"OPENCODE_DISABLE_PROJECT_CONFIG",
+}
+
+var vendorEventShapes = []string{
+	"turn.completed",
+	"turn.failed",
+	"thread.started",
+	"agent_message",
+	"step_finish",
+	"structured_output",
+	"stream-json",
+	"mcp_servers",
+}
+
+func TestNothingAboveTheSeamKnowsWhichVendorAnswered(t *testing.T) {
+	root := source.Root(t)
+	seam := filepath.Join("internal", "agent")
+
+	naming := append(append(append([]string{}, agent.Names()...), vendorFlags...), vendorEventShapes...)
+
+	for _, path := range source.Files(t, root) {
+		relative, err := filepath.Rel(root, path)
+		if err != nil {
+			t.Fatalf("placing %s: %v", path, err)
+		}
+		if withinSimulator(relative) || strings.HasPrefix(relative, seam+string(filepath.Separator)) {
+			continue
+		}
+		if strings.HasSuffix(relative, "_test.go") {
+			continue
+		}
+
+		content, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("reading %s: %v", path, err)
+		}
+		for _, named := range naming {
+			if strings.Contains(string(content), `"`+named+`"`) {
+				t.Errorf("%s names %q, and what varies between vendors is confined to %s", relative, named, seam)
+			}
+		}
+	}
 }

@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/ktei/socrates/internal/claudesim"
 	"github.com/ktei/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/simulation"
 )
 
 func TestTheSimulatorProducesAFailureOnDemand(t *testing.T) {
@@ -150,14 +150,14 @@ func TestTheSimulatorProducesAFailureOnDemand(t *testing.T) {
 
 	t.Run("a child process that outlives the agent", func(t *testing.T) {
 		log := filepath.Join(t.TempDir(), "invocations.jsonl")
-		t.Setenv(claudesim.LogVariable, log)
+		t.Setenv(simulation.LogVariable, log)
 
 		_, _, code := scripted(t, "child_command: [sleep, \"30\"]")
 		if code != 0 {
 			t.Fatalf("the simulator exited %d", code)
 		}
 
-		invocations, err := claudesim.ReadLog(log)
+		invocations, err := simulation.ReadLog(log)
 		if err != nil {
 			t.Fatalf("reading the log: %v", err)
 		}
@@ -236,7 +236,7 @@ func TestAScenarioNobodyCanHonourIsRefused(t *testing.T) {
 }
 
 func TestNoScenarioIsACleanReview(t *testing.T) {
-	t.Setenv(claudesim.ScenarioVariable, "")
+	t.Setenv(simulation.ScenarioVariable, "")
 
 	out, _, code := simulate(t, validArguments, "review the change")
 	if code != 0 {
@@ -271,7 +271,7 @@ func writeScenario(t *testing.T, scenario string) {
 	if err := os.WriteFile(path, []byte(scenario), 0o644); err != nil {
 		t.Fatalf("writing the scenario: %v", err)
 	}
-	t.Setenv(claudesim.ScenarioVariable, path)
+	t.Setenv(simulation.ScenarioVariable, path)
 }
 
 func lastEvent(t *testing.T, out string) map[string]any {

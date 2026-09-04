@@ -51,6 +51,8 @@ type Request struct {
 	Ceiling    int
 	Prior      []PriorRound
 	Guidance   string
+
+	DocumentEndsTheMessage bool
 }
 
 type Delivered struct {
@@ -78,7 +80,7 @@ func Build(request Request) Delivered {
 			{Heading: ReviewingHeading, Body: reviewingRules},
 			{Heading: TestQualityHeading, Body: testQuality},
 			{Heading: GuidanceHeading, Body: request.projectGuidance()},
-			{Heading: ReportingHeading, Body: reporting()},
+			{Heading: ReportingHeading, Body: reporting(request.DocumentEndsTheMessage)},
 		}),
 		Diff: delivery,
 	}
@@ -342,7 +344,7 @@ var riskDefinitions = []riskDefinition{
 	{Value: findings.HighRisk, Meaning: "should not be merged without a person approving it: fundamental, risky, ambiguous, or carrying strong negative signals"},
 }
 
-func reporting() string {
+func reporting(endsTheMessage bool) string {
 	var built strings.Builder
 
 	built.WriteString("Give every finding a severity, one of:\n")
@@ -362,6 +364,10 @@ func reporting() string {
 		fmt.Fprintf(&built, "- %q: %s\n", defined.Value, defined.Meaning)
 	}
 	built.WriteString("\nGive one sentence of risk_rationale saying why that level and not another.")
+
+	if endsTheMessage {
+		built.WriteString("\n\n" + findings.DeliveryInstruction())
+	}
 
 	return built.String()
 }

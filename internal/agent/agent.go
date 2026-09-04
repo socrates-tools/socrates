@@ -14,10 +14,6 @@ const Reviewer Role = "reviewer"
 
 var roles = []Role{Reviewer}
 
-var defaultRouting = map[Role]Routing{
-	Reviewer: {Model: "opus", Effort: "high"},
-}
-
 type Routing struct {
 	Model  string `yaml:"model"`
 	Effort string `yaml:"effort"`
@@ -34,7 +30,7 @@ func (r Role) Known() bool {
 }
 
 func Default(role Role) (Routing, bool) {
-	routing, found := defaultRouting[role]
+	routing, found := TheDefault().Routing[role]
 	return routing, found
 }
 
@@ -49,6 +45,7 @@ type Request struct {
 	Role       Role
 	Prompt     string
 	Dir        string
+	Scratch    string
 	Schema     json.RawMessage
 	Honours    func(json.RawMessage) error
 	Transcript io.Writer
@@ -69,7 +66,7 @@ type Agent interface {
 	Run(context.Context, Request) (Response, error)
 }
 
-func resolveRouting(configured Configuration) (map[Role]Routing, error) {
+func resolveRouting(vendor Vendor, configured Configuration) (map[Role]Routing, error) {
 	for role := range configured {
 		if !role.Known() {
 			return nil, fmt.Errorf(notARole, role, roles)
@@ -78,7 +75,7 @@ func resolveRouting(configured Configuration) (map[Role]Routing, error) {
 
 	resolved := make(map[Role]Routing, len(roles))
 	for _, role := range roles {
-		routing := defaultRouting[role]
+		routing := vendor.Routing[role]
 		if stated, found := configured[role]; found {
 			if stated.Model != "" {
 				routing.Model = stated.Model

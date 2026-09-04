@@ -71,12 +71,14 @@ context: |
     Every round spawns a new one, which is how socrates gets the cold-reviewer
     property for free: a process that exits cannot carry a prior round's
     conclusions into the next.
-  - **One agent seam, one shipped implementation.** Every model call goes through
-    a single narrow internal interface. The only implementation shipped is Claude
-    Code (`claude -p`, structured output forced by JSON schema). The seam exists
-    so the simulator can be substituted in tests and so a per-role model choice
-    has one place to live, not so six vendors can plug in. A second vendor is a
-    new file behind the same interface, and adding one is not a redesign.
+  - **One agent seam, one file per vendor behind it.** Every model call goes
+    through a single narrow internal interface. Three implementations ship:
+    `claude`, `codex` and `opencode`. The seam exists so the simulator can be
+    substituted in tests, so a per-role model choice has one place to live, and
+    so a person who runs a supported CLI other than the one socrates shipped with
+    can be reviewed by it. It is not a plugin interface: a vendor is a CLI
+    somebody read the documentation for, measured against the stated criteria,
+    wrote a simulator for and recorded the shapes of.
   - **Per-role model and effort routing from the first commit.** The reviewer
     wants the strongest model available; nothing else in socrates does. A single
     global model setting is a decision the tool would have to unmake later.
@@ -147,21 +149,22 @@ context: |
     the coding agent (a simulator binary), the clock (`testing/synctest`) and
     nothing else.
   - **The agent is the one third party outside our control, so we simulate it.**
-    `cmd/claudesim` speaks the real `claude` CLI's wire contract and is symlinked
-    as `claude` into a temporary PATH directory. It is driven by scenario files,
-    and it appends every invocation to a log so a test can assert what was asked
-    as well as what came back. A simulator produces on demand what the real tool
+    `cmd/claudesim`, `cmd/codexsim` and `cmd/opencodesim` each speak their
+    vendor's wire contract and are symlinked under that vendor's name into a
+    temporary PATH directory. They read the same vendor-neutral scenario files
+    and append to the same invocation log, so a test can assert what was asked as
+    well as what came back. A simulator produces on demand what the real tool
     produces rarely: a truncated stream, a schema violation, a non-zero exit
     after partial output, a process that writes nothing and never returns.
   - **The simulator's fidelity is itself tested, and that check matters more than
-    test count.** Responses are recorded from the real `claude` CLI behind a
-    build tag, a scheduled job re-records and diffs them, and a non-empty diff
-    means the CLI changed. A green suite against a simulator that no longer
+    test count.** Responses are recorded from each real CLI behind a build tag,
+    a scheduled job re-records and diffs them, and a non-empty diff means that
+    CLI changed. A green suite against a simulator that no longer
     resembles the real tool is worse than no suite, because it manufactures
     confidence.
-  - **A separate live smoke suite asks a different question:** whether the real
-    `claude` CLI still accepts the flags socrates passes and still returns
-    schema-conforming output. No recording can answer that. It is behind its own
+  - **A separate live smoke suite asks a different question:** whether each real
+    CLI still accepts the arguments socrates passes and still returns a document
+    that satisfies the schema. No recording can answer that. It is behind its own
     build tag, so the ordinary suite compiles none of it.
   - **Model judgement is evaluated, never asserted in CI.** Whether a prompt
     finds a given bug is a development-time evaluation. A CI test may assert the

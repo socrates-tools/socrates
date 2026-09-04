@@ -8,12 +8,13 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/ktei/socrates/internal/agent"
 	"github.com/ktei/socrates/internal/corpus"
 	"github.com/ktei/socrates/internal/fidelity"
 	"github.com/ktei/socrates/internal/testing/source"
 )
 
-var behindATag = []string{"record_test.go", "drift_test.go", "livesmoke_test.go"}
+var behindATag = []string{"record_test.go", "criteria_test.go", "drift_test.go", "livesmoke_test.go"}
 
 const fidelityPackage = "./internal/fidelity"
 
@@ -92,7 +93,7 @@ func listPackage(t *testing.T, named string) packageFiles {
 
 func TestTheRecordingsCarryWhatSocratesReadsFromTheOpeningEvent(t *testing.T) {
 	// scenario: What the reviewer held is read rather than assumed
-	recordings, err := fidelity.Recordings(fidelity.RecordingsDirectory)
+	recordings, err := fidelity.Recordings(fidelity.RecordingsFor("claude"))
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -117,7 +118,7 @@ func TestTheRecordingsCarryWhatSocratesReadsFromTheOpeningEvent(t *testing.T) {
 
 func TestTheRecordingsCarryWhatSocratesReadsFromTheResultEvent(t *testing.T) {
 	// scenario: A non-zero exit after the agent said why
-	recordings, err := fidelity.Recordings(fidelity.RecordingsDirectory)
+	recordings, err := fidelity.Recordings(fidelity.RecordingsFor("claude"))
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -152,3 +153,61 @@ func shapeNamed(shapes []fidelity.Shape, kind string) (fidelity.Shape, bool) {
 	}
 	return fidelity.Shape{}, false
 }
+
+func TestEverySupportedVendorIsCheckedAgainstItsOwnRecordings(t *testing.T) {
+	supported := agent.Supported()
+	if len(supported) == 0 {
+		t.Fatal("no reviewer CLI is supported, so this check reads nothing")
+	}
+
+	for _, vendor := range supported {
+		recordings, err := fidelity.Recordings(fidelity.RecordingsFor(vendor.Name))
+		if err != nil {
+			t.Errorf("%s is supported and has no recordings of its own: %v", vendor.Name, err)
+			continue
+		}
+
+		for _, request := range fidelity.Requests() {
+			if _, found := recordingNamed(recordings, request.Name); !found {
+				t.Errorf("%s has no recording named %s, so the drift check would pass without comparing it", vendor.Name, request.Name)
+			}
+		}
+	}
+}
+
+func TestWhatTheExtractingTierCostsIsRecorded(t *testing.T) {
+	observed, err := fidelity.Observations(fidelity.CriteriaDirectory)
+	if err != nil {
+		t.Fatalf("reading what was recorded about the reviewer CLIs: %v", err)
+	}
+
+	for _, vendor := range agent.Supported() {
+		if vendor.Tier != agent.Parsed {
+			continue
+		}
+
+		found := false
+		for _, one := range observed {
+			if one.Vendor == vendor.Name && one.Criterion == theExtractingTiersCost {
+				found = true
+				if one.Observed["attempts"] == "" {
+					t.Errorf("%s records no number of attempts, so what the extracting tier costs is asserted rather than measured", vendor.Name)
+				}
+			}
+		}
+		if !found {
+			t.Errorf("%s is on the extracting tier and nothing records how many attempts a live review took", vendor.Name)
+		}
+	}
+}
+
+func recordingNamed(recordings []fidelity.Recording, name string) (fidelity.Recording, bool) {
+	for _, recording := range recordings {
+		if recording.Name == name {
+			return recording, true
+		}
+	}
+	return fidelity.Recording{}, false
+}
+
+const theExtractingTiersCost = "what-the-extracting-tier-costs"

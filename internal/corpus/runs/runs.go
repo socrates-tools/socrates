@@ -67,6 +67,7 @@ func Answered(store runstore.Store, request Request) (Answer, error) {
 		Repository: run.Repository,
 		Entry: corpus.Entry{
 			Name:       request.Name,
+			Reviewer:   run.Vendor(),
 			Model:      routing[modelField],
 			Effort:     routing[effortField],
 			Round:      request.Round,

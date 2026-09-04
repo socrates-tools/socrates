@@ -17,6 +17,7 @@ import (
 
 	"github.com/ktei/socrates/internal/agent"
 	"github.com/ktei/socrates/internal/document"
+	"github.com/ktei/socrates/internal/fidelity"
 	"github.com/ktei/socrates/internal/findings"
 	"github.com/ktei/socrates/internal/state"
 	"github.com/ktei/socrates/internal/surface"
@@ -25,41 +26,54 @@ import (
 const smokeDeadline = 10 * time.Minute
 
 func TestTheRealCLIStillAcceptsWhatSocratesAsksOfIt(t *testing.T) {
+	for _, vendor := range agent.Supported() {
+		t.Run(vendor.Name, func(t *testing.T) {
+			oneRealReview(t, vendor)
+		})
+	}
+}
+
+func oneRealReview(t *testing.T, vendor agent.Vendor) {
+	t.Helper()
+
 	directory := t.TempDir()
 	path := filepath.Join(directory, "parse.go")
 	if err := os.WriteFile(path, []byte(smokeSubject), 0o644); err != nil {
 		t.Fatalf("writing %s: %v", path, err)
 	}
 
-	asking, err := agent.NewClaude(agent.Options{Deadline: smokeDeadline})
+	asking, err := agent.New(vendor.Name, agent.Options{Deadline: smokeDeadline})
 	if err != nil {
-		t.Fatalf("constructing the agent: %v", err)
+		t.Fatalf("constructing the agent for %s: %v", vendor.Name, err)
 	}
+
+	request := fidelity.Request{Name: "live-smoke", Prompt: "Read parse.go in your working directory and report what you find as the schema requires.", Schema: []byte(findings.Schema)}
 
 	var stream bytes.Buffer
 	answer, err := asking.Run(context.Background(), agent.Request{
 		Role:       agent.Reviewer,
-		Prompt:     "Read parse.go in your working directory and report what you find as the schema requires.",
+		Prompt:     fidelity.Asked(vendor, request),
 		Dir:        directory,
+		Scratch:    t.TempDir(),
 		Schema:     []byte(findings.Schema),
 		Honours:    func(structured json.RawMessage) error { _, err := findings.Parse(structured); return err },
 		Transcript: &stream,
 	})
 	if err != nil {
-		t.Fatalf("the real CLI refused what socrates asks of it: %v\n%s", err, stream.String())
+		t.Fatalf("%s refused what socrates asks of it: %v\n%s", vendor.Name, err, stream.String())
 	}
 
 	document, err := findings.Parse(answer.Structured)
 	if err != nil {
-		t.Fatalf("the real CLI returned structured output socrates cannot read: %v\n%s", err, answer.Structured)
+		t.Fatalf("%s returned a document socrates cannot read: %v\n%s", vendor.Name, err, answer.Structured)
 	}
 	if answer.Model == "" {
-		t.Error("the stream carried no model")
+		t.Errorf("%s answered and nothing records which model did", vendor.Name)
 	}
 	if answer.Usage.InputTokens == 0 && answer.Usage.OutputTokens == 0 {
-		t.Error("the stream carried no token counts")
+		t.Errorf("%s answered and the stream carried no token counts", vendor.Name)
 	}
-	t.Logf("the real reviewer rated the change %s risk and reported %d findings", document.RiskLevel, len(document.Findings))
+	t.Logf("%s rated the change %s risk and reported %d findings", vendor.Name, document.RiskLevel, len(document.Findings))
 
 	t.Run("what it answered reaches a page on a port of the window", func(t *testing.T) {
 		t.Setenv(state.HomeVariable, t.TempDir())

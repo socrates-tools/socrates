@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ktei/socrates/internal/agent"
 	"github.com/ktei/socrates/internal/runstate"
 )
 
@@ -190,4 +191,20 @@ func started(t *testing.T, store Store) *Run {
 		t.Fatalf("creating the run: %v", err)
 	}
 	return run
+}
+
+func TestARunFromBeforeTheFieldIsReadAsTheOriginalCLI(t *testing.T) {
+	before := Run{Name: "20260101T000000Z-00000000", State: runstate.Clean}
+
+	if before.Vendor() != agent.DefaultVendor {
+		t.Errorf("a run recorded without a reviewer CLI reads as %q, want %q", before.Vendor(), agent.DefaultVendor)
+	}
+	if before.Tier() != string(agent.TheDefault().Tier) {
+		t.Errorf("a run recorded without a reviewer CLI reads as the tier %q, want %q", before.Tier(), agent.TheDefault().Tier)
+	}
+
+	named := Run{ReviewerCLI: "codex", ReviewerTier: string(agent.Parsed)}
+	if named.Vendor() != "codex" || named.Tier() != string(agent.Parsed) {
+		t.Errorf("a run recorded with a reviewer CLI reads as %q on the %q tier", named.Vendor(), named.Tier())
+	}
 }

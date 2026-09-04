@@ -1,0 +1,93 @@
+[
+  {
+    "type": "step_finish",
+    "fields": [
+      "part",
+      "part.cost",
+      "part.id",
+      "part.messageID",
+      "part.reason",
+      "part.sessionID",
+      "part.snapshot",
+      "part.tokens",
+      "part.tokens.cache",
+      "part.tokens.cache.read",
+      "part.tokens.cache.write",
+      "part.tokens.input",
+      "part.tokens.output",
+      "part.tokens.reasoning",
+      "part.tokens.total",
+      "part.type",
+      "sessionID",
+      "timestamp",
+      "type"
+    ]
+  },
+  {
+    "type": "step_start",
+    "fields": [
+      "part",
+      "part.id",
+      "part.messageID",
+      "part.sessionID",
+      "part.snapshot",
+      "part.type",
+      "sessionID",
+      "timestamp",
+      "type"
+    ]
+  },
+  {
+    "type": "text",
+    "fields": [
+      "part",
+      "part.id",
+      "part.messageID",
+      "part.sessionID",
+      "part.text",
+      "part.time",
+      "part.time.end",
+      "part.time.start",
+      "part.type",
+      "sessionID",
+      "timestamp",
+      "type"
+    ]
+  },
+  {
+    "type": "tool_use",
+    "fields": [
+      "part",
+      "part.callID",
+      "part.id",
+      "part.messageID",
+      "part.sessionID",
+      "part.state",
+      "part.state.input",
+      "part.state.input.filePath",
+      "part.state.metadata",
+      "part.state.metadata.display",
+      "part.state.metadata.display.lineEnd",
+      "part.state.metadata.display.lineStart",
+      "part.state.metadata.display.path",
+      "part.state.metadata.display.text",
+      "part.state.metadata.display.totalLines",
+      "part.state.metadata.display.truncated",
+      "part.state.metadata.display.type",
+      "part.state.metadata.loaded",
+      "part.state.metadata.preview",
+      "part.state.metadata.truncated",
+      "part.state.output",
+      "part.state.status",
+      "part.state.time",
+      "part.state.time.end",
+      "part.state.time.start",
+      "part.state.title",
+      "part.tool",
+      "part.type",
+      "sessionID",
+      "timestamp",
+      "type"
+    ]
+  }
+]

@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ktei/socrates/internal/agent"
 	"github.com/ktei/socrates/internal/process"
 	"github.com/ktei/socrates/internal/runlog"
 	"github.com/ktei/socrates/internal/runstate"
@@ -34,6 +35,7 @@ const (
 
 type Session struct {
 	t          *testing.T
+	Vendor     agent.Vendor
 	Binary     string
 	Repository *gitrepo.Repository
 	Simulator  *simulator.Simulator
@@ -43,24 +45,52 @@ type Session struct {
 
 func Start(t *testing.T) *Session {
 	t.Helper()
+	return StartFor(t, agent.TheDefault())
+}
+
+func StartFor(t *testing.T, vendor agent.Vendor) *Session {
+	t.Helper()
 
 	repository := gitrepo.New(t)
-	simulated := simulator.Install(t)
+	simulated := simulator.InstallFor(t, vendor)
 
 	home := t.TempDir()
 	t.Setenv(state.HomeVariable, home)
 
 	session := &Session{
 		t:          t,
+		Vendor:     vendor,
 		Binary:     buildSocrates(t),
 		Repository: repository,
 		Simulator:  simulated,
 		Home:       home,
 		Store:      runstore.New(filepath.Join(home, "runs")),
 	}
+	if vendor.Name != agent.DefaultVendor {
+		session.nameTheReviewerCLI(vendor.Name)
+	}
 	t.Cleanup(session.liftEverySeal)
 	t.Cleanup(session.stopEveryReviewer)
 	return session
+}
+
+func EachVendor(t *testing.T, exercised func(*testing.T, *Session)) {
+	t.Helper()
+
+	for _, vendor := range agent.Supported() {
+		t.Run(vendor.Name, func(t *testing.T) {
+			exercised(t, StartFor(t, vendor))
+		})
+	}
+}
+
+func (s *Session) nameTheReviewerCLI(named string) {
+	s.t.Helper()
+
+	path := filepath.Join(s.Home, "config.yaml")
+	if err := os.WriteFile(path, []byte("reviewer_cli: "+named+"\n"), 0o644); err != nil {
+		s.t.Fatalf("writing %s: %v", path, err)
+	}
 }
 
 func (s *Session) WhereNothingReaps() *Session {

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/ktei/socrates/internal/agent"
 	"github.com/ktei/socrates/internal/guidance"
 	"github.com/ktei/socrates/internal/platform"
 	"github.com/ktei/socrates/internal/process"
@@ -44,6 +45,21 @@ type Beginning struct {
 	StartedAt       time.Time
 	Retention       time.Duration
 	GuidanceCeiling int64
+	ReviewerCLI     string
+}
+
+func ReviewerCLIIsSupported(named string) error {
+	if named == "" {
+		named = agent.DefaultVendor
+	}
+	vendor, known := agent.Named(named)
+	if !known {
+		return refusal.New(noSuchReviewerCLI, named, agent.Stated())
+	}
+	if !vendor.Qualifies() {
+		return refusal.New(anUnsupportedReviewerCLI, named, vendor.Lacks(), agent.Stated())
+	}
+	return nil
 }
 
 func OuterRun() string {
@@ -53,6 +69,9 @@ func OuterRun() string {
 func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 	if !platform.ReviewIsSupported() {
 		return nil, refusal.New(nothingHereReapsAGroup, platform.TheOneRunning(), platform.Stated())
+	}
+	if err := ReviewerCLIIsSupported(beginning.ReviewerCLI); err != nil {
+		return nil, err
 	}
 	if outer := OuterRun(); outer != "" {
 		return nil, refusal.New(aReviewInsideAReview, outer)

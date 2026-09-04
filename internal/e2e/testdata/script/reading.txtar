@@ -38,7 +38,7 @@ stdout 'exit=3'
 stderr '20200101T000000Z-deadbeef'
 
 # A review that found something blocking is followed to its own code.
-env CLAUDESIM_SCENARIO=$WORK/escalating.yaml
+env SOCRATES_SIM_SCENARIO=$WORK/escalating.yaml
 exec sleep 1
 cp $WORK/other.go other.go
 exec sh -c 'socrates review > /dev/null; socrates watch; echo exit=$?'

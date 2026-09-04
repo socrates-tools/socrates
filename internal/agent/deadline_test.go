@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/claudesim"
+	"github.com/ktei/socrates/internal/simulation"
 	"github.com/ktei/socrates/internal/testing/simulator"
 )
 
@@ -74,7 +74,7 @@ func TestACancelledCallStopsTheAgent(t *testing.T) {
 	claude := build(t, agent.Options{Deadline: time.Minute, Recorder: recorded})
 
 	ctx, stop := context.WithCancel(context.Background())
-	spawned := make(chan claudesim.Invocation, 1)
+	spawned := make(chan simulation.Invocation, 1)
 	go func() {
 		defer stop()
 		if invocation, found := simulated.WaitForChild(30 * time.Second); found {

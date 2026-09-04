@@ -1,0 +1,14 @@
+{
+  "vendor": "codex",
+  "version": "0.153.2",
+  "criterion": "constrains-the-schema",
+  "question": "does --output-schema reach the request as a strict json_schema while tools are active, against openai/codex#15451",
+  "observed": {
+    "effort": "high",
+    "format": "json_schema",
+    "model": "gpt-5.1-codex",
+    "strict": "true",
+    "tools": "the request carried an active tool list"
+  },
+  "established": true
+}

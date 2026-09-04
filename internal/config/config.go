@@ -16,6 +16,7 @@ import (
 )
 
 type Config struct {
+	ReviewerCLI     string              `yaml:"reviewer_cli"`
 	Roles           agent.Configuration `yaml:"roles"`
 	DiffCeiling     int                 `yaml:"diff_ceiling"`
 	GuidanceCeiling int                 `yaml:"guidance_ceiling"`
@@ -61,6 +62,13 @@ func LoadFrom(path string) (Config, error) {
 		return Config{}, refusal.New(statesSomethingUnusable, path, err)
 	}
 	return stated, nil
+}
+
+func (c Config) Vendor() string {
+	if c.ReviewerCLI == "" {
+		return agent.DefaultVendor
+	}
+	return c.ReviewerCLI
 }
 
 func (c Config) validate() error {

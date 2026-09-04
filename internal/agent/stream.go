@@ -69,9 +69,7 @@ func (s streamed) accountGiven() string {
 	if s.result == nil || !s.result.reportsAnError() {
 		return ""
 	}
-	bounded := &head{limit: failureTailBytes}
-	_, _ = io.WriteString(bounded, s.result.Result)
-	return bounded.String()
+	return Bounded(s.result.Result)
 }
 
 func parseStream(input io.Reader) (streamed, error) {

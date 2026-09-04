@@ -40,13 +40,15 @@ Isolation is therefore the gate, and the schema is a tier.
 | | claude | codex | opencode | cursor-agent | copilot | pi |
 |---|---|---|---|---|---|---|
 | **Repository's own instructions can be suppressed** | `--setting-sources user` | `-c project_doc_max_bytes=0` | `OPENCODE_DISABLE_PROJECT_CONFIG=1` | **none found** | **none found** | **none found** |
-| Terminal event carrying the account of a failure | yes | `turn.failed`, `error` | `step_finish`, reported as dropped | yes | undeclared | not documented |
+| Terminal event carrying the account of a failure | yes | `turn.failed` at `error.message` | `error` at `error.data.message` | yes | undeclared | not documented |
 | Model selectable per invocation | yes | yes | yes | yes | yes | yes |
 | Schema constrained by the vendor | `--json-schema` | `--output-schema` | no | no | no | no |
 | Tier | enforced | enforced | parsed | - | - | - |
 
-Three CLIs have a documented way to keep the reviewed repository out of the reviewer's instructions.
-For the other three no such mechanism was found in their documentation, which is weaker than a finding that none exists, and settling it is one recording each rather than a redesign.
+The three mechanisms in the first row were measured rather than read, against `codex-cli 0.153.2` and `opencode 1.18.19`, and `design.md` says how.
+Both new vendors cleared all three criteria, so both ship here.
+
+For the other three CLIs no such mechanism was found in their documentation, which is weaker than a finding that none exists, and settling it is one recording each rather than a redesign.
 Those three are recorded as an issue to return to rather than built on a guess.
 
 ## What Changes

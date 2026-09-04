@@ -16,6 +16,7 @@ var networkImports = []string{"net", "crypto/tls", "golang.org/x/net"}
 
 var BuildConstrainedFiles = map[string]string{
 	filepath.Join("internal", "agent", "deadline_test.go"):     "a deadline exercised with testing/synctest, which needs the experiment enabled",
+	filepath.Join("internal", "fidelity", "criteria_test.go"):  "establishing by recording which reviewer CLIs meet the criteria",
 	filepath.Join("internal", "fidelity", "drift_test.go"):     "comparing the simulator against recordings of the real CLI",
 	filepath.Join("internal", "fidelity", "livesmoke_test.go"): "one real review against the real CLI",
 	filepath.Join("internal", "fidelity", "record_test.go"):    "recording what the real CLI answers",

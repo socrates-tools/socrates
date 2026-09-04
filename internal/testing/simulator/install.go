@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ktei/socrates/internal/claudesim"
+	"github.com/ktei/socrates/internal/agent"
+	"github.com/ktei/socrates/internal/simulation"
 	"github.com/ktei/socrates/internal/testing/source"
 )
 
-const invokedAs = "claude"
-
 type Simulator struct {
 	t            *testing.T
+	Vendor       agent.Vendor
 	Directory    string
 	Binary       string
 	Link         string
@@ -21,14 +21,25 @@ type Simulator struct {
 	ScenarioPath string
 }
 
+func SimulatorFor(vendor agent.Vendor) string {
+	return vendor.Name + "sim"
+}
+
 func Install(t *testing.T) *Simulator {
+	t.Helper()
+	return InstallFor(t, agent.TheDefault())
+}
+
+func InstallFor(t *testing.T, vendor agent.Vendor) *Simulator {
 	t.Helper()
 
 	directory := t.TempDir()
-	binary := filepath.Join(directory, "claudesim")
+	named := SimulatorFor(vendor)
+	binary := filepath.Join(directory, named)
 
-	source.Build(t, "./cmd/claudesim", binary)
+	source.Build(t, "./cmd/"+named, binary)
 
+	invokedAs := vendor.Binary
 	link := filepath.Join(directory, invokedAs)
 	if err := os.Symlink(binary, link); err != nil {
 		t.Fatalf("linking the simulator as %s: %v", invokedAs, err)
@@ -37,10 +48,11 @@ func Install(t *testing.T) *Simulator {
 	t.Setenv("PATH", directory+string(os.PathListSeparator)+os.Getenv("PATH"))
 
 	log := filepath.Join(t.TempDir(), "invocations.jsonl")
-	t.Setenv(claudesim.LogVariable, log)
+	t.Setenv(simulation.LogVariable, log)
 
 	return &Simulator{
 		t:         t,
+		Vendor:    vendor,
 		Directory: directory,
 		Binary:    binary,
 		Link:      link,
@@ -55,7 +67,7 @@ func (s *Simulator) Scenario(scenario string) {
 	if err := os.WriteFile(path, []byte(scenario), 0o644); err != nil {
 		s.t.Fatalf("writing the scenario: %v", err)
 	}
-	s.t.Setenv(claudesim.ScenarioVariable, path)
+	s.t.Setenv(simulation.ScenarioVariable, path)
 	s.ScenarioPath = path
 }
 
@@ -69,17 +81,17 @@ func (s *Simulator) Record(names ...string) {
 		}
 		joined += name
 	}
-	s.t.Setenv(claudesim.RecordEnvVariable, joined)
+	s.t.Setenv(simulation.RecordEnvVariable, joined)
 }
 
-func (s *Simulator) Invocations() []claudesim.Invocation {
+func (s *Simulator) Invocations() []simulation.Invocation {
 	s.t.Helper()
 
 	if _, err := os.Stat(s.LogPath); os.IsNotExist(err) {
 		return nil
 	}
 
-	invocations, err := claudesim.ReadLog(s.LogPath)
+	invocations, err := simulation.ReadLog(s.LogPath)
 	if err != nil {
 		s.t.Fatalf("reading the invocation log: %v", err)
 	}
@@ -87,7 +99,7 @@ func (s *Simulator) Invocations() []claudesim.Invocation {
 }
 
 func (s *Simulator) Processes() []int {
-	invocations, err := claudesim.ReadLog(s.LogPath)
+	invocations, err := simulation.ReadLog(s.LogPath)
 	if err != nil {
 		return nil
 	}
@@ -99,10 +111,10 @@ func (s *Simulator) Processes() []int {
 	return processes
 }
 
-func (s *Simulator) WaitForChild(within time.Duration) (claudesim.Invocation, bool) {
+func (s *Simulator) WaitForChild(within time.Duration) (simulation.Invocation, bool) {
 	deadline := time.Now().Add(within)
 	for time.Now().Before(deadline) {
-		invocations, err := claudesim.ReadLog(s.LogPath)
+		invocations, err := simulation.ReadLog(s.LogPath)
 		if err == nil {
 			for _, invocation := range invocations {
 				if invocation.Child != 0 {
@@ -112,10 +124,10 @@ func (s *Simulator) WaitForChild(within time.Duration) (claudesim.Invocation, bo
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
-	return claudesim.Invocation{}, false
+	return simulation.Invocation{}, false
 }
 
-func (s *Simulator) OnlyInvocation() claudesim.Invocation {
+func (s *Simulator) OnlyInvocation() simulation.Invocation {
 	s.t.Helper()
 
 	invocations := s.Invocations()

@@ -8,7 +8,7 @@ exec git -c init.defaultBranch=main init --quiet .
 exec git add -A
 exec git commit --quiet -m 'the first commit'
 
-env CLAUDESIM_SCENARIO=$WORK/dialogue.yaml
+env SOCRATES_SIM_SCENARIO=$WORK/dialogue.yaml
 cp $WORK/added.go added.go
 
 # A round that found only mechanical defects parks, and parking is not a verdict.

@@ -17,7 +17,7 @@ var tagsReachingTheRealCLI = []string{"record", "livesmoke"}
 
 var buildTagsNamed = regexp.MustCompile(`-tags[= ]([A-Za-z0-9_,]+)`)
 
-var credentialsTheRealCLIReads = []string{"ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN"}
+var credentialsTheRealCLIReads = []string{"ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN", "OPENAI_API_KEY", "CODEX_API_KEY", "OPENCODE_API_KEY"}
 
 const TheEntryPoint = "verify"
 

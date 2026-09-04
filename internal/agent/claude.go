@@ -2,8 +2,6 @@ package agent
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os/exec"
@@ -16,7 +14,6 @@ import (
 )
 
 const (
-	DefaultBinary   = "claude"
 	DefaultDeadline = 30 * time.Minute
 
 	inspectingTools  = "Read,Grep,Glob,WebSearch,WebFetch"
@@ -25,7 +22,6 @@ const (
 	settingSources   = "user"
 	streamFormat     = "stream-json"
 	waitDelay        = 5 * time.Second
-	failureTailBytes = 8 * 1024
 )
 
 const (
@@ -38,13 +34,15 @@ const (
 )
 
 type Options struct {
-	Binary   string
-	Routing  Configuration
-	Deadline time.Duration
-	Recorder runlog.Recorder
+	Binary          string
+	Routing         Configuration
+	Deadline        time.Duration
+	Recorder        runlog.Recorder
+	SchemaDirectory string
 }
 
 type claudeAgent struct {
+	vendor   Vendor
 	binary   string
 	routing  map[Role]Routing
 	deadline time.Duration
@@ -52,19 +50,24 @@ type claudeAgent struct {
 }
 
 func NewClaude(options Options) (Agent, error) {
-	routing, err := resolveRouting(options.Routing)
+	return newClaude(TheDefault(), options)
+}
+
+func newClaude(vendor Vendor, options Options) (Agent, error) {
+	routing, err := resolveRouting(vendor, options.Routing)
 	if err != nil {
 		return nil, err
 	}
 
 	agent := &claudeAgent{
+		vendor:   vendor,
 		binary:   options.Binary,
 		routing:  routing,
 		deadline: options.Deadline,
 		recorder: options.Recorder,
 	}
 	if agent.binary == "" {
-		agent.binary = DefaultBinary
+		agent.binary = vendor.Binary
 	}
 	if agent.deadline <= 0 {
 		agent.deadline = DefaultDeadline
@@ -154,7 +157,7 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 	command.Cancel = func() error { return process.KillGroup(command.Process.Pid) }
 	command.WaitDelay = waitDelay
 
-	failures := &head{limit: failureTailBytes}
+	failures := NewBoundedText()
 	command.Stderr = failures
 
 	out, err := command.StdoutPipe()
@@ -191,18 +194,14 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 
 	reached := Response{Tools: read.tools, ToolSources: read.toolSources}
 
-	if deadlineErr := a.deadlineReached(bounded, parent); deadlineErr != nil {
+	if deadlineErr := deadlineReached(a.binary, a.deadline, bounded, parent); deadlineErr != nil {
 		return reached, deadlineErr
 	}
 	if parseErr != nil {
 		return reached, parseErr
 	}
 	if waitErr != nil {
-		said := accountsGiven(read.accountGiven(), failures.String())
-		if said == "" {
-			return reached, fmt.Errorf(theAgentExitedSayingNothing, a.binary, waitErr)
-		}
-		return reached, fmt.Errorf(theAgentExited, a.binary, waitErr, said)
+		return reached, ExitedSaying(a.binary, waitErr, AccountOf(read.accountGiven(), failures.String()))
 	}
 
 	answer := Response{
@@ -216,29 +215,20 @@ func (a *claudeAgent) attempt(bounded, parent context.Context, request Request, 
 	}
 
 	if read.result == nil {
-		return reached, fmt.Errorf(noResultEvent, a.binary)
+		return reached, NoTerminalEvent(a.binary)
 	}
 	if read.result.reportsAnError() {
-		if said := read.accountGiven(); said != "" {
-			return reached, fmt.Errorf(theResultReportedSaying, a.binary, said)
-		}
-		return reached, fmt.Errorf(theResultReported, a.binary, read.result.Subtype)
+		return reached, TerminalReportedSaying(a.binary, read.accountGiven(), read.result.Subtype)
 	}
 
-	if len(request.Schema) > 0 {
-		if len(read.result.StructuredOutput) == 0 {
-			return reached, fmt.Errorf(noStructuredOutput, a.binary)
-		}
-		if !json.Valid(read.result.StructuredOutput) {
-			return reached, fmt.Errorf(structuredOutputIsNotJSON, a.binary)
-		}
+	document, err := Document(a.vendor, request, a.binary, read.result.StructuredOutput, read.text)
+	if err != nil {
+		return reached, err
 	}
-	answer.Structured = read.result.StructuredOutput
+	answer.Structured = document
 
-	if request.Honours != nil && len(answer.Structured) > 0 {
-		if err := request.Honours(answer.Structured); err != nil {
-			return answer, fmt.Errorf(schemaNotSatisfied, err)
-		}
+	if err := Honoured(request, answer.Structured); err != nil {
+		return answer, err
 	}
 
 	a.record(runlog.Event{
@@ -279,16 +269,6 @@ func (a *claudeAgent) arguments(routing Routing, request Request) []string {
 	return arguments
 }
 
-func (a *claudeAgent) deadlineReached(bounded, parent context.Context) error {
-	if !errors.Is(bounded.Err(), context.DeadlineExceeded) {
-		return nil
-	}
-	if errors.Is(parent.Err(), context.DeadlineExceeded) {
-		return errors.New(theDeadlinePassed)
-	}
-	return fmt.Errorf(silenceUntilTheDeadline, a.binary, a.deadline)
-}
-
 func (a *claudeAgent) failed(request Request, routing Routing, reason error) error {
 	a.record(runlog.Event{
 		Kind:    EventFailed,
@@ -307,43 +287,4 @@ func (a *claudeAgent) record(event runlog.Event) {
 		return
 	}
 	_ = a.recorder.Record(event)
-}
-
-func accountsGiven(given ...string) string {
-	var said []string
-	for _, account := range given {
-		if trimmed := strings.TrimSpace(account); trimmed != "" {
-			said = append(said, trimmed)
-		}
-	}
-	return strings.Join(said, "; ")
-}
-
-type head struct {
-	limit   int
-	written []byte
-	elided  bool
-}
-
-func (h *head) Write(bytes []byte) (int, error) {
-	room := h.limit - len(h.written)
-	if room <= 0 {
-		h.elided = true
-		return len(bytes), nil
-	}
-	if len(bytes) > room {
-		h.written = append(h.written, bytes[:room]...)
-		h.elided = true
-		return len(bytes), nil
-	}
-	h.written = append(h.written, bytes...)
-	return len(bytes), nil
-}
-
-func (h *head) String() string {
-	written := strings.TrimSpace(string(h.written))
-	if h.elided {
-		return written + "..."
-	}
-	return written
 }

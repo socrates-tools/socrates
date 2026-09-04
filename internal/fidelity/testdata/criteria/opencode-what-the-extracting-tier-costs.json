@@ -1,0 +1,13 @@
+{
+  "vendor": "opencode",
+  "version": "recorded by make fixtures",
+  "criterion": "what-the-extracting-tier-costs",
+  "question": "how many attempts did one live review on the extracting tier take before a document arrived that parsed and satisfied the schema",
+  "observed": {
+    "answered": "true",
+    "attempts": "1",
+    "attempts allowed": "5",
+    "request": "findings-review"
+  },
+  "established": true
+}

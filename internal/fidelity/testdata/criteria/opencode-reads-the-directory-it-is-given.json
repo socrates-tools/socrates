@@ -1,0 +1,12 @@
+{
+  "vendor": "opencode",
+  "version": "1.18.19",
+  "criterion": "reads-the-directory-it-is-given",
+  "question": "does opencode resolve the repository from the process's working directory, or only from --dir",
+  "observed": {
+    "--dir stated": "the repository's token was in 1 of 3 replies",
+    "what this costs an adapter": "setting the child's working directory is not enough: an invocation that states no directory reads whatever PWD it inherited, which under socrates is the repository under review rather than the snapshot",
+    "working directory set, --dir absent": "the repository's token was in 0 of 3 replies"
+  },
+  "established": true
+}

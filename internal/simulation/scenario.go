@@ -1,4 +1,4 @@
-package claudesim
+package simulation
 
 import (
 	"fmt"
@@ -28,8 +28,10 @@ const (
 )
 
 const (
+	ConnectedSource = connectedSource
+
 	defaultText             = "I read the change against the base."
-	defaultModel            = "claude-sim-1"
+	defaultModel            = "sim-1"
 	defaultSession          = "00000000-0000-4000-8000-000000000000"
 	defaultHold             = 10 * time.Minute
 	defaultStderr           = "error: the model provider answered 529"
@@ -141,17 +143,17 @@ func replay(response *Response) error {
 func (s *Scenario) Match(prompt string) Response {
 	for _, response := range s.Responses {
 		if response.When != "" && strings.Contains(prompt, response.When) {
-			return response.withDefaults()
+			return response.WithDefaults()
 		}
 	}
 	if s.Default != nil {
-		return s.Default.withDefaults()
+		return s.Default.WithDefaults()
 	}
-	return Response{}.withDefaults()
+	return Response{}.WithDefaults()
 }
 
 func (r Response) validate() error {
-	if r.Behaviour != "" && !isKnownBehaviour(r.Behaviour) {
+	if r.Behaviour != "" && !IsKnownBehaviour(r.Behaviour) {
 		return fmt.Errorf("asks for the behaviour %q, which is not one of %v", r.Behaviour, behaviours)
 	}
 	if _, err := parseDuration(r.Interval); err != nil {
@@ -163,7 +165,7 @@ func (r Response) validate() error {
 	return nil
 }
 
-func (r Response) withDefaults() Response {
+func (r Response) WithDefaults() Response {
 	if r.Behaviour == "" {
 		r.Behaviour = ReportFindings
 	}
@@ -201,7 +203,7 @@ func (r Response) withDefaults() Response {
 	}
 	if r.Behaviour == ExitNonZero || r.Behaviour == ReportAnError {
 		if r.Exit == nil {
-			failing := exitUsage
+			failing := ExitUsage
 			r.Exit = &failing
 		}
 	}
@@ -211,23 +213,30 @@ func (r Response) withDefaults() Response {
 	return r
 }
 
-func (r Response) exitCode() int {
+func (r Response) Spoken(last, inTheFinalMessage bool) string {
+	if !inTheFinalMessage || !last || r.Structured == "" {
+		return r.Text
+	}
+	return r.Text + "\n\n```json\n" + r.Structured + "\n```\n"
+}
+
+func (r Response) ExitCode() int {
 	if r.Exit == nil {
-		return exitSuccess
+		return ExitSuccess
 	}
 	return *r.Exit
 }
 
-func (r Response) reportsAnError() bool {
+func (r Response) ReportsAnError() bool {
 	return r.Behaviour == ReportAnError
 }
 
-func (r Response) interval() time.Duration {
+func (r Response) EveryInterval() time.Duration {
 	parsed, _ := parseDuration(r.Interval)
 	return parsed
 }
 
-func (r Response) hold() time.Duration {
+func (r Response) HoldsFor() time.Duration {
 	parsed, _ := parseDuration(r.Hold)
 	if parsed == 0 {
 		return defaultHold
@@ -242,6 +251,6 @@ func parseDuration(stated string) (time.Duration, error) {
 	return time.ParseDuration(stated)
 }
 
-func isKnownBehaviour(behaviour Behaviour) bool {
+func IsKnownBehaviour(behaviour Behaviour) bool {
 	return slices.Contains(behaviours, behaviour)
 }

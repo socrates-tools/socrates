@@ -16,10 +16,11 @@ The reviewer has independence and wrote none of it.
 socrates is a front end for a reviewer it does not contain, so check for the reviewer first.
 All of the following must be true before anything below works:
 
-- **The `claude` CLI, 2.1.169 or later, on your `PATH`.**
-  That floor is where `--safe-mode` arrived. It is the one mechanism keeping your machine's customisations out of a reviewer, and socrates has no fallback for a CLI without it.
-- **An Anthropic account that CLI is signed in to.**
-  Every round of every review is a model call, billed to your account against whatever plan or credit it carries.
+- **One of the reviewer CLIs socrates drives, on your `PATH`: `claude`, `codex` or `opencode`.**
+  socrates runs `claude` unless you name another in `reviewer_cli`. See Reviewer CLIs below for what each one asks of you.
+  The `claude` floor is 2.1.169 or later, which is where `--safe-mode` arrived.
+- **An account that CLI is signed in to.**
+  Every round of every review is a model call, billed to your account with that CLI's vendor against whatever plan or credit it carries.
   socrates itself is free; the reviews it runs are not.
 - **Linux or macOS.**
   Two of socrates' guarantees rely on unix mechanisms. See Supported platforms below.
@@ -113,6 +114,41 @@ socrates cancel                   # stop a review and say that nothing was decid
 ```
 
 Naming no run means the most recent run for the repository you are standing in.
+
+## Reviewer CLIs
+
+socrates does not contain a reviewer.
+It drives one of these, and which one is yours to state rather than socrates' to guess from what is installed.
+
+A CLI qualifies on three things socrates cannot repair after the fact.
+The reviewed repository's own instruction files can be kept out of the reviewer's session, because a review by a session the change instructed is defective in its judgement rather than in its format.
+A terminal event says whether the work happened and what the agent said where it did not, because a run that fails silently is one you cannot act on.
+A model is selectable per invocation, because per-role routing exists so the reviewer gets the strongest model available.
+
+| reviewer CLI | how it arrives at a findings document | what keeps the repository out of the session |
+| --- | --- | --- |
+| `claude` | the vendor constrains it against the schema | `--setting-sources user` |
+| `codex` | the vendor constrains it against the schema | `-c project_doc_max_bytes=0` |
+| `opencode` | socrates extracts it from the reviewer's final message | `OPENCODE_DISABLE_PROJECT_CONFIG=1` |
+
+Both ways reach the same check: socrates validates the document against the schema itself, and a document that does not parse or does not satisfy it fails the round either way.
+What the first column buys is reliability rather than correctness.
+Where the vendor constrains the output, the document conforms on the first attempt more often; where socrates extracts it, a reviewer that answers without one fails the round rather than producing a wrong verdict.
+If you have accounts for more than one, prefer a CLI in the first two rows.
+
+These three are not supported, and what each lacks is the first criterion:
+
+| reviewer CLI | what socrates found no way to get from it |
+| --- | --- |
+| `cursor-agent` | a way to keep the reviewed repository's own instructions out of the reviewer's session |
+| `copilot` | a way to keep the reviewed repository's own instructions out of the reviewer's session, and a terminal event saying whether the work happened and what it says about why it did not |
+| `pi` | a way to keep the reviewed repository's own instructions out of the reviewer's session, and a terminal event saying whether the work happened and what it says about why it did not |
+
+No such mechanism was found in their documentation, which is weaker than a finding that none exists.
+Settling each is one recording rather than a redesign, and https://github.com/ktei/socrates/issues/20 is where that is tracked.
+A CLI that clears the bar is a new row here rather than a new design.
+
+Naming a CLI socrates does not drive is refused by name, before a snapshot is taken and before a reviewer is spawned.
 
 ## Supported platforms
 
@@ -214,13 +250,14 @@ No telemetry, no usage counter, no crash report, no update check.
 It opens no network connection at all outside a build tag the ordinary suite does not compile, and a test holds that by reading what `cmd/socrates` and every package it reaches import.
 
 The reviewer CLI it drives is the other half, and it is not silent.
-socrates spawns `claude`, and that CLI sends the change to its vendor, Anthropic, exactly as it does when you run it yourself.
+socrates spawns the CLI you named, and that CLI sends the change to its own vendor, exactly as it does when you run it yourself.
+`claude` sends it to Anthropic, `codex` to OpenAI, `opencode` to whichever provider that CLI is configured against.
 Your diff, the file contents a reviewer reads and the one line of intent you chose to state go there, under the terms your own account carries.
 That is how it works rather than a leak: a review is a model call, and the model is not on your machine.
 If that is unacceptable for a repository, do not point socrates at it.
 
-socrates is not affiliated with, endorsed by or sponsored by Anthropic.
-"Claude" and "Anthropic" are trademarks of Anthropic PBC, named here only to say which CLI socrates drives.
+socrates is not affiliated with, endorsed by or sponsored by any of these vendors.
+"Claude" and "Anthropic" are trademarks of Anthropic PBC, "Codex" and "OpenAI" of OpenAI, and each is named here only to say which CLIs socrates drives.
 
 ## Configuration
 
@@ -229,6 +266,7 @@ socrates never creates it, never reads configuration out of the repository under
 The one file socrates does read out of a repository is the review guide below, and it configures nothing.
 
 ```yaml
+reviewer_cli: claude
 roles:
   reviewer:
     model: opus
@@ -243,12 +281,19 @@ surface:
   reached_at: http://localhost:18018/
 ```
 
+`reviewer_cli` names which of the reviewer CLIs above socrates drives.
+An absent field runs `claude`, which is what socrates shipped with, so an existing configuration keeps working.
+Naming one socrates does not drive is refused.
+
+Each CLI names its models its own way, so a `model` you state under `roles` is passed to the CLI you named and nothing translates it.
+Leave it out to let that CLI choose its own.
+
 The `surface` block is what an operator states about the page a person reads: the loopback address it binds, and the address a person is handed where that is not the one it bound.
 
 ## The review guide
 
 The reviewer arrives knowing nothing about your project, by design.
-It loads no `CLAUDE.md`, no project or local settings and no skills, because all of those are written by the thing under review.
+It loads no `CLAUDE.md`, no `AGENTS.md`, no project or local settings and no skills, because all of those are written by the thing under review.
 
 One file is the exception, and socrates reads it itself rather than letting the CLI load it:
 

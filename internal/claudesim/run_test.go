@@ -10,6 +10,7 @@ import (
 
 	"github.com/ktei/socrates/internal/claudesim"
 	"github.com/ktei/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/simulation"
 )
 
 var validArguments = []string{
@@ -107,7 +108,7 @@ func TestTheStreamMatchesTheWireContract(t *testing.T) {
 
 func TestATestAssertsWhatWasAsked(t *testing.T) {
 	log := filepath.Join(t.TempDir(), "invocations.jsonl")
-	t.Setenv(claudesim.LogVariable, log)
+	t.Setenv(simulation.LogVariable, log)
 	t.Setenv("SOCRATES_RUN", "20260819T041530Z-ee66fe34")
 
 	const prompt = "You are reviewing a change you did not write.\n\nThe diff follows.\n"
@@ -115,7 +116,7 @@ func TestATestAssertsWhatWasAsked(t *testing.T) {
 		t.Fatalf("the simulator exited %d: %s", code, failures)
 	}
 
-	invocations, err := claudesim.ReadLog(log)
+	invocations, err := simulation.ReadLog(log)
 	if err != nil {
 		t.Fatalf("reading the log: %v", err)
 	}

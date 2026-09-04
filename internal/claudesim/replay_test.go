@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ktei/socrates/internal/claudesim"
 	"github.com/ktei/socrates/internal/corpus"
+	"github.com/ktei/socrates/internal/simulation"
 )
 
 const replayed = "dialogue-layer-first-look"
@@ -118,7 +118,7 @@ func scenario(t *testing.T, stated string) {
 	if err := os.WriteFile(path, []byte(stated), 0o644); err != nil {
 		t.Fatalf("writing the scenario: %v", err)
 	}
-	t.Setenv(claudesim.ScenarioVariable, path)
+	t.Setenv(simulation.ScenarioVariable, path)
 }
 
 func difference(recorded, answered []byte) string {

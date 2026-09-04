@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ktei/socrates/internal/agent"
 	"github.com/ktei/socrates/internal/corpus"
 	"github.com/ktei/socrates/internal/findings"
 	"github.com/ktei/socrates/internal/testing/source"
@@ -248,5 +249,31 @@ func writeModule(t *testing.T, directory, module string) {
 
 	if err := os.WriteFile(filepath.Join(directory, "go.mod"), []byte("module "+module+"\n\ngo 1.24\n"), 0o644); err != nil {
 		t.Fatalf("writing go.mod: %v", err)
+	}
+}
+
+func TestALiveReviewsAnswerIsKeptWithTheVendorBesideIt(t *testing.T) {
+	entries, err := corpus.Entries()
+	if err != nil {
+		t.Fatalf("reading the corpus: %v", err)
+	}
+	if len(entries) == 0 {
+		t.Fatal("the corpus holds no recorded answer, so this check reads nothing")
+	}
+
+	for _, entry := range entries {
+		answered := entry.Reviewer
+		if answered == "" {
+			answered = agent.DefaultVendor
+		}
+		if !agent.Supports(answered) {
+			t.Errorf("%s was answered by %s, which socrates does not drive", entry.Name, answered)
+		}
+		if entry.Model == "" {
+			t.Errorf("%s names no model beside the reviewer that answered", entry.Name)
+		}
+		if entry.Round < 1 {
+			t.Errorf("%s names the round %d, and rounds are counted from one", entry.Name, entry.Round)
+		}
 	}
 }

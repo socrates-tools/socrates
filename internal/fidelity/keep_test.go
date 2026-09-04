@@ -12,7 +12,7 @@ import (
 func TestARunThatAnsweredIsRecorded(t *testing.T) {
 	root := t.TempDir()
 
-	path, err := fidelity.Keep(root, "plain-answer", recordedStream, nil)
+	path, err := fidelity.Keep(root, "claude", "plain-answer", recordedStream, nil)
 	if err != nil {
 		t.Fatalf("keeping what the CLI answered: %v", err)
 	}
@@ -29,7 +29,7 @@ func TestARunThatAnsweredIsRecorded(t *testing.T) {
 func TestARunThatDidNotAnswerLeavesTheRecordingsAlone(t *testing.T) {
 	root := t.TempDir()
 
-	recorded, err := fidelity.Keep(root, "plain-answer", recordedStream, nil)
+	recorded, err := fidelity.Keep(root, "claude", "plain-answer", recordedStream, nil)
 	if err != nil {
 		t.Fatalf("recording an answer for a later run to overwrite: %v", err)
 	}
@@ -38,7 +38,7 @@ func TestARunThatDidNotAnswerLeavesTheRecordingsAlone(t *testing.T) {
 		t.Fatalf("reading the recording: %v", err)
 	}
 
-	kept, err := fidelity.Keep(root, "plain-answer", refusedStream, errors.New("claude exited: exit status 1: Not logged in"))
+	kept, err := fidelity.Keep(root, "claude", "plain-answer", refusedStream, errors.New("claude exited: exit status 1: Not logged in"))
 	if err != nil {
 		t.Fatalf("keeping what a run that did not answer wrote: %v", err)
 	}

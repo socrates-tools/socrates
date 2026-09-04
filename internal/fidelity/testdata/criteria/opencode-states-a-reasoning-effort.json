@@ -1,0 +1,12 @@
+{
+  "vendor": "opencode",
+  "version": "1.18.19",
+  "criterion": "states-a-reasoning-effort",
+  "question": "can opencode run state a reasoning effort per invocation, and what does the model variant cover",
+  "observed": {
+    "exit status": "0",
+    "flag": "--variant, documented on run as the provider-specific reasoning effort",
+    "run under --variant high": "completed"
+  },
+  "established": true
+}

@@ -35,7 +35,7 @@ What socrates is:
 - `internal/prompt` - the delivered prompt, assembled from named sections.
 - `internal/testquality` - the test-quality rule, shared by every role that needs it.
 - `internal/platform` - the one place the supported platforms are stated, and the basis on which one qualifies.
-- `internal/agent` - the only package that starts a model process.
+- `internal/agent` - the only package that starts a model process, the reviewer CLIs socrates drives and the basis on which one qualifies, and one file per vendor behind the seam.
 - `internal/reviewer` - beginning, supervising, responding, advancing, cancelling.
 - `internal/report` - what `status` and `findings` print.
 - `internal/presentation` - the one place an event becomes a line a person reads.
@@ -44,7 +44,7 @@ What socrates is:
 - `internal/skill` - the skill a coding session reads, and installing it.
 - `internal/exit`, `internal/version`, `internal/config`, `internal/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file both binaries read, the JSONL log, the one home both binaries write under, refusals, process groups.
 - `internal/corpus` - what real reviewers answered, verbatim and embedded, and what the routing rule does with it.
-- `internal/fidelity` - the recorded shapes of the real CLI, the drift check and the live smoke check, all network behind a build tag.
+- `internal/fidelity` - the recorded shapes of each real CLI, what was measured about each one's criteria, the drift check and the live smoke check, all network behind a build tag.
 
 What agora is:
 
@@ -61,10 +61,11 @@ What holds them both:
 
 - `internal/convention` - the repository's conventions as executable checks.
 - `internal/coverage`, `internal/promotion` - the scenario-coverage and promotion gates.
-- `internal/e2e` - real binaries, a real repository, real git, real processes, the simulator on `PATH`, a real browser.
-- `internal/claudesim` - the simulator's half of the real CLI's wire contract: the arguments it reads, the scenario it replays, the stream it writes, and the log of every invocation.
+- `internal/e2e` - real binaries, a real repository, real git, real processes, each vendor's simulator on `PATH`, a real browser.
+- `internal/simulation` - what every simulator shares: the scenario vocabulary, the invocation log, and the run that turns one into the other.
+- `internal/claudesim`, `internal/codexsim`, `internal/opencodesim` - each simulator's half of its real CLI's wire contract: the arguments it reads, the stream it writes.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
-- `cmd/claudesim`, `cmd/scenario-coverage`, `cmd/scenario-drop`, `cmd/corpus-outcomes`, `cmd/corpus-record`, `cmd/platforms` - the simulator and the gate binaries.
+- `cmd/claudesim`, `cmd/codexsim`, `cmd/opencodesim`, `cmd/scenario-coverage`, `cmd/scenario-drop`, `cmd/corpus-outcomes`, `cmd/corpus-record`, `cmd/platforms` - the simulator and the gate binaries.
 
 ## Verification
 
@@ -111,7 +112,12 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 **The reviewer**
 
 - `internal/agent` is the only package that starts a model process.
-- The reviewer loads user settings only and runs under `--safe-mode`; the session's tool list and named sources are recorded rather than trusted.
+- The reviewer CLIs socrates drives are stated once, each beside the facts that make it qualify, and support follows from those facts rather than from a list.
+- A CLI qualifies on three things: the reviewed repository's own instructions can be kept out of the session, a terminal event says whether the work happened and what it said about a failure, and a model is selectable per invocation.
+- Whether the vendor constrains output against the schema is a tier rather than a criterion, because socrates validates the document either way.
+- A configured CLI socrates does not drive is refused by name, naming the guarantee it does not offer, before a snapshot is taken and before a reviewer is spawned.
+- Nothing above the seam names a vendor, a flag or an event shape, and nothing outside socrates shapes a reviewer's answer into the findings document.
+- Each vendor's invocation asks for none of the machine's own customisations; the session's tool list and named sources are recorded rather than trusted, and a vendor that reports no inventory produces runs that record that.
 - A round after the first inherits no session: the only cross-round context is the labelled prior findings and recorded responses.
 - Model output is neutralised per field on the way into a prompt, and never on the way to disk.
 - A review inside a review is refused.
@@ -234,6 +240,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 
 **The suite**
 
+- Every end-to-end scenario runs against every supported vendor's simulator, and a supported vendor with no simulator or no recordings fails the suite.
 - Tests assert on the delivered prompt, never on socrates' own source text, and the prompt's reporting section is generated from `internal/findings`.
 - A test may not prove behaviour by reading implementation source; one that legitimately reads a Go file is named in `convention.ContractsTestsRead`.
 - Every scenario under way is named by a test, and archiving a change may take none out of the promoted specifications.

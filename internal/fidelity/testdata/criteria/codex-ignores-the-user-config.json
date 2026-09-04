@@ -1,0 +1,12 @@
+{
+  "vendor": "codex",
+  "version": "0.153.2",
+  "criterion": "ignores-the-user-config",
+  "question": "does --ignore-user-config keep the machine's configured model and external tool source out of the session",
+  "observed": {
+    "authentication": "not measured here: codex's own help states auth still uses CODEX_HOME, and settling it needs an account",
+    "control": "the request carried the configured model and the configured tool source",
+    "ignored": "the request carried neither"
+  },
+  "established": true
+}

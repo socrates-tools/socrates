@@ -1,0 +1,37 @@
+[
+  {
+    "type": "item.completed",
+    "fields": [
+      "item",
+      "item.id",
+      "item.text",
+      "item.type",
+      "type"
+    ]
+  },
+  {
+    "type": "thread.started",
+    "fields": [
+      "thread_id",
+      "type"
+    ]
+  },
+  {
+    "type": "turn.completed",
+    "fields": [
+      "type",
+      "usage",
+      "usage.cache_write_input_tokens",
+      "usage.cached_input_tokens",
+      "usage.input_tokens",
+      "usage.output_tokens",
+      "usage.reasoning_output_tokens"
+    ]
+  },
+  {
+    "type": "turn.started",
+    "fields": [
+      "type"
+    ]
+  }
+]

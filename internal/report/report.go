@@ -22,6 +22,8 @@ type Status struct {
 	Run             string         `json:"run"`
 	State           runstate.State `json:"state"`
 	Round           int            `json:"round"`
+	Reviewer        string         `json:"reviewer"`
+	Tier            string         `json:"tier"`
 	Reason          string         `json:"reason,omitempty"`
 	Findings        *Counts        `json:"findings,omitempty"`
 	Unanswered      *int           `json:"unanswered,omitempty"`
@@ -56,7 +58,7 @@ func StatusOf(store runstore.Store, name string) (Status, error) {
 	}
 
 	run := read.run
-	status := Status{Run: run.Name, State: run.State, Round: read.round, Reason: reasonOf(run)}
+	status := Status{Run: run.Name, State: run.State, Round: read.round, Reviewer: run.Vendor(), Tier: run.Tier(), Reason: reasonOf(run)}
 	if read.reviewed {
 		classified := findings.Classify(read.document)
 		status.Findings = &Counts{
@@ -162,6 +164,7 @@ func (s Status) Lines() []string {
 		fmt.Sprintf(runLine, s.Run),
 		fmt.Sprintf(stateLine, s.State),
 		fmt.Sprintf(roundLine, s.Round),
+		fmt.Sprintf(reviewerLine, s.Reviewer, s.Tier),
 	}
 	if s.Reason != "" {
 		lines = append(lines, fmt.Sprintf(verdictLine, s.Reason))

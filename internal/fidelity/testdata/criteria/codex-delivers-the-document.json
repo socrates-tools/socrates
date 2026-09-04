@@ -1,0 +1,15 @@
+{
+  "vendor": "codex",
+  "version": "0.153.2",
+  "criterion": "delivers-the-document",
+  "question": "where does a constrained answer arrive in codex's event stream",
+  "observed": {
+    "exit status": "0",
+    "model in the stream": "the stream names no model, so a run records the model socrates asked for",
+    "structured field": "the stream carries no structured output field of any kind",
+    "terminal event": "turn.completed",
+    "usage": "{\"input_tokens\":1200,\"cached_input_tokens\":800,\"cache_write_input_tokens\":0,\"output_tokens\":42,\"reasoning_output_tokens\":8}",
+    "where the answer is": "{\"findings\":[],\"risk_level\":\"low\",\"risk_rationale\":\"nothing here\"}"
+  },
+  "established": true
+}

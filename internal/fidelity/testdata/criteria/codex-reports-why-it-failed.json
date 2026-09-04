@@ -1,0 +1,12 @@
+{
+  "vendor": "codex",
+  "version": "0.153.2",
+  "criterion": "reports-why-it-failed",
+  "question": "which event and which field carry the account of a failed turn, and does the exit status say anything",
+  "observed": {
+    "account": "Missing environment variable: `NOTHING_IS_SET_HERE`.",
+    "exit status": "exit status 1",
+    "terminal event": "turn.failed"
+  },
+  "established": true
+}

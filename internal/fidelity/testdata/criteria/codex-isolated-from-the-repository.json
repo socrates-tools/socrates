@@ -1,0 +1,11 @@
+{
+  "vendor": "codex",
+  "version": "0.153.2",
+  "criterion": "isolated-from-the-repository",
+  "question": "does -c project_doc_max_bytes=0 keep the repository's AGENTS.md out of the request codex sends",
+  "observed": {
+    "control": "the request carried the repository's token",
+    "suppressed": "the request did not carry it"
+  },
+  "established": true
+}

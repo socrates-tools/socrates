@@ -20,7 +20,12 @@ var ShortName = string([]rune{'s', 'c', 'r', 'a', 't'})
 
 var packagesWithoutAMessageRegistry = []string{
 	filepath.Join("cmd", "claudesim"),
+	filepath.Join("cmd", "codexsim"),
+	filepath.Join("cmd", "opencodesim"),
 	filepath.Join("internal", "claudesim"),
+	filepath.Join("internal", "codexsim"),
+	filepath.Join("internal", "opencodesim"),
+	filepath.Join("internal", "simulation"),
 	filepath.Join("internal", "convention"),
 	filepath.Join("internal", "prompt"),
 	filepath.Join("internal", "testing"),

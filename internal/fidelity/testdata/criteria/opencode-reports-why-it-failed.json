@@ -1,0 +1,14 @@
+{
+  "vendor": "opencode",
+  "version": "1.18.19",
+  "criterion": "reports-why-it-failed",
+  "question": "which event and which field carry the account of a failure, and does step_finish arrive, against anomalyco/opencode#26855 and #31435",
+  "observed": {
+    "account": "UnknownError: Unexpected server error. Check server logs for details.",
+    "completed status": "0",
+    "completing run": "step_finish arrived",
+    "failing run": "error, and no step_finish arrived",
+    "failing status": "exit status 1"
+  },
+  "established": true
+}

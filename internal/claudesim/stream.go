@@ -7,6 +7,9 @@ import (
 	"io"
 	"strings"
 	"time"
+
+	"github.com/ktei/socrates/internal/findings"
+	"github.com/ktei/socrates/internal/simulation"
 )
 
 type usage struct {
@@ -53,19 +56,21 @@ type event struct {
 	TotalCostUSD     float64         `json:"total_cost_usd,omitempty"`
 }
 
-func writeStream(out io.Writer, response Response, invocation Invocation) error {
+func writeStream(out io.Writer, response simulation.Response, invocation simulation.Invocation) error {
+	inTheFinalMessage := strings.Contains(invocation.Prompt, findings.DeliveryInstruction())
+
 	tools := strings.Split(invocation.Tools, ",")
 	if len(invocation.Schema) > 0 {
 		tools = append(tools, "StructuredOutput")
 	}
 	tools = append(tools, response.ExtraTools...)
-	if response.Behaviour == OmitToolList {
+	if response.Behaviour == simulation.OmitToolList {
 		tools = nil
 	}
 
 	var sources []toolSource
 	for _, named := range response.ToolSources {
-		sources = append(sources, toolSource{Name: named, Status: connectedSource})
+		sources = append(sources, toolSource{Name: named, Status: simulation.ConnectedSource})
 	}
 
 	if err := writeEvent(out, event{
@@ -86,8 +91,8 @@ func writeStream(out io.Writer, response Response, invocation Invocation) error 
 	}
 
 	for turn := range response.Events {
-		if turn > 0 && response.interval() > 0 {
-			time.Sleep(response.interval())
+		if turn > 0 && response.EveryInterval() > 0 {
+			time.Sleep(response.EveryInterval())
 		}
 		if err := writeEvent(out, event{
 			Type:      "assistant",
@@ -97,7 +102,7 @@ func writeStream(out io.Writer, response Response, invocation Invocation) error 
 				Type:    "message",
 				Role:    "assistant",
 				Model:   response.Model,
-				Content: []content{{Type: "text", Text: response.Text}},
+				Content: []content{{Type: "text", Text: response.Spoken(turn+1 == response.Events, inTheFinalMessage)}},
 				Usage:   spent,
 			},
 		}); err != nil {
@@ -105,28 +110,28 @@ func writeStream(out io.Writer, response Response, invocation Invocation) error 
 		}
 	}
 
-	if response.Behaviour == OmitResult {
+	if response.Behaviour == simulation.OmitResult {
 		return nil
 	}
 
-	if response.Behaviour == TruncateStream {
+	if response.Behaviour == simulation.TruncateStream {
 		_, err := io.WriteString(out, `{"type":"result","subtype":"success","session_id":"`+response.SessionID+`","structured_ou`)
 		return err
 	}
 
-	failed := response.reportsAnError()
+	failed := response.ReportsAnError()
 	result := event{
 		Type:         "result",
 		Subtype:      "success",
 		SessionID:    response.SessionID,
 		IsError:      &failed,
-		Result:       response.Text,
+		Result:       response.Spoken(true, inTheFinalMessage),
 		Usage:        &spent,
 		DurationMs:   1234,
 		NumTurns:     response.Events,
 		TotalCostUSD: 0.01,
 	}
-	if response.Structured != "" && invocation.Schema != "" {
+	if response.Structured != "" && invocation.Schema != "" && !inTheFinalMessage {
 		result.StructuredOutput = json.RawMessage(response.Structured)
 	}
 	return writeEvent(out, result)

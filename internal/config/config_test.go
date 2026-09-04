@@ -207,3 +207,33 @@ func TestTheConfigurationIsResolvedByTheOneRuleThePackageDoesNotOwn(t *testing.T
 		t.Errorf("socrates reads its configuration from %s, and its home is %s, so the package resolves a directory of its own", directory, home)
 	}
 }
+
+func TestAnAbsentFieldRunsTheCLISocratesShippedWith(t *testing.T) {
+	absent, err := config.LoadFrom(filepath.Join(t.TempDir(), "socrates", "config.yaml"))
+	if err != nil {
+		t.Fatalf("loading an absent configuration file: %v", err)
+	}
+	if absent.Vendor() != agent.DefaultVendor {
+		t.Errorf("an absent configuration file resolves to %q, want %q", absent.Vendor(), agent.DefaultVendor)
+	}
+
+	stated, err := config.LoadFrom(write(t, "diff_ceiling: 1000\n"))
+	if err != nil {
+		t.Fatalf("loading a configuration file naming no reviewer CLI: %v", err)
+	}
+	if stated.Vendor() != agent.DefaultVendor {
+		t.Errorf("a configuration file naming no reviewer CLI resolves to %q, want %q", stated.Vendor(), agent.DefaultVendor)
+	}
+}
+
+func TestAReviewerCLIIsCarriedInOneField(t *testing.T) {
+	for _, one := range agent.Supported() {
+		loaded, err := config.LoadFrom(write(t, "reviewer_cli: "+one.Name+"\n"))
+		if err != nil {
+			t.Fatalf("loading a configuration file naming %s: %v", one.Name, err)
+		}
+		if loaded.Vendor() != one.Name {
+			t.Errorf("a configuration file naming %s resolves to %q", one.Name, loaded.Vendor())
+		}
+	}
+}

@@ -33,6 +33,97 @@ Every end-to-end scenario runs through it.
 - Choosing the vendor from what is on `PATH`. Which reviewer reads a person's change is theirs to state.
 - Identical run records across vendors. A vendor that cannot report a tool inventory produces runs that say so.
 
+## What was measured
+
+Group 1 ran against `codex-cli 0.153.2` and `opencode 1.18.19` on 2026-09-04.
+Both cleared all three criteria, so both ship in this change and neither moves to the deferred issue.
+
+The recordings are in `internal/fidelity/criteria_test.go` behind the `record` build tag, and what each observed is committed under `internal/fidelity/testdata/criteria`.
+Each states the question it asked, what it saw, and whether that establishes the criterion, so a reader can tell a measurement from a belief.
+
+Where a criterion is about what reaches the session rather than about what the model answered, it was measured on the wire.
+`codex` was pointed at a local capturing provider through `model_providers`, and the request body it sent was read.
+That is a stronger observation than reading the reply, because a reply that omits an instruction does not establish that the instruction was absent from the input.
+
+**codex keeps the repository's instructions out of the session.**
+A temporary repository carried an `AGENTS.md` demanding a distinctive token at the start of every reply.
+Without the override the token was in the request body codex sent.
+With `-c project_doc_max_bytes=0` it was absent, and the rest of the request was otherwise the same.
+The inference in openai/codex#5983 is settled for this version: zero disables the project document.
+
+**opencode keeps the repository's instructions out of the session.**
+The same repository under the same prompt.
+The token was in two of three control replies and in none of three under `OPENCODE_DISABLE_PROJECT_CONFIG=1`.
+The variable is documented as skipping project discovery rather than the global file, and what was measured is the half socrates depends on.
+
+Where the observation is a model's reply rather than a request body it is sampled rather than taken once, because a model that was given an instruction does not always follow it.
+A control that never read the repository establishes nothing, and the recording fails rather than reporting the criterion as met.
+
+**opencode reads the directory it is given rather than the one it runs in.**
+This was not on the list, and it is the reason the first opencode recording failed.
+An invocation whose child process has its working directory set to the repository, and which states no directory, read no repository instructions at all: nought of three.
+The same invocation under `--dir` read them.
+
+That matters more than a test detail.
+socrates sets the child's working directory to the sealed snapshot worktree and nothing else.
+Under opencode that would have left the reviewer resolving the project from the `PWD` it inherited, which is the repository under review, so the reviewer would have read the live working tree rather than the frozen copy of it.
+The opencode invocation therefore states `--dir` explicitly, and the end-to-end test that a repository's own instructions do not reach the reviewer is what holds it.
+
+**codex reports why it failed, and its exit status does not.**
+A turn that could not authenticate ended with `{"type":"turn.failed","error":{"message":...}}`, preceded by `{"type":"error","message":...}` events carrying each attempt.
+The process exited 0.
+So the terminal event is the account and the exit status is not, and the parser reads the stream rather than the status.
+
+codex also substitutes its own message for some upstream failures.
+A 500 from the capturing provider was reported as "We're currently experiencing high demand, which may cause temporary errors."
+socrates quotes what the agent said and never matches on it, so this changes nothing socrates decides.
+
+**opencode reports why it failed on `error` rather than on `step_finish`.**
+A run naming a model that does not exist emitted `{"type":"error","error":{"name":...,"data":{"message":...}}}`, emitted no `step_finish` at all, and exited 1.
+`step_finish` arrived on every successful run measured, carrying `reason`, `tokens` and `cost`.
+anomalyco/opencode#26855 and #31435 did not reproduce here.
+The design below is corrected: the account of a failure is on the `error` event, and the absence of the terminal event is itself the signal.
+
+**codex has no structured output field, and a constrained answer is the whole final message.**
+A successful turn was measured by answering codex from a local provider that speaks the Responses API, so the shapes come from the real binary rather than from documentation.
+It writes `thread.started`, `turn.started`, `item.completed` and `turn.completed`, and under `--output-schema` the constrained JSON arrives as the `agent_message` item's `text`, whole and unfenced.
+Nothing in the stream is a structured output field, and `--output-last-message` writes that same text to a file.
+
+So the enforced tier means something slightly different under codex from under claude, and the specification's wording holds for both.
+Under claude the document is a field beside the message.
+Under codex the document is the message.
+Either way socrates takes what the vendor constrained and never goes looking inside prose for a block, which is the property the tier exists for.
+
+`turn.completed` carries `input_tokens`, `cached_input_tokens`, `cache_write_input_tokens`, `output_tokens` and `reasoning_output_tokens`.
+The stream names no model at all, so a codex run records the model socrates asked for rather than one the vendor reported.
+
+An `error` item inside `item.completed` is informational: a turn that carried one about missing model metadata still completed.
+The terminal event decides, and `error` items and `error` events on the way do not.
+
+Neither is the exit status the decision.
+A turn that failed on a missing environment variable exited 1, and a turn that failed after exhausting retries against a 401 exited 0.
+
+**codex sends the schema, with tools active.**
+`--output-schema <file>` reached the request as `text.format` with `type: json_schema`, `strict: true`, the name `codex_output_schema`, and the supplied schema verbatim, while the tool list in the same request was non-empty.
+openai/codex#15451 does not reproduce at the request level in this version.
+Whether the model's answer conforms was not measured, because that needs an account.
+socrates validates the document either way, so an answer that does not conform fails the call.
+
+**`--ignore-user-config` keeps the machine's customisations out of the session.**
+A `CODEX_HOME` holding a config that named a model and an MCP server was used twice.
+Without the flag the request carried that model and the MCP tool family the server contributes.
+With the flag it carried the built-in default model and neither.
+The binary's own help states that auth still uses `CODEX_HOME`.
+That half was not measured, because it needs an account.
+
+**opencode can state a reasoning effort.**
+`opencode run --variant <effort>` is documented as the provider-specific reasoning effort, and a run under `--variant high` completed.
+The fallback of resolving a model and passing no effort is therefore not needed for opencode, though the routing still permits it.
+
+**Two halves need an account and were not measured.**
+Whether codex authenticates under `--ignore-user-config`, and whether a real model's answer conforms to the schema codex sends.
+Both are covered by the live smoke check rather than left to inference.
+
 ## Decisions
 
 ### Isolation is the criterion, and the schema is a tier
@@ -115,31 +206,24 @@ It would be a model on the parsed tier producing unconstrained output, so it nee
 The schema is a file rather than a string, and it goes in the round's directory under socrates' home.
 The reviewer's working directory is the sealed snapshot worktree, so writing it there is refused by the filesystem and would be wrong regardless: nothing writes in the repository under review.
 
-Two of those flags are inferences, and group 1 of `tasks.md` settles both by recording.
-`project_doc_max_bytes` is the documented cap on how much of `AGENTS.md` is read, and zero disabling it is an inference; openai/codex#5983 is an open request for a dedicated flag.
-`--ignore-user-config` is documented as skipping the config file, and whether authentication survives it depends on where codex keeps credentials.
-
-openai/codex#15451 reports `--output-schema` being silently ignored while tools are active.
-socrates would meet that as a schema violation and fail the call, which is correct behaviour and a useless review.
-Recorded before the adapter is trusted.
+Every one of those flags was measured against the request codex sends.
+`project_doc_max_bytes=0` removes the repository's document, `--ignore-user-config` removes the machine's model and its configured tool sources, and `--output-schema` arrives as a strict `json_schema` format with tools active.
+`-m` and `-c model_reasoning_effort` arrive as `model` and `reasoning.effort`.
 
 ### The opencode invocation
 
-`opencode run` with `--format json`, `--model <provider/model>`, and `OPENCODE_DISABLE_PROJECT_CONFIG=1` in the environment.
+`opencode run` with `--format json`, `--dir <the snapshot worktree>`, `--model <provider/model>`, `--variant <effort>`, and `OPENCODE_DISABLE_PROJECT_CONFIG=1` in the environment.
+
+`--dir` is stated because opencode does not take the repository from the process's working directory, and socrates has nowhere else to say which copy of the change is under review.
 
 It is on the parsed tier, so the prompt carries the delivery instruction and socrates extracts from the final message.
 
-Three things are recorded before the adapter is trusted.
+A completed run ends with `step_finish`, carrying the stop reason and the token counts.
+A failed run emits no `step_finish` and reports the account on the `error` event, at `error.data.message` beside `error.name`.
+So the parser reads the terminal event where there is one, and treats its absence beside an `error` event as the failure.
 
-`OPENCODE_DISABLE_PROJECT_CONFIG=1` is documented as skipping project `AGENTS.md` discovery and not the global file, so the recording establishes what a repository's own instructions do under it.
-This is the criterion, so a negative answer takes opencode out of the supported set.
-
-The terminal `step_finish` event is reported as dropped in containerised environments, in anomalyco/opencode#26855 and #31435.
-That event is where the account of a failure lives, so a vendor that drops it does not clear `ReportsWhyItFailed`.
-The recording establishes whether it arrives under socrates' invocation.
-
-Reasoning effort per role has no documented flag on `run`, so the recording establishes whether the model variant covers it.
-If it does not, opencode resolves a model and no effort, which the routing already permits, since an empty effort is not passed.
+`--variant` is the reasoning effort, so a role resolves to a model and an effort as it does under the other vendors.
+The routing still passes no effort where one is empty.
 
 ### The tool surface
 
@@ -161,7 +245,11 @@ claude's `result` event carries `is_error`, `subtype` and `result`.
 The specification is detailed about preferring the account to the error stream, about not reporting the subtype where an account exists, and about saying the agent said nothing rather than quoting an empty string.
 
 Those rules are about failures rather than about claude, so they move to the seam.
-What stays per-vendor is which event and which fields carry the account: codex reports `turn.failed` and `error`, opencode reports it on `step_finish`.
+What stays per-vendor is which event and which fields carry the account: codex reports `turn.failed` at `error.message` and `error` at `message`, opencode reports `error` at `error.data.message`.
+
+Neither vendor's exit status is the account.
+codex exits 0 on a turn it reported as failed, so a parser reading the status alone would call that round clean.
+The stream is read in both, and the status is one more thing that can say a round did not finish.
 
 ### One simulator per vendor
 
@@ -190,13 +278,14 @@ The corpus exists so that the scenarios stop resting on their author's beliefs a
 A reviewer that answers without the block produces a failed round rather than a wrong verdict, which is the correct direction.
 How often is measured by the live smoke check rather than assumed, and the number is recorded.
 
-**codex or opencode may not clear the isolation criterion.**
-`project_doc_max_bytes=0` and `OPENCODE_DISABLE_PROJECT_CONFIG=1` are both established by recording in group 1, before the work is spent.
-A negative answer takes that vendor out of the supported set and into the deferred issue.
+**What was measured was measured on one version each, on one day.**
+`codex-cli 0.153.2` and `opencode 1.18.19`, on 2026-09-04.
+Both are moving fast, and a release that reinstates the repository's own instructions would take a supported vendor below the criterion silently.
+The recordings and the drift check are what notice, and neither runs in continuous integration.
 
-**opencode may drop the event carrying the account of a failure.**
-anomalyco/opencode#26855 and #31435.
-That is the `ReportsWhyItFailed` criterion, and a negative recording takes opencode out of the supported set.
+**Two halves rest on the vendor's own documentation rather than on a measurement.**
+Whether codex authenticates under `--ignore-user-config`, which its help asserts, and whether a real model's answer conforms to the schema codex sends.
+The live smoke check reaches both, and nobody has an account to run it here.
 
 **Three live smoke checks need three accounts.**
 None runs in continuous integration and none compiles without the build tag, so the cost falls on whoever runs `make live-smoke`.

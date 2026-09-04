@@ -340,3 +340,36 @@ func TestSectionsRoundTripThroughTheDeliveredPrompt(t *testing.T) {
 			cmp.Diff(delivered, rebuilt.String()))
 	}
 }
+
+func TestTheParsedTierIsToldHowToDeliverTheDocument(t *testing.T) {
+	asked := smallChange()
+	asked.DocumentEndsTheMessage = true
+
+	extracting := Build(asked)
+	constrained := Build(smallChange())
+
+	instruction := findings.DeliveryInstruction()
+	if !strings.Contains(extracting.Text, instruction) {
+		t.Errorf("the delivered prompt for a reviewer whose document is extracted does not say how to deliver it:\n%s", extracting.Text)
+	}
+	if strings.Contains(constrained.Text, instruction) {
+		t.Error("the delivered prompt for a reviewer whose vendor constrains the schema asks it to end its message with the document as well")
+	}
+
+	reporting, found := bodyOf(Sections(extracting.Text), ReportingHeading)
+	if !found {
+		t.Fatalf("the delivered prompt carries no %q section", ReportingHeading)
+	}
+	if !strings.Contains(reporting, instruction) {
+		t.Errorf("the delivery instruction is not in the section that says what to report:\n%s", reporting)
+	}
+}
+
+func bodyOf(sections []Section, heading string) (string, bool) {
+	for _, part := range sections {
+		if part.Heading == heading {
+			return part.Body, true
+		}
+	}
+	return "", false
+}

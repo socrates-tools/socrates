@@ -1,4 +1,4 @@
-package claudesim
+package simulation
 
 import (
 	"bufio"
@@ -10,12 +10,12 @@ import (
 )
 
 const (
-	ScenarioVariable  = "CLAUDESIM_SCENARIO"
-	LogVariable       = "CLAUDESIM_LOG"
-	RecordEnvVariable = "CLAUDESIM_RECORD_ENV"
+	ScenarioVariable  = "SOCRATES_SIM_SCENARIO"
+	LogVariable       = "SOCRATES_SIM_LOG"
+	RecordEnvVariable = "SOCRATES_SIM_RECORD_ENV"
 )
 
-var recordedPrefixes = []string{"SOCRATES_", "CLAUDESIM_", "CLAUDE_"}
+var recordedPrefixes = []string{"SOCRATES_", "CLAUDE_", "CODEX_", "OPENCODE_"}
 
 type Invocation struct {
 	Arguments      []string          `json:"arguments"`
@@ -102,7 +102,7 @@ func ReadLog(path string) ([]Invocation, error) {
 	return invocations, nil
 }
 
-func recordedEnvironment(environment []string) map[string]string {
+func RecordedEnvironment(environment []string) map[string]string {
 	named := map[string]bool{}
 	for _, name := range strings.Split(os.Getenv(RecordEnvVariable), ",") {
 		if trimmed := strings.TrimSpace(name); trimmed != "" {

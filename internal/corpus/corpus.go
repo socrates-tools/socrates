@@ -31,6 +31,7 @@ var recorded embed.FS
 
 type Entry struct {
 	Name       string `json:"-"`
+	Reviewer   string `json:"reviewer"`
 	Model      string `json:"model"`
 	Effort     string `json:"effort"`
 	Round      int    `json:"round"`

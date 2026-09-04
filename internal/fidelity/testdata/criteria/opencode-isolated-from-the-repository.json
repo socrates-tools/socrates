@@ -1,0 +1,11 @@
+{
+  "vendor": "opencode",
+  "version": "1.18.19",
+  "criterion": "isolated-from-the-repository",
+  "question": "does OPENCODE_DISABLE_PROJECT_CONFIG=1 keep the repository's AGENTS.md out of the session",
+  "observed": {
+    "control": "the repository's token was in 2 of 3 replies",
+    "suppressed": "the repository's token was in 0 of 3 replies"
+  },
+  "established": true
+}

@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/ktei/socrates/internal/agent"
-	"github.com/ktei/socrates/internal/claudesim"
 	"github.com/ktei/socrates/internal/process"
 	"github.com/ktei/socrates/internal/runstate"
+	"github.com/ktei/socrates/internal/simulation"
 	"github.com/ktei/socrates/internal/testing/harness"
 )
 
@@ -106,7 +106,7 @@ func TestAToolThatWritesCannotReachTheChangeUnderReview(t *testing.T) {
 	}
 }
 
-func waitForTheReviewerToAnswer(t *testing.T, session *harness.Session) claudesim.Invocation {
+func waitForTheReviewerToAnswer(t *testing.T, session *harness.Session) simulation.Invocation {
 	t.Helper()
 
 	deadline := time.Now().Add(20 * time.Second)
@@ -119,7 +119,7 @@ func waitForTheReviewerToAnswer(t *testing.T, session *harness.Session) claudesi
 	}
 
 	t.Fatalf("the reviewer was invoked %d times and never started answering", len(session.Simulator.Invocations()))
-	return claudesim.Invocation{}
+	return simulation.Invocation{}
 }
 
 func TestAReviewThatReallyFailedStillReadsAsOne(t *testing.T) {

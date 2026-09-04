@@ -20,4 +20,17 @@ const (
 	schemaNotSatisfied          = "the structured output does not satisfy the schema: %w"
 	theDeadlinePassed           = "the review was given a deadline and it passed"
 	silenceUntilTheDeadline     = "%s answered nothing within %s, so its process group was killed"
+
+	isolationFromTheRepository = "a way to keep the reviewed repository's own instructions out of the reviewer's session"
+	anAccountOfWhyItFailed     = "a terminal event saying whether the work happened and what it says about why it did not"
+	aModelPerRole              = "a model selectable per invocation"
+
+	notASupportedReviewerCLI = "%q is not a reviewer CLI socrates drives, and socrates drives %s"
+	noImplementation         = "%q is stated as supported and socrates carries no implementation of it"
+	noDocumentInTheAnswer    = "%s answered and its answer carries no findings document: %w"
+	writingTheSchema         = "writing the schema the reviewer is held to: %w"
+
+	beside  = "; "
+	and     = ", and "
+	between = ", "
 )

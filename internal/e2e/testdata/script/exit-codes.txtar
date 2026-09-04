@@ -19,7 +19,7 @@ exec sh -c 'socrates findings; echo exit=$?'
 stdout 'exit=0'
 
 # A review that finds something blocking exits one.
-env CLAUDESIM_SCENARIO=$WORK/escalating.yaml
+env SOCRATES_SIM_SCENARIO=$WORK/escalating.yaml
 exec sleep 1
 cp $WORK/other.go other.go
 exec sh -c 'socrates review --wait; echo exit=$?'
@@ -32,7 +32,7 @@ stdout 'exit=1'
 stdout 'other.go:1'
 
 # A review that never completed exits two, and says so rather than reporting findings.
-env CLAUDESIM_SCENARIO=$WORK/broken.yaml
+env SOCRATES_SIM_SCENARIO=$WORK/broken.yaml
 exec sleep 1
 cp $WORK/third.go third.go
 exec sh -c 'socrates review --wait; echo exit=$?'
