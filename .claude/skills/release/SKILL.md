@@ -86,17 +86,39 @@ The run has two jobs, and they mean different things when they fail.
 
 - **`verification` failed.**
   Nothing was published, and the tag names a commit that does not pass.
-  Fix it on `main`, delete the tag locally and on the remote, and tag again at the new commit.
-
-  ```sh
-  git tag -d vX.Y.Z && git push origin :refs/tags/vX.Y.Z
-  ```
+  Fix it on `main`, retire the tag, and tag again at the new commit.
 
 - **`publication` failed.**
-  Look at whether a GitHub release was created before it failed.
-  If one was, the version is spent: do not re-tag it and do not edit the release by hand.
-  Fix the cause and cut the next patch version.
-  If nothing was published, deleting and re-tagging is safe.
+  Fix the cause, and whether the version can be reused depends on what was published before it failed.
+
+Either way, ask before touching the tag.
+
+## Retiring a tag
+
+A tag is retired in two steps, and the first one decides whether the second is allowed at all.
+
+1. Establish that the version is unspent.
+
+   ```sh
+   gh release view vX.Y.Z --repo ktei/socrates --json tagName,isDraft,assets
+   ```
+
+   A tag with a published release is spent.
+   Do not delete it, do not re-tag it, and do not edit the release by hand: somebody may already have installed it, and a tag that moves makes their checksum a lie.
+   Cut the next patch version instead.
+   Only a command that fails with a release not found is a version that can be tagged again.
+
+2. Ask the person, then delete.
+
+   Deleting a remote tag is not yours to decide.
+   Say which tag, say what step 1 found, and wait for them to say so.
+
+   ```sh
+   git tag -d vX.Y.Z && git push origin :refs/tags/vX.Y.Z
+   ```
+
+   Never widen this to a pattern, a glob or a loop over tags.
+   One named tag per invocation, and a tag you were not asked about is a tag you leave alone.
 
 ## Confirm what shipped
 
@@ -113,7 +135,7 @@ socrates version
 ```
 
 It should read `socrates vX.Y.Z, built from <commit>`.
-A line saying it is a development build means the archive was built off a tag, which is a release to throw away rather than one to explain.
+A line saying it is a development build means the archive was not built at the tag, which is a release to throw away rather than one to explain.
 
 Finally, update `## [Unreleased]` links if anything about the compare range changed, and tell the person what the release means rather than that the workflow went green.
 
@@ -127,3 +149,5 @@ Finally, update `## [Unreleased]` links if anything about the compare range chan
   A past release is what somebody already installed.
 - It does not publish, sign, or attach anything by hand.
   If a release needs something the workflow does not produce, that is a change to `.goreleaser.yaml` or `.github/workflows/release.yml`, and it starts as a proposal in `openspec/`.
+- It does not delete a tag, a release or an asset on its own say-so.
+  Every one of those is somebody else's checkout, so it is the person's call and not this skill's.
