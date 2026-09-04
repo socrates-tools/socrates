@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	loopHeading = "## The loop"
+	loopHeading = "## Procedure"
 	inlineCode  = "`"
 )
 
@@ -262,6 +262,17 @@ func TestTheLoopCloses(t *testing.T) {
 	for _, named := range []string{"socrates findings", "socrates respond", "socrates continue", "socrates status"} {
 		if !strings.Contains(said, named) {
 			t.Errorf("the section about a parked run does not name %s, so the loop does not close:\n%s", named, said)
+		}
+	}
+}
+
+func TestTheResponseRulesWriteTheirInvocationsAsCode(t *testing.T) {
+	for _, rule := range dialogue.Rules() {
+		spans := strings.Split(rule, inlineCode)
+		for position := 0; position < len(spans); position += 2 {
+			if strings.Contains(spans[position], skill.Name+" respond") {
+				t.Errorf("a response rule names an invocation outside code, and the skill writes every invocation it names as code:\n%s", rule)
+			}
 		}
 	}
 }

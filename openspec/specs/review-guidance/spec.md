@@ -55,12 +55,14 @@ It SHALL NOT read it from the working tree, from the snapshot commit, or from th
 The guidance that reviews a change is therefore the guidance as it stood before the change.
 A guide the change under review adds, edits or deletes governs the next run rather than this one.
 Without this the session that wrote the code also writes the rules the code is judged by, in the same change, and the independence the whole design pays for is spent in one file.
-The base commit is the anchor `no-mistakes` gets from a trusted default branch, and socrates has it already: it is the state the change is measured against, and by construction no part of the change authored it.
+The base commit is the anchor `no-mistakes` gets from a trusted default branch, and socrates has it already.
+It is the state the change is measured against, and by construction no part of the change authored it.
 
 Every round of a run SHALL read the same base, which is the run's original base.
 
 The ceiling a run is held to SHALL be resolved when the run begins, recorded on the run, and read from there by every later round, rather than loaded again from configuration each round.
-A fixed base alone does not hold the guidance still: a ceiling read afresh would let a person raise it while a run is parked and hand the next round guidance the first round was never given, while the run's own record still said the guide was over the ceiling.
+A fixed base alone does not hold the guidance still.
+A ceiling read afresh would let a person raise it while a run is parked and hand the next round guidance the first round was never given, while the run's own record still said the guide was over the ceiling.
 Both the text and the bound on it therefore come from the run.
 
 The guidance is fixed for the whole of a run and cannot change between the rounds of a dialogue.
@@ -116,14 +118,16 @@ What socrates does with it is carry it, bounded and neutralised, into one sectio
 
 The guidance SHALL be neutralised on the way into the prompt, on the mechanism socrates already applies to model output, and SHALL NOT be given a second mechanism of its own.
 
-It is text from outside socrates entering a prompt, which is the same class of input as a finding socrates re-embeds, and the reason is the same one: without it the text can present itself as socrates' own instruction.
+It is text from outside socrates entering a prompt, the same class of input as a finding socrates re-embeds.
+The reason is the same: without it the text can present itself as socrates' own instruction.
 Neutralisation SHALL leave a guide unable to open a section of the delivered prompt, because a section is how the reviewer tells socrates' instructions apart from everything socrates is quoting.
 
 The file on disk SHALL NOT be rewritten, because socrates never writes in the repository under review.
 
 What is recorded about the guidance and what is delivered SHALL be decided from the same text, and that text SHALL be the neutralised one.
 Neutralising can reduce a guide that is not empty to one that is, because a line of conflict markers becomes spaces and a bare heading marker becomes nothing.
-Two emptiness tests, one on what was read and one on what is delivered, therefore let a run record that a project's guidance was carried to a reviewer that was given none of it, which is the same shape as a review that returned nothing because it errored.
+Two emptiness tests, one on what was read and one on what is delivered, therefore let a run record that a project's guidance was carried to a reviewer given none of it.
+That is the same shape as a review that returned nothing because it errored.
 
 #### Scenario: A guide that neutralises to nothing is no guidance
 
@@ -148,7 +152,8 @@ A guide over the ceiling SHALL NOT be carried, and SHALL NOT be shortened, summa
 Half a maintainer's rules delivered silently is a reviewer told rules that do not exist as stated, so the guide is carried whole or not at all.
 
 The review SHALL proceed with no guidance rather than being refused.
-Refusing would stop every review in that repository until somebody committed a smaller guide unreviewed, including the review of the change that shrinks it, and one person's oversized guide would hold up everybody else's work in progress.
+Refusing would stop every review in that repository until somebody committed a smaller guide unreviewed, including the review of the change that shrinks it.
+One person's oversized guide would then hold up everybody else's work in progress.
 The ceiling exists to bound what the reviewer's attention is spent on, not to stop reviews.
 
 The run SHALL record that the guide was over the ceiling, distinctly from there being no guide, and the person SHALL be told its size, the ceiling, and that the next review carries it once it is smaller.

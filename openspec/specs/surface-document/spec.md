@@ -16,7 +16,8 @@ The frame is the same every time, so the surface owns it.
 The frame is not negotiable and the illustration is not part of it.
 The surface owns the page, its palette, its layout, its evidence rendering and every control a person operates, and a caller cannot reach any of them.
 What a caller may paint is the inside of one box per decision, which shows the person something rather than asking them anything.
-This is a narrowing of the sentence above and is written down as one: a caller may now paint, and what stops that becoming a caller writing a page is that the box is bounded, its stylesheet is reduced, and every selector in it is scoped by the surface rather than by the caller.
+This is a narrowing of the sentence above and is written down as one.
+A caller may now paint. What stops that becoming a caller writing a page is that the box is bounded, its stylesheet is reduced, and every selector in it is scoped by the surface rather than by the caller.
 
 #### Scenario: A document renders without the caller writing markup
 
@@ -41,7 +42,8 @@ A source entry MAY carry a name, and the surface SHALL show a decision under the
 A decision whose source names none SHALL be shown under its identifier.
 
 A page that renamed an identifier to something more readable hands the person back the search problem the page existed to remove.
-Making the copy mechanical is what stops it being a matter of the caller's care, and a name is copied through the same door for the same reason: a caller free to title a decision is a caller free to make it unfindable.
+Making the copy mechanical is what stops it being a matter of the caller's care.
+A name is copied through the same door for the same reason: a caller free to title a decision is a caller free to make it unfindable.
 
 An identifier is a key, and a person reading a page is not looking anything up.
 The name is what the identifier is called in words, so that the person and the caller are still naming one thing.
@@ -143,7 +145,8 @@ A marked option SHALL arrive unselected, and a decision the person never touches
 A document that marks no option SHALL be served unchanged, and nothing about a decision without a mark SHALL be different from what it is today.
 
 The caller has just read the finding and usually knows which option it would take.
-A page that cannot carry that judgement makes the person re-derive it, and the caller that wanted to state it puts it in the prose or in the option order instead, which is a convention the surface never agreed to honour.
+A page that cannot carry that judgement makes the person re-derive it.
+The caller that wanted to state it puts it in the prose or in the option order instead, which is a convention the surface never agreed to honour.
 
 Two marks are a caller that has not decided, and a person who has to combine two recommendations has been handed the decision back with extra steps.
 
@@ -177,10 +180,12 @@ A document SHALL carry a title, and SHALL carry at least one of a decision, a so
 A document carrying none of the three is refused, because the page would be a heading over nothing.
 
 `serve` previously refused a document holding no decision, on the reasoning that there would be nothing for a person to answer.
-The reasoning was sound about answering and wrong about serving: a caller with something for a person to read and nothing to ask them is the ordinary case, not a mistake, and refusing it forces the caller to invent a decision or to fall back to the terminal.
+The reasoning was sound about answering and wrong about serving.
+A caller with something for a person to read and nothing to ask them is the ordinary case, not a mistake, and refusing it forces the caller to invent a decision or to fall back to the terminal.
 
 Every other rule about a decision SHALL be unchanged, except that a decision may carry no options.
-That exception is stated as a requirement of its own below, and it is the same reasoning one step further in: a caller with something for a person to read and nothing to ask them about that one thing is also the ordinary case, and refusing it forces the caller to invent an option.
+That exception is stated as a requirement of its own below, and it is the same reasoning one step further in.
+A caller with something for a person to read and nothing to ask them about that one thing is also the ordinary case, and refusing it forces the caller to invent an option.
 A document that holds decisions is validated in every other respect exactly as it is today, so a decision that does ask something is no different from what it is now.
 
 #### Scenario: A document with nothing to decide is served

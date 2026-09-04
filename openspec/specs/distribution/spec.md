@@ -34,7 +34,8 @@ Reporting the nearest tag makes a build from an arbitrary commit indistinguishab
 
 Tagging SHALL produce, for each supported platform, an archive, a checksum for it, a signature over the checksums, a bill of materials, and build provenance.
 
-Each answers a different question, and none of them substitutes for another: whether the download is intact, whether the checksums are the ones this project published, what is inside a binary that embeds fonts and a client bundle, and which workflow from which commit produced it.
+Each answers a different question and none substitutes for another.
+They are: whether the download is intact, whether the checksums are the ones this project published, what is inside a binary that embeds fonts and a client bundle, and which workflow from which commit produced it.
 
 The signing SHALL require no private key held by a person, so that a release depends on no secret that can be lost or asked for.
 
@@ -90,7 +91,8 @@ The two names SHALL come from the same build in the same release, so that they c
 Each release SHALL be recorded in a changelog, in terms of what it means to somebody using the tool.
 
 The changelog SHALL be written rather than generated.
-Commit messages in this repository say what a change is, by convention and deliberately; what a release note says is what that change means to a person who has the previous version installed, which is a different document for a different reader.
+Commit messages in this repository say what a change is, by convention and deliberately.
+A release note says what that change means to a person who has the previous version installed, which is a different document for a different reader.
 
 #### Scenario: A release is recorded in the changelog
 

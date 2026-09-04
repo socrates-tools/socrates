@@ -83,7 +83,8 @@ It MAY require that the run happened, that its answer was recorded into the corp
 It SHALL NOT require the answer to hold a particular severity, action, count or shape.
 
 What a reviewer finds is the reviewer's.
-A task that asks a model to return something in particular is a task the author cannot satisfy by working, and the four attempts that closed no such task are what this requirement exists to prevent repeating.
+A task that asks a model to return something in particular is a task the author cannot satisfy by working.
+Four attempts closed no such task, and the rule above exists so that does not repeat.
 
 #### Scenario: A live task is satisfied by recording whatever came back
 

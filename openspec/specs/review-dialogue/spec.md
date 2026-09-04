@@ -19,7 +19,8 @@ Whether a document blocks SHALL have one owner, which is the classification's ve
 A response SHALL be able to address a blocking finding whose action asks for a patch and a blocking finding whose action asks a person, and those two SHALL be answered by different resolutions.
 A round SHALL park only where every finding that holds the change can be answered and at least one does, and that set SHALL be exactly what the run waits on responses for.
 A round that parks with nothing for the author to answer asks a question nobody can close and then escalates at the cap for findings whose own action asked for nothing.
-A finding that holds the change while its action asks for nothing is a contradiction in what the reviewer returned, and it goes to the person rather than being demanded an answer socrates presents as unnecessary.
+A finding that holds the change while its action asks for nothing is a contradiction in what the reviewer returned.
+It goes to the person rather than being demanded an answer socrates presents as unnecessary.
 It goes to the person whatever else the round holds, because parking on the rest would advance the run past a finding nothing and nobody can close, and the round it appeared in is the last place it is reported.
 
 A finding that asks a person SHALL stop the loop until a person has answered it, and SHALL NOT end the run.
@@ -32,7 +33,8 @@ A run that concluded `clean` naming the cap tells the author that something is l
 The rule SHALL be testable against its whole input space rather than sampled, and its package SHALL reach no filesystem, no clock and no process.
 
 A round holding a finding that asks a person SHALL wait on that finding whatever else it holds.
-A set holding one question about intent and five mechanical defects waits on all six, because the person's answer to the sixth may change what the other five should have been, and none of them is judged until the next round sees the answer.
+A set holding one question about intent and five mechanical defects waits on all six.
+The person's answer to the sixth may change what the other five should have been, and none of them is judged until the next round sees the answer.
 
 #### Scenario: A clean round finishes the run
 
@@ -115,7 +117,8 @@ The stored responses of a round SHALL be append-only, and recording one SHALL NO
 
 Two invocations recording at the same time is the ordinary case rather than the exotic one, because the author is a session that is encouraged to run independent commands at once.
 A read, an append in memory and a rewrite of the whole document loses whichever claim was written first, silently, and the claim is the entire value of a response.
-Appending also bounds what a crash can damage to the line being written, where a rewrite can leave a document that neither `scrat respond` nor `scrat continue` can read, on a run that cannot be advanced any other way.
+Appending also bounds what a crash can damage to the line being written.
+A rewrite can leave a document that neither `scrat respond` nor `scrat continue` can read, on a run that cannot be advanced any other way.
 
 #### Scenario: Two answers do not overwrite each other
 
@@ -297,13 +300,15 @@ Reading a page is the person's to do whenever they like, and waiting on one is t
 
 It SHALL take the state rather than the round number.
 The round number would make it re-decide the routing that has already been decided and recorded, and a rule that recomputes an answer somebody has stored can disagree with the stored one.
-Reading the state is reading that one decision's result, which is the property this requirement is for.
+Reading the state is reading that one decision's result.
 
 A `clean` round waits on nobody even where it returned findings, because nothing is being asked of anybody and there is no decision to put in front of them.
 A state that is not the outcome of a completed round waits on nobody either, so a failed run and a cancelled run need no case of their own anywhere else.
 
 The rule SHALL be decided by this one function and SHALL NOT be re-derived anywhere from the run's state and its counts.
-Both facts a re-derivation would read are already reported, so the second reader is the cheap thing to write and the expensive thing to be wrong about: two places computing whether a round waits can disagree, and the disagreement is silent, because a session that waits on a round nobody will answer stops for good, and a session that does not wait on one that is owed an answer patches around the person.
+Both facts a re-derivation would read are already reported, so the second reader is the cheap thing to write and the expensive thing to be wrong about.
+Two places computing whether a round waits can disagree, and the disagreement is silent.
+A session that waits on a round nobody will answer stops for good, and a session that does not wait on one that is owed an answer patches around the person.
 
 The rule SHALL be testable against its whole input space rather than sampled, and it SHALL reach no filesystem, no clock and no process.
 

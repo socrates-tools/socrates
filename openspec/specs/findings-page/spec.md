@@ -13,8 +13,8 @@ It SHALL require each of the following, because each is a way the page fails a p
 
 - Get to the point. Length is not thoroughness, and a person who has to search the page for their decision has been handed the terminal output again.
 - Speak plain English about what the finding means for the change, rather than restating the reviewer's technical prose in a nicer typeface.
-- Say what each option gets the person, in the words of the thing being built rather than the words of the code. A sentence they could not act on without opening the code is not plain English, and a symbol, a constant or a test named as though they already know it is that sentence.
-- Say which option you would take, on every decision where you would take one, by marking that option and no other. You have read the finding and they have not, and a list where every option looks equally likely makes them work out what you already know.
+- Say what each option gets the person, in the words of the thing being built rather than the words of the code. A sentence they could not act on without opening the code is not plain English. A symbol, a constant or a test named as though they already know it is that sentence.
+- Say which option you would take, on every decision where you would take one, by marking that option and no other. You have read the finding and they have not. A list where every option looks equally likely makes them work out what you already know.
 - Where a finding is purely technical, illustrate it with an example rather than leaving the reader to work out what the term costs them.
 - Where what a finding costs is what a person sees, show them it rather than describing it.
 - Use a diagram only where a workflow is what makes the finding hard to follow, and not otherwise.
@@ -30,7 +30,8 @@ Recommending is on the bar rather than left to the mechanism, because a field no
 It is bounded to one option for the same reason it is asked for at all: a page that ranks everything has ranked nothing.
 
 Showing is a separate line from the example beside it and from the diagram beneath it, and the reason is that the bar's other lines are about a reader who has to be taught something.
-A finding about what a person sees has a reader who already knows the thing and is being asked to recognise it, and a sketch of a panel retyped in a monospace block is the one form that reader cannot recognise it in.
+A finding about what a person sees has a reader who already knows the thing and is being asked to recognise it.
+A sketch of a panel retyped in a monospace block is the one form that reader cannot recognise it in.
 The line about diagrams says "and not otherwise", so without a line of its own a page that showed a person their own screen would be a page in breach of the bar.
 
 #### Scenario: The bar is stated once and rendered from there
@@ -57,7 +58,8 @@ The session running `socrates respond` SHALL remain the only thing that records 
 The page previously carried no control at all, because there was nothing behind it and an answer given on it would have reached no run.
 That reasoning is kept and its conclusion moves: a local surface now hands the answer back, so a control is permitted exactly where the session can say what command it becomes.
 A control whose command the session cannot name is refused by the same reasoning that refused all of them before, because the session would be offering a decision it cannot honour.
-The command is not printed on the page, because the person deciding is not the one who runs it: a command under an option is the same choice again, in a language they did not come here to read, and one they may believe they have to type.
+The command is not printed on the page, because the person deciding is not the one who runs it.
+A command under an option is the same choice again, in a language they did not come here to read, and one they may believe they have to type.
 
 The page SHALL store nothing that outlives the exchange, and SHALL declare no capability that reaches a run.
 
@@ -69,7 +71,8 @@ The page and the terminal SHALL be matchable in both directions without translat
 - The page SHALL name no command and no flag that no binary offers.
 
 An identifier is a key, and a person reading a page is not looking anything up.
-A person who has read a page about "the endpoint that the migration reads" and must then work out which of six findings that was has been handed the search problem the page was supposed to remove, and a person handed `f1` as a heading has been handed the reviewer's filing system.
+A person who has read a page about "the endpoint that the migration reads" and must then work out which of six findings that was has been handed the search problem the page was supposed to remove.
+A person handed `f1` as a heading has been handed the reviewer's filing system.
 A name derived from the identifier is neither: the person says "finding 3", the session runs `socrates respond --finding f3`, and neither of them translates.
 
 #### Scenario: A control carries its command and shows it to nobody
@@ -104,7 +107,8 @@ The skill SHALL say that the document behind the page is drafted inline where no
 Nothing follows a `clean` run or an `escalated` one, so drafting is paid once, and a fresh subagent's own system prompt and tool schemas would make delegating it more total tokens for no benefit.
 
 Where the round parked, the session is about to patch each finding, record one response per finding, continue, poll and read the next round.
-Everything added to that context is re-sent on every one of those turns, and it is added at the point the round cap exists to protect, which is where the session begins compacting mid-review and loses the thing it was defending.
+Everything added to that context is re-sent on every one of those turns.
+It is added at the point the round cap exists to protect, where the session begins compacting mid-review and loses the thing it was defending.
 That is true of a parked round whose findings the author answers alone as much as of one holding a question, because what costs the driving context is the finding prose rather than who answers it.
 
 The delegated draft SHALL read the round for itself rather than being handed it, so that what returns to the driving session is the document and a sentence.
@@ -175,7 +179,8 @@ That is every round reached in `clean`, in `awaiting-response` and in `escalated
 
 A run that reached `failed` or `cancelled` SHALL NOT be handed over as a page, and the reason is not the same reason for the two.
 
-A `failed` run completed no review, so there is nothing on such a page but the one-line reason socrates already prints, and a tab to open for a sentence already in front of the person is worse than the sentence.
+A `failed` run completed no review, so there is nothing on such a page but the one-line reason socrates already prints.
+A tab to open for a sentence already in front of the person is worse than the sentence.
 
 A `cancelled` run may hold a round that did complete a review, and it is still handed over as nothing.
 Somebody stopped the review on purpose, so nothing was decided about the change, and handing them a page of what the run got as far as would be answering a question they withdrew.
@@ -183,7 +188,8 @@ The rule is therefore stated over the state the run ended in rather than over wh
 
 The page was once only for a round that could not move until a person answered, because one condition decided both whether a page was served and whether the session waited on it.
 The waiting needed deciding and the serving did not.
-The page exists because a review result reads better on a page than in a scrollback, which is as true of the two commonest outcomes, a clean run and a round the author patches alone, as of the ones that stop for the person.
+The page exists because a review result reads better on a page than in a scrollback.
+That is as true of the two commonest outcomes, a clean run and a round the author patches alone, as of the ones that stop for the person.
 
 The page SHALL NOT be published to any host outside the machine.
 A findings document quotes the code it was written about, `internal/corpus` refuses to record one for that reason, and a skill that told a session to upload one contradicted that refusal.
@@ -194,7 +200,8 @@ It is sealed read-only inside the snapshot worktree, it runs with the machine's 
 A reviewer that also composed the person's summary of its own findings would be arguing its case in the document the person decides from.
 
 socrates SHALL NOT draft it either.
-What is being asked for is plain English about what a finding means for the change, which a template over the findings document cannot produce, and socrates' agent seam exists to review rather than to write for a person.
+What is being asked for is plain English about what a finding means for the change, which a template over the findings document cannot produce.
+socrates' agent seam exists to review rather than to write for a person.
 
 The page SHALL NOT replace what the session reads.
 `socrates findings` keeps printing the findings, because the session patches from them, and the page is a reading aid rather than the record.
@@ -267,7 +274,8 @@ The skill SHALL say that a finding the session resolved is put on the page as wh
 The skill SHALL say that such a finding carries no options, and SHALL say why: an option on a settled finding is a control that changes nothing, and a person reads it as a question still owed an answer.
 
 Where the round holds nothing a person answers, the page SHALL still carry every finding as a card, and SHALL present none of them as a decision.
-A clean run and a round the author patched alone are rounds with nothing to act on, and a card that asks nothing is not a decision: it is the account of what was found and what was done, which is the whole of what those rounds have to hand over.
+A clean run and a round the author patched alone are rounds with nothing to act on.
+A card that asks nothing is not a decision. It is the account of what was found and what was done, which is the whole of what those rounds have to hand over.
 
 #### Scenario: Every finding in the round is a card
 

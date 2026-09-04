@@ -96,7 +96,8 @@ A rotation SHALL record that it happened, so that a reader knows the log is not 
 A run recorded as `starting` or `reviewing` whose reviewer process no longer exists SHALL be reported as `failed`, naming that the reviewer went away.
 A run whose state says it is working while nothing is working is a stall that looks alive, and a session polling it waits forever.
 
-The recorded process identity SHALL be what this is judged on, and the judgement SHALL be made when the run is read rather than by anything polling in the background, because socrates has no process that outlives a run.
+The recorded process identity SHALL be what this is judged on.
+The judgement SHALL be made when the run is read rather than by anything polling in the background, because socrates has no process that outlives a run.
 
 #### Scenario: A killed reviewer stops the run
 
@@ -182,7 +183,8 @@ A round's worktree SHALL be torn down before the run is published as parked.
 The next round checks out the same path, so a run that reads parked while its worktree is still being removed hands the author a command that fails on the state socrates itself left behind.
 
 A failure to tear it down SHALL NOT stop the run being published as parked, and SHALL be recorded against the round.
-A review that completed and cannot be reached by any command is worse than a directory left behind: the findings are on disk, `--wait` would poll a run that never leaves `reviewing`, and `scrat cancel` would be the only way out of a review that succeeded.
+A review that completed and cannot be reached by any command is worse than a directory left behind.
+The findings are on disk, `--wait` would poll a run that never leaves `reviewing`, and `scrat cancel` would be the only way out of a review that succeeded.
 
 The next round SHALL clear whatever stands where its worktree goes before it checks one out.
 Otherwise the dead end is only deferred: the round parks, the author answers, and the next round refuses on the leftover and ends the run failed, which is the same completed review lost one command later.

@@ -17,7 +17,7 @@ import (
 
 const (
 	StatementDirectory        = "internal/platform"
-	DocumentedHeading         = "## The platforms it holds on"
+	DocumentedHeading         = "## Supported platforms"
 	TheWayForward             = "WSL"
 	WhereTheWayForwardApplies = "Windows"
 

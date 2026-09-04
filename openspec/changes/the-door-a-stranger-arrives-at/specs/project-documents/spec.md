@@ -58,7 +58,8 @@ A security policy SHALL state where to report privately, and private reporting S
 
 It SHALL state what socrates defends against and what it does not, so that a reporter can tell whether what they found is in scope before spending their time and the maintainer's.
 
-What it does not defend against SHALL include the residual already stated in what a person reads: a hook an administrator's policy configures, and whatever that hook's command reaches outside the sealed worktree.
+What it does not defend against SHALL include the residual already stated in what a person reads.
+That is a hook an administrator's policy configures, and whatever that hook's command reaches outside the sealed worktree.
 
 #### Scenario: A reporter has a private channel
 

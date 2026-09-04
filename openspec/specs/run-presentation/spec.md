@@ -33,7 +33,8 @@ It SHALL treat a terminal event in the log and a terminal state in `run.json` as
 Waiting only for a terminal event is the version that hangs: a run that failed before its reviewer wrote anything has a terminal state and an empty log.
 
 It SHALL also stop where the round parked on the author, print what the round is waiting for, and exit with the code for a run that is not terminal yet.
-A parked round has no process of its own running and ends only when the author answers it, so a follower that treated parking as work in progress would wait for events that arrive after the person acts, which is the stall this requirement exists to refuse.
+A parked round has no process of its own running and ends only when the author answers it.
+A follower that treated parking as work in progress would wait for events that arrive only after the person acts.
 
 #### Scenario: Following a review to a clean verdict
 

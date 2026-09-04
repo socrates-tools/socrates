@@ -1,6 +1,6 @@
 # Contributing to socrates
 
-## A change starts as a proposal, not as code
+## A change starts as a proposal
 
 Read this before you write anything.
 
@@ -22,9 +22,9 @@ Both run under the one verification command below.
 If you are not sure whether something needs a proposal, open an issue and say what you want to change.
 A bug fix that restores stated behaviour does not need one. Anything that changes what socrates promises does.
 
-## What socrates will not become
+## Out of scope
 
-`README.md` has a section called "What it deliberately is not", and it is the shortest way to learn what a proposal should not ask for.
+`README.md` has a section called "Out of scope", and it is the shortest way to learn what a proposal should not ask for.
 socrates reviews. It does not land, verify, render, serve or wait for a person.
 Committing, pushing, opening a pull request and watching continuous integration are not socrates' and never become socrates'.
 
@@ -36,7 +36,7 @@ Committing, pushing, opening a pull request and watching continuous integration 
 - Node and `pnpm`, only if you touch `web/`. `make assets` rebuilds the committed bundle.
 - The `claude` CLI, only if you re-record the simulator's fixtures or run the live smoke suite. Nothing else reaches it, and nothing in continuous integration does.
 
-## One command checks a change
+## Verifying a change
 
 ```sh
 make fmt
@@ -49,7 +49,7 @@ Do not add a gate to a workflow: add it to `make verify`, and a check fails whil
 
 `make help` lists every target.
 
-## The conventions
+## Conventions
 
 Each of these is checked by a test, so it is cheaper to follow than to argue with:
 
@@ -64,14 +64,14 @@ Each of these is checked by a test, so it is cheaper to follow than to argue wit
 
 `AGENTS.md` is the map: the layout, the verification sequence and the invariants that hold the design up. Read it once before your first change.
 
-## Dependencies arrive as a stream of small changes
+## Dependencies
 
 Every action a workflow uses is pinned to a commit, the linter and the releaser are pinned to a version in the `Makefile`, and Dependabot watches the Go modules, the npm packages and the actions.
 
 That produces a steady queue of small pull requests, each bumping one pin.
 A long queue is the mechanism working rather than a sign of neglect, and reviewing one is usually reading a changelog and letting `make verify` answer the rest.
 
-## Opening the change
+## Opening a pull request
 
 Branch, commit, and open a pull request that names the proposal it implements.
 The template asks for that first, because a reviewer who knows which proposal a change serves can read it against something.

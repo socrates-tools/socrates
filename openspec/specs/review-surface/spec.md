@@ -23,7 +23,8 @@ The two are deliberately not the same act: `end` finishes one exchange and leave
 A per-session `stop` would be `end` under a second name, and the surface holds five commands rather than a synonym.
 
 A caller hands what `serve` printed to a person, so what `serve` prints has to be what that person can open.
-Where nothing is in front of the surface those are one address and the distinction costs nothing; where something is, the address the surface bound opens for the process that printed it and for nobody it was served to.
+Where nothing is in front of the surface those are one address and the distinction costs nothing.
+Where something is, the address the surface bound opens for the process that printed it and for nobody it was served to.
 
 Two binaries in one module is ordinary in Go, and a second repository for a tool with one consumer is overhead with no payer.
 This does not disturb the rule that `socrates` and `scrat` are one program under two names: `agora` is a different program, not a third name.
@@ -66,8 +67,10 @@ A caller SHALL name a session to poll it, to end it, or to write a new document 
 `--session` naming a session the surface does not hold SHALL be refused, and SHALL NOT bring one into existence.
 `serve` given no session SHALL therefore be the one way a session is created.
 
-The surface owns the identifier so that every one is unique and a safe path segment without a caller having to invent either, and so that two callers who know nothing of each other cannot land on the same page by choosing the same name.
-One way to create and one way to address is also the smaller rule: a flag that names an existing session and creates a missing one is a flag with two meanings, and the second only reveals itself when a caller mistypes.
+The surface owns the identifier so that every one is unique and a safe path segment without a caller having to invent either.
+Two callers who know nothing of each other then cannot land on the same page by choosing the same name.
+One way to create and one way to address is also the smaller rule.
+A flag that names an existing session and creates a missing one is a flag with two meanings, and the second only reveals itself when a caller mistypes.
 
 A caller who loses the identifier has no way to ask the surface for it, and that is accepted rather than solved.
 The recovery is to serve again and hand over a new address, which is correct behaviour, and the session that was lost is collected when it goes idle.
@@ -102,19 +105,26 @@ The window SHALL be closed and stated in one place, and the port at its top SHAL
 Where every port in the window is held, the surface SHALL refuse, name the window, and start no server.
 
 An ordered closed window is not a port that moves.
-What made a port the operating system chooses unusable is that nothing can be aimed at it and nobody can return to it, and neither is true here: what an operator aims something at is a port they stated, which pins the bind rather than being walked past, and what a person returns to is the address the surface printed, which is the one it bound and never the one it was asked for.
+What made a port the operating system chooses unusable is that nothing can be aimed at it and nobody can return to it.
+Neither is true here.
+What an operator aims something at is a port they stated, which pins the bind rather than being walked past.
+What a person returns to is the address the surface printed, which is the one it bound and never the one it was asked for.
 What it buys is the case the single fixed port refused on, which is a person who has never named a port meeting a failure about one, whose only way out was to learn a flag to get back to where they started.
 
 An operator MAY state the loopback address the surface binds, and that address SHALL be refused by the same check a stated flag is refused by.
 A flag SHALL override it, so what an operator configured is a default rather than a decision taken away from the caller.
 
-Where an operator has stated the address to bind, or the address the surface is reached at, the window SHALL NOT be walked: the port that follows from what they stated is the port bound, and a port held by something the surface does not know of SHALL be refused rather than stepped over.
+Where an operator has stated the address to bind, or the address the surface is reached at, the window SHALL NOT be walked.
+The port that follows from what they stated is the port bound, and a port held by something the surface does not know of SHALL be refused rather than stepped over.
 Stating either is an operator committing to a port, because something in front of the surface is aimed at one.
-A surface that moved out from under it would hand a person the address the operator stated, which by then opens onto nothing, and an address that opens onto nothing is the failure serving a page says where it can be opened from in order to prevent.
-Which port is taken where nobody has named one is the only thing the address the surface is reached at reaches: it still reaches neither the check on what may be bound nor the guard on what host a request may name.
+A surface that moved out from under it would hand a person the address the operator stated, which by then opens onto nothing.
+That is the failure serving a page states its reachable address in order to prevent.
+Which port is taken where nobody has named one is the only thing the reached-at address reaches.
+It reaches neither the check on what may be bound nor the guard on what host a request may name.
 
 An operator MAY state the address the surface is reached at.
-It is handed to a person to open, so it SHALL be refused unless it is shaped like something openable, and it SHALL be refused for its shape alone: whether anything serves it is not something the surface can answer from where it runs.
+It is handed to a person to open, so it SHALL be refused unless it is shaped like something openable, and for its shape alone.
+Whether anything serves it is not something the surface can answer from where it runs.
 That address SHALL reach neither the bind nor the guard on what host a request may name: it is what the surface says about itself and never what it admits.
 A request naming it SHALL be turned away exactly as a request naming any host the surface did not bind is turned away.
 
@@ -209,7 +219,9 @@ Where an operator has stated the address the surface is reached at, nothing furt
 That statement is the answer, and asking again on every serve is noise with no end.
 
 What is stated above is the only condition: nothing else, and no mark of the machine it happens to be running on, decides whether it is said.
-It states where the page is served rather than judging whether the person can reach it, because whether the browser that will open the address is on this machine is a harder form of a question the surface already declines about its own reached-at address, and a guess at it is wrong in both directions: it warns a person whose browser is right there, or says nothing to the person it exists for.
+It states where the page is served rather than judging whether the person can reach it.
+Whether the browser that will open the address is on this machine is a harder form of a question the surface already declines about its own reached-at address.
+A guess at it is wrong in both directions: it warns a person whose browser is right there, or says nothing to the person it exists for.
 
 The surface binds a loopback address and nothing widens it, so a person whose browser is elsewhere gets a connection that opens and carries nothing.
 A browser reports that as an empty reply, which names no cause and looks exactly like a port nobody forwarded.

@@ -102,7 +102,7 @@ An unclassified finding silently handed to a patching agent is a change to someb
 The question "does anything here need a person" and the question "which findings may be patched" SHALL be answered by the same defaulting helper.
 
 Two implementations of the same defaulting rule can disagree, and a finding that falls into the gap between them is neither patched nor surfaced.
-It is the defect this requirement exists to make unrepresentable, and it is invisible to line coverage.
+That defect is what the rule above makes unrepresentable, and it is invisible to line coverage.
 
 #### Scenario: Every finding is in exactly one bucket
 

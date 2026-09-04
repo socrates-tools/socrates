@@ -3,7 +3,8 @@
 Everything a person reads before they decide to trust socrates, run it, or contribute to it is currently one file, `README.md`, and one file written for an agent, `AGENTS.md`.
 
 The README is good, and what it is missing is at the top rather than in the body.
-It opens with what socrates is for and reaches its requirements in the eighteenth line, where the hardest fact about the project is stated once in passing: socrates does not work without the `claude` CLI at 2.1.169 or later and the paid account behind it.
+It opens with what socrates is for and reaches its requirements in the eighteenth line.
+The hardest fact about the project is stated there once, in passing: socrates does not work without the `claude` CLI at 2.1.169 or later and the paid account behind it.
 That is the first thing a prospective user needs, because for many of them it is the end of the evaluation, and burying it wastes their time to make the project look more available than it is.
 The same line states a Go floor of 1.25 that `go.mod` contradicts with 1.26, so a reader who takes the README at its word cannot build.
 
@@ -14,10 +15,11 @@ A second binary that appears with no explanation is the kind of thing that makes
 Then there is what is absent.
 No security policy, so a person who finds something in a tool that spawns detached processes and rewrites permission bits has a public issue as their only channel.
 No contributing guide, no code of conduct, no templates, no ownership.
-And no statement anywhere of how a change is proposed in this repository, which matters more here than in most projects: 27 archived changes and 17 promoted capabilities mean a pull request that edits code without a proposal will be turned away by rules the author had no way to read.
+And no statement anywhere of how a change is proposed in this repository, which matters more here than in most projects.
+27 archived changes and 17 promoted capabilities mean a pull request that edits code without a proposal will be turned away by rules the author had no way to read.
 
 socrates already does the hardest part of this well.
-The "what it deliberately is not" section names the residual risk on a managed machine rather than hiding it, which is the most trust-building thing in the repository.
+The "Out of scope" section names the residual risk on a managed machine rather than hiding it, which is the most trust-building thing in the repository.
 What this change adds sits above and around that, and does not touch it.
 
 ## What Changes
@@ -45,7 +47,7 @@ None.
 
 ## Impact
 
-- `README.md`: a requirements block and an install pointer at the top, an agora section, a telemetry statement, a non-affiliation note, and the corrected Go floor. The "what it deliberately is not" section is untouched.
+- `README.md`: a requirements block and an install pointer at the top, an agora section, a telemetry statement, a non-affiliation note, and the corrected Go floor. The "Out of scope" section is untouched.
 - `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SUPPORT.md`: new.
 - `.github/CODEOWNERS`, `.github/ISSUE_TEMPLATE/`, `.github/PULL_REQUEST_TEMPLATE.md`: new.
 - `.editorconfig`, `.gitattributes`: new.

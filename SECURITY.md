@@ -15,7 +15,7 @@ If nothing comes back in 14 days, say so in a public issue without describing wh
 The latest release, and the tip of `main`.
 While the major version is `0` there is no long-term support branch, so a fix arrives as a new release rather than as a patch to an old one.
 
-## Where what socrates reads goes
+## Where your code goes
 
 socrates sends nothing anywhere.
 It opens no network connection outside a build tag the ordinary suite does not compile, and a test holds that.
@@ -50,7 +50,7 @@ These are the promises, and each is held by a test that fails when it stops hold
   The vendor's flag for disabling your customisations does not take those with it.
   Two of the three write defences still apply, because the hook's command is a child of the reviewer's session, whose working directory is the sealed worktree: a write it makes there is refused, and the comparison afterwards catches one the seal did not.
   What nothing socrates holds bounds is where that command reaches **outside** the worktree.
-  This is stated in `README.md` under "What it deliberately is not" as a residual rather than as a covered case, and it is out of scope here for the same reason.
+  This is stated in `README.md` under "Out of scope" as a residual rather than as a covered case, and it is out of scope here for the same reason.
 - **Anything the reviewer CLI or its vendor does with the change.**
   See above.
 - **A repository you do not trust.**

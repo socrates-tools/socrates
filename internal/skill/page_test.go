@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	pageHeading      = "## The page a person reads"
+	pageHeading      = "## Serving the page"
 	cleanHeading     = "### clean"
 	failedHeading    = "### failed"
 	escalatedHeading = "### escalated"
@@ -167,8 +167,8 @@ func TestTheSkillSaysWhichBranchesWait(t *testing.T) {
 
 	for _, said := range []string{
 		`prints a line beginning "awaits a person"`,
-		"where it says so, wait for them",
-		"where it says nothing, hand over the address and get on with the work",
+		"where that line is present, wait for the person",
+		"where it is absent, hand over the address and get on with the work",
 	} {
 		if !strings.Contains(page, said) {
 			t.Errorf("the page section does not say %q, so a session waits on every page or on none:\n%s", said, page)
@@ -203,7 +203,7 @@ func TestARoundTheAuthorAnswersAloneGetsAPageNobodyWaitsOn(t *testing.T) {
 
 	for _, said := range []string{
 		"Hand the round over as a page whichever of the two it holds",
-		"where it says nothing, get on with the patching and leave the page for them to read whenever they like",
+		"where it says nothing, get on with the patching and leave the page for them",
 	} {
 		if !strings.Contains(parked, said) {
 			t.Errorf("the parked branch does not say %q, so a round the author answers alone reaches nobody or stops the loop:\n%s", said, parked)
@@ -222,7 +222,7 @@ func TestARoundWithNothingToAnswerIsStillARoundInFull(t *testing.T) {
 	for _, said := range []string{
 		"every finding is still a card and none of them carries an option",
 		"Nothing on it is theirs to answer, so nobody is waiting on it",
-		"rounds in full rather than rounds worth less",
+		"Such a page states what was found and what was done about it",
 	} {
 		if !strings.Contains(page, said) {
 			t.Errorf("the page section does not say %q, so a round with nothing to answer is handed over as less than the round:\n%s", said, page)
@@ -257,7 +257,7 @@ func TestAControlCarriesItsCommandAndShowsItToNobody(t *testing.T) {
 		"carries the command it becomes",
 		"nothing is recorded until you run it here",
 		"shows that command to nobody",
-		"an option whose command you cannot name is one you do not offer",
+		"offer no option whose command you cannot name",
 	} {
 		if !strings.Contains(page, said) {
 			t.Errorf("the page section does not say %q, so a control can take a decision whose destination nobody can see:\n%s", said, page)
@@ -395,9 +395,9 @@ func TestEveryFindingInTheRoundIsACard(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
 	for _, said := range []string{
-		"every finding in the round gets a card of its own",
-		"not the ones a person answers in full and the rest as a line in a list",
-		"not a sentence in the preamble",
+		"give every finding in the round a card of its own",
+		"shorten no finding, reduce none of them to a list, and omit none",
+		"a person signs off on the round",
 		"signs off on the round rather than on the part of it that survived triage",
 	} {
 		if !strings.Contains(page, said) {
@@ -419,7 +419,7 @@ func TestAResolvedFindingIsStatedRatherThanAsked(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
 	for _, said := range []string{
-		"a finding you have already resolved is a card that states something rather than one that asks anything",
+		"a finding you have already resolved on a card that states something rather than one that asks anything",
 		"what the finding was and what resolved it",
 		"carries the diff where the diff is what makes the resolution clear",
 		"carries no options",

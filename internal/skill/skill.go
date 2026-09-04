@@ -15,6 +15,8 @@ const (
 	Surface  = "agora"
 	FileName = "SKILL.md"
 
+	Ceiling = 15616
+
 	vendorDirectory = ".claude"
 	skillsDirectory = "skills"
 )

@@ -5,7 +5,8 @@ TBD - created by archiving change a-review-nobody-authored. Update Purpose after
 ## Requirements
 ### Requirement: The prompt delivered to a reviewer is a generated interface
 
-The prompt socrates sends SHALL be treated as an artifact with a contract rather than as an implementation detail: it SHALL be recorded verbatim in the round directory, and the delivered prompt SHALL be what tests assert on.
+The prompt socrates sends is an artifact with a contract rather than an implementation detail.
+It SHALL be recorded verbatim in the round directory, and the delivered prompt SHALL be what tests assert on.
 
 A test SHALL NOT assert that a prompt rule exists by reading socrates' own source for a sentence.
 Matching text can be dead or commented out, and a behaviour-preserving refactor changes it.
@@ -68,7 +69,8 @@ It SHALL NOT be reported as something the author resolves alone, because what a 
 Silence in the intent SHALL NOT be a contradiction.
 An intent that does not mention something has not ruled it out, and a reviewer that treated every unstated thing as a contradiction would hand a person a decision for every sentence the intent did not contain.
 
-An intent is one line a person wrote about what they wanted, not a specification, and the obligation is stated so that a reviewer which has found the change otherwise clean still reports the one thing the person asked for and did not get.
+An intent is one line a person wrote about what they wanted, not a specification.
+The obligation is stated so that a reviewer which found the change otherwise clean still reports the one thing the person asked for and did not get.
 "Something to report" is what the prompt said before, and it is what a reviewer weighing it against an otherwise clean change declines to act on.
 
 The obligation SHALL be absent where no intent was stated, along with the rest of the intent section.

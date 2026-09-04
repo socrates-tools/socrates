@@ -44,13 +44,16 @@ The implementation shipped SHALL invoke the `claude` binary in print mode with a
 It SHALL load user-level settings only, and SHALL NOT load the reviewed repository's own project or local settings, because those are authored by the thing under review.
 What is refused there is what the vendor would load on its own account: the repository's project and local settings, and the agent instructions, memory and skills that arrive with them.
 They are refused because nothing bounds them, nothing anchors them to a version the change under review did not write, and they reach the session as instructions rather than as something quoted to it.
-A file socrates reads itself is a different thing, and `review-guidance` specifies the one there is: read at the base commit, bounded, neutralised, delivered inside a section as the project's own words, and deciding nothing.
+A file socrates reads itself is a different thing.
+`review-guidance` specifies the one there is: read at the base commit, bounded, neutralised, delivered inside a section as the project's own words, and deciding nothing.
 The distinction is which side reads it, on what terms, and from which commit, rather than whether the text came from the repository at all.
 
 A call that failed SHALL carry the account the agent gave of its own failure, where the agent gave one.
 That terminal event is where the CLI says why the work did not happen, and the agent's error stream is where a process complains about its arguments, its environment and its own startup.
 The account SHALL therefore be preferred to the error stream, and both SHALL be carried where both are there.
-socrates read the exit status first and returned on it, so a live review that died on the provider being overloaded reported an exit status and an empty error stream, while the message naming the provider sat parsed and unread in the same stream socrates had already finished reading.
+socrates read the exit status first and returned on it.
+A live review that died on the provider being overloaded therefore reported an exit status and an empty error stream.
+The message naming the provider sat parsed and unread in the same stream socrates had already finished reading.
 A reason answers one question, which is whether to run the review again or to fix something, and an exit status answers it either way.
 
 The subtype beside that account SHALL NOT be the reason where the account is there.
@@ -59,7 +62,8 @@ It SHALL remain what is said where the event reports an error and carries no acc
 
 Where the agent said nothing on either channel the failure SHALL say that it said nothing, rather than quoting an empty one.
 
-The reason SHALL be bounded, on the ceiling and the mechanism the error stream already has rather than a second one, because it reaches a run's record and it reaches the context of a session that polls `socrates status` while waiting to patch, and the agent's text on some failures is a whole turn.
+The reason SHALL be bounded, on the ceiling and the mechanism the error stream already has rather than a second one.
+It reaches a run's record and the context of a session polling `socrates status`, and the agent's text on some failures is a whole turn.
 
 socrates SHALL NOT decide anything from that account.
 It is not parsed, not matched and not compared, no state, verdict or exit code depends on a word in it, and the call had already failed before it was read.
@@ -70,7 +74,8 @@ It asks on the vendor's own mechanism for tools that do not write, and that mech
 A tool from any other source is therefore not covered by it: an external tool server contributes tools, so does a plugin, and so does a built-in the vendor adds in a release nobody read.
 A hook contributes no tool and is worse than one for it, because it runs a command of its own on an event rather than waiting to be called.
 A reviewer holding such a tool is a reviewer that can write, both to the snapshot worktree and outside it.
-socrates' first live run found this when the machine's own configured tool server wrote a directory into the snapshot worktree, and a later one found the reviewer's session holding script execution, file upload and browser control.
+socrates' first live run found this when the machine's own configured tool server wrote a directory into the snapshot worktree.
+A later run found the reviewer's session holding script execution, file upload and browser control.
 
 The tools socrates asks for SHALL be those that read the change and those that check a claim against the world, and SHALL NOT be those that write.
 A reviewer that cannot look up what a library actually does writes a finding about its own recollection, and patching is the author's half of the asymmetry this design rests on.
@@ -83,36 +88,45 @@ That request is refused at startup wherever a managed configuration is deployed,
 One mechanism that is never refused therefore replaces two of which one always was.
 
 What that mechanism does not reach is a hook an administrator's policy configures, which the vendor keeps in force by design, along with a policy-configured status line and policy-configured file-suggestion commands.
-Only the policy-configured ones survive it, and a policy-configured tool source is not among them: those do not load, which socrates measured on such a machine, where a plugin's own tool left the session's list at the same time.
-The vendor documents managed plugins, managed skills and managed memory going the same way, and socrates holds no measurement that distinguishes a managed one from a person's own, because the session's tool list does not say what contributed a tool.
+Only the policy-configured ones survive it, and a policy-configured tool source is not among them.
+Those do not load, which socrates measured on such a machine, where a plugin's own tool left the session's list at the same time.
+The vendor documents managed plugins, managed skills and managed memory going the same way.
+socrates holds no measurement distinguishing a managed one from a person's own, because the session's tool list does not say what contributed a tool.
 A policy hook contributes no tool, so the session's tool list is not what would catch it.
 What does catch it inside the snapshot worktree is the seal and the comparison, because its command is a child of the session and the session runs there.
-What nothing socrates holds bounds is where that command reaches outside the worktree, and that one residual is accepted and stated rather than covered, for the same reason the review runs at all on such a machine: a policy set by somebody entitled to set it should still get reviews.
+Nothing socrates holds bounds where that command reaches outside the worktree.
+That residual is accepted and stated rather than covered, for the same reason the review runs at all on such a machine: a policy set by somebody entitled to set it should still get reviews.
 
 The mechanism SHALL NOT be trusted to have worked.
 socrates SHALL take the session's tool list from the stream's opening event, SHALL treat every tool in it that socrates did not ask for as a tool it did not ask for whatever put it there, and SHALL record those.
 The set socrates asked for SHALL be derived from what the invocation carries rather than stated a second time.
 A vendor release that adds a built-in outside that set therefore records an unexpected tool on every run until somebody looks, which is the direction to be wrong in.
 Deriving the answer from a vendor's error message instead is a rule that stops working when the prose is edited, and it stops working by failing every review rather than by reporting the truth.
-The list is what the reviewer could use at the point socrates read it rather than a proof that nothing arrived later, because a source that connects after the opening event can contribute a tool that event did not name.
+The list is what the reviewer could use at the point socrates read it, not a proof that nothing arrived later.
+A source connecting after the opening event can contribute a tool that event did not name.
 
 socrates SHALL therefore also take the external sources of tools the same opening event names, and SHALL record every one it names, because socrates asked for none.
-That event names a source the session connected whether or not that source's tools had reached the tool list beside it, which is what makes the two readings incomplete in different places: the tool list misses a source whose tools are still arriving, and the source list misses a built-in the vendor added.
+That event names a source the session connected whether or not that source's tools had reached the tool list beside it.
+The two readings are therefore incomplete in different places: the tool list misses a source whose tools are still arriving, and the source list misses a built-in the vendor added.
 socrates measured the gap rather than assuming it, on an opening event that named four sources while the tool list held none of their tools.
-That field SHALL be read where the same event's inventory of what is installed on the machine SHALL NOT, and what separates them is also measured: the sources named went from four to none under the one mechanism, while the inventory beside them did not move.
-Recording a source SHALL NOT fail the round, for the reason recording an absent tool list does not: the observation bounds nothing, and a machine whose policy is set by somebody entitled to set it should still get reviews.
+That field SHALL be read where the same event's inventory of what is installed on the machine SHALL NOT.
+What separates them is measured: the sources named went from four to none under the one mechanism, while the inventory beside them did not move.
+Recording a source SHALL NOT fail the round, for the reason recording an absent tool list does not.
+The observation bounds nothing, and a machine whose policy is set by somebody entitled to set it should still get reviews.
 Unlike an absence, a source SHALL be recorded whether or not the round completed, because it is something the session said rather than something it failed to say.
 What covers a source that connects after socrates has read the event is those customisations not loading at all, and the comparison after the round.
 
 An opening event that reports no tools at all is not a session that held only what socrates asked for, and socrates SHALL NOT record it as one.
-Where a round completes and the stream reported no tool list, the run SHALL record that it did not, distinctly from a session holding a tool socrates did not ask for, because a person reading the run needs to know which of the two happened.
+Where a round completes and the stream reported no tool list, the run SHALL record that it did not.
+That is distinct from a session holding a tool socrates did not ask for, and a person reading the run needs to know which of the two happened.
 That SHALL NOT fail the round: a release that stops emitting the field should report the truth rather than fail every review, which is the same direction the built-in above is wrong in.
 A round that failed before the reviewer answered has no tool list either, and the failure is what there is to read, so the absence is recorded only where the round otherwise completed.
 
 Where such a tool is in the session anyway, socrates SHALL run the review rather than not at all, and the run SHALL record the tools it did not ask for.
 A machine whose policy is set by somebody entitled to set it should still get reviews.
-Inside the snapshot worktree the seal holds the reviewer read-only, and outside it nothing socrates holds bounds what such a tool reaches, which is why the tool surface is a mechanism of its own rather than something the seal answers.
-Neither this requirement nor the seal removes the comparison after the round, which is the check on anything that defeated both.
+Inside the snapshot worktree the seal holds the reviewer read-only.
+Outside it nothing socrates holds bounds what such a tool reaches, so the tool surface is a mechanism of its own rather than something the seal answers.
+Neither the tool surface nor the seal removes the comparison after the round, which is the check on anything that defeated both.
 
 #### Scenario: No tool socrates did not ask for reaches the reviewer
 
@@ -239,12 +253,14 @@ A model process that accepts a prompt and never writes is indistinguishable from
 ### Requirement: The agent is simulated for tests, at the wire rather than in Go
 
 The test suite SHALL substitute the agent with a simulator binary that speaks the same command-line and output-stream contract, placed on `PATH` under the name socrates invokes.
-Substituting at the Go interface SHALL NOT be the primary mechanism, because argument construction, stream parsing, process handling and reaping are where the defects are and a Go-level fake exercises none of them.
+Substituting at the Go interface SHALL NOT be the primary mechanism.
+Argument construction, stream parsing, process handling and reaping are where the defects are, and a Go-level fake exercises none of them.
 
 The simulator SHALL be driven by a scenario file, SHALL be able to produce every failure named in this specification on demand, and SHALL append every invocation it received, including arguments, working directory, environment and prompt, to a log a test can assert on.
 
 A scenario SHALL be able to name a recorded answer instead of carrying one, and the simulator SHALL then emit that entry's findings document as its structured result, byte for byte.
-It SHALL NOT adapt a recorded document to the prompt it received, renumber its findings, or supply a field the document lacks: a simulator that repairs a recorded answer is answering from its author's beliefs again.
+It SHALL NOT adapt a recorded document to the prompt it received, renumber its findings, or supply a field the document lacks.
+A simulator that repairs a recorded answer is answering from its author's beliefs again.
 A scenario naming an answer the corpus does not hold SHALL be refused, naming it, rather than answered with something else.
 
 #### Scenario: A test asserts what was asked

@@ -11,7 +11,8 @@ The page SHALL offer a way to answer a decision and a way to send, and SHALL off
 It SHALL NOT offer annotation, a whiteboard, an export, a publish, a share, or a control whose effect the caller never sees.
 
 Every control that is not one of the two is a thing to build, a thing to explain and a thing a person can spend attention on instead of the decision.
-The surface exists because a person had one question to answer, or because they had something to read and no question at all, and in the second case both controls are controls whose effect the caller never sees.
+The surface exists because a person had one question to answer, or because they had something to read and no question at all.
+In the second case both controls are controls whose effect the caller never sees.
 
 Reading the source is not a third interaction.
 An entry that takes the person to the decision covering it moves them within the page they are already on, and carries nothing anywhere.
@@ -41,7 +42,8 @@ What an answer carries SHALL be keyed to the order the document listed the optio
 A control that sent on every click sends an answer the person was still deciding, and takes back nothing when they change their mind.
 
 A recommendation the person reaches after the others is one they read after they have decided, so placement is where the mark does its work.
-Order on the page and order in the answer are held apart because the page is arranged for the person reading it and the answer is keyed for the caller receiving it, and one is free to change without disturbing the other.
+Order on the page and order in the answer are held apart.
+The page is arranged for the person reading it, the answer is keyed for the caller receiving it, and one is free to change without disturbing the other.
 
 #### Scenario: Choosing sends nothing
 
@@ -142,7 +144,8 @@ Every asset needed SHALL be embedded in the binary.
 No diagram engine SHALL be embedded, because an illustration is written by the caller and a layout engine surrenders position and emphasis to a machine.
 
 The languages the page can highlight SHALL be the bundled library's own common set rather than a set chosen and maintained in this repository.
-A set curated here is a list with an owner, and its failure mode is a caller naming a language nobody thought of and getting silence: the first caller outside this project named two, `csharp` and `diff`, and both rendered as plain text with nothing anywhere saying so.
+A set curated here is a list with an owner, and its failure mode is a caller naming a language nobody thought of and getting silence.
+The first caller outside this project named two, `csharp` and `diff`, and both rendered as plain text with nothing anywhere saying so.
 The library's common set is maintained by the library and moves when it moves, which is the whole reason to prefer it.
 Bundling every language the library ships is not required, because the common set covers what evidence in a code review is written in and the tail is large.
 
@@ -189,7 +192,8 @@ A page told the exchange is over stops offering to answer and keeps listening, b
 
 The exchange that this exists for is one where the caller answers and re-renders.
 A person who has to reload to see the reply does not know the reply arrived.
-That is as true after they have sent and finished as before: a page reading "the exchange is over" is a page nobody reloads, so a reply written to it reaches nobody, and the person is left waiting on a surface that already holds what they are waiting for.
+That is as true after they have sent and finished as before.
+A page reading "the exchange is over" is a page nobody reloads, so a reply written to it reaches nobody and the person waits on a surface that already holds what they are waiting for.
 A person sent back to a page to answer a question the caller has just asked again is owed a page that can take the answer.
 
 Reloading SHALL remain sufficient, and SHALL NOT be what the requirement rests on.
@@ -267,7 +271,8 @@ The words SHALL be part of the option's accessible name, so that a person hearin
 
 A floor that is written down is a floor that survives somebody being in a hurry, and a page that inherits its colours from whatever opened it is a page nobody has actually seen.
 
-A mark carried only by paint is a mark that a screen reader, a monochrome screen and a person who does not know the convention all miss, and it is placement alone that is left telling them, which is the unstated convention this replaced.
+A mark carried only by paint is missed by a screen reader, by a monochrome screen and by a person who does not know the convention.
+Placement alone is then left telling them, which is the unstated convention this replaced.
 
 #### Scenario: Nothing renders below the floor
 
@@ -295,10 +300,12 @@ The page SHALL NOT render any command a document carries, and SHALL NOT present 
 What answering a decision does SHALL be said in the words of the decision.
 
 A person reading this page is not at a prompt.
-A command under every option is a second and harder copy of a choice already written above it, in the language the page exists to spare them, and a person who reads it as an instruction believes there is something left for them to type.
+A command under every option is a second and harder copy of a choice already written above it, in the language the page exists to spare them.
+A person who reads it as an instruction believes there is something left for them to type.
 The command still travels: the caller gets each chosen option's command back verbatim, which is what carrying it was for.
 
-The same holds for what the page renders around the evidence: a file in a diff SHALL be shown under the path the person knows it by, rather than under the one the patch format prefixes for a tool that is about to apply it.
+The same holds for what the page renders around the evidence.
+A file in a diff SHALL be shown under the path the person knows it by, rather than under the one the patch format prefixes for a tool that is about to apply it.
 
 #### Scenario: No command reaches the page
 
@@ -324,12 +331,14 @@ Every colour the page paints SHALL be stated once, as a token, in the one block 
 Every text the page renders SHALL meet a contrast ratio of at least 4.5 against what it is painted on, under a light preference and under a dark one.
 
 The palette is the product's own: cut marble for the page, the grey of the block for its rules, slate for the ink, and the blue of the sea between the islands for the one accent a decision carries.
-A page whose colours are the colours of the tool that composed the document tells the person they are reading that tool's output rather than their own decision, and the first person to see one said so within a minute.
+A page whose colours are the colours of the tool that composed the document tells the person they are reading that tool's output rather than their own decision.
+The first person to see one said so within a minute.
 
 An illustration the caller supplied is the caller's own, and the floor is what the page paints rather than what a fragment carries or what a caller's stylesheet paints.
 The floor cannot reach a colour that arrives when the document does.
 It is measured against a stylesheet that is read, and a caller's colours are not read by anything before a person is looking at them, so a floor claimed over them would be a floor nothing holds.
-What is held instead is that the caller's colours land only inside the illustration, so a stylesheet that fails a person fails them in the box that was showing them something rather than in the decision they came to make.
+What is held instead is that the caller's colours land only inside the illustration.
+A stylesheet that fails a person then fails them in the box that was showing them something, rather than in the decision they came to make.
 
 #### Scenario: Every colour is stated once
 

@@ -8,6 +8,7 @@ import (
 )
 
 func TestTheThreeProhibitionsArePresent(t *testing.T) {
+	// scenario: The reasoning a session needs stays
 	document := strings.ToLower(skill.Document())
 
 	for _, prohibition := range []struct {

@@ -13,7 +13,7 @@ One tool, so one home and one configuration file: both binaries read `~/.socrate
 This file is a map.
 Where the two disagree, `openspec/` wins and this file is what needs fixing.
 
-## The scope rule
+## Scope
 
 socrates reviews.
 It does not land, verify, render, serve, or wait for a person.
@@ -127,7 +127,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - A recorded response is appended, never rewritten.
 - The round cap is two, nothing configures it, and a configuration file naming one is refused.
 
-**What a person reads**
+**Presentation**
 
 - Every round of a run that ended in `clean`, `awaiting-response` or `escalated` is handed over as a page, and a run that failed or was stopped is handed over as nothing whatever its rounds got as far as.
 - socrates states whether a round waits on a person and does nothing further about the page: no command, flag or run record names one, and it states nothing about whether a page is served.
@@ -152,14 +152,14 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - What a binary says about itself was recorded when it was linked and is never read where it is run.
 - socrates reaches no network outside a build tag, and what is measured is `cmd/socrates` and the packages it reaches rather than this repository.
 
-**The name the project answers to**
+**Project identity**
 
 - The module path is the project's repository under the organisation that publishes it, and every import of the project resolves under it.
 - The build states the path once and is checked against `go.mod`, so what a binary stamps into itself cannot disagree with what the compiler resolved.
 - No source file and no live specification names a code-hosting account other than the organisation's; an archived change is exempt, because the account it names is the account that existed when the decision was taken.
 - `openspec/config.yaml` names the binaries, commands and directories the repository has, and cites no source a reader cannot reach.
 
-**What a verification run proves**
+**Verification**
 
 - One entry point runs every gate, a run invokes that entry point rather than listing the gates, and formatting fails before the suite does.
 - The matrix is read from the platform statement, so the suite runs on every platform the set names and on no runner it does not.
@@ -170,7 +170,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - The browser the page half drives is installed by the run at a stated version rather than found on the runner, and an absent browser fails rather than skips.
 - Nothing a workflow runs reaches the real CLI, by target or by build tag.
 
-**The platforms the guarantees hold on**
+**Platform support**
 
 - `internal/platform` states the supported set once, on the basis that reaping by process group is available, the filesystem enforces the seal and the suite runs there rather than on the basis that socrates compiles.
 - The refusal, what a release builds and what a person reads all read that set, and no second copy of it exists in the source.
@@ -178,7 +178,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - A command that neither spawns nor reaps is not refused there, so a finished run stays readable.
 - `platforms.json` is generated from the statement, and a platform on one side and not the other fails the suite in both directions.
 
-**What a release is**
+**Releases**
 
 - A binary reports the release it was linked from beside the commit stamp, the version is set by the linker from the tag rather than written in the source, and a build that is not at a tag says it is a development build instead of borrowing the nearest one.
 - What a release builds is the supported set and no others, and a target on one side and not the other fails the suite.
@@ -187,7 +187,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - A release carries a checksum, a keyless signature over the checksums, a bill of materials and build provenance, and nothing in the release path reaches the real CLI.
 - Each release is recorded in `CHANGELOG.md`, written by hand, in terms of what it means to somebody who has the previous one.
 
-**The door a stranger arrives at**
+**Documentation**
 
 - `README.md` states what socrates needs before it explains how socrates works, and the reviewer CLI, its floor and the account behind it are part of that.
 - The toolchain floor a document states is read against `go.mod`, so the two cannot drift.
@@ -198,7 +198,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - `make help` names every target a document tells a contributor to run.
 - The documents a first change needs are present, and `.editorconfig` and `.gitattributes` match the conventions the source is held to.
 
-**The terms the work is published under**
+**Licensing**
 
 - `LICENSE` states MIT in full and names the holder, and no source file opens with a licence header.
 - A comment carrying a borrowed work's notice and citing `NOTICE` is not that header, and one that states terms and cites nothing still is.

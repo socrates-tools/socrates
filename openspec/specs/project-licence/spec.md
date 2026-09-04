@@ -39,7 +39,8 @@ A reader SHALL be able to learn the terms without running anything, reading a se
 Everything embedded in a shipped binary that socrates did not author SHALL be named in a notice file at the root, with its licence and that licence's full text.
 
 A reference SHALL NOT stand in for the text.
-The licences these works are published under require the text to accompany the copy, and a link is not the text: it is a request that the reader go and find it, which fails exactly when the copy has travelled furthest from the repository.
+The licences these works are published under require the text to accompany the copy, and a link is not the text.
+A link is a request that the reader go and find it, which fails exactly when the copy has travelled furthest from the repository.
 
 The notice SHALL be a condition of what the binary distributes rather than a description of the source tree, so a work present in the source and absent from the binary SHALL NOT need an entry, and a work absent from the source and present in the binary SHALL.
 

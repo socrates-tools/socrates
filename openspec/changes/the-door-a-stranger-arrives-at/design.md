@@ -3,7 +3,8 @@
 See `proposal.md` for why.
 
 `README.md` is 15 KB and well organised.
-It opens with what socrates is, states the requirements at line 18, and works through the first run, the three reading commands, the exit-code contract, what it does to the repository, configuration, reading the page from another machine, what it deliberately is not, and the layers.
+It opens with what socrates is and states the requirements at line 18.
+It then works through the first run, the reading commands, the exit-code contract, the effect on the repository, configuration, reading the page from another machine, what is out of scope, and the architecture.
 
 `AGENTS.md` is the working document, symlinked as `CLAUDE.md`.
 It is a map for an agent: layout, verification sequence, invariants, conventions.
@@ -26,7 +27,7 @@ Nothing outside `openspec/` explains that a change starts as a proposal.
 **Non-Goals:**
 
 - Rewriting the README's body. The parts that explain socrates are good and this change adds to the top and around them.
-- Softening the "what it deliberately is not" section. See the decision below.
+- Softening the "Out of scope" section. See the decision below.
 - A documentation site. It is a channel rather than a document, and it is raised as an issue.
 - Turning `AGENTS.md` into `CONTRIBUTING.md`. They have different readers, and the map an agent needs is not the path a person needs.
 
@@ -34,13 +35,14 @@ Nothing outside `openspec/` explains that a change starts as a proposal.
 
 ### The requirements come before the explanation
 
-The README gains a short block, before anything else, naming what has to be true before socrates works: a supported platform, git, Go for a source install, and the `claude` CLI at its floor with the account it needs.
+The README gains a short block, before anything else, naming what has to be true before socrates works.
+That is a supported platform, git, Go for a source install, and the `claude` CLI at its floor with the account it needs.
 
 The argument against is that leading with a dependency on a paid third-party product loses readers.
 It loses exactly the readers who would otherwise spend ten minutes reading and then discover it, and lose that time to a project that knew and did not say.
 A reader who continues past it is a reader who can actually use the tool, and that is a better first hundred users than a larger number who cannot.
 
-### The "what it deliberately is not" section is untouched
+### The "Out of scope" section is untouched
 
 That section names the residual risk on a managed machine, states that `clean` does not mean the tests pass, and says the reviewer does not know the project's conventions.
 

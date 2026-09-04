@@ -10,7 +10,8 @@ TBD - created by archiving change a-review-nobody-authored. Update Purpose after
 socrates SHALL ship exactly one binary, named `socrates` after the product.
 Installing it SHALL put `scrat` beside it as a second name for that same binary, so both are commands a person can type and neither is a shell alias they have to write themselves.
 
-One binary under two names rather than two binaries, because two things built from the same source are two things that can be at different versions on one machine, and the question `socrates version` exists to answer is exactly that one.
+One binary under two names rather than two binaries.
+Two things built from the same source can be at different versions on one machine, and that is exactly the question `socrates version` exists to answer.
 
 It SHALL provide `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill` and `version`, and it SHALL NOT provide a command that commits, pushes, opens a pull request, watches continuous integration, or runs the repository's tests.
 
@@ -42,7 +43,8 @@ None of them writes in the repository, and adding them does not move the boundar
 
 Every string socrates prints SHALL name `socrates`, including the prefix on a failure, the command a refusal tells the person to run next, and the step a report says to take.
 
-It SHALL name `socrates` when it was invoked as `scrat`, because a tool that reports itself by whichever name it was invoked as has no name, and a person reading `scrat: run scrat --help` cannot tell which of the two the documentation is about.
+It SHALL name `socrates` when it was invoked as `scrat`.
+A tool that reports itself by whichever name it was invoked as has no name, and a person reading `scrat: run scrat --help` cannot tell which of the two the documentation is about.
 
 #### Scenario: The short name reports the full one
 
@@ -136,7 +138,8 @@ It SHALL exit with the verdict's code once the run is terminal, and with the cod
 `scrat findings --json` SHALL print the findings document as socrates classified it, with every finding's effective action resolved, so that a reader never has to reapply the defaulting rule and never has a chance to apply it differently.
 
 This is the command the session that asked for the review reads once the run is terminal.
-It is separate from `status` because `status` is polled and this is not, and separate from reading the findings file directly because the file holds what the reviewer said and this holds what socrates concluded.
+It is separate from `status` because `status` is polled and this is not.
+It is separate from reading the findings file because the file holds what the reviewer said and this holds what socrates concluded.
 
 #### Scenario: Findings are readable
 
@@ -237,7 +240,8 @@ One environment variable SHALL move all of it, and where none is stated it SHALL
 A stated home SHALL be refused unless it is absolute, rather than ignored in favour of the default.
 
 One directory rather than two is a question with one answer: where socrates keeps things.
-The answer is given to a stranger reading an issue that will not reproduce, and a second directory belonging to a second binary is that answer growing a second half for a program the stranger has never heard of.
+The answer is given to a stranger reading an issue that will not reproduce.
+A second directory belonging to a second binary grows that answer a second half, for a program the stranger has never heard of.
 Refusing a relative home rather than ignoring it is the same argument: a stated home that silently does nothing is a person who believes their state moved and is looking in the wrong place.
 
 socrates SHALL NOT read configuration from the repository under review, SHALL NOT create a configuration file on its own, and SHALL NOT write anything at all inside a repository.
@@ -299,7 +303,8 @@ No message SHALL contain an em dash.
 Where a run is `awaiting-response`, `scrat status` SHALL say so, say which round it is on, say how many findings are still unanswered, and say how many of those need a person rather than a patch.
 
 The first count is what a waiting session needs in order to know whether it has more work to do.
-The second is what it needs in order to know whether the work is its own: a round waiting on a decision is a round where the session's next move is to stop and ask, and a caller that must branch on that SHALL be able to without reading prose.
+The second is what it needs in order to know whether the work is its own.
+A round waiting on a decision is a round where the session's next move is to stop and ask, and a caller that must branch on that SHALL be able to without reading prose.
 The exit code stays the one for a run that is not terminal, because a parked run is not terminal whichever kind of answer it waits on, and one code cannot report a round that waits on both.
 
 #### Scenario: A parked run reports what it wants
@@ -328,7 +333,8 @@ The reason SHALL be accepted as an argument or on standard input, so that a long
 Standard input SHALL be read only where the invocation asked for it, because a command that reads it on its own hangs where nothing is written and stores whatever is where a reason should be.
 
 What the author said SHALL never be dropped without a word.
-A flag belonging to another resolution SHALL be refused, naming the one that applies, rather than ignored: the author's claim is the whole value of a response, and one silently discarded reaches the next reviewer as an author who said nothing.
+A flag belonging to another resolution SHALL be refused, naming the one that applies, rather than ignored.
+The author's claim is the whole value of a response, and one silently discarded reaches the next reviewer as an author who said nothing.
 
 #### Scenario: One finding per invocation
 
@@ -369,7 +375,8 @@ A flag belonging to another resolution SHALL be refused, naming the one that app
 - `logs` reads what happened, for the person afterwards. It never follows.
 
 `status` SHALL NOT gain a follow option and `watch` SHALL NOT gain a one-shot option.
-Either would be the same command reached two ways, and the reason they are separate is that one of them prints into a language model's context and two print into a person's terminal, which is a difference of an order of magnitude in what verbosity costs.
+Either would be the same command reached two ways.
+They are separate because one prints into a language model's context and two print into a person's terminal, which is an order of magnitude difference in what verbosity costs.
 
 #### Scenario: Status stays small when the reviewer is loud
 

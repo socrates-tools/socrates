@@ -34,7 +34,8 @@ The refusal SHALL happen before any reviewer process is spawned and before any s
 The refusal SHALL name the guarantee that is missing and the way forward, so that a person who meets it is not left to search for what to do.
 
 A verdict socrates cannot stand behind is worse than no verdict.
-That is the reasoning the seal already refuses on, and the reason the guarantee is absent does not change it: a platform that cannot reap is as unable to hold the promise as a filesystem that ignores permission bits.
+That is the reasoning the seal already refuses on, and the reason the guarantee is absent does not change it.
+A platform that cannot reap is as unable to hold the promise as a filesystem that ignores permission bits.
 
 #### Scenario: An unsupported platform refuses the review before anything starts
 

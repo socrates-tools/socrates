@@ -107,7 +107,8 @@ No automated run SHALL compile or execute anything that reaches the real reviewe
 
 This is held by build tags rather than by workflow configuration, so that a workflow written later inherits it rather than having to remember it.
 
-A run that reached the real CLI would make the suite depend on a third party's availability, on a paid account, and on model output, and would make a green run evidence about something other than this repository.
+A run that reached the real CLI would make the suite depend on a third party's availability, on a paid account, and on model output.
+A green run would then be evidence about something other than this repository.
 
 #### Scenario: A verification run reaches no reviewer CLI
 
@@ -119,7 +120,8 @@ A run that reached the real CLI would make the suite depend on a third party's a
 A verification run SHALL be startable on request, and a release SHALL gate on one.
 
 It SHALL NOT start on every push or on every pull request.
-A private repository bills a macOS minute as ten, and the supported set names macOS, so a run costs about two orders of magnitude more than the work of pushing; a project that cannot pay for a run per push and schedules one anyway gets no runs at all, the release among them.
+A private repository bills a macOS minute as ten, and the supported set names macOS, so a run costs about two orders of magnitude more than the work of pushing.
+A project that cannot pay for a run per push and schedules one anyway gets no runs at all, the release among them.
 
 What a run proves SHALL be unchanged by this.
 The same entry point, the same matrix read from the same statement, the same pins, the same tokens, the same browser, the same boundary. Only when a run happens is decided here.

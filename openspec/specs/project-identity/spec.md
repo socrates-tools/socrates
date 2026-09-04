@@ -30,7 +30,8 @@ A check SHALL fail while any source file or live specification names a code-host
 The check SHALL be on what account is named rather than on which account was left behind, because a check for one departed name passes on the day a third name arrives.
 
 Archived changes SHALL be exempt.
-An archived change records a decision as it was taken, and the account it names is the account that existed then; rewriting it would make a past document claim something its author did not write, which a reader cannot distinguish from the truth.
+An archived change records a decision as it was taken, and the account it names is the account that existed then.
+Rewriting it would make a past document claim something its author did not write, which a reader cannot distinguish from the truth.
 
 #### Scenario: A source file naming another account fails the check
 
@@ -47,7 +48,8 @@ An archived change records a decision as it was taken, and the account it names 
 The context in `openspec/config.yaml` SHALL name the binaries, commands and directories the repository actually has.
 
 It SHALL cite no source a reader cannot reach.
-A normative document is a document that can be checked against, and a citation nobody outside the author's machine can open is a citation that cannot be checked, which is worse than none at all because it looks like evidence.
+A normative document is one that can be checked against.
+A citation nobody outside the author's machine can open cannot be checked, which is worse than none at all because it looks like evidence.
 
 `openspec/` SHALL be stated as the sole normative source for the project's design.
 

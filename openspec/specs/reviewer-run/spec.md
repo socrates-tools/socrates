@@ -88,7 +88,8 @@ When a round ends, socrates SHALL compare the snapshot worktree against the snap
 Any difference SHALL fail the round, naming the paths that differ, and SHALL leave the worktree in place.
 
 A reviewer with write access will eventually decide to just fix something, after which the next round's diff contains changes nobody attributes.
-The first two mechanisms can be taken away from socrates by the machine it runs on, and were: a customisation the machine brings can put a tool in the session that the vendor's restriction was never about, and a filesystem can decline to enforce permissions.
+The first two mechanisms can be taken away from socrates by the machine it runs on, and were.
+A customisation the machine brings can put a tool in the session that the vendor's restriction was never about, and a filesystem can decline to enforce permissions.
 The comparison cannot be taken away, which is why it stays even though the seal makes it unreachable in ordinary use.
 
 #### Scenario: A reviewer that wrote fails the round

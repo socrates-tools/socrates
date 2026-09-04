@@ -109,8 +109,8 @@ func TestTheSkillSaysWhatIsStrippedBeforeEitherIsEmbedded(t *testing.T) {
 
 	for _, said := range []string{
 		"reduced to an allowlist before they are embedded",
-		"out of the markup go script, event handlers, remote references and form controls",
-		"out of the stylesheet go imports, font faces",
+		"the markup loses script, event handlers, remote references and form controls",
+		"the stylesheet loses imports, font faces",
 		"every property the allowlist does not name",
 		"every value naming a resource",
 	} {
@@ -140,7 +140,7 @@ func TestHowToIllustrateIsStatedBesideWhenTo(t *testing.T) {
 
 	bar := strings.Index(document, skill.PageBar)
 	mechanism := strings.Index(document, "A decision may also carry one illustration")
-	rest := strings.Index(document, "Every finding in the round gets a card of its own.")
+	rest := strings.Index(document, "Give every finding in the round a card of its own.")
 	if bar < 0 || mechanism < 0 || rest < 0 {
 		t.Fatal("the skill states either the bar or the mechanism nowhere at all")
 	}

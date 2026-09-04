@@ -24,16 +24,16 @@ All of this has to be true before anything below works:
   Every round of every review is a model call, made on your account and against whatever plan or credit it carries.
   socrates costs nothing and the reviews are not free.
 - **Linux or macOS.**
-  socrates makes two promises that are not matters of care, and both are held by unix mechanisms.
+  socrates makes two promises that do not depend on care, and unix mechanisms hold both.
   On Windows, run socrates under WSL, which is a supported Linux.
 - **`git`.**
   The snapshot a reviewer reads is a real commit in your repository.
 - **Go 1.26 or later, if you install from source.**
   A release archive needs no toolchain.
 
-If the first two are not true for you, this is the right place to find that out rather than the twentieth minute.
+Check the first two now rather than twenty minutes in.
 
-## Installing it
+## Installing
 
 A release archive is the shortest way in.
 Each one carries `socrates`, `scrat` and `agora`, along with `LICENSE` and `NOTICE`, so extracting one gives you what installing from source gives you.
@@ -64,7 +64,7 @@ GitHub stores build provenance for a public repository only, so the last of thos
 
 `CHANGELOG.md` says what each release means to somebody who has the previous one.
 
-## The first run
+## First run
 
 Building from source needs Go 1.26 or later:
 
@@ -76,7 +76,7 @@ bin/socrates review --intent "add the parser I asked for"
 `make install` puts it on your `PATH` under both of its names: `socrates`, and `scrat` for the short one.
 They are one binary, so the two can never be at different commits, and `socrates version` says which release that is and which commit it was built from.
 
-## The second binary
+## agora, the second binary
 
 Installing socrates installs a second program beside it, called `agora`, and it is not a third name for the first one.
 
@@ -115,10 +115,10 @@ socrates cancel                   # stop a review and say that nothing was decid
 
 Naming no run means the most recent run for the repository you are standing in.
 
-## The platforms it holds on
+## Supported platforms
 
-socrates makes two promises that are not matters of care: the reviewer never writes, and everything the reviewer started is reaped with it.
-Both are held by unix mechanisms, so a platform is supported where both hold and where the suite runs, rather than where socrates compiles.
+socrates makes two promises that do not depend on care: the reviewer never writes, and everything the reviewer started is reaped with it.
+Unix mechanisms hold both, so a platform is supported where both hold and where the suite runs, rather than where socrates compiles.
 
 | platform | reaps by process group | the filesystem enforces the seal | the suite runs there |
 | --- | --- | --- | --- |
@@ -130,7 +130,7 @@ On Windows, run socrates under WSL, which is a supported Linux and is how socrat
 A review started where reaping by process group is unavailable refuses before it takes a snapshot and before it spawns a reviewer, because a verdict socrates cannot stand behind is worse than no verdict.
 Reading a finished run is not refused there: `socrates status`, `socrates findings` and `socrates logs` make neither promise.
 
-## Three ways to read one run, for three readers
+## Reading a run
 
 | command | behaviour | who it is for |
 | --- | --- | --- |
@@ -138,7 +138,7 @@ Reading a finished run is not refused there: `socrates status`, `socrates findin
 | `socrates logs` | prints what the run recorded and exits, paging where your terminal and `PAGER` say so | you, afterwards |
 | `socrates status` | one shot, a handful of lines, no stream | the session waiting on the review |
 
-They stay distinct on purpose.
+They stay distinct.
 `status` is what a coding session should call, because everything it prints lands in that session's context, and it prints the same few lines for a silent reviewer and a loud one.
 `watch` and `logs` print into a person's terminal, where being told what happened is the point.
 So `status` has no way to follow, and `watch` has no way to return after one read.
@@ -147,9 +147,10 @@ So `status` has no way to follow, and `watch` has no way to return after one rea
 It never waits for an event a finished run will not write.
 Started in the moment between `socrates review` returning and the reviewer's first byte, it waits for the log rather than failing, and gives up if nothing is ever written.
 
-## Letting a session drive it
+## Driving it from a coding session
 
-The sequence above is five commands with three branch points, and a coding session told it once in prose gets it right for a while and then drifts.
+The sequence above is five commands with three branch points.
+A session told it once in prose drifts.
 
 ```sh
 socrates skill                    # writes the skill to ~/.claude/skills/socrates/SKILL.md
@@ -194,7 +195,7 @@ It parks the round and returns `4` until somebody answers it, because ending the
 `socrates respond --decided --reason` records the answer, `--fixed` and `--rejected` are refused for such a finding, and the next round is told a person decided rather than that a patch was claimed.
 After the cap, a further look is a fresh `socrates review` rather than a third round, and its reviewer knows nothing of the run before it.
 
-## What it does to your repository
+## Effect on your repository
 
 Nothing, other than adding the git objects the snapshot needs.
 
@@ -207,16 +208,16 @@ Everything both binaries read and everything they write lives under one home, `~
 Runs are `~/.socrates/runs/`, one directory per run, legible with `ls` and `cat`.
 What agora writes about a page is `~/.socrates/surface/`, beside them.
 
-## Where what it reads goes
+## Where your code goes
 
 socrates sends nothing anywhere.
 No telemetry, no usage counter, no crash report, no update check.
 It opens no network connection at all outside a build tag the ordinary suite does not compile, and a test holds that by reading what `cmd/socrates` and every package it reaches import.
 
-The reviewer CLI it drives is the other half of the answer, and that half is not silent.
+The reviewer CLI it drives is the other half, and it is not silent.
 socrates spawns `claude`, and that CLI sends the change to its vendor, Anthropic, exactly as it does when you run it yourself.
 Your diff, the file contents a reviewer reads and the one line of intent you chose to state go there, under the terms your own account carries.
-That is the mechanism rather than a leak: a review is a model call, and the model is not on your machine.
+That is the mechanism rather than a leak. A review is a model call, and the model is not on your machine.
 If that is not acceptable for a repository, socrates is not the tool to point at it.
 
 socrates is not affiliated with, endorsed by or sponsored by Anthropic.
@@ -245,7 +246,7 @@ surface:
 
 The `surface` block is what an operator states about the page a person reads: the loopback address it binds, and the address a person is handed where that is not the one it bound.
 
-## Telling the reviewer what your project expects
+## The review guide
 
 The reviewer arrives knowing nothing about your project, and that is deliberate.
 It loads no `CLAUDE.md`, no project or local settings and no skills, because all of those are written by the thing under review.
@@ -307,7 +308,7 @@ surface:
 
 Until you do, serving a page says so.
 
-## What it deliberately is not
+## Out of scope
 
 - **It does not land your change.** No commit, no push, no pull request, no continuous integration. Those are yours, and a reviewer that could land things is not a reviewer.
 - **It does not verify your change.** It runs no tests and no linters. `clean` means an independent reviewer found nothing blocking, not that the suite is green.
@@ -318,18 +319,18 @@ Until you do, serving a page says so.
 - **It is not a daemon.** One detached process per round and a directory of files. Nothing to install, nothing to keep running, nothing to restart.
 - **It does not tell the reviewer what you told it about how the change came to be.** Only the change, and optionally the one line of intent you chose to state. The skill says the same thing to the session, because a session that believes such a channel exists will go looking for it.
 
-## The terms
+## Licence
 
 socrates is published under the MIT licence, and `LICENSE` at the root states it in full.
 
-`NOTICE` beside it is the other half: everything a shipped binary carries that socrates did not author, with the licence each is published under and that licence's full text.
+`NOTICE` beside it lists everything a shipped binary carries that socrates did not author, with the licence each is published under and that licence's full text.
 That is the client bundle's third-party libraries and the font faces embedded with it, and the Go modules `cmd/socrates` and `cmd/agora` link in.
 A test fails while anything embedded is not accounted for there, so a new asset cannot arrive without its notice.
 
 The terms are stated in those two files and nowhere else.
 No source file carries a licence header, because a header is a comment and this repository's source carries none.
 
-## The layers
+## Architecture
 
 This repository is built in layers, specified in `openspec/` before they are implemented.
 
