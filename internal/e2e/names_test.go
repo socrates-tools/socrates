@@ -57,9 +57,18 @@ func TestWhatItPrintsNamesTheTool(t *testing.T) {
 	if !strings.Contains(failures, convention.Repository) {
 		t.Errorf("what it printed does not name %s: %q", convention.Repository, failures)
 	}
-	for _, said := range strings.Fields(printed + failures) {
+
+	helped, helpFailures, code := invoked(t, session.Binary, "--help")
+	if code != 0 {
+		t.Fatalf("--help exited %d: %s", code, helpFailures)
+	}
+	if !strings.Contains(helped, convention.Repository) {
+		t.Errorf("what --help printed does not name %s: %q", convention.Repository, helped)
+	}
+
+	for _, said := range strings.Fields(printed + failures + helped + helpFailures) {
 		if said == "socrates" || said == "scrat" {
-			t.Errorf("what it printed names %q, and the command a person can type is %s: %q", said, convention.Repository, printed+failures)
+			t.Errorf("what it printed names %q, and the command a person can type is %s", said, convention.Repository)
 		}
 	}
 }
