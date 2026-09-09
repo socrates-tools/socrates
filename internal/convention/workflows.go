@@ -21,7 +21,7 @@ var credentialsTheRealCLIReads = []string{"ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUT
 
 const TheEntryPoint = "verify"
 
-var gatesTheEntryPointRuns = []string{"lint", "test", "scenario-coverage", "scenario-drop", "corpus-outcomes", "fixtures-diff"}
+var gatesTheEntryPointRuns = []string{"lint", "test", "corpus-outcomes", "fixtures-diff"}
 
 type WorkflowGates struct {
 	Invoking []string

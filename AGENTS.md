@@ -10,9 +10,9 @@ It knows nothing about code review, and nothing socrates-review does reaches it 
 One tool, so one home and one configuration file: both binaries read `~/.socrates/review/config.yaml` and write under `~/.socrates/review`.
 `~/.socrates` is the brand's root, holding one directory per tool published under it, and `SOCRATES_HOME` moves the root.
 
-`openspec/` is normative and is where the reasoning lives: `openspec/specs` for what is required and why, and `openspec/changes/archive/*/design.md` for the decisions behind it.
-This file is a map.
-Where the two disagree, `openspec/` wins and this file is what needs fixing.
+`CONTEXT.md` defines the vocabulary and `docs/adr/` holds the decisions, each with what it rejected and why.
+This file is the map: the layout, the verification sequence, and the invariants the design rests on.
+A change starts as a spec published to this repository's issues, and `CONTRIBUTING.md` says how.
 
 ## Scope
 
@@ -61,12 +61,11 @@ What agora is:
 What holds them both:
 
 - `internal/convention` - the repository's conventions as executable checks.
-- `internal/coverage`, `internal/promotion` - the scenario-coverage and promotion gates.
 - `internal/e2e` - real binaries, a real repository, real git, real processes, each vendor's simulator on `PATH`, a real browser.
 - `internal/simulation` - what every simulator shares: the scenario vocabulary, the invocation log, and the run that turns one into the other.
 - `internal/claudesim`, `internal/codexsim`, `internal/opencodesim` - each simulator's half of its real CLI's wire contract: the arguments it reads, the stream it writes.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
-- `cmd/claudesim`, `cmd/codexsim`, `cmd/opencodesim`, `cmd/scenario-coverage`, `cmd/scenario-drop`, `cmd/corpus-outcomes`, `cmd/corpus-record`, `cmd/platforms` - the simulator and the gate binaries.
+- `cmd/claudesim`, `cmd/codexsim`, `cmd/opencodesim`, `cmd/corpus-outcomes`, `cmd/corpus-record`, `cmd/platforms` - the simulator and the gate binaries.
 
 ## Verification
 
@@ -78,13 +77,12 @@ make verify
 ```
 
 `make help` lists every target.
-`make verify` is the one entry point, and it runs `make lint`, `make test`, `make scenario-coverage`, `make scenario-drop`, `make corpus-outcomes` and `make fixtures-diff`, in that order.
+`make verify` is the one entry point, and it runs `make lint`, `make test`, `make corpus-outcomes` and `make fixtures-diff`, in that order.
 Continuous integration runs that same command on every supported platform, so passing locally and passing there are one claim rather than two.
 
 `make lint` fails on anything `gofmt` would rewrite, then vets, then runs the analysers `.golangci.yaml` names at the version the `Makefile` pins, so the cheapest gate is the first to fail.
 `make test` drives the surface page with a real browser, so a Chrome or Chromium must be on `PATH` or named by `AGORA_BROWSER`.
 `make skill`, `make assets` and `make platforms` regenerate committed files from their sources, and `make test` fails while a generated file and its source disagree.
-`make scenario-coverage` and `make scenario-drop` are also held by `make test`; neither reads prose, so a delta that rewrites a requirement's sentences from a stale copy is still something only a reader catches.
 `make corpus-outcomes` states which outcomes only fixtures reach and never fails for one; rewrite its recorded distribution with `scripts/corpus-outcomes -write` once a move is deliberate.
 `make fixtures-diff` compares the simulator against the recordings and reaches nothing.
 
@@ -100,7 +98,7 @@ make live-smoke  # one real review against the real binary
 ## Invariants
 
 Each is held by a test that fails when it stops holding.
-None is a matter of care, and the reasoning for each is in `openspec/`.
+None is a matter of care, and the reasoning for each is in `docs/adr/`.
 
 **The repository under review**
 
@@ -163,8 +161,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 
 - The module path is the project's repository under the organisation that publishes it, and every import of the project resolves under it.
 - The build states the path once and is checked against `go.mod`, so what a binary stamps into itself cannot disagree with what the compiler resolved.
-- No source file and no live specification names a code-hosting account other than the organisation's; an archived change is exempt, because the account it names is the account that existed when the decision was taken.
-- `openspec/config.yaml` names the binaries, commands and directories the repository has, and cites no source a reader cannot reach.
+- No source file and no document names a code-hosting account other than the organisation's.
 
 **Verification**
 
@@ -201,7 +198,7 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - Every binary `make install` puts on a path is explained rather than mentioned.
 - Where what socrates-review reads goes is stated in both directions: socrates-review sends nothing, and the reviewer CLI it drives sends the change to its vendor. Neither half is stated without the other.
 - `SECURITY.md` names a private channel and says what socrates-review does not defend against, including the residual `README.md` already names.
-- `CONTRIBUTING.md` says a change starts as a proposal in `openspec/` before it says anything about the toolchain, and it names one verification command rather than the gates.
+- `CONTRIBUTING.md` says a change starts as a spec before it says anything about the toolchain, and it names one verification command rather than the gates.
 - `make help` names every target a document tells a contributor to run.
 - The documents a first change needs are present, and `.editorconfig` and `.gitattributes` match the conventions the source is held to.
 
@@ -244,7 +241,6 @@ None is a matter of care, and the reasoning for each is in `openspec/`.
 - Every end-to-end scenario runs against every supported vendor's simulator, and a supported vendor with no simulator or no recordings fails the suite.
 - Tests assert on the delivered prompt, never on socrates-review's own source text, and the prompt's reporting section is generated from `internal/findings`.
 - A test may not prove behaviour by reading implementation source; one that legitimately reads a Go file is named in `convention.ContractsTestsRead`.
-- Every scenario under way is named by a test, and archiving a change may take none out of the promoted specifications.
 - A gate that cannot check what it was asked to check fails rather than reporting a pass.
 - What a real reviewer answered is kept verbatim and replayed; the corpus is classified by `dialogue.After`, and a recording is only made from a run that answered.
 - A verification task may require that a live run happened and was recorded, never a particular severity, action or count.

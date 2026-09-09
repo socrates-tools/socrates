@@ -148,6 +148,6 @@ Finally, update `## [Unreleased]` links if anything about the compare range chan
 - It does not edit a released section of `CHANGELOG.md`.
   A past release is what somebody already installed.
 - It does not publish, sign, or attach anything by hand.
-  If a release needs something the workflow does not produce, that is a change to `.goreleaser.yaml` or `.github/workflows/release.yml`, and it starts as a proposal in `openspec/`.
+  If a release needs something the workflow does not produce, that is a change to `.goreleaser.yaml` or `.github/workflows/release.yml`, and it starts as a spec.
 - It does not delete a tag, a release or an asset on its own say-so.
   Every one of those is somebody else's checkout, so it is the person's call and not this skill's.

@@ -17,7 +17,5 @@ Makefile text eol=lf
 
 internal/assets/bundle/** linguist-generated
 internal/document/languages.json linguist-generated
-.claude/skills/socrates/SKILL.md linguist-generated
+.claude/skills/socrates-review/SKILL.md linguist-generated
 platforms.json linguist-generated
-
-openspec/changes/archive/** linguist-documentation

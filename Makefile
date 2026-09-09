@@ -12,7 +12,7 @@ VERSION = $(shell git describe --tags --exact-match 2>/dev/null)
 STAMP = -X $(MODULE)/internal/version.version=$(VERSION) -X $(MODULE)/internal/version.commit=$(COMMIT) -X $(MODULE)/internal/version.uncommitted=$(UNCOMMITTED)
 SURFACE_STAMP = -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.uncommitted=$(UNCOMMITTED)
 
-TARGETS := build install release release-snapshot verify test lint fmt help skill assets platforms scenario-coverage scenario-drop corpus-outcomes fixtures fixtures-diff live-smoke
+TARGETS := build install release release-snapshot verify test lint fmt help skill assets platforms corpus-outcomes fixtures fixtures-diff live-smoke
 
 .PHONY: $(TARGETS)
 
@@ -34,8 +34,6 @@ release-snapshot:
 verify:
 	$(MAKE) lint
 	$(MAKE) test
-	$(MAKE) scenario-coverage
-	$(MAKE) scenario-drop
 	$(MAKE) corpus-outcomes
 	$(MAKE) fixtures-diff
 
@@ -65,12 +63,6 @@ assets:
 
 platforms:
 	go run ./cmd/platforms
-
-scenario-coverage:
-	./scripts/scenario-coverage
-
-scenario-drop:
-	./scripts/scenario-drop
 
 corpus-outcomes:
 	./scripts/corpus-outcomes

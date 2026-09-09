@@ -4,22 +4,25 @@
 
 Read this before you write anything.
 
-`openspec/` is normative in this repository.
-`openspec/specs` says what is required and why, and the design document of each archived change says what was decided and what was rejected.
-Where the source and `openspec/` disagree, `openspec/` is right and the source is the bug.
+A change here starts as a spec, published as a GitHub issue in this repository and labelled `ready-for-agent`.
 
-So a change here starts as a proposal in `openspec/changes/<name>/`, holding:
+The spec says, in the words of somebody using socrates-review rather than the words of the code:
 
-- `proposal.md`: why, what changes, which capabilities, what the impact is, what it depends on.
-- `design.md`: the decisions, and the goals and non-goals. A non-goal here is load-bearing: it is how a later change proposing the thing is recognised as proposing it rather than as an oversight.
-- `specs/<capability>/spec.md`: the requirements, each with the scenarios that hold it.
-- `tasks.md`: the order, and the constraints particular to that change.
+- the problem, and the solution to it.
+- the user stories, at length rather than in summary.
+- the implementation decisions, including which modules change and how their interfaces change.
+- the testing decisions, including which seams are used and what prior art in the suite they follow.
+- what is out of scope.
 
-A pull request that edits code with no proposal behind it will be turned away, and that is not a formality.
-Two gates enforce it mechanically: the scenario-coverage gate fails while a scenario in an underway change is named by no test, and the scenario-drop gate fails while archiving a change would take a scenario out of the promoted specifications.
-Both run under the one verification command below.
+Two other places hold what a spec assumes rather than what it changes:
 
-If you are not sure whether something needs a proposal, open an issue and say what you want to change.
+- `CONTEXT.md` holds the vocabulary. A spec names a domain concept in the words defined there, and a concept with no word yet is either language this project does not use or a gap worth recording.
+- `docs/adr/` holds the decisions, each with what was rejected and why. A change that contradicts one says so rather than overriding it quietly.
+
+A pull request that edits code with no spec behind it will be turned away, and that is not a formality.
+Nothing enforces it mechanically. This repository held it with two gates that read a specification directory, and holds it by whoever reads the pull request instead.
+
+If you are not sure whether something needs a spec, open an issue and say what you want to change.
 A bug fix that restores stated behaviour does not need one. Anything that changes what socrates-review promises does.
 
 ## Out of scope
@@ -53,7 +56,7 @@ Do not add a gate to a workflow: add it to `make verify`, and a check fails whil
 
 Each of these is checked by a test, so it is cheaper to follow than to argue with:
 
-- **No comments in the source.** Not few, not only where necessary, none. A name that needs a sentence beside it is the wrong name. Reasoning belongs in the commit message, a constraint somebody would re-derive belongs in `docs/gotchas.md`, and a decision belongs in `openspec/`.
+- **No comments in the source.** Not few, not only where necessary, none. A name that needs a sentence beside it is the wrong name. Reasoning belongs in the commit message, a constraint somebody would re-derive belongs in `docs/gotchas.md`, and a decision belongs in `docs/adr/`.
 - **No em dash**, anywhere: prose, documents, commit messages, emitted strings.
 - **One sentence per line** in long Markdown.
 - **Every user-facing string lives in its package's `messages.go`**, names what the person can do next, and carries no em dash.

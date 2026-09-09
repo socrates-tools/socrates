@@ -19,8 +19,6 @@ var everyGate = []string{
 	"go vet",
 	"golangci-lint",
 	"go test -race",
-	"scripts/scenario-coverage",
-	"scripts/scenario-drop",
 	"scripts/corpus-outcomes",
 	"-tags drift",
 }

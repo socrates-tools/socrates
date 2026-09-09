@@ -16,8 +16,6 @@ const (
 	Repository   = "socrates-review"
 )
 
-var ArchivedChanges = filepath.Join("openspec", "changes", "archive")
-
 const moduleDirective = "module"
 
 func ModulePath(root string) (string, error) {
@@ -63,7 +61,7 @@ func AccountsOtherThanTheOrganisation(root string) ([]NamedAccount, error) {
 		}
 
 		if entry.IsDir() {
-			if path != root && (skipped(entry.Name()) || relative == ArchivedChanges) {
+			if path != root && skipped(entry.Name()) {
 				return filepath.SkipDir
 			}
 			return nil

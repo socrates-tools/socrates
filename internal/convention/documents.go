@@ -28,7 +28,7 @@ const (
 	OutOfScopeHeading   = "## What socrates-review does not defend against"
 
 	ReviewerCLIFloor   = "2.1.169"
-	ProposalDirectory  = "openspec"
+	ProposalHome       = "GitHub issue"
 	PrivateChannelPath = "security/advisories/new"
 
 	SendsNothing     = "socrates-review sends nothing"
@@ -283,7 +283,7 @@ func HowTheGuideReads(root string) (GuideReading, error) {
 		return reading, err
 	}
 
-	reading.ProposalAt = strings.Index(held, ProposalDirectory)
+	reading.ProposalAt = strings.Index(held, ProposalHome)
 	reading.ToolchainAt = strings.Index(held, ToolchainHeading)
 	reading.NamesEntry = invocationOf(TheEntryPoint).MatchString(held)
 

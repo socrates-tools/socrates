@@ -1,5 +1,6 @@
 * @ktei
 
-/openspec/ @ktei
+/docs/ @ktei
+/CONTEXT.md @ktei
 /.github/ @ktei
 /SECURITY.md @ktei

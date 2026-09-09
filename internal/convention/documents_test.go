@@ -206,13 +206,13 @@ func TestTheGuideLeadsWithTheProposal(t *testing.T) {
 	}
 
 	if reading.ProposalAt < 0 {
-		t.Fatalf("%s never names %s, so a contributor learns nowhere that a change starts as a proposal", convention.ContributingFile, convention.ProposalDirectory)
+		t.Fatalf("%s never names %s, so a contributor learns nowhere that a change starts as a proposal", convention.ContributingFile, convention.ProposalHome)
 	}
 	if reading.ToolchainAt < 0 {
 		t.Fatalf("%s has no %q section, so this check has nothing to order it against", convention.ContributingFile, convention.ToolchainHeading)
 	}
 	if reading.ProposalAt > reading.ToolchainAt {
-		t.Errorf("%s states the toolchain before it states that a change starts as a proposal in %s, and a contributor who learns the toolchain first writes code first", convention.ContributingFile, convention.ProposalDirectory)
+		t.Errorf("%s states the toolchain before it states that a change starts as a proposal in %s, and a contributor who learns the toolchain first writes code first", convention.ContributingFile, convention.ProposalHome)
 	}
 }
 
@@ -233,15 +233,15 @@ func TestTheGuideNamesOneVerificationCommand(t *testing.T) {
 func TestAGuideListingTheGatesItselfIsReported(t *testing.T) {
 	root := t.TempDir()
 	writeNested(t, filepath.Join(root, convention.ContributingFile),
-		"# Contributing\n\nA change starts in "+convention.ProposalDirectory+".\n\n"+convention.ToolchainHeading+
-			"\n\nGo 1.26.\n\nRun make verify, then make scenario-drop.\n")
+		"# Contributing\n\nA change starts as a "+convention.ProposalHome+".\n\n"+convention.ToolchainHeading+
+			"\n\nGo 1.26.\n\nRun make verify, then make corpus-outcomes.\n")
 
 	reading, err := convention.HowTheGuideReads(root)
 	if err != nil {
 		t.Fatalf("reading a fabricated guide: %v", err)
 	}
 
-	want := []string{convention.ContributingFile + " tells a contributor to run make scenario-drop of its own"}
+	want := []string{convention.ContributingFile + " tells a contributor to run make corpus-outcomes of its own"}
 	if diff := cmp.Diff(want, reading.Listing); diff != "" {
 		t.Errorf("what a guide listing a gate of its own reports differs (-want +got):\n%s", diff)
 	}

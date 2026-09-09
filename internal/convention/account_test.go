@@ -37,20 +37,6 @@ func TestASourceFileNamingAnotherAccountFailsTheCheck(t *testing.T) {
 	}
 }
 
-func TestAnArchivedChangeNamingTheFormerAccountPasses(t *testing.T) {
-	root := fabricatedTree(t)
-	writeNested(t, filepath.Join(root, convention.ArchivedChanges, "2026-01-01-a-decision", "design.md"), "The module was `"+hostedBy("github.com", "a-former-account")+"`.\n")
-
-	named, err := convention.AccountsOtherThanTheOrganisation(root)
-	if err != nil {
-		t.Fatalf("reading a fabricated tree: %v", err)
-	}
-
-	if len(named) != 0 {
-		t.Errorf("the archive reported %v, and it is the record of what was decided when it was decided", named)
-	}
-}
-
 func TestAnAccountOnAnotherHostIsNamed(t *testing.T) {
 	root := fabricatedTree(t)
 	writeNested(t, filepath.Join(root, "README.md"), "Clone it from https://"+hostedBy("gitlab.com", "a-mirror")+".\n")

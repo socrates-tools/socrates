@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        A change here starts as a proposal in `openspec/`, not as code: see `CONTRIBUTING.md`.
+        A change here starts as a spec, not as code: see `CONTRIBUTING.md`.
 
         This issue is where that conversation starts. Read "What it deliberately is not" in `README.md` first: socrates-review reviews, and it does not land, verify, render, serve or wait for a person.
   - type: textarea

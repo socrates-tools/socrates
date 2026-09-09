@@ -227,7 +227,7 @@ It is not a way to make a finding go away, and a rejection without a reason is r
 	noSuchFlag    = "the skill names %s %s %s, and that command offers no such flag"
 
 	theTargetCannotBeWritten = "socrates-review could not write the skill to %s: %s. Name a directory you can write with socrates-review skill --to"
-	theSkillIsTooLarge       = "the skill renders %d bytes and its ceiling is %d: every session that reviews anything reads all of it, so move the reasoning for a rule into openspec/ rather than raising this"
+	theSkillIsTooLarge       = "the skill renders %d bytes and its ceiling is %d: every session that reviews anything reads all of it, so move the reasoning for a rule into docs/adr/ rather than raising this"
 
 	noHomeDirectory = "socrates-review installs the skill under your home directory, and it could not find one: %s. Name where to write it with socrates-review skill --to"
 )

@@ -14,10 +14,10 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 
 A change that reaches into any of those is out of scope however well it is written, and that is worth reporting.
 
-## The reasoning lives in `openspec/`, not in the code
+## The reasoning does not live in the code
 
-`openspec/specs` is what is required and why, and the design document of a change is the decision behind it.
-A change that alters behaviour and leaves `openspec/` saying the old thing has left the normative source wrong, and the code is not where the correction belongs.
+`CONTEXT.md` defines the vocabulary, `docs/adr/` holds the decisions with what each one rejected, and `AGENTS.md` states the invariants.
+A change that alters behaviour and leaves those saying the old thing has left the record wrong, and the code is not where the correction belongs.
 
 A constraint somebody would otherwise re-derive belongs in `docs/gotchas.md`.
 Reasoning about a change belongs in its commit message.

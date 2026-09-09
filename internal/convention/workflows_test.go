@@ -41,14 +41,14 @@ func TestTheRunInvokesTheEntryPointRatherThanTheGates(t *testing.T) {
 
 func TestAWorkflowListingAGateOfItsOwnIsReported(t *testing.T) {
 	root := t.TempDir()
-	writeWorkflow(t, root, "listing.yml", "steps:\n  - run: make verify\n  - run: make scenario-drop\n")
+	writeWorkflow(t, root, "listing.yml", "steps:\n  - run: make verify\n  - run: make corpus-outcomes\n")
 
 	gates, err := convention.WorkflowsRunningTheGates(root)
 	if err != nil {
 		t.Fatalf("reading a fabricated workflow: %v", err)
 	}
 
-	want := []string{"listing.yml runs make scenario-drop of its own"}
+	want := []string{"listing.yml runs make corpus-outcomes of its own"}
 	if diff := cmp.Diff(want, gates.Listing); diff != "" {
 		t.Errorf("what a workflow running a gate of its own reports differs (-want +got):\n%s", diff)
 	}

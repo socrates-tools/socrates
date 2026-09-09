@@ -14,7 +14,7 @@ socrates-review is a project about reading each other's work honestly, so the st
 
 Harassment, insults, discriminatory language, sustained disruption, publishing somebody's private information, and unwelcome attention of any kind.
 Dismissing a contributor rather than their argument.
-Reopening a decision recorded in `openspec/` by attrition rather than by proposing a change to it.
+Reopening a decision recorded in `docs/adr/` by attrition rather than by proposing a change to it.
 
 ## Reporting
 

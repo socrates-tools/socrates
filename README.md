@@ -401,15 +401,17 @@ No source file carries a licence header, since a header is a comment and this re
 
 ## Architecture
 
-This repository is built in layers, specified in `openspec/` before they are implemented.
+This repository is built in layers, each specified before it was implemented.
 
-- `a-review-nobody-authored` - the core: freeze, review, findings, verdict, one round.
-- `a-rejection-is-a-claim` - rounds, rebuttals and the dialogue between author and reviewer.
-- `what-a-reviewer-actually-answered` - the corpus of what real reviewers answered, replayed by name in the suite.
-- `one-window-three-needs` - `socrates-review watch` and `socrates-review logs`.
-- `the-loop-an-agent-can-drive` - the generated skill that lets a session drive the loop itself.
-- `an-answered-question-is-a-response` - a question the reviewer asked parks the round, and the person's answer is recorded and judged.
+- The core: freeze, review, findings, verdict, one round.
+- Rounds, rebuttals and the dialogue between author and reviewer.
+- The corpus of what real reviewers answered, replayed by name in the suite.
+- `socrates-review watch` and `socrates-review logs`.
+- The generated skill that lets a session drive the loop itself.
+- A question the reviewer asked parks the round, and the person's answer is recorded and judged.
+- The page a round is handed over on, served by `agora`.
 
 All of them ship today.
 
 `AGENTS.md` is the working document, covering layout, the verification sequence and the invariants the design rests on.
+`CONTEXT.md` holds the vocabulary, and `docs/adr/` the decisions behind it.
