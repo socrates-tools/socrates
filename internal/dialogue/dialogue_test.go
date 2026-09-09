@@ -41,7 +41,7 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 		if got := dialogue.After(classify(held...), 1); got != runstate.AwaitingResponse {
 			t.Errorf("one question about intent among five mechanical defects is %q at the first round, want %q", got, runstate.AwaitingResponse)
 		}
-		if diff := cmp.Diff([]string{"f1", "f2", "f3", "f4", "f5", "f6"}, (dialogue.Responses{}).Unanswered(document(held...))); diff != "" {
+		if diff := cmp.Diff([]string{"f1", "f2", "f3", "f4", "f5", "f6"}, (dialogue.Responses{}).Unanswered(document(held...), dialogue.Mine)); diff != "" {
 			t.Errorf("a set holding one question and five mechanical defects waits on (-want +got):\n%s", diff)
 		}
 	})
@@ -70,12 +70,12 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 			if dialogue.EscalatedByTheCap(alongside, 1) {
 				t.Errorf("a first round escalating for a finding no response addresses reads as the cap being why, beside %s", beside.Action)
 			}
-			if diff := cmp.Diff([]string{"f2"}, (dialogue.Responses{}).Unanswered(document(alone, beside))); diff != "" {
+			if diff := cmp.Diff([]string{"f2"}, (dialogue.Responses{}).Unanswered(document(alone, beside), dialogue.Mine)); diff != "" {
 				t.Errorf("what the round waits on beside %s differs (-want +got):\n%s", beside.Action, diff)
 			}
 		}
 
-		if waiting := (dialogue.Responses{}).Unanswered(document(alone)); len(waiting) != 0 {
+		if waiting := (dialogue.Responses{}).Unanswered(document(alone), dialogue.Mine); len(waiting) != 0 {
 			t.Errorf("%v is waiting on an answer to a finding presented as asking for nothing", waiting)
 		}
 	})
@@ -97,7 +97,7 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 		if got := dialogue.After(classified, 1); got != runstate.AwaitingResponse {
 			t.Errorf("a round holding one question about intent and nothing else blocking is %q, want %q: the person's answer has nowhere to go otherwise", got, runstate.AwaitingResponse)
 		}
-		if diff := cmp.Diff([]string{"f1"}, (dialogue.Responses{}).Unanswered(document(question, finding("f2", findings.Info, findings.NoOp)))); diff != "" {
+		if diff := cmp.Diff([]string{"f1"}, (dialogue.Responses{}).Unanswered(document(question, finding("f2", findings.Info, findings.NoOp)), dialogue.Mine)); diff != "" {
 			t.Errorf("what the round waits on differs (-want +got):\n%s", diff)
 		}
 	})
@@ -162,7 +162,7 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 					if got != runstate.AwaitingResponse {
 						t.Fatalf("round %d of %v is %q, want %q", asked, describe(held), got, runstate.AwaitingResponse)
 					}
-					waiting := (dialogue.Responses{}).Unanswered(document(held...))
+					waiting := (dialogue.Responses{}).Unanswered(document(held...), dialogue.Mine)
 					if diff := cmp.Diff(blockingIdentifiers(held), waiting); diff != "" {
 						t.Fatalf("round %d of %v parks and waits on (-want +got):\n%s", asked, describe(held), diff)
 					}

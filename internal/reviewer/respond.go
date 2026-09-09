@@ -32,7 +32,7 @@ func Respond(store runstore.Store, name string, response dialogue.Response) (Rec
 	if !present {
 		return Recording{}, refusal.New(noSuchFinding, round.Number, run.Name, response.Finding)
 	}
-	if err := dialogue.Answering(reported, response); err != nil {
+	if err := dialogue.Answering(reported, response, run.Authorship()); err != nil {
 		return Recording{}, err
 	}
 
@@ -46,7 +46,7 @@ func Respond(store runstore.Store, name string, response dialogue.Response) (Rec
 		Round:      round.Number,
 		Response:   response,
 		Replaced:   recorded.Answers(response.Finding) > 1,
-		Unanswered: recorded.Unanswered(document),
+		Unanswered: recorded.Unanswered(document, run.Authorship()),
 	}
 
 	fields := map[string]any{
@@ -69,7 +69,7 @@ func Respond(store runstore.Store, name string, response dialogue.Response) (Rec
 }
 
 func Unanswered(store runstore.Store, name string) ([]string, error) {
-	_, round, document, err := parked(store, name)
+	run, round, document, err := parked(store, name)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func Unanswered(store runstore.Store, name string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return recorded.Unanswered(document), nil
+	return recorded.Unanswered(document, run.Authorship()), nil
 }
 
 func parked(store runstore.Store, name string) (*runstore.Run, runstore.Round, findings.Document, error) {

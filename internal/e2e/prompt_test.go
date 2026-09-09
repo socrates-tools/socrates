@@ -247,8 +247,20 @@ func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
 	}
 
 	taking := flagsTakingAValue(documented)
-	if diff := cmp.Diff([]string{"--intent"}, taking); diff != "" {
-		t.Errorf("the free text a caller may supply differs (-want +got):\n%s\n%s", diff, documented)
+	if diff := cmp.Diff([]string{"--base", "--intent"}, taking); diff != "" {
+		t.Errorf("the values a caller may supply differ (-want +got):\n%s\n%s", diff, documented)
+	}
+
+	forked := session.Repository.Head()
+	session.Repository.Write("internal/added.go", "package internal\n")
+	session.Simulator.Scenario(cleanScenario)
+
+	name := session.Review("--base", forked)
+	session.WaitForTerminal(name)
+
+	delivered := session.Simulator.OnlyInvocation().Prompt
+	if _, present := prompt.BodyOf(prompt.Sections(delivered), prompt.IntentHeading); present {
+		t.Errorf("naming a base delivered an intent section, so a base is a second channel for what the author would say:\n%s", delivered)
 	}
 
 	for _, invented := range []string{"--rationale", "--summary", "--notes", "--author-notes", "--session", "--reasoning"} {

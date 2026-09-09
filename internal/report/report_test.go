@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/socrates-tools/socrates-review/internal/dialogue"
 	"github.com/socrates-tools/socrates-review/internal/findings"
 	"github.com/socrates-tools/socrates-review/internal/report"
 	"github.com/socrates-tools/socrates-review/internal/runstate"
@@ -147,7 +148,7 @@ func TestARunningReviewIsAFewLines(t *testing.T) {
 	}
 
 	lines := status.Lines()
-	if len(lines) > 4 {
+	if len(lines) > 5 {
 		t.Errorf("a running review prints %d lines:\n%s", len(lines), strings.Join(lines, "\n"))
 	}
 	if status.Code() != 4 {
@@ -216,4 +217,142 @@ func run(t *testing.T, state runstate.State, document string) (runstore.Store, s
 	}
 
 	return store, created.Name
+}
+
+const oneChangedLine = `{
+  "touched": {"parse.go": [{"first": 8, "last": 16}]}
+}`
+
+func TestTheStatusSaysWhichCommitTheChangeWasReviewedAgainst(t *testing.T) {
+	store, name := run(t, runstate.Escalated, escalatingDocument)
+
+	status, err := report.StatusOf(store, name)
+	if err != nil {
+		t.Fatalf("reading the status of %s: %v", name, err)
+	}
+	if status.Base != "0000000000000000000000000000000000000000" {
+		t.Errorf("the status reports the base %q, want the commit the run recorded", status.Base)
+	}
+	if printed := strings.Join(status.Lines(), "\n"); !strings.Contains(printed, "base: 0000000000000000000000000000000000000000") {
+		t.Errorf("what a person reads does not say which commit the change was reviewed against:\n%s", printed)
+	}
+}
+
+func TestWhetherAFindingIsInsideTheChangeIsReported(t *testing.T) {
+	store, name := run(t, runstate.Escalated, escalatingDocument)
+	touching(t, store, name, oneChangedLine)
+
+	reported, err := report.FindingsOf(store, name)
+	if err != nil {
+		t.Fatalf("reading the findings of %s: %v", name, err)
+	}
+
+	inside := map[string]bool{}
+	for _, finding := range reported.Findings {
+		if finding.Inside == nil {
+			t.Fatalf("finding %s does not say whether it is inside the change", finding.ID)
+		}
+		inside[finding.ID] = *finding.Inside
+	}
+
+	want := map[string]bool{"f1": true, "f2": false, "f3": false}
+	if diff := cmp.Diff(want, inside); diff != "" {
+		t.Errorf("which findings are inside the change differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestNothingIsClaimedAboutAFindingWhoseChangeWasNeverRead(t *testing.T) {
+	store, name := run(t, runstate.Escalated, escalatingDocument)
+
+	reported, err := report.FindingsOf(store, name)
+	if err != nil {
+		t.Fatalf("reading the findings of %s: %v", name, err)
+	}
+	for _, finding := range reported.Findings {
+		if finding.Inside != nil {
+			t.Errorf("finding %s claims to be inside the change: %t, and nothing was read about what the change touched", finding.ID, *finding.Inside)
+		}
+	}
+}
+
+func touching(t *testing.T, store runstore.Store, name, change string) {
+	t.Helper()
+
+	round, present, err := store.LatestRound(name)
+	if err != nil || !present {
+		t.Fatalf("reading the round of %s: %v", name, err)
+	}
+	if err := round.Write(round.ChangePath(), change); err != nil {
+		t.Fatalf("writing what the change touched: %v", err)
+	}
+}
+
+func TestARecordedResolutionIsReported(t *testing.T) {
+	store, name := run(t, runstate.AwaitingResponse, escalatingDocument)
+	answering(t, store, name, dialogue.Response{Finding: "f2", Resolution: dialogue.Fixed, Reason: "the loop backs off now"})
+
+	reported, err := report.FindingsOf(store, name)
+	if err != nil {
+		t.Fatalf("reading the findings of %s: %v", name, err)
+	}
+
+	recorded := map[string]dialogue.Resolution{}
+	for _, finding := range reported.Findings {
+		recorded[finding.ID] = finding.Resolution
+	}
+	if got := recorded["f2"]; got != dialogue.Fixed {
+		t.Errorf("the answer recorded against f2 reads %q, want %q", got, dialogue.Fixed)
+	}
+	if got := recorded["f1"]; got != "" {
+		t.Errorf("f1 has no answer recorded against it and reads %q", got)
+	}
+}
+
+func TestAChangeThatIsNotMineIsAnsweredByItsOwnRules(t *testing.T) {
+	store, name := run(t, runstate.AwaitingResponse, escalatingDocument)
+	handingOver(t, store, name)
+
+	reported, err := report.FindingsOf(store, name)
+	if err != nil {
+		t.Fatalf("reading the findings of %s: %v", name, err)
+	}
+
+	if diff := cmp.Diff(report.HandoverRules(), reported.Guidance); diff != "" {
+		t.Errorf("the rules a person is given differ (-want +got):\n%s", diff)
+	}
+	if !reported.AwaitsAPerson {
+		t.Error("a round of a change nobody here can patch waits on nobody")
+	}
+
+	printed := strings.Join(reported.Lines(), "\n")
+	for _, named := range []string{"--forwarded", "--dropped"} {
+		if !strings.Contains(printed, named) {
+			t.Errorf("what a person reads does not name %s:\n%s", named, printed)
+		}
+	}
+}
+
+func answering(t *testing.T, store runstore.Store, name string, response dialogue.Response) {
+	t.Helper()
+
+	round, present, err := store.LatestRound(name)
+	if err != nil || !present {
+		t.Fatalf("reading the round of %s: %v", name, err)
+	}
+	if err := round.AppendResponse(response); err != nil {
+		t.Fatalf("recording an answer: %v", err)
+	}
+}
+
+func handingOver(t *testing.T, store runstore.Store, name string) {
+	t.Helper()
+
+	recorded, err := store.Load(name)
+	if err != nil {
+		t.Fatalf("reading the run %s: %v", name, err)
+	}
+	recorded.NotMyChange = true
+	if err := store.Save(recorded); err != nil {
+		t.Fatalf("recording that the change is not the person's: %v", err)
+	}
 }

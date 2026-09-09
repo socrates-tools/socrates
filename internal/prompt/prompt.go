@@ -43,6 +43,7 @@ type PriorRound struct {
 
 type Request struct {
 	Intent     string
+	NotMine    bool
 	Repository string
 	Base       string
 	Snapshot   string
@@ -177,9 +178,21 @@ Everything this change did is between the base commit and the snapshot commit.`,
 }
 
 func (r Request) statedIntent() string {
-	stated := strings.TrimSpace(r.Intent)
+	stated := hygiene.Neutralise(r.Intent)
 	if stated == "" {
 		return ""
+	}
+	return fmt.Sprintf("%s\n\n%s", r.claim(stated), whatADisagreementIs)
+}
+
+func (r Request) claim(stated string) string {
+	if r.NotMine {
+		return fmt.Sprintf(`The author of this change wrote this account of it, and the person who started this review relayed it rather than writing it:
+
+%s
+
+That is what the author says they were doing. It is not a statement of what the change does, and nobody has checked one against the other.
+Where the code and that account disagree, the account of their own work is what is incomplete or misleading, and that disagreement is itself something to report.`, stated)
 	}
 
 	return fmt.Sprintf(`The person who started this review stated this intent:
@@ -187,12 +200,12 @@ func (r Request) statedIntent() string {
 %s
 
 That is what they say they wanted. It is not a statement of what the change does, and nobody has checked one against the other.
-Where the code and the stated intent disagree, that disagreement is itself something to report.
-
-A contradiction is one of two things, and only these two: the change omits a behaviour the intent names, or the change carries a behaviour the intent rules out. Where you find one, report it, naming the part of the intent it contradicts and the code that contradicts it, and report it even where nothing else about the change is wrong. Give it the action %q, because what a change is for is not the author's to settle alone by patching.
-
-What the intent does not mention is not something it ruled out. An intent is one line about what somebody wanted rather than a specification, and silence in it is not a contradiction.`, stated, findings.AskUser)
+Where the code and the stated intent disagree, that disagreement is itself something to report.`, stated)
 }
+
+var whatADisagreementIs = fmt.Sprintf(`A contradiction is one of two things, and only these two: the change omits a behaviour the intent names, or the change carries a behaviour the intent rules out. Where you find one, report it, naming the part of the intent it contradicts and the code that contradicts it, and report it even where nothing else about the change is wrong. Give it the action %q, because what a change is for is not the author's to settle alone by patching.
+
+What the intent does not mention is not something it ruled out. An intent is one line about what somebody wanted rather than a specification, and silence in it is not a contradiction.`, findings.AskUser)
 
 func (r Request) changedFiles() string {
 	var built strings.Builder

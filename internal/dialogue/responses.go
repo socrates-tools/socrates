@@ -13,19 +13,45 @@ import (
 type Resolution string
 
 const (
-	Fixed    Resolution = "fixed"
-	Rejected Resolution = "rejected"
-	Decided  Resolution = "decided"
+	Fixed     Resolution = "fixed"
+	Rejected  Resolution = "rejected"
+	Decided   Resolution = "decided"
+	Forwarded Resolution = "forwarded"
+	Dropped   Resolution = "dropped"
 )
 
-var resolutions = []Resolution{Fixed, Rejected, Decided}
+type Authorship bool
+
+const (
+	Mine    Authorship = false
+	NotMine Authorship = true
+)
+
+var resolutions = []Resolution{Fixed, Rejected, Decided, Forwarded, Dropped}
+
+var leaveAnArtifact = []Resolution{Fixed, Forwarded}
 
 func Resolutions() []Resolution {
 	return slices.Clone(resolutions)
 }
 
+func Flags(resolutions []Resolution) string {
+	named := make([]string, 0, len(resolutions))
+	for _, resolution := range resolutions {
+		named = append(named, "--"+string(resolution))
+	}
+	if len(named) < 2 {
+		return strings.Join(named, "")
+	}
+	return strings.Join(named[:len(named)-1], ", ") + " or " + named[len(named)-1]
+}
+
 func Rules() []string {
 	return strings.Split(ResponseRules, "\n")
+}
+
+func HandoverRules() []string {
+	return strings.Split(HandoverResponseRules, "\n")
 }
 
 type Response struct {
@@ -48,30 +74,42 @@ func Validate(response Response) error {
 	if strings.TrimSpace(response.Reason) != "" {
 		return nil
 	}
-	if response.Resolution == Rejected {
+	if slices.Contains(leaveAnArtifact, response.Resolution) {
+		return nil
+	}
+	switch response.Resolution {
+	case Rejected:
 		return refusal.New(aRejectionIsAClaim)
+	case Dropped:
+		return refusal.New(aDropIsAClaim)
 	}
-	if response.Resolution == Decided {
-		return refusal.New(aDecisionIsAClaim)
-	}
-	return nil
+	return refusal.New(aDecisionIsAClaim)
 }
 
-func Accepts(finding findings.Finding) []Resolution {
+func Accepts(finding findings.Finding, authorship Authorship) []Resolution {
+	if authorship == NotMine {
+		return []Resolution{Forwarded, Dropped, Rejected}
+	}
 	if finding.EffectiveAction() == findings.AskUser {
 		return []Resolution{Decided}
 	}
 	return []Resolution{Fixed, Rejected}
 }
 
-func Answering(finding findings.Finding, response Response) error {
-	if slices.Contains(Accepts(finding), response.Resolution) {
+func Answering(finding findings.Finding, response Response, authorship Authorship) error {
+	if slices.Contains(Accepts(finding, authorship), response.Resolution) {
 		return nil
+	}
+	if authorship == NotMine {
+		return refusal.New(theChangeIsNotMineToPatch, response.Resolution, finding.ID, Flags(Accepts(finding, NotMine)))
+	}
+	if response.Resolution == Forwarded || response.Resolution == Dropped {
+		return refusal.New(theChangeIsMine, response.Resolution, finding.ID, Flags(Accepts(finding, Mine)))
 	}
 	if finding.EffectiveAction() == findings.AskUser {
 		return refusal.New(theFindingAsksAPerson, finding.ID, response.Resolution, Decided)
 	}
-	return refusal.New(theFindingAsksForAPatch, finding.ID, Fixed, Rejected)
+	return refusal.New(theFindingAsksForAPatch, finding.ID, response.Resolution, Fixed, Rejected)
 }
 
 func (r Responses) For(finding string) (Response, bool) {
@@ -105,8 +143,8 @@ func (r Responses) Answers(finding string) int {
 	return answers
 }
 
-func (r Responses) Unanswered(document findings.Document) []string {
-	answerable := Answerable(findings.Classify(document))
+func (r Responses) Unanswered(document findings.Document, authorship Authorship) []string {
+	answerable := Answerable(Classified(document, authorship))
 
 	var waiting []string
 	for _, reported := range document.Findings {
@@ -118,11 +156,12 @@ func (r Responses) Unanswered(document findings.Document) []string {
 	return waiting
 }
 
-func (r Responses) AwaitingAPerson(document findings.Document) []string {
+func (r Responses) AwaitingAPerson(document findings.Document, authorship Authorship) []string {
+	needing := AnsweredByAPerson(Classified(document, authorship))
+
 	var waiting []string
-	for _, unanswered := range r.Unanswered(document) {
-		reported, _ := Reported(document, unanswered)
-		if reported.EffectiveAction() == findings.AskUser {
+	for _, unanswered := range r.Unanswered(document, authorship) {
+		if slices.ContainsFunc(needing, func(one findings.Finding) bool { return one.ID == unanswered }) {
 			waiting = append(waiting, unanswered)
 		}
 	}

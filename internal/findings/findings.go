@@ -103,6 +103,10 @@ func Classify(document Document) Classification {
 	return classified
 }
 
+func ClassifyForAPerson(document Document) Classification {
+	return Classification{NeedingAPerson: slices.Clone(document.Findings)}
+}
+
 func (c Classification) Total() int {
 	return len(c.NeedingAPerson) + len(c.Patchable) + len(c.NoOps)
 }

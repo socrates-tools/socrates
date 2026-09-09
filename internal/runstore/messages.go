@@ -20,6 +20,7 @@ const (
 	closing                  = "closing %s: %w"
 	renaming                 = "renaming onto %s: %w"
 	encoding                 = "encoding run %s: %w"
+	encodingTheChange        = "encoding what the change touches for %s: %w"
 	creatingATemporaryFile   = "creating a temporary file in %s: %w"
 	resolving                = "resolving %s: %w"
 	removing                 = "removing %s: %w"

@@ -100,7 +100,7 @@ func TestAnIgnoredFileIsNotInTheSnapshot(t *testing.T) {
 func TestAChangeWithNothingToReview(t *testing.T) {
 	repository := gitrepo.New(t)
 
-	taken, err := snapshot.Take(context.Background(), repository.Root)
+	taken, err := snapshot.Take(context.Background(), repository.Root, "")
 	if err != nil {
 		t.Fatalf("taking the snapshot: %v", err)
 	}
@@ -189,7 +189,7 @@ func TestGitStashCreateIsNotUsed(t *testing.T) {
 func take(t *testing.T, repository *gitrepo.Repository) snapshot.Snapshot {
 	t.Helper()
 
-	taken, err := snapshot.Take(context.Background(), repository.Root)
+	taken, err := snapshot.Take(context.Background(), repository.Root, "")
 	if err != nil {
 		t.Fatalf("taking the snapshot: %v", err)
 	}

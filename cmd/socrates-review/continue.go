@@ -24,7 +24,7 @@ func newContinueCommand(code *int) *cobra.Command {
 				return err
 			}
 
-			run, round, err := reviewer.Continue(command.Context(), reviewer.Continuation{
+			continued, err := reviewer.Continue(command.Context(), reviewer.Continuation{
 				Store:  store,
 				Name:   name,
 				Binary: binary,
@@ -34,15 +34,19 @@ func newContinueCommand(code *int) *cobra.Command {
 			}
 
 			out := command.OutOrStdout()
-			fmt.Fprintln(out, run.Name)
-			fmt.Fprintf(out, roundStarted+"\n", round)
+			fmt.Fprintln(out, continued.Run.Name)
 
-			if !wait {
-				fmt.Fprintf(out, followIt+"\n", run.Name)
-				return nil
+			if continued.Started {
+				fmt.Fprintf(out, roundStarted+"\n", continued.Round)
+				if !wait {
+					fmt.Fprintf(out, followIt+"\n", continued.Run.Name)
+					return nil
+				}
+			} else {
+				fmt.Fprintf(out, noRoundFollows+"\n", continued.Round)
 			}
 
-			status, err := awaitVerdict(command.Context(), store, run.Name)
+			status, err := awaitVerdict(command.Context(), store, continued.Run.Name)
 			if err != nil {
 				return err
 			}

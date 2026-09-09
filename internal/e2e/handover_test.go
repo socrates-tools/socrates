@@ -20,6 +20,8 @@ type reportedFinding struct {
 	Line        int    `json:"line"`
 	Description string `json:"description"`
 	Action      string `json:"action"`
+	Resolution  string `json:"resolution"`
+	Inside      *bool  `json:"inside_the_change"`
 }
 
 type reportedRound struct {

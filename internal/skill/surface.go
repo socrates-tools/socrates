@@ -26,7 +26,12 @@ func Named() []Invocation {
 	var named []Invocation
 	seen := map[Invocation]bool{}
 
-	for _, code := range codeIn(Document()) {
+	var written []string
+	for _, one := range All() {
+		written = append(written, codeIn(one.Document())...)
+	}
+
+	for _, code := range written {
 		binary, command := "", ""
 		awaitingCommand := false
 

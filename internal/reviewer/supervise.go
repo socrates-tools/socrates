@@ -13,6 +13,7 @@ import (
 	"github.com/socrates-tools/socrates-review/internal/dialogue"
 	"github.com/socrates-tools/socrates-review/internal/findings"
 	"github.com/socrates-tools/socrates-review/internal/guidance"
+	"github.com/socrates-tools/socrates-review/internal/hunks"
 	"github.com/socrates-tools/socrates-review/internal/prompt"
 	"github.com/socrates-tools/socrates-review/internal/runlog"
 	"github.com/socrates-tools/socrates-review/internal/runstate"
@@ -74,8 +75,13 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		return supervision.end(run, runstate.Failed, err.Error())
 	}
 
+	if err := round.WriteChange(hunks.Of(reviewed.diff)); err != nil {
+		return err
+	}
+
 	asked := prompt.Build(prompt.Request{
 		Intent:     run.Intent,
+		NotMine:    run.NotMyChange,
 		Repository: run.Repository,
 		Base:       run.Base,
 		Snapshot:   run.Snapshot,
@@ -161,7 +167,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		return removeWorktree(ctx, worktree)
 	}
 
-	classified := findings.Classify(document)
+	classified := dialogue.Classified(document, run.Authorship())
 	outcome := dialogue.After(classified, round.Number)
 
 	if outcome == runstate.AwaitingResponse {

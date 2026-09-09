@@ -19,6 +19,8 @@ func newRespondCommand(code *int) *cobra.Command {
 	var fixed bool
 	var rejected bool
 	var decided bool
+	var forwarded bool
+	var dropped bool
 	var reason string
 	var note string
 
@@ -31,12 +33,21 @@ func newRespondCommand(code *int) *cobra.Command {
 				return refusal.New(nameTheFinding)
 			}
 
-			chosen, err := oneResolution(fixed, rejected, decided)
+			chosen, err := oneResolution(map[dialogue.Resolution]bool{
+				dialogue.Fixed:     fixed,
+				dialogue.Rejected:  rejected,
+				dialogue.Decided:   decided,
+				dialogue.Forwarded: forwarded,
+				dialogue.Dropped:   dropped,
+			})
 			if err != nil {
 				return err
 			}
 			if chosen == dialogue.Fixed && reason != "" {
 				return refusal.New(reasonBelongsToAClaim)
+			}
+			if chosen == dialogue.Forwarded && reason != "" {
+				return refusal.New(aForwardCarriesTheFinding, dialogue.Forwarded)
 			}
 			if chosen != dialogue.Fixed && note != "" {
 				return refusal.New(noteBelongsToAFix, chosen)
@@ -89,14 +100,14 @@ func newRespondCommand(code *int) *cobra.Command {
 	command.Flags().BoolVar(&fixed, "fixed", false, fixedUsage)
 	command.Flags().BoolVar(&rejected, "rejected", false, rejectedUsage)
 	command.Flags().BoolVar(&decided, "decided", false, decidedUsage)
+	command.Flags().BoolVar(&forwarded, "forwarded", false, forwardedUsage)
+	command.Flags().BoolVar(&dropped, "dropped", false, droppedUsage)
 	command.Flags().StringVar(&reason, "reason", "", reasonUsage)
 	command.Flags().StringVar(&note, "note", "", noteUsage)
 	return command
 }
 
-func oneResolution(fixed, rejected, decided bool) (dialogue.Resolution, error) {
-	chosen := map[dialogue.Resolution]bool{dialogue.Fixed: fixed, dialogue.Rejected: rejected, dialogue.Decided: decided}
-
+func oneResolution(chosen map[dialogue.Resolution]bool) (dialogue.Resolution, error) {
 	var named []dialogue.Resolution
 	for _, resolution := range dialogue.Resolutions() {
 		if chosen[resolution] {
@@ -104,7 +115,7 @@ func oneResolution(fixed, rejected, decided bool) (dialogue.Resolution, error) {
 		}
 	}
 	if len(named) != 1 {
-		return "", refusal.New(oneAnswerAtATime, dialogue.Fixed, dialogue.Rejected, dialogue.Decided)
+		return "", refusal.New(oneAnswerAtATime, len(named), dialogue.Flags(dialogue.Resolutions()))
 	}
 	return named[0], nil
 }

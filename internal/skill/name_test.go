@@ -3,6 +3,7 @@ package skill_test
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -10,36 +11,57 @@ import (
 	"github.com/socrates-tools/socrates-review/internal/skill"
 )
 
+func documentOf(t *testing.T, named string) string {
+	t.Helper()
+
+	for _, one := range skill.All() {
+		if one.Name == named {
+			return one.Document()
+		}
+	}
+	t.Fatalf("this repository states no skill called %s", named)
+	return ""
+}
+
 func TestOneConstantNamesTheSkillAndReadsItsInvocations(t *testing.T) {
 	directory := t.TempDir()
 
-	path, err := skill.Install(directory)
+	written, err := skill.Install(directory)
 	if err != nil {
-		t.Fatalf("installing the skill: %v", err)
+		t.Fatalf("installing the skills: %v", err)
 	}
-	if named := filepath.Base(filepath.Dir(path)); named != skill.Name {
-		t.Errorf("the skill is installed under %q rather than %q", named, skill.Name)
+	if len(written) != len(skill.All()) {
+		t.Fatalf("installing wrote %d skills, and this repository states %d", len(written), len(skill.All()))
 	}
 
-	document := skill.Document()
-	declared := ""
-	for line := range strings.SplitSeq(document, "\n") {
-		if stated, isName := strings.CutPrefix(line, "name: "); isName {
-			declared = strings.TrimSpace(stated)
-			break
+	everything := ""
+	for _, installed := range written {
+		if named := filepath.Base(filepath.Dir(installed.Path)); named != installed.Name {
+			t.Errorf("the %s skill is installed under %q", installed.Name, named)
 		}
-	}
-	if declared != skill.Name {
-		t.Errorf("the skill declares itself %q while it is installed as %q, so one of the two is a second copy of the name", declared, skill.Name)
+
+		document := documentOf(t, installed.Name)
+		everything += document
+
+		declared := ""
+		for line := range strings.SplitSeq(document, "\n") {
+			if stated, isName := strings.CutPrefix(line, "name: "); isName {
+				declared = strings.TrimSpace(stated)
+				break
+			}
+		}
+		if declared != installed.Name {
+			t.Errorf("the skill declares itself %q while it is installed as %q, so one of the two is a second copy of the name", declared, installed.Name)
+		}
 	}
 
 	named := skill.Named()
 	if len(named) == 0 {
-		t.Fatal("the skill is read to name no invocation at all, so this check reads nothing")
+		t.Fatal("the skills are read to name no invocation at all, so this check reads nothing")
 	}
 	for _, invocation := range named {
-		if !strings.Contains(document, invocation.Binary+" "+invocation.Command) {
-			t.Errorf("the skill is read to name %q, which appears in it under no other name than %q", invocation.Command, invocation.Binary)
+		if !strings.Contains(everything, invocation.Binary+" "+invocation.Command) {
+			t.Errorf("a skill is read to name %q, which appears under no other name than %q", invocation.Command, invocation.Binary)
 		}
 	}
 }
@@ -64,16 +86,20 @@ func TestTheSkillNamesTheOneNameTheToolHas(t *testing.T) {
 func TestTheSkillIsInstalledUnderTheProductsName(t *testing.T) {
 	directory := t.TempDir()
 
-	path, err := skill.Install(directory)
+	written, err := skill.Install(directory)
 	if err != nil {
-		t.Fatalf("installing the skill: %v", err)
+		t.Fatalf("installing the skills: %v", err)
 	}
 
-	want := filepath.Join(directory, convention.Repository, skill.FileName)
-	if path != want {
-		t.Errorf("the skill is at %s, want %s", path, want)
-	}
-	if _, err := os.Stat(want); err != nil {
-		t.Errorf("nothing is at %s: %v", want, err)
+	for _, want := range []string{
+		filepath.Join(directory, convention.Repository, skill.FileName),
+		filepath.Join(directory, convention.Repository+"-handover", skill.FileName),
+	} {
+		if !slices.ContainsFunc(written, func(installed skill.Installed) bool { return installed.Path == want }) {
+			t.Errorf("nothing was installed at %s, and what was installed is %+v", want, written)
+		}
+		if _, err := os.Stat(want); err != nil {
+			t.Errorf("nothing is at %s: %v", want, err)
+		}
 	}
 }

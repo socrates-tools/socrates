@@ -5,6 +5,8 @@ const (
 	bareRepository           = "the repository at %s is bare, so it has no working tree to review: run socrates-review review from a working tree of it instead"
 	noBaseCommit             = "the repository at %s has no commit for HEAD to resolve to, so there is no base to review against: commit something first"
 	nothingToCheckOut        = "there is nothing to review, so there is no snapshot to check out"
+	noSuchBase               = "%s names no commit in the repository at %s, so there is nothing to review a change against: check how it is spelled, and name a branch or a commit that is in this repository"
+	noCommonAncestor         = "%s and HEAD share no commit in the repository at %s, so a diff between them would be a diff of two whole trees rather than of a change: name a base this branch grew out of"
 	baseHasGone              = "the commit %s this run was started against is no longer in the repository at %s, so a later round would be reviewed against something the first round never saw"
 	creatingAnIndexDirectory = "creating a directory for the snapshot's own index: %w"
 	removing                 = "removing %s: %w"

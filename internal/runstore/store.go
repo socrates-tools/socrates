@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/socrates-tools/socrates-review/internal/agent"
+	"github.com/socrates-tools/socrates-review/internal/dialogue"
 	"github.com/socrates-tools/socrates-review/internal/guidance"
 	"github.com/socrates-tools/socrates-review/internal/process"
 	"github.com/socrates-tools/socrates-review/internal/prompt"
@@ -39,6 +40,7 @@ type Run struct {
 	Snapshot        string           `json:"snapshot"`
 	Worktree        string           `json:"worktree,omitempty"`
 	Intent          string           `json:"intent,omitempty"`
+	NotMyChange     bool             `json:"not_my_change,omitempty"`
 	ReviewGuide     guidance.Outcome `json:"review_guide"`
 	GuidanceCeiling int64            `json:"guidance_ceiling,omitempty"`
 	Diff            prompt.Delivery  `json:"diff,omitempty"`
@@ -57,6 +59,10 @@ func (r Run) Vendor() string {
 		return agent.DefaultVendor
 	}
 	return r.ReviewerCLI
+}
+
+func (r Run) Authorship() dialogue.Authorship {
+	return dialogue.Authorship(r.NotMyChange)
 }
 
 func (r Run) Tier() string {
@@ -123,6 +129,7 @@ type Start struct {
 	Base            string
 	Snapshot        string
 	Intent          string
+	NotMyChange     bool
 	ReviewGuide     guidance.Outcome
 	GuidanceCeiling int64
 }
@@ -237,6 +244,7 @@ func (s Store) Create(start Start) (*Run, error) {
 		Base:            start.Base,
 		Snapshot:        start.Snapshot,
 		Intent:          start.Intent,
+		NotMyChange:     start.NotMyChange,
 		ReviewGuide:     start.ReviewGuide,
 		GuidanceCeiling: start.GuidanceCeiling,
 		StartedAt:       start.StartedAt.UTC().Truncate(time.Second),

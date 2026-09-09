@@ -23,12 +23,15 @@ func newSkillCommand() *cobra.Command {
 				target = chosen
 			}
 
-			path, err := skill.Install(target)
+			written, err := skill.Install(target)
 			if err != nil {
 				return err
 			}
 
-			fmt.Fprintf(command.OutOrStdout(), installedTheSkill+"\n", path)
+			out := command.OutOrStdout()
+			for _, installed := range written {
+				fmt.Fprintf(out, installedTheSkill+"\n", installed.Name, installed.Path)
+			}
 			return nil
 		},
 	}

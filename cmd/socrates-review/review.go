@@ -20,6 +20,8 @@ const verdictPoll = 50 * time.Millisecond
 
 func newReviewCommand(code *int) *cobra.Command {
 	var intent string
+	var base string
+	var notMyChange bool
 	var wait bool
 
 	command := &cobra.Command{
@@ -51,6 +53,8 @@ func newReviewCommand(code *int) *cobra.Command {
 
 			run, err := reviewer.Begin(command.Context(), reviewer.Beginning{
 				Directory:       directory,
+				Base:            base,
+				NotMyChange:     notMyChange,
 				Intent:          intent,
 				Store:           store,
 				Binary:          binary,
@@ -84,6 +88,8 @@ func newReviewCommand(code *int) *cobra.Command {
 	}
 
 	command.Flags().StringVar(&intent, "intent", "", intentUsage)
+	command.Flags().StringVar(&base, "base", "", baseUsage)
+	command.Flags().BoolVar(&notMyChange, "not-my-change", false, notMyChangeUsage)
 	command.Flags().BoolVar(&wait, "wait", false, waitUsage)
 	return command
 }

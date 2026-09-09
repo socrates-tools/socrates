@@ -39,6 +39,8 @@ const (
 
 type Beginning struct {
 	Directory       string
+	Base            string
+	NotMyChange     bool
 	Intent          string
 	Store           runstore.Store
 	Binary          string
@@ -77,9 +79,12 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 		return nil, refusal.New(aReviewInsideAReview, outer)
 	}
 
-	taken, err := snapshot.Take(ctx, beginning.Directory)
+	taken, err := snapshot.Take(ctx, beginning.Directory, beginning.Base)
 	if err != nil {
 		return nil, err
+	}
+	if taken.NothingToReview() {
+		return nil, refusal.New(nothingToReview, taken.Base)
 	}
 
 	guide, err := guidance.At(ctx, taken.RepositoryRoot, taken.Base, beginning.GuidanceCeiling)
@@ -98,6 +103,7 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 		Base:            taken.Base,
 		Snapshot:        taken.Commit,
 		Intent:          beginning.Intent,
+		NotMyChange:     beginning.NotMyChange,
 		ReviewGuide:     reached,
 		GuidanceCeiling: guide.Ceiling,
 	})
@@ -135,10 +141,6 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 		}); err != nil {
 			return nil, err
 		}
-	}
-
-	if taken.NothingToReview() {
-		return run, conclude(beginning.Store, run, runstate.Clean, snapshot.NothingToReviewReason)
 	}
 
 	if _, err := beginning.Store.CreateRound(run.Name, firstRound); err != nil {

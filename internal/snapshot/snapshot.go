@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/socrates-tools/socrates-review/internal/hunks"
 	"github.com/socrates-tools/socrates-review/internal/refusal"
 )
 
@@ -52,12 +53,32 @@ type Worktree struct {
 	Commit         string
 }
 
-func Take(ctx context.Context, directory string) (Snapshot, error) {
-	root, base, err := resolve(ctx, directory)
+func Take(ctx context.Context, directory, ref string) (Snapshot, error) {
+	root, head, err := resolve(ctx, directory)
 	if err != nil {
 		return Snapshot{}, err
 	}
-	return take(ctx, root, base)
+	if ref == "" {
+		return take(ctx, root, head)
+	}
+
+	forked, err := ForkPoint(ctx, root, ref)
+	if err != nil {
+		return Snapshot{}, err
+	}
+	return take(ctx, root, forked)
+}
+
+func ForkPoint(ctx context.Context, repositoryRoot, ref string) (string, error) {
+	if _, err := git(ctx, repositoryRoot, nil, "rev-parse", "--verify", ref+"^{commit}"); err != nil {
+		return "", refusal.New(noSuchBase, ref, repositoryRoot)
+	}
+
+	forked, err := git(ctx, repositoryRoot, nil, "merge-base", ref, "HEAD")
+	if err != nil || forked == "" {
+		return "", refusal.New(noCommonAncestor, ref, repositoryRoot)
+	}
+	return forked, nil
 }
 
 func TakeAgainst(ctx context.Context, directory, base string) (Snapshot, error) {
@@ -175,7 +196,8 @@ func Changed(ctx context.Context, repositoryRoot, base, commit string) ([]string
 }
 
 func Diff(ctx context.Context, repositoryRoot, base, commit string) (string, error) {
-	return gitOutput(ctx, repositoryRoot, nil, "diff", "--no-color", "--no-ext-diff", "--find-renames", base, commit)
+	return gitOutput(ctx, repositoryRoot, nil, "diff", "--no-color", "--no-ext-diff", "--find-renames",
+		"--src-prefix="+hunks.OldSide, "--dst-prefix="+hunks.NewSide, base, commit)
 }
 
 func (s Snapshot) Checkout(ctx context.Context, path string) (Worktree, error) {

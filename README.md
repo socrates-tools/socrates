@@ -75,6 +75,56 @@ bin/socrates-review review --intent "add the parser I asked for"
 `make install` puts it on your `PATH` under its one name, `socrates-review`.
 There is no second name for it, so nothing has to be reconciled, and `socrates-review version` says which release this is and which commit it was built from.
 
+A review of a working tree that holds nothing its base commit does not is refused rather than reported clean.
+Nothing was read, so there is nothing to pass, and no run is written for a session to act on.
+
+## Reviewing a branch, and reviewing a change that is not yours
+
+The default base is the commit `HEAD` resolves to, so `socrates-review review` on its own reviews what you have not committed.
+Two flags widen that.
+
+```sh
+socrates-review review --base origin/develop                    # everything this branch added
+socrates-review review --base origin/main --not-my-change       # somebody else's change, which you cannot patch
+```
+
+`--base <ref>` resolves to the fork point, which is `merge-base(<ref>, HEAD)`, and reviews everything between that commit and your working tree.
+On a long-running branch that is the whole of what the branch added, committed and uncommitted alike, and none of what the trunk has done since.
+Resolving to the fork point rather than to the named commit is what stops every file the trunk changed being reported to the reviewer as a file your branch deleted.
+Rebase onto the trunk first and the two readings coincide, which is why rebasing is the right instinct rather than a workaround.
+
+socrates-review neither fetches nor rebases.
+Fetching would reach the network and rebasing would write in the repository under review, so your remote refs are as fresh as you last made them and your commits are as you left them.
+It also says nothing about how far the named ref has moved past the fork point: `socrates-review status` prints the base commit it resolved, as a bare fact, and you decide whether that is what you meant.
+A ref that does not resolve, and a ref with no commit in common with `HEAD`, are refused before a snapshot is taken and before a reviewer is spawned.
+
+`--not-my-change` says the change is not yours to patch.
+Nothing about it is discovered, because discovering it means asking a forge who authored a commit, and socrates-review talks to no forge.
+The head of a review is still the working tree it is run in, so check their branch out in a worktree of its own and start the review inside it:
+
+```sh
+git worktree add --detach ../reviewing-their-change origin/their-branch
+```
+
+Otherwise what gets reviewed is their branch plus whatever you have not committed, and you would be commenting on your own mess in their pull request.
+
+The findings of such a run take the resolutions that make sense for somebody else's code:
+
+```sh
+socrates-review respond --finding f1 --forwarded
+socrates-review respond --finding f2 --dropped --reason "true, and not worth raising on a change this size"
+socrates-review respond --finding f3 --rejected --reason "the reviewer misread the lock, which the caller takes"
+```
+
+A forward needs no reason, because what gets raised is the finding's own recorded text.
+A drop and a rejection each need one, and neither reason ever leaves your machine.
+No second round follows, since nothing here was patched for a fresh reviewer to judge, so `socrates-review continue` ends the run `escalated` and says the findings were handed to whoever wrote the change.
+
+socrates-review posts nothing.
+`socrates-review findings --json` reports, per finding, the resolution you recorded and whether the finding's location is inside the change it reviewed.
+Your session reads that and posts with its own tooling: a finding inside the change can be a comment on that line, and the rest belong in one general comment.
+Where the base resolves to the fork point, those are the same hunks a forge renders for a pull request opened against that branch.
+
 ## agora, the second binary
 
 Installing socrates-review installs a second program beside it, called `agora`.
@@ -187,9 +237,14 @@ Started between `socrates-review review` returning and the reviewer's first byte
 The sequence above is five commands with three branch points, which a session told once in prose will drift from.
 
 ```sh
-socrates-review skill                    # writes the skill to ~/.claude/skills/socrates-review/SKILL.md
-socrates-review skill --to <directory>   # writes it somewhere else instead
+socrates-review skill                    # writes both skills under ~/.claude/skills/
+socrates-review skill --to <directory>   # writes them somewhere else instead
 ```
+
+There are two, and a session reads one of them.
+`socrates-review` teaches reviewing the change that session just wrote.
+`socrates-review-handover` teaches reviewing a change somebody else wrote: the throwaway worktree, the author's own description relayed verbatim and acted on in no way, the three resolutions, and posting what the person chose and nothing else.
+They are separate documents rather than one with a branch in it, because a session reviewing its own work should not spend its context on the forwarding half.
 
 The skill teaches the loop: implement, `socrates-review review --intent`, then poll `socrates-review status` every few seconds until it reports a state a run rests in.
 It tells the session not to bound that wait itself, because a reviewer that answers nothing before its deadline ends the run as `failed`.
@@ -206,8 +261,8 @@ It teaches polling rather than following, because everything a session reads lan
 It carries the five response rules in the same words `socrates-review findings` prints them, in front of the session before it has read a single finding.
 It also states what socrates-review will not do: it patches nothing, offers no way to explain the change to the reviewer, and refuses a rejection with no reason.
 
-The text has one source in `internal/skill`, and the copy at `.claude/skills/socrates-review/SKILL.md` is generated from it by `make skill`.
-A test fails while those two differ, and another checks that every command and flag the skill names exists on the built binary.
+Both texts have one source in `internal/skill`, and the copies under `.claude/skills/` are generated from it by `make skill`.
+A test fails while a copy and its source differ, and another checks that every command and flag either skill names exists on the built binary.
 
 Exit codes are a contract:
 
@@ -358,6 +413,9 @@ Until you do, serving a page says so.
 ## Out of scope
 
 - **It does not land your change.** No commit, no push, no pull request, no continuous integration. Those are yours.
+- **It does not fetch, and it does not rebase.** You fetch, and you rebase. socrates-review resolves a base out of what your repository already holds.
+- **It does not post a comment, and it knows nothing of pull requests.** No forge, no authentication, no network. It records what you decided about a finding and reports whether the finding is inside the change; your session posts.
+- **It does not approve anything.** Approving outlasts the review and is a governance act. A review that finds nothing serves a page with no options and offers no approval.
 - **It does not verify your change.** It runs no tests and no linters. `clean` means an independent reviewer found nothing blocking, not that the suite is green.
 - **It does not write in your repository.**
   Three mechanisms hold that, in the order they act.
@@ -410,6 +468,7 @@ This repository is built in layers, each specified before it was implemented.
 - The generated skill that lets a session drive the loop itself.
 - A question the reviewer asked parks the round, and the person's answer is recorded and judged.
 - The page a round is handed over on, served by `agora`.
+- A base you name, and a change that is not yours to patch.
 
 All of them ship today.
 

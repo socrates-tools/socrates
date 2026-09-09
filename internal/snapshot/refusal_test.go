@@ -58,7 +58,7 @@ func TestARefusalIsNotAFailure(t *testing.T) {
 func refuse(t *testing.T, directory string) *refusal.Refusal {
 	t.Helper()
 
-	taken, err := snapshot.Take(context.Background(), directory)
+	taken, err := snapshot.Take(context.Background(), directory, "")
 	if err == nil {
 		t.Fatalf("taking a snapshot of %s succeeded, returning %+v", directory, taken)
 	}

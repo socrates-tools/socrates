@@ -40,6 +40,12 @@ func (j *journey) author(path, content string) {
 	j.t.Helper()
 
 	j.session.Repository.Write(path, content)
+	j.settled()
+}
+
+func (j *journey) settled() {
+	j.t.Helper()
+
 	j.status = j.session.Repository.Status()
 	j.contents = workingTree(j.t, j.session.Repository.Root)
 }

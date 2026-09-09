@@ -1,6 +1,7 @@
 package runstore
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/socrates-tools/socrates-review/internal/dialogue"
 	"github.com/socrates-tools/socrates-review/internal/findings"
+	"github.com/socrates-tools/socrates-review/internal/hunks"
 )
 
 const (
@@ -19,6 +21,7 @@ const (
 	promptFile    = "prompt.txt"
 	streamFile    = "stream.jsonl"
 	findingsFile  = "findings.json"
+	changeFile    = "change.json"
 	responsesFile = "responses.jsonl"
 )
 
@@ -98,6 +101,34 @@ func (r Round) Write(path, content string) error {
 		return fmt.Errorf(writing, path, err)
 	}
 	return nil
+}
+
+func (r Round) ChangePath() string {
+	return filepath.Join(r.Directory, changeFile)
+}
+
+func (r Round) WriteChange(change hunks.Change) error {
+	encoded, err := json.MarshalIndent(change, "", "  ")
+	if err != nil {
+		return fmt.Errorf(encodingTheChange, r.ChangePath(), err)
+	}
+	return r.Write(r.ChangePath(), string(encoded)+"\n")
+}
+
+func (r Round) Change() (hunks.Change, bool, error) {
+	content, err := os.ReadFile(r.ChangePath())
+	if errors.Is(err, fs.ErrNotExist) {
+		return hunks.Change{}, false, nil
+	}
+	if err != nil {
+		return hunks.Change{}, false, fmt.Errorf(reading, r.ChangePath(), err)
+	}
+
+	var read hunks.Change
+	if err := json.Unmarshal(content, &read); err != nil {
+		return hunks.Change{}, false, fmt.Errorf(parsing, r.ChangePath(), err)
+	}
+	return read, true, nil
 }
 
 func (r Round) ResponsesPath() string {

@@ -2,10 +2,15 @@ package skill
 
 import "testing"
 
-func TestASkillOverTheCeilingFailsTheSuite(t *testing.T) {
-	rendered := len(Document())
+func TestASkillOverItsCeilingFailsTheSuite(t *testing.T) {
+	for _, one := range All() {
+		rendered := len(one.Document())
 
-	if rendered > Ceiling {
-		t.Errorf(theSkillIsTooLarge, rendered, Ceiling)
+		if rendered > one.Ceiling {
+			t.Errorf("%s: "+theSkillIsTooLarge, one.Name, rendered, one.Ceiling)
+		}
+		if one.Ceiling == 0 {
+			t.Errorf("%s states no ceiling, so nothing bounds what every session that reads it reads", one.Name)
+		}
 	}
 }

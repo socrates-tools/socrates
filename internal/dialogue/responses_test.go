@@ -65,7 +65,7 @@ func TestAResponseIsAFixARejectionOrADecision(t *testing.T) {
 
 		question := finding("f1", findings.Error, findings.AskUser)
 		response := dialogue.Response{Finding: "f1", Resolution: dialogue.Decided, Reason: reason}
-		if err := dialogue.Answering(question, response); err != nil {
+		if err := dialogue.Answering(question, response, dialogue.Mine); err != nil {
 			t.Fatalf("a decision against a finding that asks a person was refused: %v", err)
 		}
 
@@ -110,7 +110,7 @@ func TestAResponseIsAFixARejectionOrADecision(t *testing.T) {
 			{Finding: "f1", Resolution: dialogue.Fixed, Reason: "I took the endpoint out"},
 			{Finding: "f1", Resolution: dialogue.Rejected, Reason: "the endpoint is needed"},
 		} {
-			err := dialogue.Answering(question, offered)
+			err := dialogue.Answering(question, offered, dialogue.Mine)
 			if err == nil {
 				t.Fatalf("%q was accepted against a finding that asks a person", offered.Resolution)
 			}
@@ -124,7 +124,7 @@ func TestAResponseIsAFixARejectionOrADecision(t *testing.T) {
 		decided := dialogue.Response{Finding: "f1", Resolution: dialogue.Decided, Reason: "Vic said to leave it"}
 
 		for _, asking := range []findings.Action{findings.AutoFix, findings.NoOp} {
-			err := dialogue.Answering(finding("f1", findings.Error, asking), decided)
+			err := dialogue.Answering(finding("f1", findings.Error, asking), decided, dialogue.Mine)
 			if err == nil {
 				t.Fatalf("a decision was accepted against a finding actioned %q", asking)
 			}
@@ -150,7 +150,7 @@ func TestAResponseIsAFixARejectionOrADecision(t *testing.T) {
 		if len(recorded.Recorded) != 2 {
 			t.Errorf("the run holds %d responses, so the replacement is not visible", len(recorded.Recorded))
 		}
-		if waiting := recorded.Unanswered(document); waiting != nil {
+		if waiting := recorded.Unanswered(document, dialogue.Mine); waiting != nil {
 			t.Errorf("f1 still reads as unanswered: %v", waiting)
 		}
 	})
@@ -163,12 +163,12 @@ func TestOnlyBlockingFindingsWaitForAResponse(t *testing.T) {
 		finding("informational", findings.Info, findings.NoOp),
 	)
 
-	if diff := cmp.Diff([]string{"blocking"}, dialogue.Responses{}.Unanswered(document)); diff != "" {
+	if diff := cmp.Diff([]string{"blocking"}, dialogue.Responses{}.Unanswered(document, dialogue.Mine)); diff != "" {
 		t.Errorf("the findings waiting for a response differ (-want +got):\n%s", diff)
 	}
 
 	recorded := held(dialogue.Response{Finding: "blocking", Resolution: dialogue.Fixed})
-	if waiting := recorded.Unanswered(document); waiting != nil {
+	if waiting := recorded.Unanswered(document, dialogue.Mine); waiting != nil {
 		t.Errorf("an informational finding with no response is still waited on: %v", waiting)
 	}
 }

@@ -19,6 +19,13 @@ func After(classified findings.Classification, round int) runstate.State {
 	return runstate.AwaitingResponse
 }
 
+func Classified(document findings.Document, authorship Authorship) findings.Classification {
+	if authorship == NotMine {
+		return findings.ClassifyForAPerson(document)
+	}
+	return findings.Classify(document)
+}
+
 func AwaitsAPerson(classified findings.Classification, state runstate.State) bool {
 	switch state {
 	case runstate.Escalated:

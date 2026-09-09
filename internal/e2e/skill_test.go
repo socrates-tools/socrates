@@ -317,3 +317,31 @@ func TestRegeneratingIsOneCommand(t *testing.T) {
 		t.Error("the command the regeneration target runs does not reproduce the committed copy: run make skill")
 	}
 }
+
+func TestBothSkillsAreInstalled(t *testing.T) {
+	session := harness.Start(t)
+
+	printed, failures, code := session.Socrates("skill")
+	if code != 0 {
+		t.Fatalf("socrates-review skill exited %d: %s\n%s", code, failures, printed)
+	}
+
+	home := os.Getenv("HOME")
+	if home == "" {
+		t.Fatal("the harness left no home directory, so this test would write into the person's own")
+	}
+
+	for _, one := range skill.All() {
+		path := filepath.Join(home, ".claude", "skills", one.Name, skill.FileName)
+
+		if !strings.Contains(printed, path) {
+			t.Errorf("socrates-review skill does not say it wrote %s:\n%s", path, printed)
+		}
+		if written := session.File(path); written != one.Document() {
+			t.Errorf("what was installed at %s is not what the skill's source generates", path)
+		}
+	}
+	if len(skill.All()) < 2 {
+		t.Fatal("this repository states one skill, and a session reviewing somebody else's change reads a second one")
+	}
+}

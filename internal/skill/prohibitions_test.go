@@ -31,17 +31,21 @@ func TestTheThreeProhibitionsArePresent(t *testing.T) {
 
 func TestNoChannelIsImpliedForTheAuthorsAccount(t *testing.T) {
 	permitted := map[string]string{
-		"--document": "which document the surface serves, and the surface reaches no reviewer at all",
-		"--intent":   "the one line the person stated, which is the only account of the change socrates carries to a first-round reviewer",
-		"--finding":  "which finding an answer is about",
-		"--fixed":    "that a finding was patched",
-		"--rejected": "that a finding is wrong",
-		"--decided":  "that a person answered the question a finding asked",
-		"--note":     "what was done about a patched finding, which reaches the next reviewer as a claim it judges",
-		"--reason":   "why a rejected finding is wrong, which reaches the next reviewer as a claim it judges",
-		"--session":  "which page a poll is about, minted by the surface and carrying nothing anybody wrote",
-		"--to":       "where to install the skill, which reaches no reviewer at all",
-		"--json":     "what socrates concluded, as an object rather than as lines, which is a way of reading and not a way of saying anything",
+		"--document":      "which document the surface serves, and the surface reaches no reviewer at all",
+		"--intent":        "the one line the person stated, or the account whoever wrote the change stated, which is the only account of a change socrates carries to a first-round reviewer",
+		"--base":          "which commit the change is read against, and it names no account of it",
+		"--not-my-change": "that nobody here can patch the change, which changes what a finding can be answered with and says nothing about the change itself",
+		"--forwarded":     "that a finding goes to whoever wrote the change, as the text socrates recorded and not as anything the session wrote",
+		"--dropped":       "that a finding is true and is not being raised, with a reason that stays on this machine",
+		"--finding":       "which finding an answer is about",
+		"--fixed":         "that a finding was patched",
+		"--rejected":      "that a finding is wrong",
+		"--decided":       "that a person answered the question a finding asked",
+		"--note":          "what was done about a patched finding, which reaches the next reviewer as a claim it judges",
+		"--reason":        "why a rejected finding is wrong, which reaches the next reviewer as a claim it judges",
+		"--session":       "which page a poll is about, minted by the surface and carrying nothing anybody wrote",
+		"--to":            "where to install the skill, which reaches no reviewer at all",
+		"--json":          "what socrates concluded, as an object rather than as lines, which is a way of reading and not a way of saying anything",
 	}
 
 	commands := map[string]string{

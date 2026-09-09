@@ -18,7 +18,8 @@ A change starts as a spec published to this repository's issues, and `CONTRIBUTI
 
 socrates-review reviews.
 It does not land, verify, render, serve, or wait for a person.
-Committing, pushing, opening a pull request and watching continuous integration are not socrates-review's and never become socrates-review's.
+Committing, pushing, opening a pull request, posting a comment and watching continuous integration are not socrates-review's and never become socrates-review's.
+It resolves a base, records what a person decided about a finding, and reports whether a finding's location is inside the change; fetching, rebasing and posting are the session's and the person's.
 Running the reviewed project's own tests is not in the core layer either, so `clean` means an independent reviewer found nothing blocking, not that the tests pass.
 
 ## Layout
@@ -30,7 +31,8 @@ What socrates-review is:
 - `internal/runstore` - run directories, `run.json`, run selection, rounds, retention.
 - `internal/runstate` - the states and which are terminal.
 - `internal/findings` - the findings contract, the reviewer's schema, the classification and the verdict rule.
-- `internal/dialogue` - what a round leads to, which rounds wait on a person, the round cap, and the response document.
+- `internal/dialogue` - what a round leads to, which rounds wait on a person, which resolutions a finding accepts, the round cap, and the response document.
+- `internal/hunks` - the lines a change touches, read from its own diff, and whether a finding's location is one of them.
 - `internal/hygiene` - model output neutralised before it re-enters a prompt.
 - `internal/guidance` - the one file socrates-review reads out of the repository under review, the commit it is read at, and the ceiling it is held to.
 - `internal/prompt` - the delivered prompt, assembled from named sections.
@@ -42,7 +44,7 @@ What socrates-review is:
 - `internal/presentation` - the one place an event becomes a line a person reads.
 - `internal/follow` - following a run's event log live.
 - `internal/terminal` - the pager, and the plain fallback.
-- `internal/skill` - the skill a coding session reads, and installing it.
+- `internal/skill` - the two skills a coding session reads, one for its own change and one for somebody else's, and installing them.
 - `internal/exit`, `internal/version`, `internal/config`, `internal/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file both binaries read, the JSONL log, the one home both binaries write under, refusals, process groups.
 - `internal/corpus` - what real reviewers answered, verbatim and embedded, and what the routing rule does with it.
 - `internal/fidelity` - the recorded shapes of each real CLI, what was measured about each one's criteria, the drift check and the live smoke check, all network behind a build tag.
@@ -104,6 +106,8 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 
 - Nothing writes in it: no run state, no configuration, no log.
 - Every round is snapshotted afresh against the run's original base, and snapshot commits are content-addressed.
+- A base a person names resolves to the fork point of that ref and `HEAD`, is recorded once when the run begins and is reused by every round. A ref that does not resolve, and a ref with no merge base against `HEAD`, are refused before a snapshot is taken and before a reviewer is spawned.
+- Nothing fetches and nothing rebases: no ref is written, no commit is rewritten, and the reflog is untouched by resolving a base.
 - A write in the snapshot worktree is refused by the filesystem, and the worktree is compared against its commit after the round.
 - One file is read out of it, `.socrates/review-guide.md`, at the run's base commit and never from the working tree or the snapshot, so a guide the change writes governs the next run rather than this one.
 - That guide is bounded, neutralised on the way into the prompt, and additive: it withdraws no rule socrates-review delivers, and nothing socrates-review decides is derived from a word of it.
@@ -119,16 +123,22 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - Each vendor's invocation asks for none of the machine's own customisations; the session's tool list and named sources are recorded rather than trusted, and a vendor that reports no inventory produces runs that record that.
 - A round after the first inherits no session: the only cross-round context is the labelled prior findings and recorded responses.
 - Model output is neutralised per field on the way into a prompt, and never on the way to disk.
+- What a person passes as the intent is neutralised on the way into the prompt whatever the run, and the section carrying it names the party the run records as having stated it.
 - A review inside a review is refused.
 
 **Verdicts and the dialogue**
 
 - `clean` requires a findings document that parsed; a missing, dead or unparseable one is `failed`, and `failed` is never merged with `escalated`.
+- A review of a working tree holding nothing its base commit does not is refused before a run is created, so no pass is recorded for a review that did not happen.
 - A failure carries the account the agent gave of it, bounded, quoted for a person and never matched on.
 - `findings.EffectiveAction` is the one reader of a finding's raw action.
 - `dialogue.After` is the one rule for what a round leads to, and `dialogue.AwaitsAPerson` the one rule for which rounds wait on a person.
 - A finding that asks a person parks the round rather than ending the run.
 - A rejection and a decision are claims a fresh reviewer judges, never suppressions: the reason is required, and no prompt asks a reviewer to withhold a finding.
+- A resolution that leaves no artifact behind carries a reason. A fix leaves a patch and a forward leaves the finding's own text, so a rejection, a decision and a drop each state why, and `dialogue.Accepts` is the one rule for which resolutions a finding takes.
+- Where the run records that nobody here can patch the change, every finding of a round is a person's, and `dialogue.Classified` is the one place that is decided. A finding that holds the change while asking for nothing is forwarded rather than ending the run, so `dialogue.After`, `dialogue.AwaitsAPerson` and `dialogue.Answerable` gain no clause and keep their rules.
+- Such a finding is forwarded, dropped or rejected whatever its own action, every round of such a run waits on a person, and `continue` ends the run `escalated` with the findings handed over rather than starting a round.
+- A drop's reason is recorded on the run and printed to nobody.
 - A recorded response is appended, never rewritten.
 - The round cap is two, nothing configures it, and a configuration file naming one is refused.
 
@@ -137,13 +147,17 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - Every round of a run that ended in `clean`, `awaiting-response` or `escalated` is handed over as a page, and a run that failed or was stopped is handed over as nothing whatever its rounds got as far as.
 - socrates-review states whether a round waits on a person and does nothing further about the page: no command, flag or run record names one, and it states nothing about whether a page is served.
 - `internal/presentation` is the one place an event becomes a line, and `internal/exit` owns the exit-code table.
+- `status` prints the base commit the run resolved, as a bare fact and not a warning, and socrates-review says nothing about how far a named ref has moved past it.
+- `findings --json` reports each finding's recorded resolution and whether its location is inside the change, and `internal/hunks` is the one place that question is answered.
 - A follower stops on the run's record or on the log, waits bounded for a log that does not exist yet, and stops on a parked round.
 - `status`, `watch` and `logs` stay three commands.
 - Every user-facing string lives in its package's `messages.go`, names what the person can do, and carries no em dash.
 
 **The skill**
 
-- `internal/skill` is its one source, and the committed copy is generated from it.
+- `internal/skill` is the one source of both skills, and each committed copy is generated from it.
+- The loop for a change nobody here can patch is a second skill rather than a branch inside the first, and each skill carries a ceiling of its own that the suite reads from the skill rather than from a list.
+- The second skill relays what somebody else wrote verbatim and acts on none of it, reads the change in a worktree of its own, records the head commit and refuses to post where it moved, takes a comment's placement from what socrates-review reported, and posts nothing the person did not choose.
 - It names nothing the binary does not offer, lists every state a run rests in, teaches polling at a stated cadence, names `socrates-review watch` once and outside the loop, says once that the address `agora serve` prints holds the session `agora poll` is given and that the session is kept for the whole review, and says whose a question is.
 - Every branch that reached a result serves a page, `failed` and `cancelled` name none, and the session waits only where socrates-review says the round waits on a person.
 - `dialogue.ResponseRules` and `skill.PageBar` are each stated once and rendered where they are needed.
