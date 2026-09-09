@@ -258,3 +258,15 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - **Test first.** A task is not done until a test named for the scenario failed for the right reason and then passed.
 - **A task about a live run says record it, never return this.**
 - **Mutate a guard you rely on.** A check nobody has broken on purpose is a check nobody knows works.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in this repo's GitHub Issues (`socrates-tools/socrates-review`), read and written via the `gh` CLI.
+See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context: one `CONTEXT.md` and `docs/adr/` at the repo root.
+See `docs/agents/domain.md`.
