@@ -34,8 +34,8 @@ const (
 
 const whatAReviewerFoundInTheFixture = `{"findings":[` +
 	`{"id":"f1","severity":"error","file":"settlement/rate.go","line":6,"description":"Rounding by adding half a basis point rounds a negative amount away from zero, so a refund of one and a half cents settles as two.","action":"auto-fix"},` +
-	`{"id":"f2","severity":"error","file":"settlement/ledger.go","line":12,"description":"Total now sums amounts that were each rounded, so a ledger of many entries drifts from the rounded total of the same entries.","action":"ask-user"},` +
-	`{"id":"f3","severity":"warning","file":"settlement/ledger.go","line":20,"description":"Describe concatenates in a loop, which reallocates on every entry.","action":"auto-fix"}` +
+	`{"id":"f2","severity":"error","file":"settlement/ledger.go","line":22,"description":"Statement keeps its own truncating copy of the conversion, so a statement prints line items that do not sum to the total it prints beside them.","action":"ask-user"},` +
+	`{"id":"f3","severity":"warning","file":"settlement/ledger.go","line":23,"description":"Statement concatenates in a loop, which reallocates on every entry.","action":"auto-fix"}` +
 	`],"risk_level":"medium","risk_rationale":"one changed line answers wrongly for a negative amount without erroring"}`
 
 var insideTheChange = map[string]bool{"f1": true, "f2": false, "f3": false}
