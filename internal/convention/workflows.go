@@ -11,9 +11,23 @@ import (
 
 const WorkflowsDirectory = ".github/workflows"
 
-var targetsReachingTheRealCLI = []string{"fixtures", "live-smoke"}
+type outward struct {
+	named   string
+	targets []string
+	tags    []string
+}
 
-var tagsReachingTheRealCLI = []string{"record", "livesmoke"}
+var theRealCLI = outward{
+	named:   "the real CLI",
+	targets: []string{"fixtures", "live-smoke"},
+	tags:    []string{"record", "livesmoke"},
+}
+
+var aForge = outward{
+	named:   "a forge",
+	targets: []string{"forge-smoke"},
+	tags:    []string{"forgesmoke"},
+}
 
 var buildTagsNamed = regexp.MustCompile(`-tags[= ]([A-Za-z0-9_,]+)`)
 
@@ -58,12 +72,38 @@ func WorkflowsRunningTheGates(root string) (WorkflowGates, error) {
 	return gates, nil
 }
 
+func reachesOutward(content, named string, outside outward) []string {
+	var reaching []string
+
+	for _, target := range outside.targets {
+		if invocationOf(target).MatchString(content) {
+			reaching = append(reaching, fmt.Sprintf("%s runs make %s, which reaches %s", named, target, outside.named))
+		}
+	}
+	for _, tagged := range buildTagsNamed.FindAllStringSubmatch(content, -1) {
+		for tag := range strings.SplitSeq(tagged[1], ",") {
+			if slices.Contains(outside.tags, tag) {
+				reaching = append(reaching, fmt.Sprintf("%s compiles the %s tag, which is behind the paths that reach %s", named, tag, outside.named))
+			}
+		}
+	}
+	return reaching
+}
+
 type WorkflowReach struct {
 	Reaching  []string
 	Workflows []string
 }
 
 func WorkflowsReachingTheRealCLI(root string) (WorkflowReach, error) {
+	return workflowsReaching(root, theRealCLI, credentialsTheRealCLIReads)
+}
+
+func WorkflowsReachingAForge(root string) (WorkflowReach, error) {
+	return workflowsReaching(root, aForge, nil)
+}
+
+func workflowsReaching(root string, outside outward, credentials []string) (WorkflowReach, error) {
 	var reach WorkflowReach
 
 	paths, err := workflowPaths(filepath.Join(root, WorkflowsDirectory))
@@ -80,19 +120,8 @@ func WorkflowsReachingTheRealCLI(root string) (WorkflowReach, error) {
 		name := filepath.Base(path)
 		reach.Workflows = append(reach.Workflows, name)
 
-		for _, target := range targetsReachingTheRealCLI {
-			if invocationOf(target).Match(content) {
-				reach.Reaching = append(reach.Reaching, fmt.Sprintf("%s runs make %s, which reaches the real CLI", name, target))
-			}
-		}
-		for _, tagged := range buildTagsNamed.FindAllStringSubmatch(string(content), -1) {
-			for _, tag := range strings.Split(tagged[1], ",") {
-				if slices.Contains(tagsReachingTheRealCLI, tag) {
-					reach.Reaching = append(reach.Reaching, fmt.Sprintf("%s compiles the %s tag, which is behind the paths that reach the real CLI", name, tag))
-				}
-			}
-		}
-		for _, credential := range credentialsTheRealCLIReads {
+		reach.Reaching = append(reach.Reaching, reachesOutward(string(content), name, outside)...)
+		for _, credential := range credentials {
 			if regexp.MustCompile(regexp.QuoteMeta(credential)).Match(content) {
 				reach.Reaching = append(reach.Reaching, fmt.Sprintf("%s names %s, which is a credential the real CLI reads", name, credential))
 			}

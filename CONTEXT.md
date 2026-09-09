@@ -68,3 +68,4 @@ These are agora's words, and agora knows nothing about code review.
 - **scenario**: the behaviour a test is named for. A task is not done until a test named for the scenario failed for the right reason and then passed.
 - **corpus**: what real reviewers answered, kept verbatim, embedded and replayed.
 - **fixture**: a recorded shape of a real CLI's answer. Recording one reaches the real CLI, and nothing in continuous integration does.
+- **forge check**: the one hand-run check that posts what a review forwarded to a real pull request and deletes it again. It reaches a forge, its reviewer is a simulator because the forge is what it reads, and nothing in continuous integration runs it.

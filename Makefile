@@ -12,7 +12,7 @@ VERSION = $(shell git describe --tags --exact-match 2>/dev/null)
 STAMP = -X $(MODULE)/internal/version.version=$(VERSION) -X $(MODULE)/internal/version.commit=$(COMMIT) -X $(MODULE)/internal/version.uncommitted=$(UNCOMMITTED)
 SURFACE_STAMP = -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.uncommitted=$(UNCOMMITTED)
 
-TARGETS := build install release release-snapshot verify test lint fmt help skill assets platforms corpus-outcomes fixtures fixtures-diff live-smoke
+TARGETS := build install release release-snapshot verify test lint fmt help skill assets platforms corpus-outcomes fixtures fixtures-diff live-smoke forge-smoke
 
 .PHONY: $(TARGETS)
 
@@ -75,3 +75,6 @@ fixtures-diff:
 
 live-smoke:
 	go test -tags livesmoke -count=1 -v -timeout 20m ./internal/fidelity/
+
+forge-smoke:
+	go test -tags forgesmoke -count=1 -v -timeout 10m -run TestAForge ./internal/fidelity/

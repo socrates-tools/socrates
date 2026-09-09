@@ -47,7 +47,7 @@ What socrates-review is:
 - `internal/skill` - the two skills a coding session reads, one for its own change and one for somebody else's, and installing them.
 - `internal/exit`, `internal/version`, `internal/config`, `internal/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file both binaries read, the JSONL log, the one home both binaries write under, refusals, process groups.
 - `internal/corpus` - what real reviewers answered, verbatim and embedded, and what the routing rule does with it.
-- `internal/fidelity` - the recorded shapes of each real CLI, what was measured about each one's criteria, the drift check and the live smoke check, all network behind a build tag.
+- `internal/fidelity` - the recorded shapes of each real CLI, what was measured about each one's criteria, the drift check, the live smoke check and the forge check, all network behind a build tag.
 
 What agora is:
 
@@ -90,11 +90,12 @@ Continuous integration runs that same command on every supported platform, so pa
 
 `make release` publishes what a tag names, gated on the verification matrix, and `make release-snapshot` produces the same archives locally without publishing anything.
 
-These two reach the real CLI, and nothing in continuous integration runs them:
+These three reach outside this machine, and nothing in continuous integration runs them:
 
 ```sh
-make fixtures    # record what the real claude CLI answers, as shapes
-make live-smoke  # one real review against the real binary
+make fixtures     # record what the real claude CLI answers, as shapes
+make live-smoke   # one real review against the real binary
+make forge-smoke  # post what one review forwarded to a real pull request, and delete it again
 ```
 
 ## Invariants
@@ -186,7 +187,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - A run happens when somebody asks for one and when a release gates on one, and nothing starts on a push: what that gives up is that nobody learns the default branch is red, or that an advisory was published, until somebody asks.
 - The module graph is checked for known vulnerabilities on the same footing, and dependency updates arrive as changes somebody reviews.
 - The browser the page half drives is installed by the run at a stated version rather than found on the runner, and an absent browser fails rather than skips.
-- Nothing a workflow runs reaches the real CLI, by target or by build tag.
+- Nothing a workflow runs reaches the real CLI or a forge, by target or by build tag.
 
 **Platform support**
 
@@ -259,7 +260,8 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - What a real reviewer answered is kept verbatim and replayed; the corpus is classified by `dialogue.After`, and a recording is only made from a run that answered.
 - A verification task may require that a live run happened and was recorded, never a particular severity, action or count.
 - The page half is driven by a real browser against the real binary; asserting on served markup would test the renderer.
-- Nothing in continuous integration reaches the real CLI.
+- Nothing in continuous integration reaches the real CLI or a forge.
+- Where a forwarded finding's comment lands is checked against a real forge once, by hand, behind a build tag: the findings come from a simulator, because what that check reads is the forge. It posts to one long-lived pull request and deletes what it posted.
 - The source carries no commentary.
 
 ## Conventions

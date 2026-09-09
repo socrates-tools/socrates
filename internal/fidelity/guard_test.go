@@ -14,7 +14,7 @@ import (
 	"github.com/socrates-tools/socrates-review/internal/testing/source"
 )
 
-var behindATag = []string{"record_test.go", "criteria_test.go", "drift_test.go", "livesmoke_test.go"}
+var behindATag = []string{"record_test.go", "criteria_test.go", "drift_test.go", "livesmoke_test.go", "forgesmoke_test.go"}
 
 const fidelityPackage = "./internal/fidelity"
 
@@ -26,7 +26,7 @@ func TestTheOrdinarySuiteReachesNoNetwork(t *testing.T) {
 	compiled := slices.Concat(listed.GoFiles, listed.TestGoFiles, listed.XTestGoFiles)
 	for _, guarded := range behindATag {
 		if slices.Contains(compiled, guarded) {
-			t.Errorf("the default build compiles %s, which reaches the real CLI", guarded)
+			t.Errorf("the default build compiles %s, which reaches something outside this machine", guarded)
 		}
 		if !slices.Contains(listed.IgnoredGoFiles, guarded) {
 			t.Errorf("%s is not excluded from the default build: give it a build tag of its own", guarded)

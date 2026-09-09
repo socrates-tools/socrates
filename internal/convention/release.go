@@ -252,17 +252,8 @@ func WhatTheReleaseReaches(root string) ([]string, error) {
 	}
 
 	var reaching []string
-	for _, target := range targetsReachingTheRealCLI {
-		if invocationOf(target).Match(held) {
-			reaching = append(reaching, fmt.Sprintf("%s runs make %s, which reaches the real CLI", ReleaseConfigurationFile, target))
-		}
-	}
-	for _, tagged := range buildTagsNamed.FindAllStringSubmatch(string(held), -1) {
-		for tag := range strings.SplitSeq(tagged[1], ",") {
-			if slices.Contains(tagsReachingTheRealCLI, tag) {
-				reaching = append(reaching, fmt.Sprintf("%s compiles the %s tag, which is behind the paths that reach the real CLI", ReleaseConfigurationFile, tag))
-			}
-		}
+	for _, outside := range []outward{theRealCLI, aForge} {
+		reaching = append(reaching, reachesOutward(string(held), ReleaseConfigurationFile, outside)...)
 	}
 	for _, credential := range credentialsTheRealCLIReads {
 		if strings.Contains(string(held), credential) {

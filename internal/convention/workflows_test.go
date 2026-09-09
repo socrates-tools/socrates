@@ -25,6 +25,39 @@ func TestNoWorkflowReachesTheRealCLI(t *testing.T) {
 	}
 }
 
+// scenario: A verification run reaches no forge
+func TestNoWorkflowReachesAForge(t *testing.T) {
+	reach, err := convention.WorkflowsReachingAForge(source.Root(t))
+	if err != nil {
+		t.Fatalf("reading the workflows: %v", err)
+	}
+
+	for _, reaching := range reach.Reaching {
+		t.Errorf("%s, and nothing in continuous integration writes in a repository socrates-review does not own", reaching)
+	}
+	if len(reach.Workflows) == 0 {
+		t.Fatalf("there is no workflow under %s, so this check has nothing to read and would pass forever", convention.WorkflowsDirectory)
+	}
+}
+
+func TestAWorkflowReachingAForgeIsReported(t *testing.T) {
+	root := t.TempDir()
+	writeWorkflow(t, root, "posting.yml", "steps:\n  - run: make forge-smoke\n  - run: go test -tags forgesmoke ./internal/fidelity/\n")
+
+	reach, err := convention.WorkflowsReachingAForge(root)
+	if err != nil {
+		t.Fatalf("reading a fabricated workflow: %v", err)
+	}
+
+	want := []string{
+		"posting.yml runs make forge-smoke, which reaches a forge",
+		"posting.yml compiles the forgesmoke tag, which is behind the paths that reach a forge",
+	}
+	if diff := cmp.Diff(want, reach.Reaching); diff != "" {
+		t.Errorf("what a workflow reaching a forge reports differs (-want +got):\n%s", diff)
+	}
+}
+
 func TestTheRunInvokesTheEntryPointRatherThanTheGates(t *testing.T) {
 	gates, err := convention.WorkflowsRunningTheGates(source.Root(t))
 	if err != nil {
