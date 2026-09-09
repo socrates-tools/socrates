@@ -14,8 +14,13 @@ So `review` refuses instead, before a run is created, naming the base it resolve
 It exits with the usage code, so nothing about it can be read as a verdict.
 No run directory is written, so there is no state for a session to act on and nothing for `status` to report.
 
-`socrates-review continue` is unchanged: a round did happen there, the person answered it, and a patched tree that holds nothing its base does not means the change was reverted rather than never read.
+`socrates-review continue` reaches the same condition where the answers reverted the whole change, and it ends the run `failed` rather than `clean`.
+A run cannot be refused there: it exists, it is parked, and refusing would leave it parked with nothing that ends it.
+`failed` is what the state means, because no reviewer read the round and nothing about the change was checked, and the recorded reason says both.
+Round one is kept and readable either way.
+
+One rule covers both paths: socrates-review reports `clean` for no round a reviewer did not read.
 
 ## Rejected
 
-- ending the run `failed`, which writes a run somebody has to read to learn that nothing happened; and leaving `clean`, which is the false pass.
+- refusing the review with a run that records the refusal, which writes a run somebody has to read to learn that nothing happened; leaving `clean` in either place, which is the false pass; and refusing `continue`, which leaves the run parked with nothing left that ends it.

@@ -47,7 +47,7 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 - **resolution**: which kind of response it is. `fixed` claims a patch, `rejected` claims the finding is false, `decided` records what a person decided, `forwarded` hands the finding to whoever wrote the change, `dropped` records it as true and not raised.
 - **disposition**: what a resolution of a finding does. A patch in the author's working tree, a comment in somebody else's repository, or nothing at all.
 - **reason**: why, required on a resolution that leaves no artifact behind. A rejection, a decision and a drop are claims a fresh reviewer or a later reader judges, never suppressions.
-- **handover round**: a round of a change nobody here can patch, so every finding of it is forwarded, dropped or rejected. It waits on a person, and no second round follows it.
+- **handover round**: a round of a change nobody here can patch, so every finding of it is forwarded, dropped or rejected. It waits on a person, and no second round follows it. As a noun, handover is this round and nothing else: handing a round over as a page is a verb every round takes.
 - **round cap**: two. Nothing configures it, and a configuration file naming one is refused.
 
 ## The page

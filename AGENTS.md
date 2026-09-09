@@ -130,7 +130,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 **Verdicts and the dialogue**
 
 - `clean` requires a findings document that parsed; a missing, dead or unparseable one is `failed`, and `failed` is never merged with `escalated`.
-- A review of a working tree holding nothing its base commit does not is refused before a run is created, so no pass is recorded for a review that did not happen.
+- A review of a working tree holding nothing its base commit does not is refused before a run is created, and a round of one ends the run `failed`, so `clean` is reported for no round a reviewer did not read.
 - A failure carries the account the agent gave of it, bounded, quoted for a person and never matched on.
 - `findings.EffectiveAction` is the one reader of a finding's raw action.
 - `dialogue.After` is the one rule for what a round leads to, and `dialogue.AwaitsAPerson` the one rule for which rounds wait on a person.

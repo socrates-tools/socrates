@@ -546,7 +546,7 @@ func TestACleanSecondRoundDoesNotNameTheCap(t *testing.T) {
 	}
 }
 
-func TestNothingLeftToReviewEndsTheRun(t *testing.T) {
+func TestNothingLeftToReviewEndsTheRunWithoutPassingIt(t *testing.T) {
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -555,19 +555,25 @@ func TestNothingLeftToReviewEndsTheRun(t *testing.T) {
 	session.Repository.Delete("internal/added.go")
 
 	printed, failures, code := session.Socrates("continue", name, "--wait")
-	if code != 0 {
-		t.Fatalf("continuing with the change reverted exited %d, want 0: %s\n%s", code, failures, printed)
+	if code != 2 {
+		t.Fatalf("continuing with the change reverted exited %d, want 2: %s\n%s", code, failures, printed)
 	}
 
 	run := session.Run(name)
-	if run.State != runstate.Clean {
-		t.Errorf("continuing with the change reverted ended the run %s: %s", run.State, reason(run))
+	if run.State != runstate.Failed {
+		t.Errorf("continuing with the change reverted ended the run %s, and no reviewer read the round: %s", run.State, reason(run))
 	}
 	if strings.Contains(reason(run), "HEAD") {
 		t.Errorf("the recorded reason names HEAD, and what was compared is the run's base: %q", reason(run))
 	}
+	if !strings.Contains(reason(run), "no reviewer read this round") {
+		t.Errorf("the recorded reason does not say that nobody read the round: %q", reason(run))
+	}
 	if invocations := session.Simulator.Invocations(); len(invocations) != 1 {
 		t.Errorf("a second reviewer was invoked for a tree holding nothing to review: %d invocations", len(invocations))
+	}
+	if printed, _, _ := session.Socrates("findings", name); !strings.Contains(printed, "no review completed") {
+		t.Errorf("what a person reads does not say that no review completed:\n%s", printed)
 	}
 }
 

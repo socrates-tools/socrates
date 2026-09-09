@@ -77,6 +77,7 @@ There is no second name for it, so nothing has to be reconciled, and `socrates-r
 
 A review of a working tree that holds nothing its base commit does not is refused rather than reported clean.
 Nothing was read, so there is nothing to pass, and no run is written for a session to act on.
+Where the answers to a round revert the whole change, `socrates-review continue` ends that run `failed` for the same reason: `clean` is reported for no round a reviewer did not read.
 
 ## Reviewing a branch, and reviewing a change that is not yours
 

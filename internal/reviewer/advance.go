@@ -62,7 +62,7 @@ func Continue(ctx context.Context, continuation Continuation) (Continued, error)
 		return continued, fail(store, run, err)
 	}
 	if taken.NothingToReview() {
-		return continued, conclude(store, run, runstate.Clean, snapshot.NothingToReviewReason)
+		return continued, conclude(store, run, runstate.Failed, nothingLeftToReview)
 	}
 
 	if _, err := store.CreateRound(run.Name, next); err != nil {

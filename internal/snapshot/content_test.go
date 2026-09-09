@@ -128,7 +128,7 @@ func TestAChangeWithNothingToReview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("creating the run: %v", err)
 	}
-	if err := run.End(runstate.Clean, snapshot.NothingToReviewReason); err != nil {
+	if err := run.End(runstate.Failed, "the working tree held nothing the base commit does not"); err != nil {
 		t.Fatalf("ending the run: %v", err)
 	}
 	if err := store.Save(run); err != nil {
@@ -139,10 +139,10 @@ func TestAChangeWithNothingToReview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading the run: %v", err)
 	}
-	if loaded.State != runstate.Clean {
-		t.Errorf("a run with nothing to review reads as %q, want %q", loaded.State, runstate.Clean)
+	if loaded.State != runstate.Failed {
+		t.Errorf("a run with nothing to review reads as %q, want %q", loaded.State, runstate.Failed)
 	}
-	if loaded.Verdict == nil || !strings.Contains(loaded.Verdict.Reason, "nothing to review") {
+	if loaded.Verdict == nil || !strings.Contains(loaded.Verdict.Reason, "nothing the base commit does not") {
 		t.Errorf("the verdict is %+v, without recording that there was nothing to review", loaded.Verdict)
 	}
 	if loaded.Snapshot != "" {
