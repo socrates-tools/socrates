@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/socrates-tools/socrates-review/internal/prompt"
 	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates-review/internal/testing/gitrepo"
 	"github.com/socrates-tools/socrates-review/internal/testing/harness"
 )
 
@@ -260,6 +261,7 @@ func TestAReviewFromAWorktreeOfAnotherBranchIsOfThatBranchAlone(t *testing.T) {
 
 	elsewhere := filepath.Join(t.TempDir(), "reviewing-their-change")
 	session.Repository.Git("worktree", "add", "--quiet", "--detach", elsewhere, "feature")
+	elsewhere = gitrepo.At(t, elsewhere).Root
 
 	out, failures, code := session.SocratesIn(elsewhere, "review", "--base", "main", "--not-my-change", "--wait")
 	if code != 0 {
