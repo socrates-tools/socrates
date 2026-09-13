@@ -11,6 +11,7 @@ import (
 
 	"github.com/socrates-tools/socrates-review/internal/config"
 	"github.com/socrates-tools/socrates-review/internal/document"
+	"github.com/socrates-tools/socrates-review/internal/loopback"
 	"github.com/socrates-tools/socrates-review/internal/process"
 	"github.com/socrates-tools/socrates-review/internal/refusal"
 	"github.com/socrates-tools/socrates-review/internal/surface"
@@ -79,7 +80,7 @@ func newServeCommand() *cobra.Command {
 	}
 
 	command.Flags().StringVar(&from, "document", "", documentUsage)
-	command.Flags().StringVar(&address, addressFlag, surface.DefaultAddress, addressUsage)
+	command.Flags().StringVar(&address, addressFlag, loopback.DefaultAddress, addressUsage)
 	command.Flags().StringVar(&session, sessionFlag, "", sessionUsage)
 	return command
 }
@@ -99,7 +100,7 @@ func whereToBind(committed string) (string, error) {
 		}
 		return committed, nil
 	}
-	return surface.FirstFreeIn(surface.WindowAddresses())
+	return surface.FirstFreeIn(loopback.Addresses())
 }
 
 func readDocument(command *cobra.Command, from string) ([]byte, error) {

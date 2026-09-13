@@ -3,33 +3,11 @@ package surface
 import (
 	"net"
 	"net/url"
-	"strconv"
 
 	"github.com/socrates-tools/socrates-review/internal/refusal"
 )
 
-const (
-	windowTopPort  = 18018
-	windowPorts    = 10
-	windowHost     = "127.0.0.1"
-	windowBasePort = windowTopPort - windowPorts + 1
-)
-
-var DefaultAddress = inTheWindow(windowTopPort)
-
 const localhostName = "localhost"
-
-func inTheWindow(port int) string {
-	return net.JoinHostPort(windowHost, strconv.Itoa(port))
-}
-
-func WindowAddresses() []string {
-	addresses := make([]string, 0, windowPorts)
-	for port := windowTopPort; port >= windowBasePort; port-- {
-		addresses = append(addresses, inTheWindow(port))
-	}
-	return addresses
-}
 
 func CheckLoopback(address string) error {
 	host, port, err := net.SplitHostPort(address)

@@ -14,8 +14,10 @@ import (
 var socratesOwn = []string{
 	filepath.Join("cmd", convention.Repository),
 	filepath.Join("internal", "agent"),
+	filepath.Join("internal", "config"),
 	filepath.Join("internal", "dialogue"),
 	filepath.Join("internal", "findings"),
+	filepath.Join("internal", "loopback"),
 	filepath.Join("internal", "prompt"),
 	filepath.Join("internal", "report"),
 	filepath.Join("internal", "reviewer"),

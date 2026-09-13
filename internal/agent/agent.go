@@ -66,6 +66,21 @@ type Agent interface {
 	Run(context.Context, Request) (Response, error)
 }
 
+func (v Vendor) RoutingFor(role Role, configured Configuration) Routing {
+	routing := v.Routing[role]
+	stated, found := configured[role]
+	if !found {
+		return routing
+	}
+	if stated.Model != "" {
+		routing.Model = stated.Model
+	}
+	if stated.Effort != "" {
+		routing.Effort = stated.Effort
+	}
+	return routing
+}
+
 func resolveRouting(vendor Vendor, configured Configuration) (map[Role]Routing, error) {
 	for role := range configured {
 		if !role.Known() {
@@ -75,16 +90,7 @@ func resolveRouting(vendor Vendor, configured Configuration) (map[Role]Routing, 
 
 	resolved := make(map[Role]Routing, len(roles))
 	for _, role := range roles {
-		routing := vendor.Routing[role]
-		if stated, found := configured[role]; found {
-			if stated.Model != "" {
-				routing.Model = stated.Model
-			}
-			if stated.Effort != "" {
-				routing.Effort = stated.Effort
-			}
-		}
-		resolved[role] = routing
+		resolved[role] = vendor.RoutingFor(role, configured)
 	}
 	return resolved, nil
 }

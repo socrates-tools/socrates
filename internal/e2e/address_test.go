@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/socrates-tools/socrates-review/internal/loopback"
 	"github.com/socrates-tools/socrates-review/internal/state"
 	"github.com/socrates-tools/socrates-review/internal/surface"
 	"github.com/socrates-tools/socrates-review/internal/testing/source"
@@ -98,19 +99,19 @@ func untilThePortIsFree(t *testing.T, address string) {
 func requireTheFixedPortIsFree(t *testing.T) {
 	t.Helper()
 
-	listener, err := net.Listen("tcp", surface.DefaultAddress)
+	listener, err := net.Listen("tcp", loopback.DefaultAddress)
 	if err != nil {
-		t.Skipf("something else holds %s, so what the surface binds when nothing states one cannot be read here: %v", surface.DefaultAddress, err)
+		t.Skipf("something else holds %s, so what the surface binds when nothing states one cannot be read here: %v", loopback.DefaultAddress, err)
 	}
 	if err := listener.Close(); err != nil {
-		t.Fatalf("releasing %s: %v", surface.DefaultAddress, err)
+		t.Fatalf("releasing %s: %v", loopback.DefaultAddress, err)
 	}
 }
 
 func holdingTheWindowDownTo(t *testing.T, ports int) []string {
 	t.Helper()
 
-	addresses := surface.WindowAddresses()
+	addresses := loopback.Addresses()
 	for _, address := range addresses[:ports] {
 		listener, err := net.Listen("tcp", address)
 		if err != nil {
@@ -171,7 +172,7 @@ func TestTheWindowIsWalkedFromTheTopDownRatherThanAtRandom(t *testing.T) {
 }
 
 func TestAWholeWindowHeldIsARefusalThatNamesTheWindow(t *testing.T) {
-	addresses := holdingTheWindowDownTo(t, len(surface.WindowAddresses()))
+	addresses := holdingTheWindowDownTo(t, len(loopback.Addresses()))
 
 	held := standing(t)
 	held.bindsWhatIsConfigured()
@@ -205,7 +206,7 @@ func windowAddressesNothingHolds(t *testing.T) []string {
 	t.Helper()
 
 	var free []string
-	for _, address := range surface.WindowAddresses() {
+	for _, address := range loopback.Addresses() {
 		listener, err := net.Listen("tcp", address)
 		if err != nil {
 			continue
@@ -296,8 +297,8 @@ func TestTheDefaultBindIsAFixedLoopbackPort(t *testing.T) {
 	held.serve(oneDecisionDocument)
 	bound := held.record().Address
 
-	if bound != surface.DefaultAddress {
-		t.Fatalf("with nothing stated the surface bound %q, and the address it binds when nothing states one is %q", bound, surface.DefaultAddress)
+	if bound != loopback.DefaultAddress {
+		t.Fatalf("with nothing stated the surface bound %q, and the address it binds when nothing states one is %q", bound, loopback.DefaultAddress)
 	}
 	host, _, err := net.SplitHostPort(bound)
 	if err != nil {
@@ -457,13 +458,13 @@ func TestAConfiguredBindThatIsNotLoopbackIsRefusedToo(t *testing.T) {
 func TestThePortAnOperatorIsToldToForwardIsTheOneTheSurfaceBinds(t *testing.T) {
 	section := documentedForwarding(t)
 
-	_, port, err := net.SplitHostPort(surface.DefaultAddress)
+	_, port, err := net.SplitHostPort(loopback.DefaultAddress)
 	if err != nil {
-		t.Fatalf("reading the port the surface binds from %q: %v", surface.DefaultAddress, err)
+		t.Fatalf("reading the port the surface binds from %q: %v", loopback.DefaultAddress, err)
 	}
 
-	if !strings.Contains(section, surface.DefaultAddress) {
-		t.Errorf("what an operator is told to forward does not name %s, which is what the surface binds:\n%s", surface.DefaultAddress, section)
+	if !strings.Contains(section, loopback.DefaultAddress) {
+		t.Errorf("what an operator is told to forward does not name %s, which is what the surface binds:\n%s", loopback.DefaultAddress, section)
 	}
 	for _, named := range regexp.MustCompile(`\b\d{4,5}\b`).FindAllString(section, -1) {
 		if named != port {

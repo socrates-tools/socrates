@@ -26,7 +26,7 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 
 What socrates-review is:
 
-- `cmd/socrates-review` - the binary: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, `version`, and the hidden `supervise`.
+- `cmd/socrates-review` - the binary: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, `config`, `version`, and the hidden `supervise`.
 - `internal/snapshot` - the freeze: a temporary index, a commit, a detached worktree, and the seal that makes it unwritable.
 - `internal/runstore` - run directories, `run.json`, run selection, rounds, retention.
 - `internal/runstate` - the states and which are terminal.
@@ -40,12 +40,12 @@ What socrates-review is:
 - `internal/platform` - the one place the supported platforms are stated, and the basis on which one qualifies.
 - `internal/agent` - the only package that starts a model process, the reviewer CLIs socrates-review drives and the basis on which one qualifies, and one file per vendor behind the seam.
 - `internal/reviewer` - beginning, supervising, responding, advancing, cancelling.
-- `internal/report` - what `status` and `findings` print.
+- `internal/report` - what `status`, `findings` and `config` print.
 - `internal/presentation` - the one place an event becomes a line a person reads.
 - `internal/follow` - following a run's event log live.
 - `internal/terminal` - the pager, and the plain fallback.
 - `internal/skill` - the two skills a coding session reads, one for its own change and one for somebody else's, and installing them.
-- `internal/exit`, `internal/version`, `internal/config`, `internal/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file both binaries read, the JSONL log, the one home both binaries write under, refusals, process groups.
+- `internal/exit`, `internal/version`, `internal/config`, `internal/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file both binaries read and what every setting in force is, the JSONL log, the one home both binaries write under, refusals, process groups.
 - `internal/corpus` - what real reviewers answered, verbatim and embedded, and what the routing rule does with it.
 - `internal/fidelity` - the recorded shapes of each real CLI, what was measured about each one's criteria, the drift check, the live smoke check and the forge check, all network behind a build tag.
 
@@ -62,6 +62,7 @@ What agora is:
 
 What holds them both:
 
+- `internal/loopback` - the address bound where nothing states one, and the window walked down from it.
 - `internal/convention` - the repository's conventions as executable checks.
 - `internal/e2e` - real binaries, a real repository, real git, real processes, each vendor's simulator on `PATH`, a real browser.
 - `internal/simulation` - what every simulator shares: the scenario vocabulary, the invocation log, and the run that turns one into the other.
@@ -149,6 +150,9 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - socrates-review states whether a round waits on a person and does nothing further about the page: no command, flag or run record names one, and it states nothing about whether a page is served.
 - `internal/presentation` is the one place an event becomes a line, and `internal/exit` owns the exit-code table.
 - `status` prints the base commit the run resolved, as a bare fact and not a warning, and socrates-review says nothing about how far a named ref has moved past it.
+- `config` names the file it reads and then every setting by its YAML key, with the value in force and whether a person set it, and a setting nothing states in force prints empty rather than invented.
+  Each default it reports is read from the package that owns it, so a default has one home, and a test fails where a reported one and its owner's disagree.
+  It reports and judges nothing: a reviewer CLI socrates-review will not drive is printed as the file states it, and refused where a review starts rather than here.
 - `findings --json` reports each finding's recorded resolution and whether its location is inside the change, and `internal/hunks` is the one place that question is answered.
 - A follower stops on the run's record or on the log, waits bounded for a log that does not exist yet, and stops on a parked round.
 - `status`, `watch` and `logs` stay three commands.
@@ -229,6 +233,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 
 - It binds a loopback address; nothing widens it, and an address that is not one is refused before any server starts.
 - It takes the first free port of a fixed window counting down where nothing states one, and a whole window held is a refusal naming it.
+  The window is stated once, outside the server, so what reads the address bound where nothing states one reaches no network.
 - A port an operator committed to, by flag or by either field of the `surface` block, is bound or refused and never walked past.
 - The surface mints a session, `--session` never brings one into existence, and every page and every route of it is served under a path holding that session.
 - It turns away a request naming a host it did not bind, and every state-changing route carries a token: a session's own answers for that session and no other, and the one minted when the server started answers everywhere.

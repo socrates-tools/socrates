@@ -338,6 +338,8 @@ surface:
   reached_at: http://localhost:18018/
 ```
 
+`socrates-review config` prints every setting, the value in force on this machine and whether you set it or socrates-review defaulted it, so the sample above is a sample and that command is the report.
+
 `reviewer_cli` names which of the reviewer CLIs above socrates-review drives.
 An absent field runs `claude`, which is what socrates-review shipped with, so an existing configuration keeps working.
 Naming one socrates-review does not drive is refused.

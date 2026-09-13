@@ -19,6 +19,7 @@ import (
 	"github.com/socrates-tools/socrates-review/internal/document"
 	"github.com/socrates-tools/socrates-review/internal/fidelity"
 	"github.com/socrates-tools/socrates-review/internal/findings"
+	"github.com/socrates-tools/socrates-review/internal/loopback"
 	"github.com/socrates-tools/socrates-review/internal/state"
 	"github.com/socrates-tools/socrates-review/internal/surface"
 )
@@ -84,7 +85,7 @@ func oneRealReview(t *testing.T, vendor agent.Vendor) {
 			t.Fatalf("writing the document the page is served from: %v", err)
 		}
 
-		window := surface.WindowAddresses()
+		window := loopback.Addresses()
 		free, err := surface.FirstFreeIn(window)
 		if err != nil {
 			t.Fatalf("taking a port of the window: %v", err)

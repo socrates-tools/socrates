@@ -29,4 +29,6 @@ const (
 
 	rulesHeading = "How to answer these findings:"
 	ruleLine     = "  - %s"
+
+	settingLine = "%-*s  %-*s  %s"
 )
