@@ -17,7 +17,8 @@ A change starts as a spec published to this repository's issues, and `CONTRIBUTI
 ## Scope
 
 socrates-review reviews.
-It does not land, verify, render, serve, or wait for a person.
+It does not land, verify, render, serve, or wait for a person about a review.
+`socrates-review configure` is the one command that waits for a person, and what it waits about is socrates-review's own settings rather than anything a run decides, per ADR 25.
 Committing, pushing, opening a pull request, posting a comment and watching continuous integration are not socrates-review's and never become socrates-review's.
 It resolves a base, records what a person decided about a finding, and reports whether a finding's location is inside the change; fetching, rebasing and posting are the session's and the person's.
 Running the reviewed project's own tests is not in the core layer either, so `clean` means an independent reviewer found nothing blocking, not that the tests pass.
@@ -26,7 +27,7 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 
 What socrates-review is:
 
-- `cmd/socrates-review` - the binary: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, `config`, `version`, and the hidden `supervise`.
+- `cmd/socrates-review` - the binary: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, `config`, `configure`, `version`, and the hidden `supervise`.
 - `internal/snapshot` - the freeze: a temporary index, a commit, a detached worktree, and the seal that makes it unwritable.
 - `internal/runstore` - run directories, `run.json`, run selection, rounds, retention.
 - `internal/runstate` - the states and which are terminal.
@@ -41,9 +42,10 @@ What socrates-review is:
 - `internal/agent` - the only package that starts a model process, the reviewer CLIs socrates-review drives and the basis on which one qualifies, and one file per vendor behind the seam.
 - `internal/reviewer` - beginning, supervising, responding, advancing, cancelling.
 - `internal/report` - what `status`, `findings` and `config` print.
+- `internal/configure` - the menu a person changes one setting from: the rows, the view, and the write that leaves the rest of the file alone.
 - `internal/presentation` - the one place an event becomes a line a person reads.
 - `internal/follow` - following a run's event log live.
-- `internal/terminal` - the pager, and the plain fallback.
+- `internal/terminal` - the pager, the plain fallback, and whether a stream is a terminal at all.
 - `internal/skill` - the two skills a coding session reads, one for its own change and one for somebody else's, and installing them.
 - `internal/exit`, `internal/version`, `internal/config`, `internal/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file both binaries read and what every setting in force is, the JSONL log, the one home both binaries write under, refusals, process groups.
 - `internal/corpus` - what real reviewers answered, verbatim and embedded, and what the routing rule does with it.
@@ -153,6 +155,11 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - `config` names the file it reads and then every setting by its YAML key, with the value in force and whether a person set it, and a setting nothing states in force prints empty rather than invented.
   Each default it reports is read from the package that owns it, so a default has one home, and a test fails where a reported one and its owner's disagree.
   It reports and judges nothing: a reviewer CLI socrates-review will not drive is printed as the file states it, and refused where a review starts rather than here.
+- `configure` draws a menu of the same settings `config` reports, read from the same place, so the two cannot disagree about what is in force.
+  It writes only the key a person confirmed, as soon as they confirm it, and a person's comments, key order and blank lines survive the write.
+  `use the default` removes a setting rather than writing today's default in, an emptied block goes with its last setting, and a value the loader would refuse is refused before the file is touched.
+  It refuses where nothing is a terminal, naming `socrates-review config` and no library, and it is the one command that opens a file the others refuse, naming the line it could not read and offering nothing but resetting that setting.
+- `internal/configure` states every label it draws in its own `messages.go`, and the wording check reads its plain string literals rather than only its `fmt` call sites.
 - `findings --json` reports each finding's recorded resolution and whether its location is inside the change, and `internal/hunks` is the one place that question is answered.
 - A follower stops on the run's record or on the log, waits bounded for a log that does not exist yet, and stops on a parked round.
 - `status`, `watch` and `logs` stay three commands.
@@ -265,6 +272,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - What a real reviewer answered is kept verbatim and replayed; the corpus is classified by `dialogue.After`, and a recording is only made from a run that answered.
 - A verification task may require that a live run happened and was recorded, never a particular severity, action or count.
 - The page half is driven by a real browser against the real binary; asserting on served markup would test the renderer.
+- The menu half is driven by the real binary in a real pseudo-terminal, typed at and read back from what was drawn; exercising the model in process would pass on a build where `socrates-review configure` cannot start.
 - Nothing in continuous integration reaches the real CLI or a forge.
 - Where a forwarded finding's comment lands is checked against a real forge once, by hand, behind a build tag: the findings come from a simulator, because what that check reads is the forge. It posts to one long-lived pull request and deletes what it posted.
 - The source carries no commentary.

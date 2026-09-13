@@ -66,6 +66,10 @@ type Agent interface {
 	Run(context.Context, Request) (Response, error)
 }
 
+func (v Vendor) Routes(role Role) Routing {
+	return v.Routing[role]
+}
+
 func (v Vendor) RoutingFor(role Role, configured Configuration) Routing {
 	routing := v.Routing[role]
 	stated, found := configured[role]

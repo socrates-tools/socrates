@@ -48,6 +48,7 @@ func newRootCommand(code *int) *cobra.Command {
 		newCancelCommand(),
 		newSkillCommand(),
 		newConfigCommand(),
+		newConfigureCommand(),
 		newVersionCommand(),
 		newSuperviseCommand(),
 	)

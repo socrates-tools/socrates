@@ -17,7 +17,17 @@ type Output struct {
 }
 
 func For(out, failures io.Writer) Output {
-	return Output{To: out, Failures: failures, Terminal: attached(out), Pager: strings.Fields(os.Getenv(pagerVariable))}
+	return Output{To: out, Failures: failures, Terminal: Attached(out), Pager: strings.Fields(os.Getenv(pagerVariable))}
+}
+
+func Attached(stream any) bool {
+	file, isFile := stream.(*os.File)
+	if !isFile {
+		return false
+	}
+
+	written, err := file.Stat()
+	return err == nil && written.Mode()&os.ModeCharDevice != 0
 }
 
 func (o Output) Write(ctx context.Context, lines []string) error {
@@ -54,14 +64,4 @@ func text(lines []string) string {
 		return ""
 	}
 	return strings.Join(lines, "\n") + "\n"
-}
-
-func attached(out io.Writer) bool {
-	file, isFile := out.(*os.File)
-	if !isFile {
-		return false
-	}
-
-	written, err := file.Stat()
-	return err == nil && written.Mode()&os.ModeCharDevice != 0
 }

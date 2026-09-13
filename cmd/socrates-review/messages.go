@@ -14,6 +14,7 @@ const (
 	cancelShort    = "Stop a review and say that nothing was decided"
 	skillShort     = "Install the skill that teaches a coding session to drive a review"
 	configShort    = "Print every setting, the value in force and where that value came from"
+	configureShort = "Change a setting from a menu, one at a time, without opening the file"
 	versionShort   = "Say which release this is, and which commit it was built from"
 	superviseShort = "Conduct a review that socrates-review review started"
 
@@ -32,12 +33,13 @@ const (
 	noteUsage        = "what was done about the fixed finding, or - to read it from standard input"
 	toUsage          = "the skills directory to write to, instead of the one under your home directory"
 
-	notACommand             = "%q is not a socrates-review command: run socrates-review --help to see what socrates-review does"
-	unusableFlag            = "%s: run socrates-review --help to see what socrates-review accepts"
-	reviewTakesNoArguments  = "socrates-review review takes no arguments, and %q is one: pass what the person asked for with --intent"
-	versionTakesNoArguments = "socrates-review version takes no arguments, and %q is one: run socrates-review version on its own to see which build this is"
-	configTakesNoArguments  = "socrates-review config takes no arguments, and %q is one: run socrates-review config on its own to read every setting"
-	oneRunAtATime           = "%s names a second run, and a command reports on one: name one run or none at all"
+	notACommand               = "%q is not a socrates-review command: run socrates-review --help to see what socrates-review does"
+	unusableFlag              = "%s: run socrates-review --help to see what socrates-review accepts"
+	reviewTakesNoArguments    = "socrates-review review takes no arguments, and %q is one: pass what the person asked for with --intent"
+	versionTakesNoArguments   = "socrates-review version takes no arguments, and %q is one: run socrates-review version on its own to see which build this is"
+	configTakesNoArguments    = "socrates-review config takes no arguments, and %q is one: run socrates-review config on its own to read every setting"
+	configureTakesNoArguments = "socrates-review configure takes no arguments, and %q is one: run socrates-review configure on its own to change a setting"
+	oneRunAtATime             = "%s names a second run, and a command reports on one: name one run or none at all"
 
 	nameTheFinding            = "socrates-review respond answers one finding, and none was named: pass --finding with an identifier socrates-review findings printed"
 	oneAnswerAtATime          = "socrates-review respond records one answer to one finding, and this names %d of them: pass exactly one of %s"

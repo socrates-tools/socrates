@@ -237,3 +237,37 @@ func TestAReviewerCLIIsCarriedInOneField(t *testing.T) {
 		}
 	}
 }
+
+func TestWhatTheLoaderRefusesIsRefusedFromContentAloneToo(t *testing.T) {
+	for _, unusable := range []string{
+		"diff_ceiling: -1\n",
+		"reviewer_temperature: 0.5\n",
+		"bind: 127.0.0.1:18018\n",
+		"roles: [not a mapping\n",
+	} {
+		path := filepath.Join(t.TempDir(), "config.yaml")
+
+		fromContent := config.Parse(path, []byte(unusable))
+		if fromContent == nil {
+			t.Errorf("%q parses from content alone, and the loader refuses it", unusable)
+			continue
+		}
+		if !refusal.Is(fromContent) {
+			t.Errorf("%q is rejected as %v rather than as a refusal", unusable, fromContent)
+		}
+		if !strings.Contains(fromContent.Error(), path) {
+			t.Errorf("the refusal of %q reads %q, without naming the file", unusable, fromContent)
+		}
+	}
+}
+
+func TestContentTheLoaderAcceptsParsesFromContentAlone(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.yaml")
+
+	if err := config.Parse(path, []byte("reviewer_cli: codex\nrun_retention: 72h\n")); err != nil {
+		t.Errorf("content the loader accepts was refused: %v", err)
+	}
+	if err := config.Parse(path, nil); err != nil {
+		t.Errorf("an empty file was refused: %v", err)
+	}
+}

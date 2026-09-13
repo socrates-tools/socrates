@@ -20,9 +20,11 @@ const (
 )
 
 type Setting struct {
-	Key    string
-	Value  string
-	Source Source
+	Key     string
+	Value   string
+	Source  Source
+	Default string
+	Choices []string
 }
 
 const (
@@ -41,12 +43,13 @@ const (
 func (c Config) Settings() []Setting {
 	vendor, _ := agent.Named(c.Vendor())
 	routing := vendor.RoutingFor(agent.Reviewer, c.Roles)
+	unrouted := vendor.Routes(agent.Reviewer)
 	stated := c.Roles[agent.Reviewer]
 
 	return []Setting{
-		inForce(reviewerCLIKey, c.ReviewerCLI, agent.DefaultVendor),
-		routed(reviewerModelKey, routing.Model, stated.Model != ""),
-		routed(reviewerEffortKey, routing.Effort, stated.Effort != ""),
+		chosenFrom(inForce(reviewerCLIKey, c.ReviewerCLI, agent.DefaultVendor), agent.SupportedNames()),
+		routed(reviewerModelKey, routing.Model, unrouted.Model, stated.Model != ""),
+		routed(reviewerEffortKey, routing.Effort, unrouted.Effort, stated.Effort != ""),
 		inForce(diffCeilingKey, counted(int64(c.DiffCeiling)), counted(prompt.DefaultCeiling)),
 		inForce(guidanceCeilingKey, counted(int64(c.GuidanceCeiling)), counted(guidance.DefaultCeiling)),
 		inForce(agentDeadlineKey, lasting(c.AgentDeadline), lasting(agent.DefaultDeadline)),
@@ -59,17 +62,22 @@ func (c Config) Settings() []Setting {
 
 func inForce(key, stated, owned string) Setting {
 	if stated != "" {
-		return Setting{Key: key, Value: stated, Source: Set}
+		return Setting{Key: key, Value: stated, Source: Set, Default: owned}
 	}
-	return Setting{Key: key, Value: owned, Source: Default}
+	return Setting{Key: key, Value: owned, Source: Default, Default: owned}
 }
 
-func routed(key, resolved string, stated bool) Setting {
+func routed(key, resolved, owned string, stated bool) Setting {
 	source := Default
 	if stated {
 		source = Set
 	}
-	return Setting{Key: key, Value: resolved, Source: source}
+	return Setting{Key: key, Value: resolved, Source: source, Default: owned}
+}
+
+func chosenFrom(setting Setting, choices []string) Setting {
+	setting.Choices = choices
+	return setting
 }
 
 func counted(measure int64) string {

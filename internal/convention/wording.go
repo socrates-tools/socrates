@@ -12,7 +12,11 @@ import (
 	"strings"
 )
 
-const RegistryFile = "messages.go"
+const (
+	RegistryFile = "messages.go"
+
+	patternQualifier = "regexp"
+)
 
 var EmDash = string(rune(0x2014))
 
@@ -28,6 +32,10 @@ var packagesWithoutAMessageRegistry = []string{
 	filepath.Join("internal", "prompt"),
 	filepath.Join("internal", "testing"),
 	filepath.Join("internal", "testquality"),
+}
+
+var packagesReadForEveryLiteral = []string{
+	filepath.Join("internal", "configure"),
 }
 
 var messageCalls = map[string]map[string]int{
@@ -65,8 +73,9 @@ func UserFacingStrings(root string) (Wording, error) {
 		}
 
 		enforced := !exemptFromTheRegistry(directory)
+		everyLiteral := enforced && readForEveryLiteral(directory)
 		for _, file := range files {
-			read, err := readWording(root, file, registered, enforced)
+			read, err := readWording(root, file, registered, enforced, everyLiteral)
 			if err != nil {
 				return Wording{}, err
 			}
@@ -80,6 +89,15 @@ func UserFacingStrings(root string) (Wording, error) {
 	slices.Sort(wording.EmDashes)
 	slices.Sort(wording.Actionless)
 	return wording, nil
+}
+
+func readForEveryLiteral(directory string) bool {
+	for _, read := range packagesReadForEveryLiteral {
+		if directory == read || strings.HasPrefix(directory, read+string(filepath.Separator)) {
+			return true
+		}
+	}
+	return false
 }
 
 func exemptFromTheRegistry(directory string) bool {
@@ -182,7 +200,7 @@ func readSourceFiles(directory string) ([]string, error) {
 	return found, nil
 }
 
-func readWording(root, path string, registered map[string]string, enforced bool) (Wording, error) {
+func readWording(root, path string, registered map[string]string, enforced, everyLiteral bool) (Wording, error) {
 	relative, err := filepath.Rel(root, path)
 	if err != nil {
 		relative = path
@@ -199,11 +217,17 @@ func readWording(root, path string, registered map[string]string, enforced bool)
 		return fmt.Sprintf("%s:%d", relative, set.Position(position).Line)
 	}
 
+	statedHere := everyLiteral && filepath.Base(path) != RegistryFile
+	patterns := patternLiteralsIn(parsed)
+
 	ast.Inspect(parsed, func(node ast.Node) bool {
 		if literal, isLiteral := node.(*ast.BasicLit); isLiteral {
 			text, quoted := stringLiteral(literal)
 			if quoted && strings.Contains(text, EmDash) {
 				wording.EmDashes = append(wording.EmDashes, at(literal.Pos()))
+			}
+			if statedHere && quoted && isProse(text) && !patterns[literal] {
+				wording.Inline = append(wording.Inline, at(literal.Pos()))
 			}
 			return true
 		}
@@ -237,6 +261,28 @@ func readWording(root, path string, registered map[string]string, enforced bool)
 	})
 
 	return wording, nil
+}
+
+func patternLiteralsIn(parsed *ast.File) map[*ast.BasicLit]bool {
+	found := map[*ast.BasicLit]bool{}
+
+	ast.Inspect(parsed, func(node ast.Node) bool {
+		call, isCall := node.(*ast.CallExpr)
+		if !isCall {
+			return true
+		}
+		if qualifier, _, named := calledFunction(call); !named || qualifier != patternQualifier {
+			return true
+		}
+		ast.Inspect(call, func(inside ast.Node) bool {
+			if literal, isLiteral := inside.(*ast.BasicLit); isLiteral {
+				found[literal] = true
+			}
+			return true
+		})
+		return true
+	})
+	return found
 }
 
 func calledFunction(call *ast.CallExpr) (string, string, bool) {

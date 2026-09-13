@@ -174,3 +174,91 @@ const dashed = "socrates refuses — and here is why"
 		t.Errorf("the reported em dashes differ (-want +got):\n%s", diff)
 	}
 }
+
+func TestALabelAMenuDrawsIsReportedWhereItIsStated(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, filepath.Join("internal", "configure", "view.go"), `package configure
+
+func lines() []string {
+	return []string{"What do you want to configure?"}
+}
+`)
+
+	wording, err := UserFacingStrings(root)
+	if err != nil {
+		t.Fatalf("reading the fabricated package: %v", err)
+	}
+
+	want := []string{filepath.Join("internal", "configure", "view.go") + ":4"}
+	if diff := cmp.Diff(want, wording.Inline); diff != "" {
+		t.Errorf("the reported labels differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestALabelAMenuDrawsFromItsRegistryIsNotReported(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, filepath.Join("internal", "configure", "view.go"), `package configure
+
+func lines() []string {
+	return []string{whatToConfigure}
+}
+`)
+	write(t, root, filepath.Join("internal", "configure", "messages.go"), `package configure
+
+const whatToConfigure = "What do you want to configure?"
+`)
+
+	wording, err := UserFacingStrings(root)
+	if err != nil {
+		t.Fatalf("reading the fabricated package: %v", err)
+	}
+	if len(wording.Inline) != 0 {
+		t.Errorf("a label held in the registry was reported: %v", wording.Inline)
+	}
+}
+
+func TestALabelAPackageOutsideTheMenuStatesInPassingIsNotReported(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, filepath.Join("internal", "thing", "thing.go"), `package thing
+
+func Names() []string {
+	return []string{"a name with spaces in it"}
+}
+`)
+
+	wording, err := UserFacingStrings(root)
+	if err != nil {
+		t.Fatalf("reading the fabricated package: %v", err)
+	}
+	if len(wording.Inline) != 0 {
+		t.Errorf("a literal in a package that builds no view was reported: %v", wording.Inline)
+	}
+}
+
+func TestALabelAMenuDrawsFromARawStringIsReportedToo(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, filepath.Join("internal", "configure", "view.go"), "package configure\n\nfunc lines() []string {\n\treturn []string{`What do you want to configure?`}\n}\n")
+
+	wording, err := UserFacingStrings(root)
+	if err != nil {
+		t.Fatalf("reading the fabricated package: %v", err)
+	}
+
+	want := []string{filepath.Join("internal", "configure", "view.go") + ":4"}
+	if diff := cmp.Diff(want, wording.Inline); diff != "" {
+		t.Errorf("the reported labels differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestThePatternAMenuPackageMatchesOnIsNotALabel(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, filepath.Join("internal", "configure", "document.go"), "package configure\n\nimport \"regexp\"\n\nvar blankLine = regexp.MustCompile(`(?m)^[ \\t]*\\r?\\n`)\n")
+
+	wording, err := UserFacingStrings(root)
+	if err != nil {
+		t.Fatalf("reading the fabricated package: %v", err)
+	}
+	if len(wording.Inline) != 0 {
+		t.Errorf("a pattern the package matches on was reported as a label: %v", wording.Inline)
+	}
+}

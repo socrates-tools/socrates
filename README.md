@@ -340,6 +340,12 @@ surface:
 
 `socrates-review config` prints every setting, the value in force on this machine and whether you set it or socrates-review defaulted it, so the sample above is a sample and that command is the report.
 
+`socrates-review configure` changes one, from a menu, without you opening the file.
+It lists the same settings `socrates-review config` reports, asks for a value, writes the file as soon as you confirm, and comes back for the next one.
+Every setting also offers `use the default`, which deletes its line rather than writing today's default in, so a later release still reaches you.
+Your comments, your key order and your blank lines survive the write, and only the key you chose is touched.
+It draws a menu and waits for you, so it refuses where nothing is a terminal; `socrates-review config` is the way to read settings from a script.
+
 `reviewer_cli` names which of the reviewer CLIs above socrates-review drives.
 An absent field runs `claude`, which is what socrates-review shipped with, so an existing configuration keeps working.
 Naming one socrates-review does not drive is refused.

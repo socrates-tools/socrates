@@ -1,12 +1,12 @@
 package config
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/socrates-tools/socrates-review/internal/agent"
@@ -52,8 +52,17 @@ func LoadFrom(path string) (Config, error) {
 		return Config{}, refusal.New(unreadableFile, path, err)
 	}
 
+	return read(path, content)
+}
+
+func Parse(path string, content []byte) error {
+	_, err := read(path, content)
+	return err
+}
+
+func read(path string, content []byte) (Config, error) {
 	var stated Config
-	decoder := yaml.NewDecoder(strings.NewReader(string(content)))
+	decoder := yaml.NewDecoder(bytes.NewReader(content))
 	decoder.KnownFields(true)
 	if err := decoder.Decode(&stated); err != nil && !errors.Is(err, io.EOF) {
 		return Config{}, refusal.New(unparsableFile, path, err)

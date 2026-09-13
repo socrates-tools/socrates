@@ -28,7 +28,8 @@ A bug fix that restores stated behaviour does not need one. Anything that change
 ## Out of scope
 
 `README.md` has a section called "Out of scope", and it is the shortest way to learn what a proposal should not ask for.
-socrates-review reviews. It does not land, verify, render, serve or wait for a person.
+socrates-review reviews. It does not land, verify, render, serve or wait for a person about a review.
+The one command that waits for a person is `socrates-review configure`, and what it waits about is socrates-review's own settings.
 Committing, pushing, opening a pull request and watching continuous integration are not socrates-review's and never become socrates-review's.
 
 ## The toolchain

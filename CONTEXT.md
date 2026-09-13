@@ -50,6 +50,12 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 - **handover round**: a round of a change nobody here can patch, so every finding of it is forwarded, dropped or rejected. It waits on a person, and no second round follows it. As a noun, handover is this round and nothing else: handing a round over as a page is a verb every round takes.
 - **round cap**: two. Nothing configures it, and a configuration file naming one is refused.
 
+## The settings
+
+- **setting**: one thing a person can configure, named by its YAML key, carrying the value in force, whether that value is theirs or a default, and the default it falls back to. What `socrates-review config` reports and what `socrates-review configure` offers are the same set.
+- **source**: whether a setting's value is `set` or `default`. Not agora's source, which is a different word in a different vocabulary.
+- **use the default**: removing a setting's line, rather than writing today's default into the file, so that the file holds only what a person decided.
+
 ## The page
 
 These are agora's words, and agora knows nothing about code review.
