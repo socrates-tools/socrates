@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The page becomes a form</title>
+<style>
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400 600; font-display: swap; src: url('../../agora/web/fonts/IBMPlexSans-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('../../agora/web/fonts/IBMPlexMono-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 600; font-display: swap; src: url('../../agora/web/fonts/IBMPlexMono-600.woff2') format('woff2'); }
+
+:root {
+  --text-floor: 14px;
+  --text-body: 16px;
+  --text-lead: 18px;
+  --text-title: 24px;
+  --text-code: 14px;
+
+  --paper: #f1f2f0;
+  --card: #fbfcfb;
+  --card-quiet: #e7eae8;
+  --ink: #1b2529;
+  --ink-soft: #465156;
+  --ink-faint: #59656a;
+  --rule: #d3d8d6;
+  --rule-strong: #b3bbb8;
+  --accent: #12586f;
+  --accent-ink: #ffffff;
+  --accent-quiet: #dbe9ef;
+  --added: #e2eddf;
+  --added-rule: #9ab98c;
+  --removed: #f4e2de;
+  --removed-rule: #d7a99e;
+  --settled: #e8eee0;
+  --settled-rule: #9aad7e;
+  --shadow: 0 1px 2px rgba(27, 37, 41, 0.07), 0 6px 18px rgba(27, 37, 41, 0.06);
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12181b;
+    --card: #1a2226;
+    --card-quiet: #222b2f;
+    --ink: #e8eeef;
+    --ink-soft: #b3c0c4;
+    --ink-faint: #93a2a7;
+    --rule: #2f3a3f;
+    --rule-strong: #46545a;
+    --accent: #7cc4dd;
+    --accent-ink: #08222c;
+    --accent-quiet: #1c3b47;
+    --added: #16261c;
+    --added-rule: #3d6042;
+    --removed: #2b1c19;
+    --removed-rule: #6d3a2f;
+    --settled: #1e2a1d;
+    --settled-rule: #4a6338;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 6px 18px rgba(0, 0, 0, 0.35);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+:where(.grid, .flex) > * { min-width: 0; }
+:where(p, h1, h2, h3, h4, li, dd, td, th) { overflow-wrap: anywhere; }
+[hidden] { display: none !important; }
+
+html { background: var(--paper); }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--text-body);
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+code, pre, .mono { font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--text-code); tab-size: 2; }
+::placeholder { color: var(--ink-faint); opacity: 1; }
+
+.page { max-width: 64rem; margin: 0 auto; padding: 2.75rem 1.25rem 6rem; }
+
+.masthead { border-bottom: 1px solid var(--rule-strong); padding-bottom: 1.5rem; }
+.kicker { margin: 0 0 0.6rem; font-size: var(--text-floor); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
+h1 { margin: 0 0 0.6rem; font-size: clamp(26px, 4.4vw, 38px); font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; }
+.standfirst { margin: 0; max-width: 46rem; font-size: var(--text-lead); color: var(--ink-soft); }
+
+.facts { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.25rem 0 0; padding: 0; }
+.fact { display: inline-flex; align-items: baseline; gap: 0.45rem; padding: 0.3rem 0.65rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--card-quiet); font-size: var(--text-floor); color: var(--ink-soft); }
+.fact b { font-weight: 600; color: var(--ink); }
+
+section { margin-top: 3.25rem; }
+h2 { margin: 0 0 0.4rem; font-size: var(--text-title); font-weight: 600; letter-spacing: -0.005em; }
+h3 { margin: 0 0 0.35rem; font-size: var(--text-lead); font-weight: 600; }
+.lede { margin: 0 0 1.5rem; max-width: 46rem; color: var(--ink-soft); }
+p { margin: 0 0 0.9rem; }
+p:last-child { margin-bottom: 0; }
+
+.panel { background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 1.4rem; box-shadow: var(--shadow); }
+.quiet { background: var(--card-quiet); box-shadow: none; }
+
+.split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(21rem, 100%), 1fr)); gap: 1.25rem; }
+.trio { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr)); gap: 1rem; }
+
+figure { margin: 0; }
+figure svg { display: block; width: 100%; height: auto; }
+figcaption { margin-top: 0.7rem; font-size: var(--text-floor); color: var(--ink-faint); }
+
+.mock { border: 1px solid var(--rule-strong); border-radius: 10px; overflow: hidden; background: var(--paper); box-shadow: var(--shadow); }
+.mock-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.5rem 0.8rem; background: var(--card-quiet); border-bottom: 1px solid var(--rule); font-size: var(--text-floor); color: var(--ink-faint); }
+.mock-bar .dot { width: 0.55rem; height: 0.55rem; border-radius: 999px; background: var(--rule-strong); flex: none; }
+.mock-bar .addr { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; overflow-wrap: anywhere; }
+.mock-bar .tag { margin-left: auto; padding: 0.05rem 0.5rem; border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.tag-now { background: var(--removed); border: 1px solid var(--removed-rule); color: var(--ink); }
+.tag-next { background: var(--added); border: 1px solid var(--added-rule); color: var(--ink); }
+.mock-body { padding: 1.1rem; display: grid; gap: 1rem; }
+
+.decision { min-width: 0; background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 1.1rem; box-shadow: var(--shadow); }
+.decision[data-state='committed'] { border-color: var(--settled-rule); background: var(--settled); }
+.attribution { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; font-size: var(--text-floor); color: var(--ink-faint); }
+.name { font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.severity { text-transform: uppercase; letter-spacing: 0.06em; border-radius: 5px; padding: 0.1rem 0.45rem; border: 1px solid var(--rule-strong); color: var(--ink-soft); font-size: var(--text-floor); }
+.severity[data-severity='error'] { background: var(--removed); border-color: var(--removed-rule); }
+.location { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; }
+.question { margin: 0 0 0.3rem; font-size: var(--text-lead); font-weight: 600; line-height: 1.35; }
+.meaning { margin: 0 0 0.9rem; color: var(--ink-soft); font-size: var(--text-floor); }
+
+.options { border: 0; margin: 0 0 0.9rem; padding: 0; display: grid; gap: 0.45rem; }
+.options legend, .words-label { padding: 0; color: var(--ink-faint); font-size: var(--text-floor); text-transform: uppercase; letter-spacing: 0.07em; }
+.option { display: grid; grid-template-columns: auto 1fr; gap: 0.1rem 0.6rem; align-items: baseline; padding: 0.55rem 0.7rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--card); cursor: pointer; }
+.option:has(.choice:checked) { border-color: var(--accent); background: var(--accent-quiet); }
+.option:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.choice { grid-row: 1 / span 2; margin: 0; width: 1.05rem; height: 1.05rem; accent-color: var(--accent); }
+.option-heading { grid-column: 2; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.5rem; }
+.option-label { font-weight: 600; }
+.option-mark { padding: 0.05rem 0.4rem; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 600; }
+.option-meaning { grid-column: 2; min-width: 0; color: var(--ink-soft); font-size: var(--text-floor); }
+.words { display: grid; gap: 0.3rem; margin-bottom: 0.9rem; }
+.words-field, .message-field { width: 100%; font: inherit; font-size: var(--text-floor); color: var(--ink); background: var(--card); border: 1px solid var(--rule-strong); border-radius: 8px; padding: 0.5rem 0.6rem; resize: vertical; }
+.words-field:focus-visible, .message-field:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+button { font: inherit; font-size: var(--text-floor); font-weight: 600; border-radius: 8px; padding: 0.5rem 0.9rem; cursor: pointer; border: 1px solid var(--rule-strong); background: var(--card); color: var(--ink); }
+button:hover:enabled { border-color: var(--accent); }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+.commitment { display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem; }
+.committed { margin: 0; color: var(--ink-soft); font-size: var(--text-floor); }
+
+.composer { min-width: 0; padding: 1.1rem; background: var(--card); border: 1px solid var(--rule); border-radius: 10px; box-shadow: var(--shadow); }
+.sends { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 0.8rem; }
+.sends-meaning { margin: 0.7rem 0 0; color: var(--ink-faint); font-size: var(--text-floor); }
+
+.summary { position: sticky; bottom: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; border: 1px solid var(--rule-strong); border-radius: 10px; background: var(--card); box-shadow: 0 -2px 10px rgba(27,37,41,0.08), var(--shadow); }
+.progress { display: grid; gap: 0.25rem; min-width: 11rem; flex: 1 1 12rem; }
+.progress-said { font-size: var(--text-floor); color: var(--ink-soft); }
+.progress-said b { color: var(--ink); }
+.meter { height: 6px; border-radius: 999px; background: var(--card-quiet); border: 1px solid var(--rule); overflow: hidden; }
+.meter > span { display: block; height: 100%; background: var(--accent); width: 0%; transition: width 160ms ease; }
+.summary-sends { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+.unanswered { margin-top: 0.8rem; padding: 0.85rem 1rem; border: 1px solid var(--rule-strong); border-radius: 8px; background: var(--card-quiet); font-size: var(--text-floor); }
+.unanswered a { color: var(--accent); }
+.receipt { margin-top: 0.8rem; padding: 0.85rem 1rem; border: 1px solid var(--settled-rule); border-radius: 8px; background: var(--settled); font-size: var(--text-floor); }
+.receipt ul { margin: 0.5rem 0 0; padding-left: 1.1rem; display: grid; gap: 0.2rem; }
+.state { margin: 0.7rem 0 0; font-size: var(--text-floor); color: var(--accent); min-height: 1.4em; }
+
+table { width: 100%; border-collapse: collapse; font-size: var(--text-floor); }
+.scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--card); }
+th, td { text-align: left; vertical-align: top; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--rule); }
+thead th { background: var(--card-quiet); color: var(--ink-faint); font-size: 12px; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 600; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+td code { overflow-wrap: anywhere; }
+tbody td:first-child code { white-space: nowrap; overflow-wrap: normal; }
+.verdict { white-space: nowrap; font-weight: 600; }
+.verdict[data-kind='go'] { color: var(--accent); }
+
+.keeps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.keeps li { display: grid; grid-template-columns: auto 1fr; gap: 0.6rem; align-items: baseline; font-size: var(--text-floor); color: var(--ink-soft); }
+.keeps .mark { font-weight: 700; color: var(--accent); }
+
+.ask { border: 1px solid var(--rule-strong); border-radius: 10px; background: var(--card); padding: 1.2rem; box-shadow: var(--shadow); display: grid; gap: 0.9rem; }
+.ask .options { gap: 0.45rem; }
+.ask .option { grid-template-columns: auto 1fr; cursor: default; }
+.ask .option .tick { grid-row: 1 / span 2; font-weight: 700; color: var(--accent); width: 1.05rem; text-align: center; }
+.ask .option[data-settled='yes'] { border-color: var(--accent); background: var(--accent-quiet); }
+.ask .option[data-settled='no'] { opacity: 0.66; }
+.ask-head { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: baseline; }
+.ask-id { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; padding: 0.1rem 0.45rem; border: 1px solid var(--rule-strong); border-radius: 5px; color: var(--ink-soft); }
+.ask h3 { margin: 0; }
+.ask-note { margin: 0; font-size: var(--text-floor); color: var(--ink-faint); }
+.queued { font-size: var(--text-floor); color: var(--accent); min-height: 1.3em; margin: 0; }
+
+.risks { display: grid; gap: 0.8rem; }
+.risk { padding: 0.9rem 1rem; border: 1px solid var(--rule); border-left: 3px solid var(--rule-strong); border-radius: 8px; background: var(--card-quiet); font-size: var(--text-floor); }
+.risk b { display: block; color: var(--ink); font-size: var(--text-body); margin-bottom: 0.2rem; }
+
+.footnote { margin-top: 3rem; padding-top: 1.2rem; border-top: 1px solid var(--rule); font-size: var(--text-floor); color: var(--ink-faint); }
+
+@media (max-width: 44rem) {
+  .page { padding: 1.75rem 0.9rem 5rem; }
+  .panel, .mock-body, .decision, .composer { padding: 1rem; }
+}
+</style>
+</head>
+<body>
+<main class="page">
+
+<header class="masthead">
+  <p class="kicker">agora surface &middot; interaction proposal</p>
+  <h1>The page becomes a form</h1>
+  <p class="standfirst">A person answering a round should choose, type, and press one button. Today they press <em>Commit this answer</em> once per finding before the send button will carry anything, and an answer they forgot to commit is thrown away. This proposal removes committing entirely.</p>
+  <ul class="facts">
+    <li class="fact"><b>Changes</b> the page and the client</li>
+    <li class="fact"><b>Does not change</b> the wire, the CLI, the skill</li>
+    <li class="fact"><b>Files</b> 3 sources, 9 test files</li>
+    <li class="fact"><b>Settled</b> 3 decisions, at the end</li>
+  </ul>
+</header>
+
+<section id="problem">
+  <h2>What answering a round costs now</h2>
+  <p class="lede">A round of six findings is thirteen deliberate presses, seven of which exist only to tell the page that what it can already see is real. The page has a record of committed answers, and the send reads that record rather than the controls.</p>
+
+  <figure class="panel">
+    <svg viewBox="0 0 900 276" role="img" aria-labelledby="cost-title cost-desc">
+      <title id="cost-title">Presses needed to answer six findings</title>
+      <desc id="cost-desc">Today each finding needs a choice and a commit press before one send. The proposal needs a choice per finding and one submit.</desc>
+
+      <text id="cost-now-label" x="0" y="24" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="15" font-weight="600" opacity="0.95">Today</text>
+      <text x="0" y="44" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="13" opacity="0.6">13 presses</text>
+
+      <g id="cost-now-track">
+        <g transform="translate(120,10)">
+          <g transform="translate(0,0)"><rect x="0" y="0" width="58" height="26" rx="6" fill="var(--card)" stroke="var(--rule-strong)"/><text x="29" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11">choose</text><rect x="62" y="0" width="58" height="26" rx="6" fill="var(--removed)" stroke="var(--removed-rule)"/><text x="91" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="600">commit</text></g>
+          <g transform="translate(128,0)"><rect x="0" y="0" width="58" height="26" rx="6" fill="var(--card)" stroke="var(--rule-strong)"/><text x="29" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11">choose</text><rect x="62" y="0" width="58" height="26" rx="6" fill="var(--removed)" stroke="var(--removed-rule)"/><text x="91" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="600">commit</text></g>
+          <g transform="translate(256,0)"><rect x="0" y="0" width="58" height="26" rx="6" fill="var(--card)" stroke="var(--rule-strong)"/><text x="29" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11">choose</text><rect x="62" y="0" width="58" height="26" rx="6" fill="var(--removed)" stroke="var(--removed-rule)"/><text x="91" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="600">commit</text></g>
+          <g transform="translate(0,34)"><rect x="0" y="0" width="58" height="26" rx="6" fill="var(--card)" stroke="var(--rule-strong)"/><text x="29" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11">choose</text><rect x="62" y="0" width="58" height="26" rx="6" fill="var(--removed)" stroke="var(--removed-rule)"/><text x="91" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="600">commit</text></g>
+          <g transform="translate(128,34)"><rect x="0" y="0" width="58" height="26" rx="6" fill="var(--card)" stroke="var(--rule-strong)"/><text x="29" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11">choose</text><rect x="62" y="0" width="58" height="26" rx="6" fill="var(--removed)" stroke="var(--removed-rule)"/><text x="91" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="600">commit</text></g>
+          <g transform="translate(256,34)"><rect x="0" y="0" width="58" height="26" rx="6" fill="var(--card)" stroke="var(--rule-strong)"/><text x="29" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11">choose</text><rect x="62" y="0" width="58" height="26" rx="6" fill="var(--removed)" stroke="var(--removed-rule)"/><text x="91" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="600">commit</text></g>
+        </g>
+        <path d="M 508 36 L 560 36" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#cost-arrow)"/>
+        <rect x="570" y="19" width="104" height="34" rx="8" fill="var(--accent)"/>
+        <text x="622" y="41" text-anchor="middle" fill="var(--accent-ink)" font-family="IBM Plex Sans, sans-serif" font-size="12" font-weight="600">send</text>
+        <text x="690" y="31" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="12" opacity="0.7">carries only what</text>
+        <text x="690" y="47" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="12" opacity="0.7">was committed</text>
+      </g>
+
+      <line x1="0" y1="112" x2="900" y2="112" stroke="var(--rule)" stroke-width="1"/>
+
+      <text id="cost-next-label" x="0" y="150" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="15" font-weight="600" opacity="0.95">Proposed</text>
+      <text x="0" y="170" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="13" opacity="0.6">7 presses</text>
+
+      <g id="cost-next-track" transform="translate(120,136)">
+        <rect x="0" y="0" width="58" height="26" rx="6" fill="var(--card)" stroke="var(--rule-strong)"/><text x="29" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11">choose</text>
+        <rect x="66" y="0" width="58" height="26" rx="6" fill="var(--card)" stroke="var(--rule-strong)"/><text x="95" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11">choose</text>
+        <rect x="132" y="0" width="58" height="26" rx="6" fill="var(--card)" stroke="var(--rule-strong)"/><text x="161" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11">choose</text>
+        <rect x="198" y="0" width="58" height="26" rx="6" fill="var(--card)" stroke="var(--rule-strong)"/><text x="227" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11">choose</text>
+        <rect x="264" y="0" width="58" height="26" rx="6" fill="var(--card)" stroke="var(--rule-strong)"/><text x="293" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11">choose</text>
+        <rect x="330" y="0" width="58" height="26" rx="6" fill="var(--card)" stroke="var(--rule-strong)"/><text x="359" y="17" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11">choose</text>
+      </g>
+      <path d="M 508 149 L 560 149" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#cost-arrow)"/>
+      <rect x="570" y="132" width="104" height="34" rx="8" fill="var(--accent)"/>
+      <text x="622" y="154" text-anchor="middle" fill="var(--accent-ink)" font-family="IBM Plex Sans, sans-serif" font-size="12" font-weight="600">submit</text>
+      <text x="690" y="144" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="12" opacity="0.7">carries what the</text>
+      <text x="690" y="160" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="12" opacity="0.7">controls hold</text>
+
+      <g id="cost-loss" transform="translate(0,200)">
+        <rect x="0" y="0" width="900" height="66" rx="8" fill="var(--removed)" stroke="var(--removed-rule)"/>
+        <text x="18" y="27" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="13">Today, a choice made and not committed reaches nobody.</text>
+        <text x="18" y="48" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="13">The page warns about that at the end, and it is a warning that exists only because committing does.</text>
+      </g>
+
+      <defs>
+        <marker id="cost-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--rule-strong)"/>
+        </marker>
+      </defs>
+    </svg>
+    <figcaption>Presses counted for a six-finding round where every finding is answered. Verified against <code>agora/render/page.gohtml</code> and <code>agora/web/src/surface.js</code>.</figcaption>
+  </figure>
+</section>
+
+<section id="cards">
+  <h2>The card, before and after</h2>
+  <p class="lede">Same finding, same evidence, same options. What goes is the pair of buttons under the text field and the settled colour the card takes once it has been committed.</p>
+
+  <div class="split">
+    <div class="mock">
+      <div class="mock-bar"><span class="dot"></span><span class="addr">127.0.0.1:8317/s/a1b2c3</span><span class="tag tag-now">Today</span></div>
+      <div class="mock-body">
+        <article class="decision" data-state="committed">
+          <div class="attribution"><span class="name">Finding 3</span><span class="severity" data-severity="error">error</span><span class="location">agora/surface/server.go:88</span></div>
+          <h3 class="question">The idle sweep can close a session a poll is still holding</h3>
+          <p class="meaning">A person who reads for longer than the idle period comes back to a page that answers nowhere.</p>
+          <fieldset class="options">
+            <legend>Choose one</legend>
+            <label class="option"><input class="choice" type="radio" name="now-f3" checked disabled><span class="option-heading"><span class="option-label">Patch it</span><span class="option-mark">Recommended</span></span><span class="option-meaning">Count a waiting poll as a reader.</span></label>
+            <label class="option"><input class="choice" type="radio" name="now-f3" disabled><span class="option-heading"><span class="option-label">Leave it</span></span><span class="option-meaning">The idle period is long enough in practice.</span></label>
+          </fieldset>
+          <label class="words"><span class="words-label">In your own words</span><textarea class="words-field" rows="2" disabled></textarea></label>
+          <div class="commitment">
+            <button type="button" class="primary" hidden>Commit this answer</button>
+            <button type="button">Take this answer back</button>
+            <p class="committed">Committed: Patch it</p>
+          </div>
+        </article>
+        <p class="sends-meaning" style="margin:0">The card locks, turns green, and the send button will now carry it. Six findings, six of these.</p>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-bar"><span class="dot"></span><span class="addr">127.0.0.1:8317/s/a1b2c3</span><span class="tag tag-next">Proposed</span></div>
+      <div class="mock-body">
+        <article class="decision">
+          <div class="attribution"><span class="name">Finding 3</span><span class="severity" data-severity="error">error</span><span class="location">agora/surface/server.go:88</span></div>
+          <h3 class="question">The idle sweep can close a session a poll is still holding</h3>
+          <p class="meaning">A person who reads for longer than the idle period comes back to a page that answers nowhere.</p>
+          <fieldset class="options">
+            <legend>Choose one</legend>
+            <label class="option"><input class="choice" type="radio" name="next-f3" checked><span class="option-heading"><span class="option-label">Patch it</span><span class="option-mark">Recommended</span></span><span class="option-meaning">Count a waiting poll as a reader.</span></label>
+            <label class="option"><input class="choice" type="radio" name="next-f3"><span class="option-heading"><span class="option-label">Leave it</span></span><span class="option-meaning">The idle period is long enough in practice.</span></label>
+          </fieldset>
+          <label class="words"><span class="words-label">In your own words</span><textarea class="words-field" rows="2" placeholder="Answering here alone is a complete answer."></textarea></label>
+        </article>
+        <p class="sends-meaning" style="margin:0">The card stays open until the whole page is submitted. Changing your mind is changing the radio.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="prototype">
+  <h2>The bottom of the page, live</h2>
+  <p class="lede">The summary bar replaces the composer's pair of send buttons. It is sticky, it says how much of the round is still unanswered, and it holds the one press that ends the person's work. Try it: choose, leave one finding blank, and submit.</p>
+
+  <div class="mock">
+    <div class="mock-bar"><span class="dot"></span><span class="addr">127.0.0.1:8317/s/a1b2c3</span><span class="tag tag-next">Proposed &middot; interactive</span></div>
+    <div class="mock-body">
+      <form id="proto" onsubmit="return false;">
+        <div style="display:grid;gap:1rem">
+          <article class="decision" data-proto-decision="f1">
+            <div class="attribution"><span class="name">Finding 1</span><span class="severity" data-severity="error">error</span><span class="location">agora/surface/server.go:88</span></div>
+            <h3 class="question">The idle sweep can close a session a poll is still holding</h3>
+            <fieldset class="options"><legend>Choose one</legend>
+              <label class="option"><input class="choice" type="radio" name="p-f1" value="0"><span class="option-heading"><span class="option-label">Patch it</span><span class="option-mark">Recommended</span></span></label>
+              <label class="option"><input class="choice" type="radio" name="p-f1" value="1"><span class="option-heading"><span class="option-label">Leave it</span></span></label>
+            </fieldset>
+            <label class="words"><span class="words-label">In your own words</span><textarea class="words-field" rows="2" data-proto-words="f1" placeholder="Answering here alone is a complete answer."></textarea></label>
+          </article>
+
+          <article class="decision" data-proto-decision="f2">
+            <div class="attribution"><span class="name">Finding 2</span><span class="severity">warning</span><span class="location">agora/web/src/surface.js:41</span></div>
+            <h3 class="question">A draft typed into a card is dropped when a reply arrives</h3>
+            <fieldset class="options"><legend>Choose as many as apply</legend>
+              <label class="option"><input class="choice" type="checkbox" name="p-f2" value="0"><span class="option-heading"><span class="option-label">Keep the draft</span></span></label>
+              <label class="option"><input class="choice" type="checkbox" name="p-f2" value="1"><span class="option-heading"><span class="option-label">Say it was dropped</span></span></label>
+            </fieldset>
+            <label class="words"><span class="words-label">In your own words</span><textarea class="words-field" rows="2" data-proto-words="f2" placeholder="Answering here alone is a complete answer."></textarea></label>
+          </article>
+
+          <article class="decision" data-proto-decision="f3" data-proto-asks="no">
+            <div class="attribution"><span class="name">Finding 3</span><span class="severity">informational</span><span class="location">agora/document/document.go:12</span></div>
+            <h3 class="question">The unused mode constant was already removed</h3>
+            <p class="meaning">Resolved while the round ran. Nothing here is yours to answer.</p>
+            <label class="words"><span class="words-label">In your own words</span><textarea class="words-field" rows="2" data-proto-words="f3" placeholder="Answering here alone is a complete answer."></textarea></label>
+          </article>
+        </div>
+
+        <div class="composer" style="margin-top:1rem">
+          <label class="words"><span class="words-label">Anything to say to whoever asked</span><textarea class="message-field" rows="2" id="proto-message"></textarea></label>
+        </div>
+
+        <div class="summary" style="margin-top:1rem">
+          <div class="progress">
+            <span class="progress-said" id="proto-said"><b>0 of 2</b> findings answered</span>
+            <span class="meter"><span id="proto-meter"></span></span>
+          </div>
+          <div class="summary-sends">
+            <button type="submit" class="primary" id="proto-submit">Send my answers</button>
+            <button type="button" id="proto-finish">Send and finish</button>
+          </div>
+        </div>
+
+        <div class="unanswered" id="proto-unanswered" hidden>
+          <strong id="proto-unanswered-said"></strong>
+          <span id="proto-unanswered-list"></span>
+          <div style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:0.7rem">
+            <button type="button" class="primary" id="proto-anyway">Send anyway</button>
+            <button type="button" id="proto-keep">Keep answering</button>
+          </div>
+        </div>
+
+        <div class="receipt" id="proto-receipt" hidden>
+          <strong>Sent. Waiting for a reply on this page.</strong>
+          <ul id="proto-receipt-list"></ul>
+          <div style="margin-top:0.7rem"><button type="button" id="proto-amend">Amend and send again</button></div>
+        </div>
+
+        <p class="state" id="proto-state" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+  <p class="sends-meaning">This prototype is a drawing that happens to work. Nothing in it is sent anywhere, and Finding 3 asks nothing, so it is not counted.</p>
+</section>
+
+<section id="lifecycle">
+  <h2>What one press does</h2>
+  <p class="lede">The exchange already accepts more than one answer and already reopens when a new round is written to the same page. Submitting is what makes each of those a state the person can see.</p>
+
+  <figure class="panel">
+    <svg viewBox="0 0 900 300" role="img" aria-labelledby="life-title life-desc">
+      <title id="life-title">The states the page rests in after submitting</title>
+      <desc id="life-desc">Filling leads to a completeness check, then to a sent receipt. A reply reopens the form. Send and finish closes the exchange.</desc>
+
+      <g id="life-filling">
+        <rect x="8" y="110" width="150" height="62" rx="10" fill="var(--card)" stroke="var(--rule-strong)"/>
+        <text x="83" y="136" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="14" font-weight="600">Filling</text>
+        <text x="83" y="156" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="12" opacity="0.65">every control live</text>
+      </g>
+
+      <path d="M 158 141 L 226 141" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#life-arrow)"/>
+      <text x="192" y="132" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11" opacity="0.7">submit</text>
+
+      <g id="life-check">
+        <rect x="230" y="110" width="160" height="62" rx="10" fill="var(--card-quiet)" stroke="var(--rule-strong)"/>
+        <text x="310" y="136" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="14" font-weight="600">Anything blank?</text>
+        <text x="310" y="156" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="12" opacity="0.65">named, with links</text>
+      </g>
+
+      <path d="M 310 110 L 310 74 L 470 74" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#life-arrow)"/>
+      <text x="380" y="66" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11" opacity="0.7">keep answering</text>
+      <path d="M 470 74 L 470 100" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" stroke-dasharray="3 3"/>
+      <path d="M 470 100 L 165 100 L 158 130" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" stroke-dasharray="3 3" marker-end="url(#life-arrow)"/>
+
+      <path d="M 390 141 L 458 141" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#life-arrow)"/>
+      <text x="424" y="132" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11" opacity="0.7">send</text>
+
+      <g id="life-sent">
+        <rect x="462" y="110" width="170" height="62" rx="10" fill="var(--settled)" stroke="var(--settled-rule)"/>
+        <text x="547" y="136" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="14" font-weight="600">Sent</text>
+        <text x="547" y="156" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="12" opacity="0.65">receipt, read only</text>
+      </g>
+
+      <path d="M 547 172 L 547 214 L 83 214 L 83 172" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#life-arrow)"/>
+      <text x="315" y="232" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="12" opacity="0.7">a reply is written to the same page, or the person amends</text>
+
+      <path d="M 632 141 L 700 141" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#life-arrow)"/>
+      <text x="666" y="132" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="11" opacity="0.7">finish</text>
+
+      <g id="life-closed">
+        <rect x="704" y="110" width="150" height="62" rx="10" fill="var(--removed)" stroke="var(--removed-rule)"/>
+        <text x="779" y="136" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="14" font-weight="600">Over</text>
+        <text x="779" y="156" text-anchor="middle" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="12" opacity="0.65">nothing further goes</text>
+      </g>
+
+      <text x="8" y="282" fill="currentColor" font-family="IBM Plex Sans, sans-serif" font-size="12" opacity="0.6">Every one of these states exists today. The only new one is the receipt, which is what the person is shown instead of six green cards.</text>
+
+      <defs>
+        <marker id="life-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--rule-strong)"/>
+        </marker>
+      </defs>
+    </svg>
+    <figcaption>The dashed return is the completeness notice being declined. Verified against <code>Exchange.Receive</code> and <code>Exchange.Revise</code> in <code>agora/surface/exchange.go</code>.</figcaption>
+  </figure>
+</section>
+
+<section id="unchanged">
+  <h2>What this does not touch</h2>
+  <p class="lede">Committing is a habit of the client. It is not in the vocabulary, not in an ADR, and not on the wire. That is why this is a page change rather than a protocol change.</p>
+  <div class="split">
+    <div class="panel">
+      <h3>Holds as it is</h3>
+      <ul class="keeps">
+        <li><span class="mark">&#10003;</span><span><code>surface.Sent</code>, <code>surface.Choice</code> and <code>surface.Answered</code> keep every field. The browser posts the same JSON to the same route.</span></li>
+        <li><span class="mark">&#10003;</span><span><code>agora poll</code> prints the same thing, so the socrates-review skill needs no edit. It never mentions committing.</span></li>
+        <li><span class="mark">&#10003;</span><span>No command is rendered on the page, and the surface still composes rather than runs.</span></li>
+        <li><span class="mark">&#10003;</span><span>Delivery once, bounded waiting, collection per session, idle shutdown.</span></li>
+        <li><span class="mark">&#10003;</span><span>A decision the new document drops loses its answer, exactly as the current re-render rule does.</span></li>
+        <li><span class="mark">&#10003;</span><span><code>CONTEXT.md</code> gains no word. "Commit" was never one of its terms.</span></li>
+      </ul>
+    </div>
+    <div class="panel quiet">
+      <h3>Goes</h3>
+      <ul class="keeps">
+        <li><span class="mark">&times;</span><span>The <em>Commit this answer</em> and <em>Take this answer back</em> buttons, and the settled colour a committed card takes.</span></li>
+        <li><span class="mark">&times;</span><span>The <code>committed</code> map in the client, and <code>commit</code>, <code>reopen</code> and <code>restore</code> with it.</span></li>
+        <li><span class="mark">&times;</span><span>The discard warning. It asks about losing an uncommitted answer, and nothing is uncommitted any more.</span></li>
+        <li><span class="mark">&times;</span><span>The pair of send buttons as equals. One is the press, one is the exit.</span></li>
+      </ul>
+      <p class="sends-meaning" style="margin-top:1rem">In its place: a completeness notice that names findings nobody answered, and a receipt of what went.</p>
+    </div>
+  </div>
+</section>
+
+<section id="blast">
+  <h2>What gets edited</h2>
+  <p class="lede">Three sources and their generated bundle, then the suite. Every test below asserts on committing by name, so each is rewritten for the scenario that replaces it rather than deleted.</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>File</th><th>Change</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>agora/render/page.gohtml</code></td><td>Drop the <code>.commitment</code> block. Add the sticky <code>.summary</code> bar, the <code>.unanswered</code> notice and the <code>.receipt</code>.</td><td>The composer keeps the message field.</td></tr>
+        <tr><td><code>agora/web/src/surface.js</code></td><td>Read the payload from the controls at submit. Keep a draft per decision across a revision. Count what is still unanswered.</td><td>Loses roughly 60 lines, gains the counter.</td></tr>
+        <tr><td><code>agora/web/src/surface.css</code></td><td>Drop <code>.commit</code>, <code>.reopen</code>, <code>.committed</code>, <code>.commitment</code>, <code>[data-state='committed']</code>. Add the bar, the meter, the notice, the receipt.</td><td>Contrast floor and the hidden-paints-nothing rule apply to the new elements.</td></tr>
+        <tr><td><code>agora/assets/bundle/</code></td><td><code>make assets</code>, then commit what it writes.</td><td><code>bundle_test.go</code> fails until the committed bundle matches <code>web/</code>.</td></tr>
+        <tr><td><code>agora/stylesheet/stylesheet_test.go:139</code></td><td>The prefixing example names <code>.commit</code> as page chrome. Name a selector that still exists.</td><td>Behaviour unchanged, example only.</td></tr>
+        <tr><td><code>internal/e2e/page_test.go</code></td><td>Five committing scenarios become: an answer left in a control is sent, a changed answer replaces the earlier one, a draft survives a re-render, a dropped decision loses its draft.</td><td>The largest single edit.</td></tr>
+        <tr><td><code>internal/e2e/closing_test.go</code></td><td>The uncommitted-discard family becomes the completeness notice: it names what is blank, declining keeps the page open, sending anyway carries the rest.</td><td>Four scenarios, same shape.</td></tr>
+        <tr><td><code>internal/e2e/presentation_test.go</code></td><td>The keyboard path and the control inventory lose <code>commit</code> and gain <code>submit</code>.</td><td>Contrast and hidden-element checks pick up the new elements for free.</td></tr>
+        <tr><td><code>internal/e2e/painting_test.go</code></td><td>Selector lists naming <code>.commit</code> and <code>.reopen</code>.</td><td>Mechanical.</td></tr>
+        <tr><td><code>internal/e2e/sessions_test.go</code><br><code>internal/e2e/notmine_test.go</code><br><code>internal/e2e/wholeround_test.go</code><br><code>internal/e2e/deciding_test.go</code><br><code>internal/e2e/address_test.go</code></td><td>Each clicks <code>.commit</code> to arm a send. Each clicks submit instead.</td><td>Mechanical.</td></tr>
+        <tr><td><code>CLAUDE.md</code>, <code>docs/adr/</code></td><td>One ADR recording that the page is a form, and what per-answer committing gave up. One invariant: what the controls hold at the submit is what is sent.</td><td>Written with the spec, not from this page.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="decide">
+  <h2>Three things settled</h2>
+  <p class="lede">Each was put as what the person sees, with the mechanism in one line, and answered on the review page. These are the shapes to build.</p>
+
+  <div style="display:grid;gap:1.25rem">
+
+    <div class="ask">
+      <div class="ask-head"><span class="ask-id">Q1</span><h3>What sits at the bottom of the page</h3></div>
+      <p class="ask-note">Today two equal buttons: <em>Send and wait for a reply</em> and <em>Send and finish</em>. A decent form has one obvious press.</p>
+      <div class="options">
+        <div class="option" data-settled="yes"><span class="tick">&#10003;</span><span class="option-heading"><span class="option-label">One primary, one quiet secondary</span><span class="option-mark">Settled</span></span><span class="option-meaning">The person presses <em>Send my answers</em>. <em>Send and finish</em> stays beside it and stops looking like an equal choice. Mechanism: the same <code>ends</code> flag as today.</span></div>
+        <div class="option" data-settled="no"><span class="tick">&nbsp;</span><span class="option-heading"><span class="option-label">One button only</span></span><span class="option-meaning">Ending offered on the receipt, after the answers had gone. Not taken.</span></div>
+        <div class="option" data-settled="no"><span class="tick">&nbsp;</span><span class="option-heading"><span class="option-label">One button and a checkbox</span></span><span class="option-meaning">A "this is my last word" tickbox carrying the flag. Not taken.</span></div>
+      </div>
+    </div>
+
+    <div class="ask">
+      <div class="ask-head"><span class="ask-id">Q2</span><h3>Submitting with findings left blank</h3></div>
+      <p class="ask-note">A person may deliberately leave one to the session. Nothing is lost either way, so this is about completeness rather than data.</p>
+      <div class="options">
+        <div class="option" data-settled="yes"><span class="tick">&#10003;</span><span class="option-heading"><span class="option-label">Say it once, then send</span><span class="option-mark">Settled</span></span><span class="option-meaning">The first press names the blank findings with links to them. The next press sends. Mechanism: the notice replaces today's discard warning.</span></div>
+        <div class="option" data-settled="no"><span class="tick">&nbsp;</span><span class="option-heading"><span class="option-label">Refuse until complete</span></span><span class="option-meaning">The press disabled while anything is blank. Not taken: a finding left to the session is a legitimate answer.</span></div>
+        <div class="option" data-settled="no"><span class="tick">&nbsp;</span><span class="option-heading"><span class="option-label">Send without asking</span></span><span class="option-meaning">The counter as the only warning. Not taken.</span></div>
+      </div>
+    </div>
+
+    <div class="ask">
+      <div class="ask-head"><span class="ask-id">Q3</span><h3>What the page looks like once the answers have gone</h3></div>
+      <p class="ask-note">The exchange accepts a second answer today, so whichever of these was chosen, nothing on the wire changes.</p>
+      <div class="options">
+        <div class="option" data-settled="yes"><span class="tick">&#10003;</span><span class="option-heading"><span class="option-label">A receipt, with a way back</span><span class="option-mark">Settled</span></span><span class="option-meaning">Controls go read only and a list says what was sent. <em>Amend and send again</em> reopens them. Mechanism: the disabled state that closing already uses.</span></div>
+        <div class="option" data-settled="no"><span class="tick">&nbsp;</span><span class="option-heading"><span class="option-label">A receipt, and that is that</span></span><span class="option-meaning">No way back until a reply arrived. Not taken: a misclick needs somewhere to go.</span></div>
+        <div class="option" data-settled="no"><span class="tick">&nbsp;</span><span class="option-heading"><span class="option-label">Stay editable</span></span><span class="option-meaning">No locking at all. Not taken.</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="risks">
+  <h2>Risks and what is still open</h2>
+  <div class="risks">
+    <div class="risk"><b>A misclick now reaches the session</b>A stray radio press used to be discarded unless it was committed. Under a form it goes. The completeness notice does not help, because a wrong answer is not a blank one. The receipt is what catches it, which is an argument for Q3 keeping a way back.</div>
+    <div class="risk"><b>Drafts across a re-render</b>Today only committed answers survive a reply being written to the page. A draft must now survive the same way, and a draft for a decision the new document does not hold must be dropped. That rule is already asserted for committed answers, so the scenario is rewritten rather than invented.</div>
+    <div class="risk"><b>A sticky bar over the evidence</b>The bar sits at the bottom of the viewport on a long diff. The narrow-viewport scenario already asserts the evidence is not shrunk to nothing, and it will need to cover the bar not covering it either.</div>
+    <div class="risk"><b>Two rounds, one page</b><code>agora serve --session</code> writes the next round into the page the person already has. If the receipt is still up when that lands, the receipt must give way to the new form rather than sit above it.</div>
+    <div class="risk"><b>This is not the spec</b>The repository wants a change to start as a spec. This page is the proposal the decisions were taken on, and it sits beside the spec that is written from it. The ADR recording that the page is a form, and what per-answer committing gave up, belongs with that spec.</div>
+  </div>
+</section>
+
+<footer class="footnote">
+  <p>Design source: agora's own system. The tokens, type scale, card, option and severity styles here are lifted from <code>agora/web/src/surface.css</code>, and the fonts are the IBM Plex faces the binary embeds, so the mockups show the real page rather than an impression of it.</p>
+  <p>Read for this proposal: <code>agora/render/page.gohtml</code>, <code>agora/web/src/surface.js</code>, <code>agora/web/src/surface.css</code>, <code>agora/surface/exchange.go</code>, <code>agora/document/document.go</code>, <code>socrates-review/skill/messages.go</code>, <code>CONTEXT.md</code>, <code>CLAUDE.md</code> and the e2e scenarios named above. Nothing was built or run.</p>
+</footer>
+
+</main>
+
+<script>
+(function () {
+  var form = document.getElementById('proto');
+  if (!form) return;
+
+  var cards = Array.from(form.querySelectorAll('[data-proto-decision]'));
+  var asking = cards.filter(function (card) { return card.dataset.protoAsks !== 'no'; });
+  var said = document.getElementById('proto-said');
+  var meter = document.getElementById('proto-meter');
+  var notice = document.getElementById('proto-unanswered');
+  var noticeSaid = document.getElementById('proto-unanswered-said');
+  var noticeList = document.getElementById('proto-unanswered-list');
+  var receipt = document.getElementById('proto-receipt');
+  var receiptList = document.getElementById('proto-receipt-list');
+  var state = document.getElementById('proto-state');
+  var submit = document.getElementById('proto-submit');
+  var finish = document.getElementById('proto-finish');
+
+  function chosenIn(card) {
+    return Array.from(card.querySelectorAll('.choice')).filter(function (choice) { return choice.checked; });
+  }
+
+  function wordsIn(card) {
+    var field = card.querySelector('.words-field');
+    return field ? field.value.trim() : '';
+  }
+
+  function answered(card) {
+    return chosenIn(card).length > 0 || wordsIn(card) !== '';
+  }
+
+  function nameOf(card) {
+    return card.querySelector('.name').textContent.trim();
+  }
+
+  function count() {
+    var done = asking.filter(answered).length;
+    said.innerHTML = '<b>' + done + ' of ' + asking.length + '</b> findings answered';
+    meter.style.width = (asking.length ? (done / asking.length) * 100 : 100) + '%';
+  }
+
+  function listed(names) {
+    if (names.length === 1) return names[0];
+    return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+  }
+
+  function show(ends) {
+    receipt.hidden = false;
+    notice.hidden = true;
+    receiptList.textContent = '';
+    cards.forEach(function (card) {
+      if (!answered(card)) return;
+      var labels = chosenIn(card).map(function (choice) {
+        return choice.closest('.option').querySelector('.option-label').textContent.trim();
+      });
+      var line = document.createElement('li');
+      line.textContent = nameOf(card) + ': ' + (labels.length ? labels.join(', ') : 'your words alone');
+      receiptList.appendChild(line);
+    });
+    if (!receiptList.children.length) {
+      var empty = document.createElement('li');
+      empty.textContent = 'Nothing was answered, and the message alone went.';
+      receiptList.appendChild(empty);
+    }
+    form.querySelectorAll('.choice, textarea').forEach(function (control) { control.disabled = true; });
+    submit.disabled = true;
+    finish.disabled = true;
+    state.textContent = ends
+      ? 'The exchange is over. Nothing further will be sent from this page.'
+      : 'Sent. Waiting for a reply on this page.';
+    receipt.querySelector('strong').textContent = ends ? 'Sent, and the exchange is over.' : 'Sent. Waiting for a reply on this page.';
+    document.getElementById('proto-amend').hidden = ends;
+  }
+
+  function ask() {
+    var blank = asking.filter(function (card) { return !answered(card); });
+    if (!blank.length) return false;
+    var names = blank.map(nameOf);
+    noticeSaid.textContent = names.length === 1
+      ? names.length + ' finding has no answer yet: '
+      : names.length + ' findings have no answer yet: ';
+    noticeList.textContent = listed(names) + '. Sending now carries the rest.';
+    notice.hidden = false;
+    return true;
+  }
+
+  form.addEventListener('input', function () { count(); notice.hidden = true; });
+  form.addEventListener('change', function () { count(); notice.hidden = true; });
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    if (ask()) { state.textContent = 'Nothing was sent, and this page is still open.'; return; }
+    show(false);
+  });
+
+  finish.addEventListener('click', function () {
+    if (ask()) { state.textContent = 'Nothing was sent, and this page is still open.'; return; }
+    show(true);
+  });
+
+  document.getElementById('proto-anyway').addEventListener('click', function () { show(false); });
+  document.getElementById('proto-keep').addEventListener('click', function () {
+    notice.hidden = true;
+    state.textContent = 'Nothing was sent, and this page is still open.';
+  });
+  document.getElementById('proto-amend').addEventListener('click', function () {
+    receipt.hidden = true;
+    form.querySelectorAll('.choice, textarea').forEach(function (control) { control.disabled = false; });
+    submit.disabled = false;
+    finish.disabled = false;
+    state.textContent = 'Still open. Change what you like and send again.';
+    count();
+  });
+
+  count();
+})();
+</script>
+</body>
+</html>
