@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/findings"
-	"github.com/socrates-tools/socrates-review/internal/prompt"
-	"github.com/socrates-tools/socrates-review/internal/skill"
+	"github.com/socrates-tools/socrates/internal/findings"
+	"github.com/socrates-tools/socrates/internal/prompt"
+	"github.com/socrates-tools/socrates/internal/skill"
 )
 
 var shapingTheDocument = []string{

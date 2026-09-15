@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/socrates-tools/socrates-review/internal/config"
-	"github.com/socrates-tools/socrates-review/internal/refusal"
+	"github.com/socrates-tools/socrates/internal/config"
+	"github.com/socrates-tools/socrates/internal/refusal"
 )
 
 const (

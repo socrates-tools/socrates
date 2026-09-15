@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-tools/socrates-review/internal/findings"
-	"github.com/socrates-tools/socrates-review/internal/prompt"
-	"github.com/socrates-tools/socrates-review/internal/testing/harness"
-	"github.com/socrates-tools/socrates-review/internal/testquality"
+	"github.com/socrates-tools/socrates/internal/findings"
+	"github.com/socrates-tools/socrates/internal/prompt"
+	"github.com/socrates-tools/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates/internal/testquality"
 )
 
 func TestThePromptIsOnDisk(t *testing.T) {

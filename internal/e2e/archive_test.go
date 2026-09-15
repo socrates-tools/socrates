@@ -15,8 +15,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/convention"
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/convention"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 func TestAReleaseArchiveGivesWhatInstallingFromSourceGives(t *testing.T) {

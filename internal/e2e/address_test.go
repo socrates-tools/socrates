@@ -13,10 +13,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-tools/socrates-review/internal/loopback"
-	"github.com/socrates-tools/socrates-review/internal/state"
-	"github.com/socrates-tools/socrates-review/internal/surface"
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/loopback"
+	"github.com/socrates-tools/socrates/internal/state"
+	"github.com/socrates-tools/socrates/internal/surface"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 func (s *surfaced) configure(stated string) {

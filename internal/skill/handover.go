@@ -1,6 +1,6 @@
 package skill
 
-import "github.com/socrates-tools/socrates-review/internal/dialogue"
+import "github.com/socrates-tools/socrates/internal/dialogue"
 
 func HandoverDocument() string {
 	return assembled(handoverFrontMatter, handoverPurpose, handoverRules(), thePage(theAnswerAHandoverPageCarries), theHandoverLoop, handoverProhibitions)

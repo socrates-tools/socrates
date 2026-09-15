@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/socrates-tools/socrates-review/internal/refusal"
-	"github.com/socrates-tools/socrates-review/internal/surface"
+	"github.com/socrates-tools/socrates/internal/refusal"
+	"github.com/socrates-tools/socrates/internal/surface"
 	"github.com/spf13/cobra"
 )
 

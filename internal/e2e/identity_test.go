@@ -8,13 +8,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/convention"
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/convention"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 func TestEveryImportResolvesUnderTheOrganisation(t *testing.T) {
 	root := source.Root(t)
-	module := "github.com/" + convention.Organisation + "/" + convention.Repository
+	module := "github.com/" + convention.Organisation + "/" + convention.Suite
 
 	own := 0
 	for path, directory := range packagesResolved(t, root) {

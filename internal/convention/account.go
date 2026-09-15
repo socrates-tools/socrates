@@ -13,6 +13,7 @@ import (
 
 const (
 	Organisation = "socrates-tools"
+	Suite        = "socrates"
 	Repository   = "socrates-review"
 )
 
@@ -37,8 +38,10 @@ func ModulePath(root string) (string, error) {
 
 var codeHostingHosts = []string{"github.com", "gitlab.com", "bitbucket.org", "codeberg.org"}
 
+var namesTheProjectAnswersTo = []string{Suite, Repository}
+
 var accountHosting = regexp.MustCompile(
-	`(?:` + strings.Join(quoted(codeHostingHosts), "|") + `)/([A-Za-z0-9._-]+)/` + regexp.QuoteMeta(Repository) + `\b`,
+	`(?:` + strings.Join(quoted(codeHostingHosts), "|") + `)/([A-Za-z0-9._-]+)/(?:` + strings.Join(quoted(namesTheProjectAnswersTo), "|") + `)\b`,
 )
 
 type NamedAccount struct {

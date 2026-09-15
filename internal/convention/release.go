@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -363,4 +364,21 @@ func BuildsProducing(building []ReleaseBuild, binary string) []ReleaseBuild {
 		}
 	}
 	return producing
+}
+
+var stampedSymbol = regexp.MustCompile(`-X\s+(\S+?)=`)
+
+func SymbolsAReleaseStamps(stamps []string) []string {
+	var named []string
+	for _, stamp := range stamps {
+		for _, written := range stampedSymbol.FindAllStringSubmatch(stamp, -1) {
+			qualified := written[1]
+			position := strings.LastIndex(qualified, ".")
+			if position < 0 {
+				continue
+			}
+			named = append(named, qualified[:position])
+		}
+	}
+	return named
 }

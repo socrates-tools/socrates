@@ -11,10 +11,10 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/socrates-tools/socrates-review/internal/follow"
-	"github.com/socrates-tools/socrates-review/internal/runlog"
-	"github.com/socrates-tools/socrates-review/internal/runstate"
-	"github.com/socrates-tools/socrates-review/internal/runstore"
+	"github.com/socrates-tools/socrates/internal/follow"
+	"github.com/socrates-tools/socrates/internal/runlog"
+	"github.com/socrates-tools/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates/internal/runstore"
 )
 
 const repository = "/home/a/project"

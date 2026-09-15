@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 func TestTheRendererDecidesNothingAboutTheRun(t *testing.T) {

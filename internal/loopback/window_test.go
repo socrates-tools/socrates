@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/loopback"
+	"github.com/socrates-tools/socrates/internal/loopback"
 )
 
 func TestTheWindowIsWalkedFromTheTopDown(t *testing.T) {

@@ -6,10 +6,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-tools/socrates-review/internal/dialogue"
-	"github.com/socrates-tools/socrates-review/internal/prompt"
-	"github.com/socrates-tools/socrates-review/internal/runstate"
-	"github.com/socrates-tools/socrates-review/internal/testing/harness"
+	"github.com/socrates-tools/socrates/internal/dialogue"
+	"github.com/socrates-tools/socrates/internal/prompt"
+	"github.com/socrates-tools/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates/internal/testing/harness"
 )
 
 const theirFindings = `{"findings":[` +

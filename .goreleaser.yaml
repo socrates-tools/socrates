@@ -17,8 +17,8 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -X github.com/socrates-tools/socrates-review/internal/version.version={{ if .IsSnapshot }}{{ else }}{{ .Tag }}{{ end }}
-      - -X github.com/socrates-tools/socrates-review/internal/version.commit={{ .ShortCommit }}
+      - -X github.com/socrates-tools/socrates/internal/version.version={{ if .IsSnapshot }}{{ else }}{{ .Tag }}{{ end }}
+      - -X github.com/socrates-tools/socrates/internal/version.commit={{ .ShortCommit }}
 
   - id: agora
     main: ./cmd/agora

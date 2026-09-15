@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/findings"
-	"github.com/socrates-tools/socrates-review/internal/simulation"
+	"github.com/socrates-tools/socrates/internal/findings"
+	"github.com/socrates-tools/socrates/internal/simulation"
 )
 
 func TestTheSimulatorProducesAFailureOnDemand(t *testing.T) {

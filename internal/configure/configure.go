@@ -5,9 +5,9 @@ import (
 	"io"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/socrates-tools/socrates-review/internal/config"
-	"github.com/socrates-tools/socrates-review/internal/refusal"
-	"github.com/socrates-tools/socrates-review/internal/terminal"
+	"github.com/socrates-tools/socrates/internal/config"
+	"github.com/socrates-tools/socrates/internal/refusal"
+	"github.com/socrates-tools/socrates/internal/terminal"
 )
 
 func Run(ctx context.Context, in io.Reader, out io.Writer) error {

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/convention"
-	"github.com/socrates-tools/socrates-review/internal/skill"
+	"github.com/socrates-tools/socrates/internal/convention"
+	"github.com/socrates-tools/socrates/internal/skill"
 )
 
 func documentOf(t *testing.T, named string) string {

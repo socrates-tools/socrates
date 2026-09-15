@@ -6,9 +6,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/agent"
-	"github.com/socrates-tools/socrates-review/internal/runlog"
-	"github.com/socrates-tools/socrates-review/internal/testing/simulator"
+	"github.com/socrates-tools/socrates/internal/agent"
+	"github.com/socrates-tools/socrates/internal/runlog"
+	"github.com/socrates-tools/socrates/internal/testing/simulator"
 )
 
 type collector struct {

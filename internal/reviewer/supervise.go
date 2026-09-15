@@ -9,16 +9,16 @@ import (
 	"os"
 	"strings"
 
-	"github.com/socrates-tools/socrates-review/internal/agent"
-	"github.com/socrates-tools/socrates-review/internal/dialogue"
-	"github.com/socrates-tools/socrates-review/internal/findings"
-	"github.com/socrates-tools/socrates-review/internal/guidance"
-	"github.com/socrates-tools/socrates-review/internal/hunks"
-	"github.com/socrates-tools/socrates-review/internal/prompt"
-	"github.com/socrates-tools/socrates-review/internal/runlog"
-	"github.com/socrates-tools/socrates-review/internal/runstate"
-	"github.com/socrates-tools/socrates-review/internal/runstore"
-	"github.com/socrates-tools/socrates-review/internal/snapshot"
+	"github.com/socrates-tools/socrates/internal/agent"
+	"github.com/socrates-tools/socrates/internal/dialogue"
+	"github.com/socrates-tools/socrates/internal/findings"
+	"github.com/socrates-tools/socrates/internal/guidance"
+	"github.com/socrates-tools/socrates/internal/hunks"
+	"github.com/socrates-tools/socrates/internal/prompt"
+	"github.com/socrates-tools/socrates/internal/runlog"
+	"github.com/socrates-tools/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates/internal/runstore"
+	"github.com/socrates-tools/socrates/internal/snapshot"
 )
 
 const firstRound = 1

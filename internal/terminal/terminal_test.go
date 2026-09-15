@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/terminal"
+	"github.com/socrates-tools/socrates/internal/terminal"
 )
 
 var lines = []string{"09:14:02  the run started", "09:15:33  the run ended as clean"}

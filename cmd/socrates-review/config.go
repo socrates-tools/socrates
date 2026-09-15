@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/socrates-tools/socrates-review/internal/config"
-	"github.com/socrates-tools/socrates-review/internal/refusal"
-	"github.com/socrates-tools/socrates-review/internal/report"
-	"github.com/socrates-tools/socrates-review/internal/terminal"
+	"github.com/socrates-tools/socrates/internal/config"
+	"github.com/socrates-tools/socrates/internal/refusal"
+	"github.com/socrates-tools/socrates/internal/report"
+	"github.com/socrates-tools/socrates/internal/terminal"
 	"github.com/spf13/cobra"
 )
 

@@ -8,11 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/agent"
-	"github.com/socrates-tools/socrates-review/internal/reviewer"
-	"github.com/socrates-tools/socrates-review/internal/runlog"
-	"github.com/socrates-tools/socrates-review/internal/runstate"
-	"github.com/socrates-tools/socrates-review/internal/testing/harness"
+	"github.com/socrates-tools/socrates/internal/agent"
+	"github.com/socrates-tools/socrates/internal/reviewer"
+	"github.com/socrates-tools/socrates/internal/runlog"
+	"github.com/socrates-tools/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates/internal/testing/harness"
 )
 
 func TestAStartedRunIsOnDiskImmediately(t *testing.T) {

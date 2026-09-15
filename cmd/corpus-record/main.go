@@ -7,10 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/socrates-tools/socrates-review/internal/corpus"
-	"github.com/socrates-tools/socrates-review/internal/corpus/runs"
-	"github.com/socrates-tools/socrates-review/internal/runstore"
-	"github.com/socrates-tools/socrates-review/internal/state"
+	"github.com/socrates-tools/socrates/internal/corpus"
+	"github.com/socrates-tools/socrates/internal/corpus/runs"
+	"github.com/socrates-tools/socrates/internal/runstore"
+	"github.com/socrates-tools/socrates/internal/state"
 )
 
 const dateLayout = "2006-01-02"

@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-tools/socrates-review/internal/agent"
-	"github.com/socrates-tools/socrates-review/internal/simulation"
-	"github.com/socrates-tools/socrates-review/internal/testing/simulator"
+	"github.com/socrates-tools/socrates/internal/agent"
+	"github.com/socrates-tools/socrates/internal/simulation"
+	"github.com/socrates-tools/socrates/internal/testing/simulator"
 )
 
 func TestASilentAgentIsKilled(t *testing.T) {

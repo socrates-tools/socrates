@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/dialogue"
-	"github.com/socrates-tools/socrates-review/internal/runstate"
-	"github.com/socrates-tools/socrates-review/internal/skill"
+	"github.com/socrates-tools/socrates/internal/dialogue"
+	"github.com/socrates-tools/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates/internal/skill"
 )
 
 func TestTheHandoverSkillIsASkillOfItsOwn(t *testing.T) {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/socrates-tools/socrates-review/internal/hygiene"
-	"github.com/socrates-tools/socrates-review/internal/snapshot"
+	"github.com/socrates-tools/socrates/internal/hygiene"
+	"github.com/socrates-tools/socrates/internal/snapshot"
 )
 
 const Path = ".socrates/review-guide.md"

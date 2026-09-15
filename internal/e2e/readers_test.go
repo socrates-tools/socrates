@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/runstate"
-	"github.com/socrates-tools/socrates-review/internal/testing/harness"
+	"github.com/socrates-tools/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates/internal/testing/harness"
 )
 
 const loudScenario = "default:\n  events: 60\n  interval: 1ms\n"

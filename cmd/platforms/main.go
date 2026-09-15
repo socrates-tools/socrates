@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/socrates-tools/socrates-review/internal/platform"
+	"github.com/socrates-tools/socrates/internal/platform"
 )
 
 func main() {

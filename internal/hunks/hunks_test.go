@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-tools/socrates-review/internal/hunks"
+	"github.com/socrates-tools/socrates/internal/hunks"
 )
 
 const oneChange = `diff --git a/internal/added.go b/internal/added.go

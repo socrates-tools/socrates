@@ -4,7 +4,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/socrates-tools/socrates-review/internal/config"
+	"github.com/socrates-tools/socrates/internal/config"
 )
 
 const (

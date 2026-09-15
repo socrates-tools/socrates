@@ -1,4 +1,4 @@
-module github.com/socrates-tools/socrates-review
+module github.com/socrates-tools/socrates
 
 go 1.26
 

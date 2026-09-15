@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/config"
+	"github.com/socrates-tools/socrates/internal/config"
 )
 
 func TestAFileTheMenuNeverTouchedComesBackByteForByte(t *testing.T) {

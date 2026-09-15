@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-tools/socrates-review/internal/runstate"
-	"github.com/socrates-tools/socrates-review/internal/runstore"
-	"github.com/socrates-tools/socrates-review/internal/snapshot"
+	"github.com/socrates-tools/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates/internal/runstore"
+	"github.com/socrates-tools/socrates/internal/snapshot"
 )
 
 func TestAnOldRunIsSwept(t *testing.T) {

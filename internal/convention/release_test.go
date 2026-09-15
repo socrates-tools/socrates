@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-tools/socrates-review/internal/convention"
-	"github.com/socrates-tools/socrates-review/internal/platform"
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/convention"
+	"github.com/socrates-tools/socrates/internal/platform"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 var aSemanticVersion = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`)
@@ -260,5 +260,48 @@ func TestAPublishingJobBehindVerificationIsNotReported(t *testing.T) {
 	}
 	if len(gate.Ungated) != 0 {
 		t.Errorf("a publishing job that needs the verification was reported as ungated: %v", gate.Ungated)
+	}
+}
+
+func TestAReleaseStampsTheModulePathTheModuleDeclares(t *testing.T) {
+	root := source.Root(t)
+
+	declared, err := convention.ModulePath(root)
+	if err != nil {
+		t.Fatalf("reading the module path: %v", err)
+	}
+
+	building, err := convention.AReleaseBuilds(root)
+	if err != nil {
+		t.Fatalf("reading what a release builds: %v", err)
+	}
+
+	stamped := 0
+	for _, one := range building {
+		for _, named := range convention.SymbolsAReleaseStamps(one.Stamps) {
+			if !strings.Contains(named, "/") {
+				continue
+			}
+			stamped++
+			if !strings.HasPrefix(named, declared+"/") {
+				t.Errorf("%s stamps %s building %s, and go.mod declares %s, so the linker writes to a symbol the compiler resolves under another path", convention.ReleaseConfigurationFile, named, one.Binary, declared)
+			}
+		}
+	}
+	if stamped == 0 {
+		t.Fatalf("%s stamps no symbol under a module path, so this check has nothing to compare and would pass forever", convention.ReleaseConfigurationFile)
+	}
+}
+
+func TestTheSymbolsAReleaseStampsAreReadFromItsLinkerFlags(t *testing.T) {
+	named := convention.SymbolsAReleaseStamps([]string{
+		"-X " + hostedBy("github.com", "an-impostor", convention.Suite) + "/internal/version.version={{ .Tag }}",
+		"-X main.commit={{ .ShortCommit }}",
+		"-trimpath",
+	})
+
+	want := []string{hostedBy("github.com", "an-impostor", convention.Suite) + "/internal/version", "main"}
+	if diff := cmp.Diff(want, named); diff != "" {
+		t.Errorf("the symbols read from a release's linker flags differ (-want +got):\n%s", diff)
 	}
 }

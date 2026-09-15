@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/surface"
+	"github.com/socrates-tools/socrates/internal/surface"
 )
 
 func TestEachSessionIsServedUnderAPathHoldingIt(t *testing.T) {

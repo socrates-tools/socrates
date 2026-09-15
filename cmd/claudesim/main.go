@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/socrates-tools/socrates-review/internal/claudesim"
+	"github.com/socrates-tools/socrates/internal/claudesim"
 )
 
 func main() {

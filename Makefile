@@ -1,6 +1,6 @@
 BINARY := bin/socrates-review
 SURFACE := bin/agora
-MODULE := github.com/socrates-tools/socrates-review
+MODULE := github.com/socrates-tools/socrates
 LINTER := github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
 RELEASER := github.com/goreleaser/goreleaser/v2@v2.17.1
 

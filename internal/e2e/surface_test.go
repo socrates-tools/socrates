@@ -15,11 +15,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-tools/socrates-review/internal/convention"
-	"github.com/socrates-tools/socrates-review/internal/state"
-	"github.com/socrates-tools/socrates-review/internal/surface"
-	"github.com/socrates-tools/socrates-review/internal/testing/gitrepo"
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/convention"
+	"github.com/socrates-tools/socrates/internal/state"
+	"github.com/socrates-tools/socrates/internal/surface"
+	"github.com/socrates-tools/socrates/internal/testing/gitrepo"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 const oneDecisionDocument = `{

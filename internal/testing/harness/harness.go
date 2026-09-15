@@ -12,16 +12,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-tools/socrates-review/internal/agent"
-	"github.com/socrates-tools/socrates-review/internal/process"
-	"github.com/socrates-tools/socrates-review/internal/runlog"
-	"github.com/socrates-tools/socrates-review/internal/runstate"
-	"github.com/socrates-tools/socrates-review/internal/runstore"
-	"github.com/socrates-tools/socrates-review/internal/snapshot"
-	"github.com/socrates-tools/socrates-review/internal/state"
-	"github.com/socrates-tools/socrates-review/internal/testing/gitrepo"
-	"github.com/socrates-tools/socrates-review/internal/testing/simulator"
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/agent"
+	"github.com/socrates-tools/socrates/internal/process"
+	"github.com/socrates-tools/socrates/internal/runlog"
+	"github.com/socrates-tools/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates/internal/runstore"
+	"github.com/socrates-tools/socrates/internal/snapshot"
+	"github.com/socrates-tools/socrates/internal/state"
+	"github.com/socrates-tools/socrates/internal/testing/gitrepo"
+	"github.com/socrates-tools/socrates/internal/testing/simulator"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 const (

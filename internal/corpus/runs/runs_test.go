@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-tools/socrates-review/internal/agent"
-	"github.com/socrates-tools/socrates-review/internal/corpus/runs"
-	"github.com/socrates-tools/socrates-review/internal/reviewer"
-	"github.com/socrates-tools/socrates-review/internal/runlog"
-	"github.com/socrates-tools/socrates-review/internal/runstore"
+	"github.com/socrates-tools/socrates/internal/agent"
+	"github.com/socrates-tools/socrates/internal/corpus/runs"
+	"github.com/socrates-tools/socrates/internal/reviewer"
+	"github.com/socrates-tools/socrates/internal/runlog"
+	"github.com/socrates-tools/socrates/internal/runstore"
 )
 
 const returned = `{"findings":[{"id":"f1","severity":"warning","file":"a.go","line":3,"description":"d","action":"ask-user"}],"risk_level":"medium","risk_rationale":"r"}`

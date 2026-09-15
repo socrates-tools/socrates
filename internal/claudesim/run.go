@@ -3,7 +3,7 @@ package claudesim
 import (
 	"io"
 
-	"github.com/socrates-tools/socrates-review/internal/simulation"
+	"github.com/socrates-tools/socrates/internal/simulation"
 )
 
 const defaultRejection = "error: unknown option '--settings'"

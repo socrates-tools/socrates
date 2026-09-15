@@ -4,9 +4,9 @@ import (
 	"io/fs"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/assets"
-	"github.com/socrates-tools/socrates-review/internal/convention"
-	"github.com/socrates-tools/socrates-review/internal/document"
+	"github.com/socrates-tools/socrates/internal/assets"
+	"github.com/socrates-tools/socrates/internal/convention"
+	"github.com/socrates-tools/socrates/internal/document"
 )
 
 func TestTheLanguagesStatedAreTheLanguagesTheBundleRegisters(t *testing.T) {

@@ -1,6 +1,6 @@
 package exit
 
-import "github.com/socrates-tools/socrates-review/internal/runstate"
+import "github.com/socrates-tools/socrates/internal/runstate"
 
 const (
 	Clean     = 0

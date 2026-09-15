@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-tools/socrates-review/internal/surface"
+	"github.com/socrates-tools/socrates/internal/surface"
 )
 
 type stated struct {

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/claudesim"
-	"github.com/socrates-tools/socrates-review/internal/findings"
-	"github.com/socrates-tools/socrates-review/internal/simulation"
+	"github.com/socrates-tools/socrates/internal/claudesim"
+	"github.com/socrates-tools/socrates/internal/findings"
+	"github.com/socrates-tools/socrates/internal/simulation"
 )
 
 var validArguments = []string{

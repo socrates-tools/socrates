@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 func TestARefusalNamesTheNextAction(t *testing.T) {
@@ -111,7 +111,7 @@ func TestARefusalWithNoNextActionIsReported(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, filepath.Join("internal", "thing", "thing.go"), `package thing
 
-import "github.com/socrates-tools/socrates-review/internal/refusal"
+import "github.com/socrates-tools/socrates/internal/refusal"
 
 func Do() error {
 	return refusal.New(somethingWentWrong)
@@ -137,7 +137,7 @@ func TestARefusalThatNamesTheNextActionIsNotReported(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, filepath.Join("internal", "thing", "thing.go"), `package thing
 
-import "github.com/socrates-tools/socrates-review/internal/refusal"
+import "github.com/socrates-tools/socrates/internal/refusal"
 
 func Do() error {
 	return refusal.New(somethingWentWrong)

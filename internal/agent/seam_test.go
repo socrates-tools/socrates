@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/agent"
-	"github.com/socrates-tools/socrates-review/internal/convention"
-	"github.com/socrates-tools/socrates-review/internal/findings"
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/agent"
+	"github.com/socrates-tools/socrates/internal/convention"
+	"github.com/socrates-tools/socrates/internal/findings"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 const aFindingsDocument = `{"findings":[{"id":"f1","severity":"warning","file":"internal/added.go","line":3,"description":"the error is dropped","action":"auto-fix"}],"risk_level":"low","risk_rationale":"one small change"}`

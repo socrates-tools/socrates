@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/skill"
+	"github.com/socrates-tools/socrates/internal/skill"
 )
 
 const shapeOfACommand = "is a " + inlineCode + "socrates-review respond" + inlineCode + " invocation naming the finding its decision cites"

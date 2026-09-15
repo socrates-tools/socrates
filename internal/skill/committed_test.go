@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/skill"
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/skill"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 func committedPath(t *testing.T, named string) string {

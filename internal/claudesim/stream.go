@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/socrates-tools/socrates-review/internal/findings"
-	"github.com/socrates-tools/socrates-review/internal/simulation"
+	"github.com/socrates-tools/socrates/internal/findings"
+	"github.com/socrates-tools/socrates/internal/simulation"
 )
 
 type usage struct {

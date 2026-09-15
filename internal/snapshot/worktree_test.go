@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/snapshot"
-	"github.com/socrates-tools/socrates-review/internal/testing/gitrepo"
+	"github.com/socrates-tools/socrates/internal/snapshot"
+	"github.com/socrates-tools/socrates/internal/testing/gitrepo"
 )
 
 func TestTheWorktreeIsTheSnapshot(t *testing.T) {

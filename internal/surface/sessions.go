@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/socrates-tools/socrates-review/internal/document"
+	"github.com/socrates-tools/socrates/internal/document"
 )
 
 type held struct {

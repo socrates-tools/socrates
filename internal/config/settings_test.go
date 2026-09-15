@@ -8,13 +8,13 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-tools/socrates-review/internal/agent"
-	"github.com/socrates-tools/socrates-review/internal/config"
-	"github.com/socrates-tools/socrates-review/internal/guidance"
-	"github.com/socrates-tools/socrates-review/internal/loopback"
-	"github.com/socrates-tools/socrates-review/internal/prompt"
-	"github.com/socrates-tools/socrates-review/internal/runlog"
-	"github.com/socrates-tools/socrates-review/internal/runstore"
+	"github.com/socrates-tools/socrates/internal/agent"
+	"github.com/socrates-tools/socrates/internal/config"
+	"github.com/socrates-tools/socrates/internal/guidance"
+	"github.com/socrates-tools/socrates/internal/loopback"
+	"github.com/socrates-tools/socrates/internal/prompt"
+	"github.com/socrates-tools/socrates/internal/runlog"
+	"github.com/socrates-tools/socrates/internal/runstore"
 )
 
 var everySetting = []string{

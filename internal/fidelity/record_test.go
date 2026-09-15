@@ -14,9 +14,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-tools/socrates-review/internal/agent"
-	"github.com/socrates-tools/socrates-review/internal/fidelity"
-	"github.com/socrates-tools/socrates-review/internal/findings"
+	"github.com/socrates-tools/socrates/internal/agent"
+	"github.com/socrates-tools/socrates/internal/fidelity"
+	"github.com/socrates-tools/socrates/internal/findings"
 )
 
 const (

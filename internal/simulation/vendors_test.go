@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/agent"
-	"github.com/socrates-tools/socrates-review/internal/testing/simulator"
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/agent"
+	"github.com/socrates-tools/socrates/internal/testing/simulator"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 func TestASupportedVendorWithNoSimulatorFailsTheSuite(t *testing.T) {

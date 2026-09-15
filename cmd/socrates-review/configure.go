@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/socrates-tools/socrates-review/internal/configure"
-	"github.com/socrates-tools/socrates-review/internal/refusal"
+	"github.com/socrates-tools/socrates/internal/configure"
+	"github.com/socrates-tools/socrates/internal/refusal"
 	"github.com/spf13/cobra"
 )
 

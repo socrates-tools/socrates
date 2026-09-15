@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/runstate"
-	"github.com/socrates-tools/socrates-review/internal/surface"
+	"github.com/socrates-tools/socrates/internal/runstate"
+	"github.com/socrates-tools/socrates/internal/surface"
 )
 
 func (j *journey) handedOver(name, title string, decisions []map[string]any) (reportedRound, string) {

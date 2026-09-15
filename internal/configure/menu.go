@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/socrates-tools/socrates-review/internal/config"
+	"github.com/socrates-tools/socrates/internal/config"
 )
 
 type stage int

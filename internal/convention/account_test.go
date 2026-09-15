@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-tools/socrates-review/internal/convention"
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/convention"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 func TestNothingNamesAnAccountOtherThanTheOrganisation(t *testing.T) {
@@ -24,7 +24,7 @@ func TestNothingNamesAnAccountOtherThanTheOrganisation(t *testing.T) {
 
 func TestASourceFileNamingAnotherAccountFailsTheCheck(t *testing.T) {
 	root := fabricatedTree(t)
-	writeNested(t, filepath.Join(root, "elsewhere.go"), "package elsewhere\n\nimport _ \""+hostedBy("github.com", "a-stranger")+"/internal/report\"\n")
+	writeNested(t, filepath.Join(root, "elsewhere.go"), "package elsewhere\n\nimport _ \""+hostedBy("github.com", "a-stranger", convention.Suite)+"/internal/report\"\n")
 
 	named, err := convention.AccountsOtherThanTheOrganisation(root)
 	if err != nil {
@@ -39,7 +39,7 @@ func TestASourceFileNamingAnotherAccountFailsTheCheck(t *testing.T) {
 
 func TestAnAccountOnAnotherHostIsNamed(t *testing.T) {
 	root := fabricatedTree(t)
-	writeNested(t, filepath.Join(root, "README.md"), "Clone it from https://"+hostedBy("gitlab.com", "a-mirror")+".\n")
+	writeNested(t, filepath.Join(root, "README.md"), "Clone it from https://"+hostedBy("gitlab.com", "a-mirror", convention.Repository)+".\n")
 
 	named, err := convention.AccountsOtherThanTheOrganisation(root)
 	if err != nil {
@@ -56,12 +56,12 @@ func fabricatedTree(t *testing.T) string {
 	t.Helper()
 
 	root := t.TempDir()
-	writeNested(t, filepath.Join(root, "go.mod"), "module "+hostedBy("github.com", convention.Organisation)+"\n")
+	writeNested(t, filepath.Join(root, "go.mod"), "module "+hostedBy("github.com", convention.Organisation, convention.Suite)+"\n")
 	return root
 }
 
-func hostedBy(host, account string) string {
-	return host + "/" + account + "/" + convention.Repository
+func hostedBy(host, account, project string) string {
+	return host + "/" + account + "/" + project
 }
 
 func writeNested(t *testing.T, path, content string) {
@@ -75,7 +75,7 @@ func writeNested(t *testing.T, path, content string) {
 	}
 }
 
-func TestTheRepositoryIsNamedForTheTool(t *testing.T) {
+func TestTheModulePathIsNamedForTheSuite(t *testing.T) {
 	root := source.Root(t)
 
 	path, err := convention.ModulePath(root)
@@ -84,22 +84,25 @@ func TestTheRepositoryIsNamedForTheTool(t *testing.T) {
 	}
 	segments := strings.Split(path, "/")
 	if len(segments) < 3 {
-		t.Fatalf("the module path %q names no organisation and repository", path)
+		t.Fatalf("the module path %q names no organisation and suite", path)
 	}
 
 	named, organisation := segments[len(segments)-1], segments[len(segments)-2]
-	if named != convention.Repository {
-		t.Errorf("the module path ends in %q and the tool installs %q, so the repository is not named for the tool", named, convention.Repository)
+	if named != convention.Suite {
+		t.Errorf("the module path ends in %q and the suite is %q, so the module is not named for the suite", named, convention.Suite)
 	}
 	if organisation != convention.Organisation {
-		t.Errorf("the module path names %q before the repository, and the organisation is %q", organisation, convention.Organisation)
+		t.Errorf("the module path names %q before the suite, and the organisation is %q", organisation, convention.Organisation)
 	}
 	if organisation == named {
-		t.Errorf("the organisation and the repository are both %q, so the next tool the organisation publishes has no name to take", named)
+		t.Errorf("the organisation and the suite are both %q, so a tool the organisation publishes has no name to take", named)
+	}
+	if named == convention.Repository {
+		t.Errorf("the module path ends in %q and the tool installs the same name, so the suite has no room for a second tool", named)
 	}
 
 	entry, err := os.Stat(filepath.Join(root, "cmd", convention.Repository))
 	if err != nil || !entry.IsDir() {
-		t.Errorf("the tool is built from no cmd/%s, so what the module path names and what the build produces are different names", convention.Repository)
+		t.Errorf("the tool is built from no cmd/%s, so what the suite installs and what the build produces are different names", convention.Repository)
 	}
 }

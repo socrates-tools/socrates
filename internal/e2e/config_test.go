@@ -9,10 +9,10 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/socrates-tools/socrates-review/internal/agent"
-	"github.com/socrates-tools/socrates-review/internal/config"
-	"github.com/socrates-tools/socrates-review/internal/exit"
-	"github.com/socrates-tools/socrates-review/internal/testing/harness"
+	"github.com/socrates-tools/socrates/internal/agent"
+	"github.com/socrates-tools/socrates/internal/config"
+	"github.com/socrates-tools/socrates/internal/exit"
+	"github.com/socrates-tools/socrates/internal/testing/harness"
 )
 
 var everySettingReported = []string{

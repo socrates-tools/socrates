@@ -3,8 +3,8 @@ package exit_test
 import (
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/exit"
-	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates/internal/exit"
+	"github.com/socrates-tools/socrates/internal/runstate"
 )
 
 func TestEachVerdictHasItsOwnCode(t *testing.T) {

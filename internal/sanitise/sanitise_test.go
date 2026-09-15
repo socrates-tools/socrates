@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/sanitise"
+	"github.com/socrates-tools/socrates/internal/sanitise"
 )
 
 const prefix = "drawn-"

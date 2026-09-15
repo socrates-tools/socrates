@@ -12,8 +12,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/socrates-tools/socrates-review/internal/hunks"
-	"github.com/socrates-tools/socrates-review/internal/refusal"
+	"github.com/socrates-tools/socrates/internal/hunks"
+	"github.com/socrates-tools/socrates/internal/refusal"
 )
 
 const commitMessage = "socrates-review snapshot"

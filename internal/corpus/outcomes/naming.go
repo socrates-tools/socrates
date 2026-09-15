@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/socrates-tools/socrates-review/internal/runstate"
+	"github.com/socrates-tools/socrates/internal/runstate"
 )
 
 const (

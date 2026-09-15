@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates-review/internal/testing/source"
+	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
 const theSeam = "parse.go"

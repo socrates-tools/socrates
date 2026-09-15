@@ -1,8 +1,8 @@
 package fidelity
 
 import (
-	"github.com/socrates-tools/socrates-review/internal/agent"
-	"github.com/socrates-tools/socrates-review/internal/findings"
+	"github.com/socrates-tools/socrates/internal/agent"
+	"github.com/socrates-tools/socrates/internal/findings"
 )
 
 type Request struct {
