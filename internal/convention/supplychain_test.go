@@ -1,6 +1,7 @@
 package convention_test
 
 import (
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -209,5 +210,21 @@ func TestADependencyUpdateArrivesAsAChangeSomebodyReviews(t *testing.T) {
 
 	for _, said := range unwatched {
 		t.Errorf("%s, so an update there arrives silently or not at all", said)
+	}
+}
+
+func TestAnEcosystemWatchedInADirectoryThatIsNotThereIsReported(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, filepath.FromSlash(convention.DependabotFile)),
+		"version: 2\n\nupdates:\n  - package-ecosystem: gomod\n    directory: /\n  - package-ecosystem: npm\n    directory: /the-client\n  - package-ecosystem: github-actions\n    directory: /\n")
+
+	unwatched, err := convention.EcosystemsUnwatched(root)
+	if err != nil {
+		t.Fatalf("reading a fabricated dependabot: %v", err)
+	}
+
+	want := []string{convention.DependabotFile + " proposes an update for npm in /the-client, and there is no such directory"}
+	if diff := cmp.Diff(want, unwatched); diff != "" {
+		t.Errorf("what a dependabot watching a directory that moved reports differs (-want +got):\n%s", diff)
 	}
 }

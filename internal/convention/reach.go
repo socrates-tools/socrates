@@ -15,14 +15,14 @@ const buildConstraint = "//go:build"
 var networkImports = []string{"net", "crypto/tls", "golang.org/x/net"}
 
 var BuildConstrainedFiles = map[string]string{
-	filepath.Join("internal", "agent", "deadline_test.go"):      "a deadline exercised with testing/synctest, which needs the experiment enabled",
-	filepath.Join("internal", "fidelity", "criteria_test.go"):   "establishing by recording which reviewer CLIs meet the criteria",
-	filepath.Join("internal", "fidelity", "drift_test.go"):      "comparing the simulator against recordings of the real CLI",
-	filepath.Join("internal", "fidelity", "forgesmoke_test.go"): "posting what one review forwarded to a real pull request",
-	filepath.Join("internal", "fidelity", "livesmoke_test.go"):  "one real review against the real CLI",
-	filepath.Join("internal", "fidelity", "record_test.go"):     "recording what the real CLI answers",
-	filepath.Join("internal", "process", "process_other.go"):    "the process group on a platform that has no process groups",
-	filepath.Join("internal", "process", "process_unix.go"):     "the process group on a platform that has them",
+	filepath.Join("socrates-review", "agent", "deadline_test.go"):      "a deadline exercised with testing/synctest, which needs the experiment enabled",
+	filepath.Join("socrates-review", "fidelity", "criteria_test.go"):   "establishing by recording which reviewer CLIs meet the criteria",
+	filepath.Join("socrates-review", "fidelity", "drift_test.go"):      "comparing the simulator against recordings of the real CLI",
+	filepath.Join("socrates-review", "fidelity", "forgesmoke_test.go"): "posting what one review forwarded to a real pull request",
+	filepath.Join("socrates-review", "fidelity", "livesmoke_test.go"):  "one real review against the real CLI",
+	filepath.Join("socrates-review", "fidelity", "record_test.go"):     "recording what the real CLI answers",
+	filepath.Join("internal", "process", "process_other.go"):           "the process group on a platform that has no process groups",
+	filepath.Join("internal", "process", "process_unix.go"):            "the process group on a platform that has them",
 }
 
 type Scope struct {
@@ -32,7 +32,7 @@ type Scope struct {
 
 var Socrates = Scope{
 	Module: "github.com/socrates-tools/socrates",
-	From:   []string{filepath.Join("cmd", Repository)},
+	From:   []string{filepath.Join(Repository, "cmd", Repository)},
 }
 
 type Reach struct {

@@ -2,4 +2,4 @@
 # Reports what socrates would do with each answer a real reviewer gave, and which outcomes only fixtures reach.
 set -e
 cd "$(dirname "$0")/.."
-exec go run ./cmd/corpus-outcomes "$@"
+exec go run ./socrates-review/cmd/corpus-outcomes "$@"

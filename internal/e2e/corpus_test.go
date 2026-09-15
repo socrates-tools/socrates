@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates/internal/corpus"
-	"github.com/socrates-tools/socrates/internal/corpus/runs"
-	"github.com/socrates-tools/socrates/internal/runstate"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates/socrates-review/corpus"
+	"github.com/socrates-tools/socrates/socrates-review/corpus/runs"
+	"github.com/socrates-tools/socrates/socrates-review/runstate"
 )
 
 func TestAnAnswerIsRecordedFromTheRunThatProducedIt(t *testing.T) {

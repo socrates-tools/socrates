@@ -11,14 +11,14 @@ import (
 )
 
 var SurfaceDirectories = []string{
-	filepath.Join("cmd", "agora"),
-	filepath.Join("internal", "assets"),
-	filepath.Join("internal", "document"),
-	filepath.Join("internal", "render"),
-	filepath.Join("internal", "sanitise"),
-	filepath.Join("internal", "stylesheet"),
-	filepath.Join("internal", "surface"),
-	filepath.Join("web", "src"),
+	filepath.Join("agora", "cmd", "agora"),
+	filepath.Join("agora", "assets"),
+	filepath.Join("agora", "document"),
+	filepath.Join("agora", "render"),
+	filepath.Join("agora", "sanitise"),
+	filepath.Join("agora", "stylesheet"),
+	filepath.Join("agora", "surface"),
+	filepath.Join("agora", "web", "src"),
 }
 
 var surfaceExtensions = []string{".go", ".gohtml", ".css", ".js", ".json"}
@@ -52,6 +52,11 @@ func WordsOfTheOtherTool(root string, directories []string) (Ignorance, error) {
 		patterns = append(patterns, regexp.MustCompile(stated))
 	}
 
+	var own *regexp.Regexp
+	if where != "" {
+		own = regexp.MustCompile(regexp.QuoteMeta(where) + `(?:/[A-Za-z0-9_.-]+)?`)
+	}
+
 	for _, directory := range directories {
 		err := filepath.WalkDir(filepath.Join(root, directory), func(path string, entry fs.DirEntry, err error) error {
 			if err != nil {
@@ -80,8 +85,8 @@ func WordsOfTheOtherTool(root string, directories []string) (Ignorance, error) {
 
 			for position, line := range strings.Split(string(held), "\n") {
 				vocabulary := line
-				if where != "" {
-					vocabulary = strings.ReplaceAll(line, where, "")
+				if own != nil {
+					vocabulary = own.ReplaceAllString(line, "")
 				}
 				for _, pattern := range patterns {
 					if named := pattern.FindString(vocabulary); named != "" {

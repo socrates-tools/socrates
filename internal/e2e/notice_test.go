@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates/internal/assets"
+	"github.com/socrates-tools/socrates/agora/assets"
 	"github.com/socrates-tools/socrates/internal/convention"
 	"github.com/socrates-tools/socrates/internal/testing/source"
 )

@@ -10,6 +10,7 @@ import (
 const (
 	recordedCommit  = "7f3a9c1"
 	recordedVersion = "v1.4.2"
+	aBinary         = "socrates-review"
 )
 
 func TestEveryRecordedBuildHasItsOwnLine(t *testing.T) {
@@ -58,12 +59,14 @@ func TestEveryRecordedBuildHasItsOwnLine(t *testing.T) {
 		},
 	} {
 		t.Run(described.named, func(t *testing.T) {
-			line := version.Describe(described.build)
+			build := described.build
+			build.Name = aBinary
+			line := version.Describe(build)
 
 			if strings.TrimSpace(line) == "" {
 				t.Fatalf("%s is described by nothing at all", described.named)
 			}
-			if !strings.Contains(line, "socrates") {
+			if !strings.Contains(line, aBinary) {
 				t.Errorf("%s is described without naming the binary: %q", described.named, line)
 			}
 			if strings.Count(line, "\n") != 0 {
@@ -116,5 +119,15 @@ func TestOneCommitIsDescribedOneWay(t *testing.T) {
 	}
 	if dirty := version.Describe(version.Build{Commit: recordedCommit, Uncommitted: true}); dirty == first {
 		t.Errorf("a dirty build and a clean one are described identically: %q", first)
+	}
+}
+
+func TestEachBinaryIsDescribedUnderItsOwnName(t *testing.T) {
+	for _, named := range []string{"socrates-review", "agora"} {
+		line := version.Describe(version.Build{Name: named, Version: recordedVersion, Commit: recordedCommit})
+
+		if !strings.HasPrefix(line, named+" ") {
+			t.Errorf("a build of %s is described as %q, which does not open with the name of the binary it is", named, line)
+		}
 	}
 }

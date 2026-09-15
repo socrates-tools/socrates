@@ -7,7 +7,7 @@ updates:
       interval: weekly
 
   - package-ecosystem: npm
-    directory: /web
+    directory: /agora/web
     schedule:
       interval: weekly
 

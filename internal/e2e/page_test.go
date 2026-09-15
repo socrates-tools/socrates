@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-tools/socrates/internal/surface"
+	"github.com/socrates-tools/socrates/agora/surface"
 )
 
 const shortWindow = 500 * time.Millisecond

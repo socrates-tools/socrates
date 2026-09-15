@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-tools/socrates/internal/agent"
-	"github.com/socrates-tools/socrates/internal/simulation"
 	"github.com/socrates-tools/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates/socrates-review/agent"
+	"github.com/socrates-tools/socrates/socrates-review/simulation"
 )
 
 type Simulator struct {
@@ -37,7 +37,7 @@ func InstallFor(t *testing.T, vendor agent.Vendor) *Simulator {
 	named := SimulatorFor(vendor)
 	binary := filepath.Join(directory, named)
 
-	source.Build(t, "./cmd/"+named, binary)
+	source.Build(t, "./socrates-review/cmd/"+named, binary)
 
 	invokedAs := vendor.Binary
 	link := filepath.Join(directory, invokedAs)

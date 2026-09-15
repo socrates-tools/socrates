@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-var ClientManifest = filepath.Join("web", "package.json")
+var ClientManifest = filepath.Join("agora", "web", "package.json")
 
 var noticeSeparator = regexp.MustCompile(`(?m)^={20,}$`)
 

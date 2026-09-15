@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-tools/socrates/internal/surface"
+	"github.com/socrates-tools/socrates/agora/surface"
 )
 
 func (s *surfaced) twoPages() (string, string, string, string) {

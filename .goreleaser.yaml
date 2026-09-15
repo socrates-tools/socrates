@@ -4,7 +4,7 @@ project_name: socrates-review
 
 builds:
   - id: socrates-review
-    main: ./cmd/socrates-review
+    main: ./socrates-review/cmd/socrates-review
     binary: socrates-review
     env:
       - CGO_ENABLED=0
@@ -21,7 +21,7 @@ builds:
       - -X github.com/socrates-tools/socrates/internal/version.commit={{ .ShortCommit }}
 
   - id: agora
-    main: ./cmd/agora
+    main: ./agora/cmd/agora
     binary: agora
     env:
       - CGO_ENABLED=0
@@ -34,8 +34,8 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -X main.version={{ if .IsSnapshot }}{{ else }}{{ .Tag }}{{ end }}
-      - -X main.commit={{ .ShortCommit }}
+      - -X github.com/socrates-tools/socrates/internal/version.version={{ if .IsSnapshot }}{{ else }}{{ .Tag }}{{ end }}
+      - -X github.com/socrates-tools/socrates/internal/version.commit={{ .ShortCommit }}
 
 archives:
   - id: socrates-review

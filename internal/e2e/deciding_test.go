@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates/internal/findings"
-	"github.com/socrates-tools/socrates/internal/report"
-	"github.com/socrates-tools/socrates/internal/runstate"
-	"github.com/socrates-tools/socrates/internal/surface"
+	"github.com/socrates-tools/socrates/agora/surface"
+	"github.com/socrates-tools/socrates/socrates-review/findings"
+	"github.com/socrates-tools/socrates/socrates-review/report"
+	"github.com/socrates-tools/socrates/socrates-review/runstate"
 )
 
 type reportedFinding struct {

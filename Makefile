@@ -10,20 +10,19 @@ COMMIT = $(shell git rev-parse --short=7 HEAD 2>/dev/null)
 UNCOMMITTED = $(if $(shell git status --porcelain 2>/dev/null),yes,)
 VERSION = $(shell git describe --tags --exact-match 2>/dev/null)
 STAMP = -X $(MODULE)/internal/version.version=$(VERSION) -X $(MODULE)/internal/version.commit=$(COMMIT) -X $(MODULE)/internal/version.uncommitted=$(UNCOMMITTED)
-SURFACE_STAMP = -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.uncommitted=$(UNCOMMITTED)
 
 TARGETS := build install release release-snapshot verify test lint fmt help skill assets platforms corpus-outcomes fixtures fixtures-diff live-smoke forge-smoke
 
 .PHONY: $(TARGETS)
 
 build:
-	go build -ldflags '$(STAMP)' -o $(BINARY) ./cmd/socrates-review
-	go build -ldflags '$(SURFACE_STAMP)' -o $(SURFACE) ./cmd/agora
+	go build -ldflags '$(STAMP)' -o $(BINARY) ./socrates-review/cmd/socrates-review
+	go build -ldflags '$(STAMP)' -o $(SURFACE) ./agora/cmd/agora
 
 install:
-	go install -ldflags '$(STAMP)' ./cmd/socrates-review
+	go install -ldflags '$(STAMP)' ./socrates-review/cmd/socrates-review
 	$(INSTALL_DIR)/socrates-review skill
-	go install -ldflags '$(SURFACE_STAMP)' ./cmd/agora
+	go install -ldflags '$(STAMP)' ./agora/cmd/agora
 
 release:
 	go run $(RELEASER) release --clean
@@ -56,25 +55,25 @@ help:
 	@printf '  make %s\n' $(TARGETS)
 
 skill:
-	go run ./cmd/socrates-review skill --to .claude/skills
+	go run ./socrates-review/cmd/socrates-review skill --to .claude/skills
 
 assets:
-	cd web && pnpm install --frozen-lockfile && node build.mjs
+	cd agora/web && pnpm install --frozen-lockfile && node build.mjs
 
 platforms:
-	go run ./cmd/platforms
+	go run ./socrates-review/cmd/platforms
 
 corpus-outcomes:
 	./scripts/corpus-outcomes
 
 fixtures:
-	go test -tags record -count=1 -v ./internal/fidelity/
+	go test -tags record -count=1 -v ./socrates-review/fidelity/
 
 fixtures-diff:
-	go test -tags drift -count=1 ./internal/fidelity/
+	go test -tags drift -count=1 ./socrates-review/fidelity/
 
 live-smoke:
-	go test -tags livesmoke -count=1 -v -timeout 20m ./internal/fidelity/
+	go test -tags livesmoke -count=1 -v -timeout 20m ./socrates-review/fidelity/
 
 forge-smoke:
-	go test -tags forgesmoke -count=1 -v -timeout 10m -run TestAForge ./internal/fidelity/
+	go test -tags forgesmoke -count=1 -v -timeout 10m -run TestAForge ./socrates-review/fidelity/

@@ -1,5 +1,5 @@
 bin/
 .serena/
-internal/fidelity/testdata/failures/
-web/node_modules/
+socrates-review/fidelity/testdata/failures/
+agora/web/node_modules/
 dist/

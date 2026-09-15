@@ -134,7 +134,7 @@ func FloorDisagreements(required string, stated []StatedFloor) []string {
 	return slices.Compact(disagreeing)
 }
 
-var installedBinary = regexp.MustCompile(`go install[^\n]*\./cmd/(\S+)`)
+var installedBinary = regexp.MustCompile(`go install[^\n]*\./(?:[A-Za-z0-9_.-]+/)*cmd/(\S+)`)
 
 func BinariesInstalled(root string) ([]string, error) {
 	held, err := Document(root, "Makefile")

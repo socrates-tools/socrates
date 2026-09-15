@@ -8,6 +8,6 @@ var (
 	uncommitted string
 )
 
-func Reported() string {
-	return Describe(Build{Version: version, Commit: commit, Uncommitted: uncommitted == recordedUncommitted})
+func Reported(name string) string {
+	return Describe(Build{Name: name, Version: version, Commit: commit, Uncommitted: uncommitted == recordedUncommitted})
 }

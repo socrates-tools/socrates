@@ -8,11 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/socrates-tools/socrates/internal/report"
+	"github.com/socrates-tools/socrates/socrates-review/report"
 
-	"github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 	"github.com/socrates-tools/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates/socrates-review/skill"
 )
 
 func committedSkill(t *testing.T, session *harness.Session) string {

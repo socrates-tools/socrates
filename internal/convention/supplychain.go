@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+
+	"go.yaml.in/yaml/v3"
 )
 
 const (
@@ -246,16 +248,39 @@ func WorkflowsReadingTheStatement(root, statement string) (WorkflowGates, error)
 	return reading, nil
 }
 
+type dependabotConfiguration struct {
+	Updates []struct {
+		Ecosystem string `yaml:"package-ecosystem"`
+		Directory string `yaml:"directory"`
+	} `yaml:"updates"`
+}
+
 func EcosystemsUnwatched(root string) ([]string, error) {
 	held, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(DependabotFile)))
 	if err != nil {
 		return nil, err
 	}
 
+	var configured dependabotConfiguration
+	if err := yaml.Unmarshal(held, &configured); err != nil {
+		return nil, fmt.Errorf("reading %s: %w", DependabotFile, err)
+	}
+
+	watched := map[string]string{}
+	for _, update := range configured.Updates {
+		watched[update.Ecosystem] = update.Directory
+	}
+
 	var unwatched []string
 	for _, ecosystem := range ecosystemsADependabotWatches {
-		if !regexp.MustCompile(`package-ecosystem:\s*"?` + regexp.QuoteMeta(ecosystem) + `"?`).Match(held) {
+		directory, proposing := watched[ecosystem]
+		if !proposing {
 			unwatched = append(unwatched, fmt.Sprintf("%s proposes no update for %s", DependabotFile, ecosystem))
+			continue
+		}
+		entry, err := os.Stat(filepath.Join(root, filepath.FromSlash(strings.TrimPrefix(directory, "/"))))
+		if err != nil || !entry.IsDir() {
+			unwatched = append(unwatched, fmt.Sprintf("%s proposes an update for %s in %s, and there is no such directory", DependabotFile, ecosystem, directory))
 		}
 	}
 	return unwatched, nil

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socrates-tools/socrates/internal/runstate"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates/socrates-review/runstate"
 )
 
 func TestOutputIsVisibleWhileTheReviewIsRunning(t *testing.T) {

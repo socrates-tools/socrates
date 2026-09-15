@@ -15,9 +15,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/socrates-tools/socrates/agora/surface"
 	"github.com/socrates-tools/socrates/internal/convention"
 	"github.com/socrates-tools/socrates/internal/state"
-	"github.com/socrates-tools/socrates/internal/surface"
 	"github.com/socrates-tools/socrates/internal/testing/gitrepo"
 	"github.com/socrates-tools/socrates/internal/testing/source"
 )
@@ -71,7 +71,7 @@ func servingSurface(t *testing.T) *surfaced {
 	t.Helper()
 
 	binary := filepath.Join(t.TempDir(), "agora")
-	source.Build(t, "./cmd/agora", binary)
+	source.Build(t, "./agora/cmd/agora", binary)
 
 	home := t.TempDir()
 	held := &surfaced{t: t, binary: binary, home: home, where: t.TempDir(), bind: aPortTheOperatingSystemChooses}
@@ -254,8 +254,8 @@ func TestSocratesReviewHasOneNameAndAgoraIsADifferentProgram(t *testing.T) {
 	tool := filepath.Join(directory, convention.Repository)
 	agora := filepath.Join(directory, "agora")
 
-	source.Build(t, "./cmd/socrates-review", tool)
-	source.Build(t, "./cmd/agora", agora)
+	source.Build(t, "./socrates-review/cmd/socrates-review", tool)
+	source.Build(t, "./agora/cmd/agora", agora)
 
 	underItsName := said(t, tool, "version")
 	if !strings.Contains(underItsName, convention.Repository) {
@@ -533,7 +533,7 @@ func TestTheSurfaceWeighsWhatSomebodyHasSeen(t *testing.T) {
 	gitrepo.Hermetic(t)
 
 	binary := filepath.Join(t.TempDir(), "agora")
-	source.Build(t, "./cmd/agora", binary)
+	source.Build(t, "./agora/cmd/agora", binary)
 
 	held, err := os.Stat(binary)
 	if err != nil {

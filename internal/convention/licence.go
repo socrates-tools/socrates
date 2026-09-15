@@ -14,7 +14,7 @@ const (
 	NoticeFile  = "NOTICE"
 )
 
-var GeneratedBundle = filepath.Join("internal", "assets", "bundle")
+var GeneratedBundle = filepath.Join("agora", "assets", "bundle")
 
 var sourceExtensions = []string{".go", ".js", ".mjs", ".css", ".gohtml", ".yaml", ".yml", ".sh"}
 

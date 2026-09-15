@@ -42,3 +42,20 @@ func TestAWordOfTheOtherToolIsReported(t *testing.T) {
 		t.Errorf("what a file naming the other tool reports differs (-want +got):\n%s", diff)
 	}
 }
+
+func TestAnImportOfAnotherToolsPackageIsStillReported(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "go.mod"), "module example.com/suite\n")
+	writeNested(t, filepath.Join(root, "held", "knowing.go"),
+		"package held\n\nimport (\n\t_ \"example.com/suite/other-tool/document\"\n\t_ \"example.com/suite/other-tool/reviewer\"\n)\n")
+
+	read, err := convention.WordsOfTheOtherTool(root, []string{"held"})
+	if err != nil {
+		t.Fatalf("reading what a fabricated tree names: %v", err)
+	}
+
+	want := []string{`held/knowing.go:5 names "reviewer"`}
+	if diff := cmp.Diff(want, read.Naming); diff != "" {
+		t.Errorf("what a file importing the other tool reports differs (-want +got):\n%s", diff)
+	}
+}
