@@ -9,7 +9,7 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 
 ## The freeze
 
-- **run**: one review of one change, from `socrates-review review` to a terminal state. Identified by a name every later command takes as its argument.
+- **run**: one review of one change, from `socrates-review begin` to a terminal state. Identified by a name every later command takes as its argument.
 - **round**: one reviewer reading one snapshot, inside a run. A run has at most two.
 - **base**: the commit a round is diffed against. Recorded once per run when it begins, and unchanged for the life of the run, so both rounds are diffed against the same thing.
 - **fork point**: `merge-base(<ref>, HEAD)`, what a base named with `--base` resolves to, so a diff is the branch's own work rather than the branch's work plus the inverse of everything the named ref did since.
@@ -26,7 +26,7 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 - **reviewer CLI**: the vendor command socrates-review drives to spawn a reviewer. One qualifies on stated facts rather than by being listed.
 - **seam**: the boundary at `internal/agent`, the only package that starts a model process. Nothing above it names a vendor, a flag or an event shape.
 - **tier**: whether a vendor constrains output against the schema. A tier and not a criterion, because the document is validated either way.
-- **intent**: one line of what the author says they were doing, passed to `socrates-review review`. A claim the reviewer judges against the code, and not a statement of what the change does.
+- **intent**: one line of what the author says they were doing, passed to `socrates-review begin`. A claim the reviewer judges against the code, and not a statement of what the change does.
 - **prompt**: what is delivered to a reviewer, assembled from named sections. Tests assert on it rather than on socrates-review's own source text.
 - **hygiene**: model output neutralised on the way into a prompt, per field, and never on the way to disk.
 

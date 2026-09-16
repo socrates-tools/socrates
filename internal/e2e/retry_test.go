@@ -22,7 +22,7 @@ func TestCancellingStopsTheReviewerThatIsAnswering(t *testing.T) {
 	session.Simulator.Scenario(talkativeScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitFor(name, runstate.Reviewing)
 	answering := waitForTheReviewerToAnswer(t, session)
 	waitUntilTheRunNamesItsAgent(t, session, name)
@@ -56,7 +56,7 @@ func TestAMachineThatHandsTheReviewerMoreIsRecorded(t *testing.T) {
 	session.Simulator.Scenario("default:\n  extra_tools: [Bash, browser_run_code_unsafe]\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Clean {
 		t.Fatalf("a session holding more than socrates asked for ended the run as %s: %s", run.State, reason(run))
@@ -84,7 +84,7 @@ func TestAToolThatWritesCannotReachTheChangeUnderReview(t *testing.T) {
 	session.Simulator.Scenario("default:\n  extra_tools: [Bash]\n  writes:\n    - path: .serena/project.yml\n      content: \"a tool writing its own bookkeeping as it starts\\n\"\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Clean {
 		t.Fatalf("a reviewer whose session wrote as it started ended the run as %s: %s", run.State, reason(run))
@@ -127,7 +127,7 @@ func TestAReviewThatReallyFailedStillReadsAsOne(t *testing.T) {
 	session.Simulator.Scenario("default:\n  behaviour: no-result\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	if run := session.WaitForTerminal(name); run.State != runstate.Failed {
 		t.Fatalf("a reviewer that returned no result ended the run as %s", run.State)
 	}

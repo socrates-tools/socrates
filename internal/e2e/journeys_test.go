@@ -19,9 +19,9 @@ func TestTheCleanJourney(t *testing.T) {
 	session.Repository.Write("internal/parser/parse.go", "package parser\n\nfunc Parse(document string) error {\n\treturn nil\n}\n")
 	before := session.Repository.Status()
 
-	printed, failures, code := session.Socrates("review", "--wait", "--intent", "add a parser that accepts anything")
+	printed, failures, code := session.Socrates("begin", "--wait", "--intent", "add a parser that accepts anything")
 	if code != 0 {
-		t.Fatalf("socrates-review review --wait exited %d for a clean review: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates-review begin --wait exited %d for a clean review: %s\n%s", code, failures, printed)
 	}
 
 	name := firstLine(printed)
@@ -58,9 +58,9 @@ func TestTheEscalatedJourney(t *testing.T) {
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	printed, failures, code := session.Socrates("review", "--wait")
+	printed, failures, code := session.Socrates("begin", "--wait")
 	if code != 1 {
-		t.Fatalf("socrates-review review --wait exited %d for a review that escalates: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates-review begin --wait exited %d for a review that escalates: %s\n%s", code, failures, printed)
 	}
 
 	name := firstLine(printed)
@@ -100,9 +100,9 @@ func TestTheJourneyOnARecordedAnswer(t *testing.T) {
 	session.Simulator.Scenario("default:\n  recorded: " + entry.Name + "\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	printed, failures, code := session.Socrates("review", "--wait")
+	printed, failures, code := session.Socrates("begin", "--wait")
 	if code != 4 {
-		t.Fatalf("socrates-review review --wait exited %d for a recorded answer that parks: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates-review begin --wait exited %d for a recorded answer that parks: %s\n%s", code, failures, printed)
 	}
 
 	name := firstLine(printed)
@@ -142,7 +142,7 @@ func TestNoFailureJourneyReportsClean(t *testing.T) {
 			session.Simulator.Scenario("default:\n  behaviour: " + failure.behaviour + "\n")
 			session.Repository.Write("internal/added.go", "package internal\n")
 
-			name := session.Review()
+			name := session.Begin()
 			run := session.WaitForTerminal(name)
 
 			if run.State != runstate.Failed {
@@ -175,7 +175,7 @@ func TestNothingBranchesOnWhatTheAgentSaidWentWrong(t *testing.T) {
 		session.Simulator.Scenario("default:\n  behaviour: error-result\n  text: \"" + account + "\"\n")
 		session.Repository.Write("internal/added.go", "package internal\n")
 
-		name := session.Review()
+		name := session.Begin()
 		run := session.WaitForTerminal(name)
 
 		if run.State != runstate.Failed {
@@ -211,7 +211,7 @@ func TestASilentReviewerIsAFailureJourney(t *testing.T) {
 		t.Fatalf("writing %s: %v", path, err)
 	}
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	if run.State != runstate.Failed {
@@ -231,7 +231,7 @@ func TestTheConcurrentEditingJourney(t *testing.T) {
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", reviewed)
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitFor(name, runstate.Reviewing)
 	worktree := session.Recorded(name).Worktree
 

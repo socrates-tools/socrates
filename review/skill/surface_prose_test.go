@@ -21,10 +21,10 @@ func TestProseNamingTheProductIsNotAnInvocation(t *testing.T) {
 	want := []string{
 		"agora poll",
 		"agora serve",
+		"socrates-review begin",
 		"socrates-review continue",
 		"socrates-review findings",
 		"socrates-review respond",
-		"socrates-review review",
 		"socrates-review status",
 		"socrates-review watch",
 	}

@@ -143,7 +143,7 @@ A page reachable both with and without a trailing slash needs `/sessions/{sessio
 ## Testing
 
 **One journey needs a filesystem that ignores permission bits, and skips without one.**
-`TestASealThatDoesNotHoldIsARefusal` in `internal/e2e` is the only test of what `socrates-review review` does where the seal cannot be enforced, and no test can manufacture such a filesystem.
+`TestASealThatDoesNotHoldIsARefusal` in `internal/e2e` is the only test of what `socrates-review begin` does where the seal cannot be enforced, and no test can manufacture such a filesystem.
 Name one and it runs:
 
 ```sh

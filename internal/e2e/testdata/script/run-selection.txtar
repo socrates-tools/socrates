@@ -8,7 +8,7 @@ exec git -c init.defaultBranch=main init --quiet .
 exec git add -A
 exec git commit --quiet -m 'the first commit'
 cp $WORK/added.go added.go
-exec socrates-review review --wait
+exec socrates-review begin --wait
 stdout 'state: clean'
 cp stdout $WORK/here.txt
 
@@ -17,7 +17,7 @@ exec git -c init.defaultBranch=main init --quiet .
 exec git add -A
 exec git commit --quiet -m 'the first commit'
 cp $WORK/added.go added.go
-exec socrates-review review --wait
+exec socrates-review begin --wait
 stdout 'state: clean'
 cp stdout $WORK/there.txt
 

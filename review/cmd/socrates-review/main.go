@@ -38,7 +38,7 @@ func newRootCommand(code *int) *cobra.Command {
 		return refusal.New(unusableFlag, err)
 	})
 	root.AddCommand(
-		newReviewCommand(code),
+		newBeginCommand(code),
 		newStatusCommand(code),
 		newFindingsCommand(code),
 		newRespondCommand(code),

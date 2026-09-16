@@ -41,7 +41,7 @@ func TestANamedBaseReviewsTheBranchesOwnWork(t *testing.T) {
 	forked := aBranchAndATrunkThatMoved(t, session)
 	session.Repository.Write("internal/uncommitted.go", "package internal\n\nfunc Uncommitted() {}\n")
 
-	name := session.Review("--base", "main", "--intent", "count the characters of a document")
+	name := session.Begin("--base", "main", "--intent", "count the characters of a document")
 	run := session.WaitFor(name, runstate.Clean)
 
 	if run.Base != forked {
@@ -83,7 +83,7 @@ func TestTheStatusPrintsTheBaseItResolved(t *testing.T) {
 	forked := aBranchAndATrunkThatMoved(t, session)
 	session.Repository.Write("internal/uncommitted.go", "package internal\n\nfunc Uncommitted() {}\n")
 
-	name := session.Review("--base", "main")
+	name := session.Begin("--base", "main")
 	session.WaitFor(name, runstate.Clean)
 
 	printed, failures, code := session.Socrates("status", name)
@@ -102,7 +102,7 @@ func TestANamedBaseIsPinnedForTheWholeRun(t *testing.T) {
 	forked := aBranchAndATrunkThatMoved(t, session)
 	session.Repository.Write("internal/added.go", answeredWrongly)
 
-	name := session.Review("--base", "main", "--intent", "count the characters of a document")
+	name := session.Begin("--base", "main", "--intent", "count the characters of a document")
 	session.WaitFor(name, runstate.AwaitingResponse)
 
 	session.Repository.Write("internal/added.go", answeredBetter)
@@ -134,7 +134,7 @@ func TestABranchWithNothingAheadOfItsBaseIsNotCalledClean(t *testing.T) {
 
 	session.Repository.Git("switch", "--quiet", "--create", "feature")
 
-	printed, failures, code := session.Socrates("review", "--base", "main")
+	printed, failures, code := session.Socrates("begin", "--base", "main")
 	if code != 3 {
 		t.Fatalf("reviewing a branch with nothing ahead of its base exited %d, want 3: %s\n%s", code, failures, printed)
 	}
@@ -158,7 +158,7 @@ func TestAWorkingTreeWithNothingInItIsNotCalledCleanEither(t *testing.T) {
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 
-	printed, failures, code := session.Socrates("review")
+	printed, failures, code := session.Socrates("begin")
 	if code != 3 {
 		t.Fatalf("reviewing a working tree identical to its base exited %d, want 3: %s\n%s", code, failures, printed)
 	}
@@ -172,7 +172,7 @@ func TestABaseNothingResolvesIsRefusedBeforeAnythingHappens(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", theBranchesOwnWork)
 
-	printed, failures, code := session.Socrates("review", "--base", "origin/develop")
+	printed, failures, code := session.Socrates("begin", "--base", "origin/develop")
 	if code != 3 {
 		t.Fatalf("reviewing against a base that does not resolve exited %d, want 3: %s\n%s", code, failures, printed)
 	}
@@ -196,7 +196,7 @@ func TestABaseWithNoCommonAncestorIsRefusedAndNamed(t *testing.T) {
 	session.Repository.Commit("a root commit sharing nothing with main")
 	session.Repository.Write("internal/added.go", theBranchesOwnWork)
 
-	printed, failures, code := session.Socrates("review", "--base", "main")
+	printed, failures, code := session.Socrates("begin", "--base", "main")
 	if code != 3 {
 		t.Fatalf("reviewing against a base with no common ancestor exited %d, want 3: %s\n%s", code, failures, printed)
 	}
@@ -214,7 +214,7 @@ func TestReviewingUncommittedWorkNamesNoBase(t *testing.T) {
 	session.Repository.Write("internal/added.go", theBranchesOwnWork)
 
 	head := session.Repository.Head()
-	name := session.Review("--intent", "count the characters of a document")
+	name := session.Begin("--intent", "count the characters of a document")
 	run := session.WaitFor(name, runstate.Clean)
 
 	if run.Base != head {
@@ -234,7 +234,7 @@ func TestSocratesReachesNoRemoteToResolveABase(t *testing.T) {
 	before := session.Repository.Git("rev-list", "--all")
 	reflog := session.Repository.Git("reflog", "--all")
 
-	name := session.Review("--base", "main")
+	name := session.Begin("--base", "main")
 	session.WaitFor(name, runstate.Clean)
 
 	if after := session.Repository.Git("rev-list", "--all"); after != before {
@@ -263,7 +263,7 @@ func TestAReviewFromAWorktreeOfAnotherBranchIsOfThatBranchAlone(t *testing.T) {
 	session.Repository.Git("worktree", "add", "--quiet", "--detach", elsewhere, "feature")
 	elsewhere = gitrepo.At(t, elsewhere).Root
 
-	out, failures, code := session.SocratesIn(elsewhere, "review", "--base", "main", "--not-my-change", "--wait")
+	out, failures, code := session.SocratesIn(elsewhere, "begin", "--base", "main", "--not-my-change", "--wait")
 	if code != 0 {
 		t.Fatalf("reviewing from a worktree of another branch exited %d: %s\n%s", code, failures, out)
 	}

@@ -17,7 +17,7 @@ func TestThePromptIsOnDisk(t *testing.T) {
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
 
-	name := session.Review("--intent", "add a function")
+	name := session.Begin("--intent", "add a function")
 	session.WaitForTerminal(name)
 
 	kept := session.File(session.Round(name, 1).PromptPath())
@@ -36,7 +36,7 @@ func TestEveryRuleReachesTheReviewer(t *testing.T) {
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
 
-	name := session.Review("--intent", "add a function")
+	name := session.Begin("--intent", "add a function")
 	session.WaitForTerminal(name)
 
 	delivered := session.Simulator.OnlyInvocation().Prompt
@@ -91,7 +91,7 @@ func testQualityInstruction(t *testing.T) string {
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
 
-	name := session.Review("--intent", "add a function")
+	name := session.Begin("--intent", "add a function")
 	session.WaitForTerminal(name)
 
 	sections := prompt.Sections(session.Simulator.OnlyInvocation().Prompt)
@@ -117,7 +117,7 @@ func TestIntentReachesTheReviewer(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	const intent = "stop the parser accepting an empty document"
-	name := session.Review("--intent", intent)
+	name := session.Begin("--intent", intent)
 	session.WaitForTerminal(name)
 
 	sections := prompt.Sections(session.Simulator.OnlyInvocation().Prompt)
@@ -172,7 +172,7 @@ func TestNoIntentNoObligation(t *testing.T) {
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	delivered := session.Simulator.OnlyInvocation().Prompt
@@ -195,7 +195,7 @@ func intentObligation(t *testing.T) string {
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
 
-	name := session.Review("--intent", "add a function")
+	name := session.Begin("--intent", "add a function")
 	session.WaitForTerminal(name)
 
 	sections := prompt.Sections(session.Simulator.OnlyInvocation().Prompt)
@@ -226,7 +226,7 @@ func TestNoIntentIsStated(t *testing.T) {
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	delivered := session.Simulator.OnlyInvocation().Prompt
@@ -241,9 +241,9 @@ func TestNoIntentIsStated(t *testing.T) {
 func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
 	session := harness.Start(t)
 
-	documented, _, code := session.Socrates("review", "--help")
+	documented, _, code := session.Socrates("begin", "--help")
 	if code != 0 {
-		t.Fatalf("socrates-review review --help exited %d", code)
+		t.Fatalf("socrates-review begin --help exited %d", code)
 	}
 
 	taking := flagsTakingAValue(documented)
@@ -255,7 +255,7 @@ func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 	session.Simulator.Scenario(cleanScenario)
 
-	name := session.Review("--base", forked)
+	name := session.Begin("--base", forked)
 	session.WaitForTerminal(name)
 
 	delivered := session.Simulator.OnlyInvocation().Prompt
@@ -264,9 +264,9 @@ func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
 	}
 
 	for _, invented := range []string{"--rationale", "--summary", "--notes", "--author-notes", "--session", "--reasoning"} {
-		_, failures, code := session.Socrates("review", invented, "I refactored the parser and it all works")
+		_, failures, code := session.Socrates("begin", invented, "I refactored the parser and it all works")
 		if code == 0 {
-			t.Errorf("socrates-review review %s was accepted", invented)
+			t.Errorf("socrates-review begin %s was accepted", invented)
 		}
 		if !strings.Contains(failures, invented) {
 			t.Errorf("refusing %s does not name it: %s", invented, failures)
@@ -274,9 +274,9 @@ func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
 	}
 
 	const positional = "I refactored the parser and it all works"
-	_, failures, code := session.Socrates("review", positional)
+	_, failures, code := session.Socrates("begin", positional)
 	if code == 0 {
-		t.Error("socrates-review review accepted free text as a positional argument")
+		t.Error("socrates-review begin accepted free text as a positional argument")
 	}
 	if !strings.Contains(failures, positional) {
 		t.Errorf("refusing a positional argument does not name what was refused: %s", failures)
@@ -373,7 +373,7 @@ func reviewingRules(t *testing.T) []string {
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
 
-	name := session.Review("--intent", "add a function")
+	name := session.Begin("--intent", "add a function")
 	session.WaitForTerminal(name)
 
 	sections := prompt.Sections(session.Simulator.OnlyInvocation().Prompt)
@@ -388,7 +388,7 @@ func TestASmallChangeCarriesItsDiff(t *testing.T) {
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	if run.Diff != prompt.Inlined {
@@ -416,7 +416,7 @@ func TestALargeChangeIsRead(t *testing.T) {
 		t.Fatalf("the generated change is %d bytes, which is under the %d byte ceiling", generated.Len(), prompt.DefaultCeiling)
 	}
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	if run.Diff != prompt.Read {
@@ -444,7 +444,7 @@ func TestTheCeilingIsOneSetting(t *testing.T) {
 	session.Repository.Write(".socrates/config.yaml", "inlined_diff_ceiling: 1\n")
 	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	if run.Diff != prompt.Inlined {
@@ -459,12 +459,12 @@ func TestOrderIsStableAcrossTwoReviews(t *testing.T) {
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
 
-	first := session.Review("--intent", "add a function")
+	first := session.Begin("--intent", "add a function")
 	session.WaitForTerminal(first)
 
 	waitForTheNextSecond()
 
-	second := session.Review("--intent", "add a function")
+	second := session.Begin("--intent", "add a function")
 	session.WaitForTerminal(second)
 
 	invocations := session.Simulator.Invocations()

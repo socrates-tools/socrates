@@ -10,7 +10,7 @@ exec git commit --quiet -m 'the first commit'
 
 # Following a review to its verdict exits with the verdict's code and renders what happened.
 cp $WORK/added.go added.go
-exec sh -c 'socrates-review review > /dev/null; socrates-review watch; echo exit=$?'
+exec sh -c 'socrates-review begin > /dev/null; socrates-review watch; echo exit=$?'
 stdout 'exit=0'
 stdout 'the run started on'
 stdout 'the reviewer answered'
@@ -41,7 +41,7 @@ stderr '20200101T000000Z-deadbeef'
 env SOCRATES_SIM_SCENARIO=$WORK/escalating.yaml
 exec sleep 1
 cp $WORK/other.go other.go
-exec sh -c 'socrates-review review > /dev/null; socrates-review watch; echo exit=$?'
+exec sh -c 'socrates-review begin > /dev/null; socrates-review watch; echo exit=$?'
 stdout 'exit=1'
 stdout 'state: escalated'
 stdout 'asking for nothing'

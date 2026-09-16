@@ -234,7 +234,7 @@ func TestAFurtherLookIsANewRun(t *testing.T) {
 		if !strings.Contains(said, "No further round is possible.") {
 			t.Errorf("the escalated branch does not say that no further round is possible, so a session looks for the flag that gives it one:\n%s", said)
 		}
-		if !strings.Contains(said, "fresh "+inlineCode+"socrates-review review") {
+		if !strings.Contains(said, "fresh run of "+inlineCode+"socrates-review begin") {
 			t.Errorf("the escalated branch names no fresh review as the way to look again:\n%s", said)
 		}
 	})

@@ -217,17 +217,17 @@ func (r *Running) stop() {
 	}
 }
 
-func (s *Session) Review(arguments ...string) string {
+func (s *Session) Begin(arguments ...string) string {
 	s.t.Helper()
 
-	out, failures, code := s.Socrates(append([]string{"review"}, arguments...)...)
+	out, failures, code := s.Socrates(append([]string{"begin"}, arguments...)...)
 	if code != 0 {
-		s.t.Fatalf("socrates-review review exited %d: %s", code, failures)
+		s.t.Fatalf("socrates-review begin exited %d: %s", code, failures)
 	}
 
 	name, _, _ := strings.Cut(strings.TrimSpace(out), "\n")
 	if name == "" {
-		s.t.Fatal("socrates-review review printed no run identifier")
+		s.t.Fatal("socrates-review begin printed no run identifier")
 	}
 	return name
 }

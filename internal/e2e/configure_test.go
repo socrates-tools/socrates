@@ -753,7 +753,7 @@ func TestTheExceptionIsOneCommandWide(t *testing.T) {
 	session := harness.Start(t)
 	stateConfiguration(t, session, "reviewer_temperature: 0.5\n")
 
-	for _, command := range [][]string{{"config"}, {"review"}} {
+	for _, command := range [][]string{{"config"}, {"begin"}} {
 		_, failures, code := session.Socrates(command...)
 		if code != exit.Usage {
 			t.Errorf("socrates-review %s with a file socrates-review cannot read exited %d, want %d", command[0], code, exit.Usage)

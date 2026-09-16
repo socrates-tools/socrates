@@ -33,7 +33,7 @@ func (j *journey) servedNothing() {
 func TestTheCheckForAPageThatWasNotServedReadsWhereAPageLands(t *testing.T) {
 	// scenario: A run that ended without a result is handed over as nothing
 	driven := driving(t, dialogueScenario(patchableFindings, nothingFoundAgain), answeredWrongly)
-	name := driven.review("count the characters of a document")
+	name := driven.begin("count the characters of a document")
 
 	if state, _ := driven.waitedFor(name); state != runstate.AwaitingResponse {
 		t.Fatalf("the round left the run %s, want a parked run", state)
@@ -85,7 +85,7 @@ func TestARoundThatCompletedAReviewIsHandedOverAsAPage(t *testing.T) {
 	} {
 		t.Run(driven.named, func(t *testing.T) {
 			journey := driving(t, driven.scenario, answeredWrongly)
-			name := journey.review("count the characters of a document")
+			name := journey.begin("count the characters of a document")
 
 			state, _ := journey.waitedFor(name)
 			if state != driven.state {
@@ -141,7 +141,7 @@ func openingEither(t *testing.T, address string, answerable bool) *reader {
 func TestARunThatEndedWithoutAResultIsHandedOverAsNothing(t *testing.T) {
 	t.Run("a run that failed", func(t *testing.T) {
 		driven := driving(t, "default:\n  behaviour: no-result\n", answeredWrongly)
-		name := driven.review("count the characters of a document")
+		name := driven.begin("count the characters of a document")
 
 		state, _ := driven.waitedFor(name)
 		if state != runstate.Failed {
@@ -160,7 +160,7 @@ func TestARunThatEndedWithoutAResultIsHandedOverAsNothing(t *testing.T) {
 
 	t.Run("a run stopped after a round that completed a review", func(t *testing.T) {
 		driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)
-		name := driven.review("count the characters of a document")
+		name := driven.begin("count the characters of a document")
 
 		if state, _ := driven.waitedFor(name); state != runstate.AwaitingResponse {
 			t.Fatalf("the round left the run %s, want a parked run", state)
@@ -194,7 +194,7 @@ func TestARoundThatWaitsOnNobodyIsHandedOverAndNotWaitedOn(t *testing.T) {
 	} {
 		t.Run(driven.named, func(t *testing.T) {
 			journey := driving(t, driven.scenario, answeredWrongly)
-			name := journey.review("count the characters of a document")
+			name := journey.begin("count the characters of a document")
 
 			state, _ := journey.waitedFor(name)
 			if state != driven.state {
@@ -219,7 +219,7 @@ func TestARoundThatWaitsOnNobodyIsHandedOverAndNotWaitedOn(t *testing.T) {
 
 func TestAPageNobodyWaitsOnDoesNotStopTheLoop(t *testing.T) {
 	driven := driving(t, dialogueScenario(patchableFindings, nothingFoundAgain), answeredWrongly)
-	name := driven.review("count the characters of a document")
+	name := driven.begin("count the characters of a document")
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {

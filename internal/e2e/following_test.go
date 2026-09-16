@@ -14,7 +14,7 @@ func TestFollowingAReviewToACleanVerdict(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	printed, failures, code := session.Socrates("watch", name)
 	if code != 0 {
 		t.Fatalf("socrates-review watch of a clean review exited %d: %s\n%s", code, failures, printed)
@@ -31,7 +31,7 @@ func TestFollowingAReviewToAnEscalation(t *testing.T) {
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	printed, failures, code := session.Socrates("watch", name)
 	if code != 1 {
 		t.Fatalf("socrates-review watch of an escalating review exited %d, want 1: %s\n%s", code, failures, printed)
@@ -57,7 +57,7 @@ func TestEveryVerdictIsFollowedToItsOwnCode(t *testing.T) {
 			session.Simulator.Scenario(verdict.scenario)
 			session.Repository.Write("internal/added.go", "package internal\n")
 
-			name := session.Review()
+			name := session.Begin()
 			following := session.Starting("watch", name)
 
 			printed, failures, followed := following.Wait()
@@ -82,7 +82,7 @@ func TestAFollowerDoesNotOutliveTheRun(t *testing.T) {
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	following := session.Starting("watch", name)
 
 	run := session.WaitForTerminal(name)
@@ -102,7 +102,7 @@ func TestWatchingImmediatelyAfterStartingARun(t *testing.T) {
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	following := session.Starting("watch", name)
 
 	printed, failures, code := following.Wait()
@@ -119,7 +119,7 @@ func TestCancellingWhileFollowing(t *testing.T) {
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitFor(name, runstate.Reviewing)
 	following := session.Starting("watch", name)
 
@@ -185,7 +185,7 @@ func TestReadingAFinishedRun(t *testing.T) {
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	printed, failures, code := session.Socrates("logs", name)
@@ -210,7 +210,7 @@ func TestReadingARunStillInProgress(t *testing.T) {
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitFor(name, runstate.Reviewing)
 
 	started := time.Now()

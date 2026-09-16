@@ -18,10 +18,10 @@ func TestAnUnsupportedPlatformRefusesTheReviewBeforeAnythingStarts(t *testing.T)
 	status := session.Repository.Status()
 	objects := session.Repository.Git("count-objects", "-v")
 
-	out, failures, code := session.Socrates("review")
+	out, failures, code := session.Socrates("begin")
 
 	if code != 3 {
-		t.Fatalf("socrates-review review exited %d where nothing reaps, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates-review begin exited %d where nothing reaps, want the usage code: %s%s", code, out, failures)
 	}
 	for _, said := range []string{theGuaranteeThatIsMissing, convention.TheWayForward} {
 		if !strings.Contains(failures, said) {
@@ -54,7 +54,7 @@ func TestReadingARunIsNotRefusedOnAnUnsupportedPlatform(t *testing.T) {
 	session.Simulator.Scenario(sealScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	elsewhere := session.WhereNothingReaps()

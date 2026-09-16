@@ -12,7 +12,7 @@ env SOCRATES_SIM_SCENARIO=$WORK/dialogue.yaml
 cp $WORK/added.go added.go
 
 # A round that found only mechanical defects parks, and parking is not a verdict.
-exec sh -c 'socrates-review review --wait; echo exit=$?'
+exec sh -c 'socrates-review begin --wait; echo exit=$?'
 stdout 'exit=4'
 stdout 'state: awaiting-response'
 stdout 'unanswered: 2'

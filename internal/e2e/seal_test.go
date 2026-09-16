@@ -31,16 +31,16 @@ func TestASealThatDoesNotHoldIsARefusal(t *testing.T) {
 	home := filepath.Join(stated, "socrates-e2e-"+strconv.Itoa(os.Getpid()))
 	t.Cleanup(func() { _ = os.RemoveAll(home) })
 
-	out, failures, code := session.SocratesWith(session.Repository.Root, []string{state.HomeVariable + "=" + home}, "review")
+	out, failures, code := session.SocratesWith(session.Repository.Root, []string{state.HomeVariable + "=" + home}, "begin")
 
 	if code != exit.Usage {
-		t.Fatalf("socrates-review review exited %d on a filesystem that enforces nothing, want the usage code %d: %s%s", code, exit.Usage, out, failures)
+		t.Fatalf("socrates-review begin exited %d on a filesystem that enforces nothing, want the usage code %d: %s%s", code, exit.Usage, out, failures)
 	}
 	if !strings.Contains(failures, "worktree") || !strings.Contains(failures, "filesystem") {
 		t.Errorf("the refusal reads %q, without naming the worktree and the filesystem", failures)
 	}
 	if strings.TrimSpace(out) != "" {
-		t.Errorf("socrates-review review printed %q, so a person is following a run that never started", out)
+		t.Errorf("socrates-review begin printed %q, so a person is following a run that never started", out)
 	}
 
 	runs, err := os.ReadDir(filepath.Join(home, "runs"))
@@ -65,7 +65,7 @@ func TestCancellingARunWhoseReviewerWentAwayLiftsTheSeal(t *testing.T) {
 	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 5m\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	started := session.WaitFor(name, runstate.Reviewing)
 
 	if err := process.Kill(started.Reviewer); err != nil {

@@ -6,7 +6,7 @@ description: Have an independent reviewer read a change somebody else wrote, and
 # socrates-review, for a change that is not yours
 
 Somebody has handed you a change nobody here wrote.
-`socrates-review review --base <target> --not-my-change` freezes it into a commit nothing can move and hands it to a reviewer that wrote none of it.
+`socrates-review begin --base <target> --not-my-change` freezes it into a commit nothing can move and hands it to a reviewer that wrote none of it.
 Nothing here is yours to patch, so every finding is handed to whoever wrote the change, dropped as true and not worth raising, or rejected as wrong.
 The person chooses which, on a page, and you post what they chose and nothing else.
 socrates-review posts nothing: it has no forge, no credentials and no network, so the fetching and the posting are yours.
@@ -147,7 +147,7 @@ Nothing you write reorders that.
    Do not repair it, do not replace it, do not summarise it, and do not fill in what it leaves out.
 4. Start the review from inside that worktree, naming the branch the change targets, and passing what the author wrote verbatim as one argument:
 
-       socrates-review review --base origin/main --not-my-change --intent "<what the author wrote>"
+       socrates-review begin --base origin/main --not-my-change --intent "<what the author wrote>"
 
    The base resolves to the fork point of that branch and this one, so what is reviewed is the change's own work and nothing the target branch has done since.
    socrates-review neither fetches nor rebases, and says nothing about how far the target has moved past the fork point.
@@ -175,7 +175,7 @@ Nothing has been checked, so report the change as unreviewed and post nothing.
 
 Read `socrates-review findings` and hand every finding to the person as a page, drafted here.
 Serve it with `agora serve`, hand over the address, and wait on `agora poll`, which is what `socrates-review findings` says to do about this round.
-Decide nothing on their behalf. Looking again means a fresh `socrates-review review` of the change as it stands, read cold.
+Decide nothing on their behalf. Looking again means a fresh run of `socrates-review begin` against the change as it stands, read cold.
 
 ### awaiting-response
 

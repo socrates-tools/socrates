@@ -196,14 +196,14 @@ func socratesReview(t *testing.T) string {
 func reviewed(t *testing.T, binary, clone string, pull pullRequest) string {
 	t.Helper()
 
-	printed := socrates(t, binary, clone, whileTheRoundIsParked, "review", "--wait",
+	printed := socrates(t, binary, clone, whileTheRoundIsParked, "begin", "--wait",
 		"--base", "origin/"+pull.Base.Ref,
 		"--not-my-change",
 		"--intent", theAuthorsAccount(t))
 
 	name, _, _ := strings.Cut(strings.TrimSpace(printed), "\n")
 	if name == "" {
-		t.Fatal("socrates-review review printed no run identifier")
+		t.Fatal("socrates-review begin printed no run identifier")
 	}
 	return name
 }

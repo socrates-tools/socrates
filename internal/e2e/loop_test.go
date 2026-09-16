@@ -66,12 +66,12 @@ func (j *journey) noted(binary, command string, arguments []string) {
 	}
 }
 
-func (j *journey) review(intent string) string {
+func (j *journey) begin(intent string) string {
 	j.t.Helper()
 
-	printed, failures, code := j.run("review", "--intent", intent)
+	printed, failures, code := j.run("begin", "--intent", intent)
 	if code != 0 {
-		j.t.Fatalf("socrates-review review --intent exited %d: %s\n%s", code, failures, printed)
+		j.t.Fatalf("socrates-review begin --intent exited %d: %s\n%s", code, failures, printed)
 	}
 	return firstLine(printed)
 }
@@ -142,7 +142,7 @@ func (j *journey) namedNothingTheSkillDoesNot() {
 func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 	t.Run(string(runstate.Escalated), func(t *testing.T) {
 		driven := driving(t, dialogueScenario(unanswerableFinding, nothingFoundAgain), answeredWrongly)
-		name := driven.review("count the characters of a document")
+		name := driven.begin("count the characters of a document")
 
 		state, code := driven.waitedFor(name)
 		if state != runstate.Escalated || code != 1 {
@@ -165,7 +165,7 @@ func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 
 	t.Run(string(runstate.Failed), func(t *testing.T) {
 		driven := driving(t, "default:\n  behaviour: no-result\n", answeredWrongly)
-		name := driven.review("count the characters of a document")
+		name := driven.begin("count the characters of a document")
 
 		state, code := driven.waitedFor(name)
 		if state != runstate.Failed || code != 2 {
@@ -181,7 +181,7 @@ func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 
 	t.Run(string(runstate.AwaitingResponse), func(t *testing.T) {
 		driven := driving(t, dialogueScenario(patchableFindings, nothingFoundAgain), answeredWrongly)
-		name := driven.review("count the characters of a document")
+		name := driven.begin("count the characters of a document")
 
 		state, code := driven.waitedFor(name)
 		if state != runstate.AwaitingResponse || code != 4 {
@@ -202,7 +202,7 @@ func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 
 func TestTheLoopAnswersAQuestionAndReachesAVerdict(t *testing.T) {
 	driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)
-	name := driven.review("count the characters of a document")
+	name := driven.begin("count the characters of a document")
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {
@@ -256,7 +256,7 @@ func TestTheLoopAnswersAQuestionAndReachesAVerdict(t *testing.T) {
 
 func TestAParkedRoundWaitsOnAQuestionAndOnAPatch(t *testing.T) {
 	driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)
-	name := driven.review("count the characters of a document")
+	name := driven.begin("count the characters of a document")
 
 	state, _ := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse {
@@ -306,7 +306,7 @@ func TestAParkedRoundWaitsOnAQuestionAndOnAPatch(t *testing.T) {
 
 func TestAQuestionThatReachesTheCapEscalatesWithEverythingKept(t *testing.T) {
 	driven := driving(t, dialogueScenario(patchableFindings, questionAtTheCap), answeredWrongly)
-	name := driven.review("count the characters of a document")
+	name := driven.begin("count the characters of a document")
 
 	state, _ := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse {
@@ -365,7 +365,7 @@ func TestAQuestionThatReachesTheCapEscalatesWithEverythingKept(t *testing.T) {
 
 func TestTheLoopTheSkillDescribesReachesAVerdict(t *testing.T) {
 	driven := driving(t, dialogueScenario(patchableFindings, nothingFoundAgain), answeredWrongly)
-	name := driven.review("count the characters of a document")
+	name := driven.begin("count the characters of a document")
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {
@@ -404,7 +404,7 @@ func TestTheLoopCarriesTheSessionFromServeToPollAndReachesAVerdict(t *testing.T)
 	const inTheirOwnWords = "the function stays, because the importer reads it every morning"
 
 	driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)
-	name := driven.review("count the characters of a document")
+	name := driven.begin("count the characters of a document")
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {
@@ -478,7 +478,7 @@ func TestTheLoopCarriesTheSessionFromServeToPollAndReachesAVerdict(t *testing.T)
 
 func TestALaterRoundIsWrittenToThePageThePersonAlreadyHas(t *testing.T) {
 	driven := driving(t, dialogueScenario(questionOfIntent, questionAtTheCap), answeredWrongly)
-	name := driven.review("count the characters of a document")
+	name := driven.begin("count the characters of a document")
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {

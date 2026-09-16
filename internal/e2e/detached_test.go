@@ -19,15 +19,15 @@ func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	started := time.Now()
-	out, failures, code := session.Socrates("review", "--intent", "add a thing")
+	out, failures, code := session.Socrates("begin", "--intent", "add a thing")
 	if code != 0 {
-		t.Fatalf("socrates-review review exited %d: %s", code, failures)
+		t.Fatalf("socrates-review begin exited %d: %s", code, failures)
 	}
 	returned := time.Since(started)
 
 	name, _, _ := strings.Cut(strings.TrimSpace(out), "\n")
 	if name == "" {
-		t.Fatal("socrates-review review printed no run identifier")
+		t.Fatal("socrates-review begin printed no run identifier")
 	}
 
 	run := session.WaitFor(name, runstate.Reviewing)
@@ -38,7 +38,7 @@ func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {
 		t.Errorf("the reviewer %d is not running, so the command did not return early", run.Reviewer)
 	}
 	if returned > 20*time.Second {
-		t.Errorf("socrates-review review took %s to return", returned)
+		t.Errorf("socrates-review begin took %s to return", returned)
 	}
 
 	t.Run("the reviewer holds none of the invoking terminal's streams", func(t *testing.T) {
@@ -61,7 +61,7 @@ func TestTheReviewerSurvivesItsCaller(t *testing.T) {
 	session.Simulator.Scenario("default:\n  events: 6\n  interval: 80ms\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 
 	if process.Alive(0) {
 		t.Fatal("liveness answers yes for no process at all")
@@ -80,7 +80,7 @@ func TestTheRunDirectoryHoldsTheRound(t *testing.T) {
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review("--intent", "add a thing")
+	name := session.Begin("--intent", "add a thing")
 	session.WaitForTerminal(name)
 
 	round := session.Round(name, 1)

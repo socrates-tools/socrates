@@ -27,7 +27,7 @@ func TestOneVariableMovesEverything(t *testing.T) {
 		t.Fatalf("writing the configuration under the stated home: %v", err)
 	}
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Clean {
 		t.Fatalf("the run ended as %s: %s", run.State, reason(run))
@@ -51,10 +51,10 @@ func TestARelativeHomeIsRefused(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	relative := filepath.Join("somewhere", "below")
-	out, failures, code := session.SocratesWith(session.Repository.Root, []string{state.HomeVariable + "=" + relative}, "review")
+	out, failures, code := session.SocratesWith(session.Repository.Root, []string{state.HomeVariable + "=" + relative}, "begin")
 
 	if code != exit.Usage {
-		t.Fatalf("socrates-review review with a relative home exited %d, want the usage code %d: %s%s", code, exit.Usage, out, failures)
+		t.Fatalf("socrates-review begin with a relative home exited %d, want the usage code %d: %s%s", code, exit.Usage, out, failures)
 	}
 	if !strings.Contains(failures, state.HomeVariable) || !strings.Contains(failures, relative) {
 		t.Errorf("the refusal reads %q, without naming the variable and the path", failures)
@@ -72,7 +72,7 @@ func TestARunIsFoundBesideTheConfiguration(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	if _, err := os.Stat(filepath.Join(session.Home, "runs", name)); err != nil {
@@ -84,9 +84,9 @@ func TestARunIsFoundBesideTheConfiguration(t *testing.T) {
 		t.Fatalf("writing the configuration beside the runs: %v", err)
 	}
 
-	_, failures, code := session.Socrates("review")
+	_, failures, code := session.Socrates("begin")
 	if code != exit.Usage {
-		t.Fatalf("socrates-review review exited %d with a configuration file beside the runs that does not parse, want %d", code, exit.Usage)
+		t.Fatalf("socrates-review begin exited %d with a configuration file beside the runs that does not parse, want %d", code, exit.Usage)
 	}
 	if !strings.Contains(failures, beside) {
 		t.Errorf("the refusal reads %q, and the configuration socrates reads lives beside the runs at %s", failures, beside)
@@ -108,7 +108,7 @@ func TestOneVariableMovesEverythingBothBinariesHave(t *testing.T) {
 	held.where = session.Repository.Root
 	held.bindsWhatIsConfigured()
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	printed := held.serve(oneDecisionDocument)
@@ -141,7 +141,7 @@ func TestTheSurfaceKeepsADirectoryOfItsOwnInsideThatHome(t *testing.T) {
 	held.home = session.Root
 	held.where = session.Repository.Root
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 	held.serve(oneDecisionDocument)
 

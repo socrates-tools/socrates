@@ -22,7 +22,7 @@ func TestAChildThatOutlivesTheAgentIsKilled(t *testing.T) {
 	session.Simulator.Scenario("default:\n  child_command: [sleep, \"120\"]\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Clean {
 		t.Fatalf("the run ended as %s: %s", run.State, reason(run))
@@ -36,7 +36,7 @@ func TestReapingHappensOnErrorToo(t *testing.T) {
 	session.Simulator.Scenario("default:\n  behaviour: no-result\n  child_command: [sleep, \"120\"]\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Failed {
 		t.Fatalf("the run ended as %s, want %s", run.State, runstate.Failed)
@@ -50,7 +50,7 @@ func TestReapingHappensOnCancellation(t *testing.T) {
 	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 5m\n  child_command: [sleep, \"120\"]\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitFor(name, runstate.Reviewing)
 
 	child := waitForChild(t, session)
@@ -73,7 +73,7 @@ func TestTheWorktreeCanBeRemovedAfterTheRound(t *testing.T) {
 	session.Simulator.Scenario("default:\n  child_command: [sleep, \"120\"]\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	worktree := session.Recorded(name).Worktree

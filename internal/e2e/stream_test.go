@@ -15,7 +15,7 @@ func TestOutputIsVisibleWhileTheReviewIsRunning(t *testing.T) {
 	session.Simulator.Scenario("default:\n  events: 40\n  interval: 60ms\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitFor(name, runstate.Reviewing)
 
 	path := session.Round(name, 1).StreamPath()
@@ -43,7 +43,7 @@ func TestAFailedRoundKeepsWhatItGot(t *testing.T) {
 	session.Simulator.Scenario("default:\n  behaviour: truncated-stream\n  events: 3\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	if run.State != runstate.Failed {

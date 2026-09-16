@@ -59,7 +59,7 @@ func TestOneScenarioEveryVendor(t *testing.T) {
 				session.Simulator.Scenario(journey.scenario)
 				session.Repository.Write("internal/added.go", "package internal\n")
 
-				name := session.Review()
+				name := session.Begin()
 				run := session.WaitFor(name, journey.reaches)
 
 				if run.State != journey.reaches {
@@ -79,7 +79,7 @@ func TestASupportedCLIIsInvoked(t *testing.T) {
 		session.Simulator.Scenario(nothingToReport)
 		session.Repository.Write("internal/added.go", "package internal\n")
 
-		name := session.Review()
+		name := session.Begin()
 		session.WaitFor(name, runstate.Clean)
 
 		invocations := session.Simulator.Invocations()
@@ -112,7 +112,7 @@ func TestTheRepositoryDoesNotInstructItsOwnReviewer(t *testing.T) {
 
 		session.Repository.Write("internal/added.go", "package internal\n")
 
-		name := session.Review()
+		name := session.Begin()
 		session.WaitFor(name, runstate.Clean)
 
 		invocation := session.Simulator.OnlyInvocation()
@@ -134,7 +134,7 @@ default:
 `)
 		session.Repository.Write("internal/added.go", "package internal\n")
 
-		name := session.Review()
+		name := session.Begin()
 		session.WaitFor(name, runstate.Clean)
 
 		left, found := session.Simulator.WaitForChild(10 * time.Second)
@@ -150,7 +150,7 @@ func TestTheVendorAndTierReachTheRunsRecord(t *testing.T) {
 		session.Simulator.Scenario(nothingToReport)
 		session.Repository.Write("internal/added.go", "package internal\n")
 
-		name := session.Review()
+		name := session.Begin()
 		run := session.WaitFor(name, runstate.Clean)
 
 		if run.ReviewerCLI != session.Vendor.Name {
@@ -171,7 +171,7 @@ func TestASessionThatCannotSayWhatItHeldIsRecordedAsSuch(t *testing.T) {
 		session.Simulator.Scenario(nothingToReport)
 		session.Repository.Write("internal/added.go", "package internal\n")
 
-		name := session.Review()
+		name := session.Begin()
 		session.WaitFor(name, runstate.Clean)
 
 		said := false
@@ -197,7 +197,7 @@ func TestTheSchemaIsWrittenNeitherInTheRepositoryNorInTheSnapshot(t *testing.T) 
 
 		status := session.Repository.Status()
 
-		name := session.Review()
+		name := session.Begin()
 		run := session.WaitFor(name, runstate.Clean)
 
 		if now := session.Repository.Status(); now != status {
@@ -233,7 +233,7 @@ default:
 `)
 		session.Repository.Write("internal/added.go", "package internal\n")
 
-		name := session.Review()
+		name := session.Begin()
 		session.WaitFor(name, runstate.Clean)
 
 		invocation := session.Simulator.OnlyInvocation()
@@ -256,7 +256,7 @@ func TestAScenarioNamesARecordedAnswer(t *testing.T) {
 		session.Simulator.Scenario("default:\n  recorded: " + kept[0].Name + "\n")
 		session.Repository.Write("internal/added.go", "package internal\n")
 
-		name := session.Review()
+		name := session.Begin()
 		run := waitUntilItRests(t, session, name)
 
 		if run.State == runstate.Failed {
@@ -270,7 +270,7 @@ func TestANamedAnswerThatDoesNotExistIsRefused(t *testing.T) {
 		session.Simulator.Scenario("default:\n  recorded: an-answer-nobody-recorded\n")
 		session.Repository.Write("internal/added.go", "package internal\n")
 
-		name := session.Review()
+		name := session.Begin()
 		run := waitUntilItRests(t, session, name)
 
 		if run.State != runstate.Failed {
@@ -304,7 +304,7 @@ func TestTheDocumentIsExtractedAndValidated(t *testing.T) {
 		session.Simulator.Scenario(askingAPerson)
 		session.Repository.Write("internal/added.go", "package internal\n")
 
-		name := session.Review()
+		name := session.Begin()
 		session.WaitFor(name, runstate.AwaitingResponse)
 
 		printed, failures, _ := session.Socrates("findings", name)

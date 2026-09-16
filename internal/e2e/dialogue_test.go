@@ -45,7 +45,7 @@ func parkedRun(t *testing.T, session *harness.Session, scenario string) string {
 	session.Simulator.Scenario(scenario)
 	session.Repository.Write("internal/added.go", answeredWrongly)
 
-	name := session.Review("--intent", "count the characters of a document")
+	name := session.Begin("--intent", "count the characters of a document")
 	session.WaitFor(name, runstate.AwaitingResponse)
 	return name
 }
@@ -162,12 +162,12 @@ func TestWaitingReturnsWhenTheRunParks(t *testing.T) {
 	session.Simulator.Scenario(dialogueScenario(patchableFindings, nothingFoundAgain))
 	session.Repository.Write("internal/added.go", answeredWrongly)
 
-	printed, failures, code := session.Socrates("review", "--wait")
+	printed, failures, code := session.Socrates("begin", "--wait")
 	if code != 4 {
-		t.Fatalf("socrates-review review --wait exited %d for a run that parks: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates-review begin --wait exited %d for a run that parks: %s\n%s", code, failures, printed)
 	}
 	if !strings.Contains(printed, string(runstate.AwaitingResponse)) {
-		t.Errorf("socrates-review review --wait does not say the run is awaiting responses:\n%s", printed)
+		t.Errorf("socrates-review begin --wait does not say the run is awaiting responses:\n%s", printed)
 	}
 	for _, verdict := range []string{string(runstate.Clean), string(runstate.Escalated), string(runstate.Failed)} {
 		if strings.Contains(printed, "verdict: "+verdict) {
@@ -274,7 +274,7 @@ func TestTheIntentQuestionJourney(t *testing.T) {
 	session.Simulator.Scenario(dialogueScenario(questionOfIntent, nothingFoundAgain))
 	session.Repository.Write("internal/added.go", answeredWrongly)
 
-	printed, failures, code := session.Socrates("review", "--wait")
+	printed, failures, code := session.Socrates("begin", "--wait")
 	if code != 4 {
 		t.Fatalf("a round holding a question of intent exited %d: %s\n%s", code, failures, printed)
 	}
@@ -315,7 +315,7 @@ func TestAnEscalatedRunSaysWhichOfTheTwoReasonsItWas(t *testing.T) {
 		session.Simulator.Scenario(escalatingScenario)
 		session.Repository.Write("internal/added.go", answeredWrongly)
 
-		name := session.Review()
+		name := session.Begin()
 		run := session.WaitForTerminal(name)
 		if run.State != runstate.Escalated {
 			t.Fatalf("the run ended as %s: %s", run.State, reason(run))
@@ -360,7 +360,7 @@ func TestAnEscalatedRunTakesNoResponse(t *testing.T) {
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", answeredWrongly)
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Escalated {
 		t.Fatalf("a round holding a finding no response addresses left the run %s: %s", run.State, reason(run))
@@ -953,7 +953,7 @@ func TestRespondingToARunThatIsNotAwaitingResponses(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", answeredWrongly)
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	_, failures, code := session.Socrates("respond", name, "--finding", "f1", "--fixed")

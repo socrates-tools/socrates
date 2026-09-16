@@ -146,7 +146,7 @@ func everyFindingAsADecision(read reportedRound) []map[string]any {
 			"meaning":  "this is what it costs the change",
 			"mode":     "single-choice",
 			"options": []map[string]any{
-				{"label": "look again once I have changed this", "meaning": "a fresh reviewer reads the change as it then stands", "command": `socrates-review review --intent "` + finding.ID + `"`},
+				{"label": "look again once I have changed this", "meaning": "a fresh reviewer reads the change as it then stands", "command": `socrates-review begin --intent "` + finding.ID + `"`},
 				{"label": "read what it said again", "meaning": "the findings as socrates printed them", "command": "socrates-review findings " + read.Run},
 			},
 		})
@@ -156,7 +156,7 @@ func everyFindingAsADecision(read reportedRound) []map[string]any {
 
 func TestARoundThatWaitsOnAPersonIsWaitedOn(t *testing.T) {
 	driven := driving(t, dialogueScenario(unanswerableFinding, nothingFoundAgain), answeredWrongly)
-	name := driven.review("count the characters of a document")
+	name := driven.begin("count the characters of a document")
 
 	state, _ := driven.waitedFor(name)
 	if state != runstate.Escalated {
@@ -225,7 +225,7 @@ func TestADecisionMadeOnThePageIsRecordedInTheTerminal(t *testing.T) {
 	const inTheirOwnWords = "the function stays, because the importer reads it every morning"
 
 	driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)
-	name := driven.review("count the characters of a document")
+	name := driven.begin("count the characters of a document")
 
 	state, _ := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse {

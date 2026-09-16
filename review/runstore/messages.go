@@ -9,7 +9,7 @@ const (
 	alreadyEndedOnDisk       = "run %s already ended as %s, so it cannot be written as %s"
 	alreadyExists            = "run %s already exists, so a second review of %s in the same second cannot start: wait a moment and run it again"
 	noSuchRun                = "there is no run named %s under %s: run socrates-review status without an identifier to report on this repository's most recent run"
-	noRunForThisRepository   = "%s has never been reviewed, so there is no run to report on: run socrates-review review first"
+	noRunForThisRepository   = "%s has never been reviewed, so there is no run to report on: run socrates-review begin first"
 	reviewerWentAway         = "the reviewer went away before it reported anything, so nothing has been reviewed"
 	noDirectory              = "run %s has no directory under %s: %w"
 	reading                  = "reading %s: %w"

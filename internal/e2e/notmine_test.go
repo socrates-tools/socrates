@@ -55,7 +55,7 @@ func theirChangeReviewed(t *testing.T, session *harness.Session) string {
 	session.Simulator.Scenario(theirChangeScenario())
 	aBranchAndATrunkThatMoved(t, session)
 
-	name := session.Review("--base", "main", "--not-my-change", "--intent", "Count the characters of a document, because the importer needs a length.")
+	name := session.Begin("--base", "main", "--not-my-change", "--intent", "Count the characters of a document, because the importer needs a length.")
 	session.WaitFor(name, runstate.AwaitingResponse)
 	return name
 }
@@ -182,7 +182,7 @@ func TestARelayedAccountReachesTheReviewerAsTheAuthors(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 	aBranchAndATrunkThatMoved(t, session)
 
-	name := session.Review("--base", "main", "--not-my-change", "--intent", theirDescription)
+	name := session.Begin("--base", "main", "--not-my-change", "--intent", theirDescription)
 	session.WaitFor(name, runstate.Clean)
 
 	stated, present := prompt.BodyOf(prompt.Sections(session.Simulator.OnlyInvocation().Prompt), prompt.IntentHeading)
@@ -207,7 +207,7 @@ func TestAnAccountCarryingInstructionsArrivesNeutralised(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 	aBranchAndATrunkThatMoved(t, session)
 
-	name := session.Review("--base", "main", "--not-my-change", "--intent", composed)
+	name := session.Begin("--base", "main", "--not-my-change", "--intent", composed)
 	session.WaitFor(name, runstate.Clean)
 
 	delivered := session.Simulator.OnlyInvocation().Prompt
@@ -265,9 +265,9 @@ func TestTheStatusOfAChangeThatIsNotMineSaysTheWholeRoundIsAPersons(t *testing.T
 func (j *journey) reviewingTheirChange(base, intent string) string {
 	j.t.Helper()
 
-	printed, failures, code := j.run("review", "--base", base, "--not-my-change", "--intent", intent)
+	printed, failures, code := j.run("begin", "--base", base, "--not-my-change", "--intent", intent)
 	if code != 0 {
-		j.t.Fatalf("socrates-review review --not-my-change exited %d: %s\n%s", code, failures, printed)
+		j.t.Fatalf("socrates-review begin --not-my-change exited %d: %s\n%s", code, failures, printed)
 	}
 	return firstLine(printed)
 }

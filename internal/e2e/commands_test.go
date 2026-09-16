@@ -11,6 +11,7 @@ import (
 
 	"github.com/socrates-tools/socrates/internal/testing/gitrepo"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
+	"github.com/socrates-tools/socrates/review/exit"
 	"github.com/socrates-tools/socrates/review/runstate"
 )
 
@@ -23,7 +24,7 @@ func TestTheCommandSurfaceIsWhatItSays(t *testing.T) {
 	}
 
 	listed := commandsIn(printed)
-	want := []string{"cancel", "config", "configure", "continue", "findings", "help", "logs", "respond", "review", "skill", "status", "version", "watch"}
+	want := []string{"begin", "cancel", "config", "configure", "continue", "findings", "help", "logs", "respond", "skill", "status", "version", "watch"}
 	if !slices.Equal(listed, want) {
 		t.Errorf("socrates lists %v, want %v", listed, want)
 	}
@@ -32,6 +33,29 @@ func TestTheCommandSurfaceIsWhatItSays(t *testing.T) {
 		if slices.Contains(listed, forbidden) {
 			t.Errorf("socrates lists %q, which lands or verifies a change", forbidden)
 		}
+	}
+}
+
+func TestTheOldVerbIsRefusedAsAnUnknownCommand(t *testing.T) {
+	// scenario: review is gone entirely, and is refused as an unknown command
+	session := harness.Start(t)
+	session.Simulator.Scenario(cleanScenario)
+	session.Repository.Write("internal/added.go", "package internal\n")
+
+	printed, failures, code := session.Socrates("review")
+	if code != exit.Usage {
+		t.Fatalf("socrates-review review exited %d, want the usage code %d: %s%s", code, exit.Usage, printed, failures)
+	}
+	if strings.TrimSpace(printed) != "" {
+		t.Errorf("the refused command printed %q, so something started", printed)
+	}
+	for _, named := range []string{"review", "socrates-review"} {
+		if !strings.Contains(failures, named) {
+			t.Errorf("the refusal does not name %q: %s", named, failures)
+		}
+	}
+	if names := session.Names(); len(names) != 0 {
+		t.Errorf("the refusal created the run directories %v", names)
 	}
 }
 
@@ -62,19 +86,19 @@ func TestTheDefaultDoesNotBlock(t *testing.T) {
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	printed, failures, code := session.Socrates("review")
+	printed, failures, code := session.Socrates("begin")
 	if code != 0 {
-		t.Fatalf("socrates-review review exited %d: %s", code, failures)
+		t.Fatalf("socrates-review begin exited %d: %s", code, failures)
 	}
 
 	name := firstLine(printed)
 	if !strings.Contains(printed, "socrates-review status "+name) {
-		t.Errorf("socrates-review review does not say how to follow the run:\n%s", printed)
+		t.Errorf("socrates-review begin does not say how to follow the run:\n%s", printed)
 	}
 
 	run := session.WaitFor(name, runstate.Reviewing)
 	if run.State.Terminal() {
-		t.Fatalf("the run was already %s when socrates-review review returned", run.State)
+		t.Fatalf("the run was already %s when socrates-review begin returned", run.State)
 	}
 
 	_, _, statusCode := session.Socrates("status", name)
@@ -88,17 +112,17 @@ func TestWaitingReturnsTheVerdict(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	printed, failures, code := session.Socrates("review", "--wait")
+	printed, failures, code := session.Socrates("begin", "--wait")
 	if code != 0 {
-		t.Fatalf("socrates-review review --wait exited %d: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates-review begin --wait exited %d: %s\n%s", code, failures, printed)
 	}
 	if !strings.Contains(printed, string(runstate.Clean)) {
-		t.Errorf("socrates-review review --wait does not report the verdict:\n%s", printed)
+		t.Errorf("socrates-review begin --wait does not report the verdict:\n%s", printed)
 	}
 
 	run := session.Run(firstLine(printed))
 	if run.State != runstate.Clean {
-		t.Errorf("the run is %s after socrates-review review --wait returned zero", run.State)
+		t.Errorf("the run is %s after socrates-review begin --wait returned zero", run.State)
 	}
 }
 
@@ -107,9 +131,9 @@ func TestStartingIsNotAVerdict(t *testing.T) {
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	printed, failures, code := session.Socrates("review")
+	printed, failures, code := session.Socrates("begin")
 	if code != 0 {
-		t.Fatalf("socrates-review review exited %d for a run that later escalates: %s", code, failures)
+		t.Fatalf("socrates-review begin exited %d for a run that later escalates: %s", code, failures)
 	}
 
 	run := session.WaitForTerminal(firstLine(printed))
@@ -133,7 +157,7 @@ func TestEachVerdictHasItsOwnCodeFromTheCommand(t *testing.T) {
 			session.Simulator.Scenario(verdict.scenario)
 			session.Repository.Write("internal/added.go", "package internal\n")
 
-			name := session.Review()
+			name := session.Begin()
 			run := session.WaitForTerminal(name)
 			if run.State != verdict.state {
 				t.Fatalf("the run ended as %s, want %s: %s", run.State, verdict.state, reason(run))
@@ -171,7 +195,7 @@ func TestMachineReadableOnRequest(t *testing.T) {
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	printed, failures, code := session.Socrates("status", "--json", name)
@@ -207,7 +231,7 @@ func TestFindingsAreReadableFromTheCommand(t *testing.T) {
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	printed, failures, code := session.Socrates("findings", name)
@@ -244,8 +268,8 @@ func TestTheBareCommandFindsThisRepositorysRun(t *testing.T) {
 	elsewhere := gitrepo.New(t)
 	elsewhere.Write("internal/other.go", "package internal\n")
 
-	here := session.Review()
-	there := strings.TrimSpace(firstLine(mustReview(t, session, elsewhere.Root)))
+	here := session.Begin()
+	there := strings.TrimSpace(firstLine(mustBegin(t, session, elsewhere.Root)))
 	if here == there {
 		t.Fatalf("both repositories produced the run %s", here)
 	}
@@ -262,12 +286,12 @@ func TestTheBareCommandFindsThisRepositorysRun(t *testing.T) {
 	}
 }
 
-func mustReview(t *testing.T, session *harness.Session, directory string) string {
+func mustBegin(t *testing.T, session *harness.Session, directory string) string {
 	t.Helper()
 
-	printed, failures, code := session.SocratesIn(directory, "review")
+	printed, failures, code := session.SocratesIn(directory, "begin")
 	if code != 0 {
-		t.Fatalf("socrates-review review in %s exited %d: %s", directory, code, failures)
+		t.Fatalf("socrates-review begin in %s exited %d: %s", directory, code, failures)
 	}
 	return printed
 }
@@ -293,7 +317,7 @@ func TestAnIdentifierWinsOverTheDefault(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	elsewhere := gitrepo.New(t)
@@ -311,7 +335,7 @@ func TestCancellingStopsEverything(t *testing.T) {
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitFor(name, runstate.Reviewing)
 	started := session.Recorded(name)
 
@@ -338,7 +362,7 @@ func TestCancellingATerminalRunChangesNothing(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	before := session.WaitForTerminal(name)
 
 	printed, failures, code := session.Socrates("cancel", name)
@@ -360,7 +384,7 @@ func TestNoConfigurationFileIsCreated(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Clean {
 		t.Fatalf("the run ended as %s with no configuration file present: %s", run.State, reason(run))
@@ -383,9 +407,9 @@ func TestAnUnreadableConfigurationFileIsARefusalFromTheCommand(t *testing.T) {
 		t.Fatalf("writing %s: %v", path, err)
 	}
 
-	_, failures, code := session.Socrates("review")
+	_, failures, code := session.Socrates("begin")
 	if code != 3 {
-		t.Errorf("socrates-review review with a configuration file that does not parse exited %d, want 3", code)
+		t.Errorf("socrates-review begin with a configuration file that does not parse exited %d, want 3", code)
 	}
 	if !strings.Contains(failures, path) {
 		t.Errorf("the refusal does not name the file: %s", failures)
@@ -408,7 +432,7 @@ func TestTheReviewerModelIsWhatTheConfigurationSays(t *testing.T) {
 		t.Fatalf("writing %s: %v", path, err)
 	}
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	invocation := session.Simulator.OnlyInvocation()
@@ -428,7 +452,7 @@ func TestTheRepositoryIsNeverWrittenTo(t *testing.T) {
 	before := session.Repository.Status()
 	tracked := workingTree(t, session.Repository.Root)
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Escalated {
 		t.Fatalf("the run ended as %s: %s", run.State, reason(run))

@@ -17,7 +17,7 @@ func TestAMissingFindingsDocumentIsAFailure(t *testing.T) {
 	session.Simulator.Scenario("default:\n  behaviour: no-structured-output\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	if run.State != runstate.Failed {
@@ -36,7 +36,7 @@ func TestAnUnparseableFindingsDocumentIsAFailure(t *testing.T) {
 	session.Simulator.Scenario("default:\n  behaviour: schema-violation\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	if run.State != runstate.Failed {
@@ -64,7 +64,7 @@ default:
 `)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	if run.State != runstate.Clean {
@@ -88,7 +88,7 @@ func TestADeadReviewerIsAFailure(t *testing.T) {
 	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 5m\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitFor(name, runstate.Reviewing)
 
 	if err := process.Kill(run.Reviewer); err != nil {
@@ -112,7 +112,7 @@ func TestAKilledReviewerStopsTheRun(t *testing.T) {
 	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 5m\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitFor(name, runstate.Reviewing)
 
 	if err := process.Kill(run.Reviewer); err != nil {
@@ -133,7 +133,7 @@ func TestALiveReviewerIsStillWorking(t *testing.T) {
 	session.Simulator.Scenario("default:\n  events: 30\n  interval: 100ms\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitFor(name, runstate.Reviewing)
 
 	for range 5 {

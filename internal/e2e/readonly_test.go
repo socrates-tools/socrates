@@ -15,7 +15,7 @@ func TestAReviewerThatWroteFailsTheRound(t *testing.T) {
 	session.Simulator.Scenario("default:\n  writes:\n    - path: README.md\n      content: \"the reviewer helped itself\\n\"\n      defeats_the_seal: true\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	if run.State != runstate.Failed {
@@ -59,7 +59,7 @@ func TestAReviewerThatCreatedAFileFailsTheRound(t *testing.T) {
 	session.Simulator.Scenario("default:\n  writes:\n    - path: internal/reviewer-notes.md\n      content: \"some thoughts\\n\"\n      defeats_the_seal: true\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	if run.State != runstate.Failed {
@@ -90,7 +90,7 @@ func TestACleanReviewerPassesTheCheck(t *testing.T) {
 	session.Simulator.Scenario(sealScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	if named := eventNaming(t, session, name, "wrote to the snapshot worktree"); named != "" {
@@ -114,7 +114,7 @@ func TestAWriteTheSealRefusedIsNotAFindingAgainstTheReviewer(t *testing.T) {
 `)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 
 	if named := eventNaming(t, session, name, ".serena"); named != "" {

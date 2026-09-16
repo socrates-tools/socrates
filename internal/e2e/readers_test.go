@@ -27,7 +27,7 @@ func lineCountOfStatus(t *testing.T, scenario string) int {
 	session.Simulator.Scenario(scenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Clean {
 		t.Fatalf("the run ended as %s, and this comparison needs two runs that ended alike: %s", run.State, reason(run))
@@ -90,7 +90,7 @@ func TestAllThreeAgreeAboutTheRun(t *testing.T) {
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Escalated {
 		t.Fatalf("the run ended as %s, want escalated: %s", run.State, reason(run))

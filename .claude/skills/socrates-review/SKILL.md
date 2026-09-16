@@ -6,7 +6,7 @@ description: Have an independent reviewer read the change you just made, and dri
 # socrates-review
 
 You have implemented something nobody has read.
-`socrates-review review` freezes your working tree into a commit nothing can move and hands it to a reviewer that wrote none of it.
+`socrates-review begin` freezes your working tree into a commit nothing can move and hands it to a reviewer that wrote none of it.
 You drive that review to a verdict and make every patch yourself.
 Do not follow what the reviewer says while it works.
 If the person wants to watch, tell them to run `socrates-review watch` in another terminal.
@@ -134,7 +134,7 @@ Nothing you write reorders that.
 1. Implement what the person asked for.
 2. Start the review, passing what the person asked for in their own words:
 
-       socrates-review review --intent "count the characters of a document"
+       socrates-review begin --intent "count the characters of a document"
 
    It returns as soon as the run exists and prints the run identifier, which every later command takes as its argument.
 3. Wait for the run to end: poll `socrates-review status` every five seconds or so until it reports one of the states below.
@@ -168,7 +168,7 @@ Serve it with `agora serve`, hand the person the address it prints unless an ear
 These are theirs to decide, and socrates-review has nothing further it can do about them.
 A run escalates for one of two reasons, and `socrates-review status` prints which: a finding holds the change while its own action asks for nothing, or the last permitted round still found something blocking.
 No further round is possible. A run has two rounds at most, and no flag gives it a third.
-Looking again means a fresh `socrates-review review` of the code as it now stands.
+Looking again means a fresh run of `socrates-review begin` against the code as it now stands.
 The reviewer of a new run is told nothing about this run, nothing about what it found and nothing about the answers recorded against it. It reads the change cold.
 Offer that, and start one only where the person asks for it.
 
@@ -211,7 +211,7 @@ socrates-review patches nothing.
 Every fix is yours, made in your own working tree, and recorded afterwards.
 
 There is no way to tell the reviewer about the change.
-It gets the diff, the repository as it was frozen, and the one line of intent you passed to `socrates-review review`.
+It gets the diff, the repository as it was frozen, and the one line of intent you passed to `socrates-review begin`.
 That is the design and not a limitation to work around: an account written by the session that wrote the code is what an independent reviewer exists to do without.
 
 A rejection is a claim, and it goes to the next reviewer, which judges it.

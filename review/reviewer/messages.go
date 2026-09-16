@@ -1,12 +1,12 @@
 package reviewer
 
 const (
-	aReviewInsideAReview     = "this process is already the reviewer for run %s, and a review inside a review spawns without end: run socrates-review review from your own session instead"
+	aReviewInsideAReview     = "this process is already the reviewer for run %s, and a review inside a review spawns without end: run socrates-review begin from your own session instead"
 	noSuchReviewerCLI        = "%q is not a reviewer CLI socrates-review knows, and socrates-review drives %s: name one of those in reviewer_cli, or leave the field out to run the one socrates-review ships with"
 	anUnsupportedReviewerCLI = "socrates-review does not drive %s, because socrates-review found no %s: socrates-review drives %s, so name one of those in reviewer_cli, or leave the field out to run the one socrates-review ships with"
 	nothingHereReapsAGroup   = "socrates-review reaps everything a reviewer starts by process group, and this socrates-review on %s cannot, so a review here could leave the reviewer's workers holding the snapshot after the run ends: socrates-review supports %s, so run the review there, and on Windows run it under WSL, which is a supported Linux"
 	nothingLeftToReview      = "the working tree holds nothing the base commit does not any more, so nothing of the change is left for a reviewer to read and no reviewer read this round"
-	nothingToReview          = "the working tree holds nothing the base commit %s does not, so a review of it would read nothing and report nothing rather than find nothing: commit or write something first, or name the branch this work targets with socrates-review review --base"
+	nothingToReview          = "the working tree holds nothing the base commit %s does not, so a review of it would read nothing and report nothing rather than find nothing: commit or write something first, or name the branch this work targets with socrates-review begin --base"
 	checkingOutTheSnapshot   = "checking out the snapshot: %w"
 	clearingTheLastRound     = "clearing what the last round left where this round's worktree goes: %w"
 	storedAndUnreadable      = "the answer was appended to %s and the document could not be read back afterwards (%w), so the answer is recorded and what is still unanswered is not: read the last lines of that file and remove any partial one"
@@ -32,7 +32,7 @@ const (
 	noRoundToReview           = "the run has no round to review, so nothing was given to a reviewer"
 
 	notAwaitingResponses           = "run %s is %s rather than awaiting responses, so there is nothing to answer: read what it found with socrates-review findings"
-	noRoundToRespondTo             = "run %s has no round to answer: start a review with socrates-review review"
+	noRoundToRespondTo             = "run %s has no round to answer: start a review with socrates-review begin"
 	noFindingsToRespondTo          = "round %d of run %s reported no findings to answer: read what it concluded with socrates-review status"
 	noSuchFinding                  = "round %d of run %s reported no finding named %s: name one of the identifiers socrates-review findings prints"
 	stillUnanswered                = "%d findings of this round have no response yet, and silence is neither a fix nor a rejection: run socrates-review respond for %s first"

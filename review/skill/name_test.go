@@ -72,7 +72,7 @@ func TestTheSkillNamesTheOneNameTheToolHas(t *testing.T) {
 	if skill.Name != convention.Repository {
 		t.Errorf("the skill is named %q and the tool is named %q, so the skill teaches a command that is not the one the tool installs", skill.Name, convention.Repository)
 	}
-	if !strings.Contains(document, skill.Name+" review") {
+	if !strings.Contains(document, skill.Name+" begin") {
 		t.Errorf("the skill names no invocation of %s at all", skill.Name)
 	}
 	for _, invocation := range skill.Named() {

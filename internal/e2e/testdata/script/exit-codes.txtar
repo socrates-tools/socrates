@@ -10,7 +10,7 @@ exec git commit --quiet -m 'the first commit'
 
 # A clean review exits zero, and so do the commands that report on it.
 cp $WORK/added.go added.go
-exec sh -c 'socrates-review review --wait; echo exit=$?'
+exec sh -c 'socrates-review begin --wait; echo exit=$?'
 stdout 'exit=0'
 stdout 'state: clean'
 exec sh -c 'socrates-review status; echo exit=$?'
@@ -22,7 +22,7 @@ stdout 'exit=0'
 env SOCRATES_SIM_SCENARIO=$WORK/escalating.yaml
 exec sleep 1
 cp $WORK/other.go other.go
-exec sh -c 'socrates-review review --wait; echo exit=$?'
+exec sh -c 'socrates-review begin --wait; echo exit=$?'
 stdout 'exit=1'
 exec sh -c 'socrates-review status; echo exit=$?'
 stdout 'exit=1'
@@ -35,7 +35,7 @@ stdout 'other.go:1'
 env SOCRATES_SIM_SCENARIO=$WORK/broken.yaml
 exec sleep 1
 cp $WORK/third.go third.go
-exec sh -c 'socrates-review review --wait; echo exit=$?'
+exec sh -c 'socrates-review begin --wait; echo exit=$?'
 stdout 'exit=2'
 exec sh -c 'socrates-review findings; echo exit=$?'
 stdout 'exit=2'

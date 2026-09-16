@@ -13,7 +13,7 @@ func TestTheReviewersEnvironmentIsMarked(t *testing.T) {
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	marker := session.Simulator.OnlyInvocation().Environment[reviewer.RunMarker]
@@ -58,11 +58,11 @@ func TestAReviewInsideAReviewIsRefused(t *testing.T) {
 	out, failures, code := session.SocratesWith(
 		session.Repository.Root,
 		[]string{reviewer.RunMarker + "=" + outer},
-		"review",
+		"begin",
 	)
 
 	if code != 3 {
-		t.Fatalf("socrates-review review exited %d, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates-review begin exited %d, want the usage code: %s%s", code, out, failures)
 	}
 	if !strings.Contains(failures, outer) {
 		t.Errorf("the refusal reads %q, without naming the outer run", failures)

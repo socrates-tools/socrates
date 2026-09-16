@@ -18,19 +18,19 @@ import (
 
 const verdictPoll = 50 * time.Millisecond
 
-func newReviewCommand(code *int) *cobra.Command {
+func newBeginCommand(code *int) *cobra.Command {
 	var intent string
 	var base string
 	var notMyChange bool
 	var wait bool
 
 	command := &cobra.Command{
-		Use:   "review",
-		Short: reviewShort,
+		Use:   "begin",
+		Short: beginShort,
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(command *cobra.Command, arguments []string) error {
 			if len(arguments) > 0 {
-				return refusal.New(reviewTakesNoArguments, arguments[0])
+				return refusal.New(beginTakesNoArguments, arguments[0])
 			}
 
 			settings, err := config.Load()

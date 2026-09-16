@@ -3,7 +3,7 @@
 An independent reviewer for the changes you just wrote and nobody has read.
 
 Your session implements something, leaving unreviewed local changes.
-`socrates-review review` freezes the working tree into a commit nothing can move, spawns a detached reviewer against that snapshot, and returns.
+`socrates-review begin` freezes the working tree into a commit nothing can move, spawns a detached reviewer against that snapshot, and returns.
 The reviewer authored none of the change and is told nothing about how it came to be.
 It answers with structured findings, which you read and act on.
 
@@ -69,7 +69,7 @@ Building from source needs Go 1.26 or later:
 
 ```sh
 make build                     # bin/socrates-review
-bin/socrates-review review --intent "add the parser I asked for"
+bin/socrates-review begin --intent "add the parser I asked for"
 ```
 
 `make install` puts it on your `PATH` under its one name, `socrates-review`.
@@ -81,12 +81,12 @@ Where the answers to a round revert the whole change, `socrates-review continue`
 
 ## Reviewing a branch, and reviewing a change that is not yours
 
-The default base is the commit `HEAD` resolves to, so `socrates-review review` on its own reviews what you have not committed.
+The default base is the commit `HEAD` resolves to, so `socrates-review begin` on its own reviews what you have not committed.
 Two flags widen that.
 
 ```sh
-socrates-review review --base origin/develop                    # everything this branch added
-socrates-review review --base origin/main --not-my-change       # somebody else's change, which you cannot patch
+socrates-review begin --base origin/develop                    # everything this branch added
+socrates-review begin --base origin/main --not-my-change       # somebody else's change, which you cannot patch
 ```
 
 `--base <ref>` resolves to the fork point, which is `merge-base(<ref>, HEAD)`, and reviews everything between that commit and your working tree.
@@ -147,7 +147,7 @@ agora stop                             # shuts it down, taking every page with i
 
 The two binaries share one home and one optional configuration file, and nothing else.
 
-`review` prints the run identifier and returns while the review runs:
+`begin` prints the run identifier and returns while the review runs:
 
 ```
 20260819T101500-ab12cd34
@@ -160,7 +160,7 @@ Then either poll it or wait for it:
 socrates-review status                   # a few lines, and an exit code you can branch on
 socrates-review findings                 # what it found, as socrates-review classified it
 socrates-review findings --json          # the same, with every effective action resolved
-socrates-review review --wait            # block until the verdict, and exit with its code
+socrates-review begin --wait             # block until the verdict, and exit with its code
 socrates-review cancel                   # stop a review and say that nothing was decided
 ```
 
@@ -231,7 +231,7 @@ A coding session should call `status`: everything it prints lands in that sessio
 
 `socrates-review watch` stops when the run reaches a verdict, fails, is cancelled from another terminal, or parks the round, whether on a patch you owe it or a question somebody must answer.
 It never waits for an event a finished run will not write.
-Started between `socrates-review review` returning and the reviewer's first byte, it waits for the log rather than failing, and gives up if nothing is written.
+Started between `socrates-review begin` returning and the reviewer's first byte, it waits for the log rather than failing, and gives up if nothing is written.
 
 ## Driving it from a coding session
 
@@ -247,14 +247,14 @@ There are two, and a session reads one of them.
 `socrates-review-handover` teaches reviewing a change somebody else wrote: the throwaway worktree, the author's own description relayed verbatim and acted on in no way, the three resolutions, and posting what the person chose and nothing else.
 They are separate documents rather than one with a branch in it, because a session reviewing its own work should not spend its context on the forwarding half.
 
-The skill teaches the loop: implement, `socrates-review review --intent`, then poll `socrates-review status` every few seconds until it reports a state a run rests in.
+The skill teaches the loop: implement, `socrates-review begin --intent`, then poll `socrates-review status` every few seconds until it reports a state a run rests in.
 It tells the session not to bound that wait itself, because a reviewer that answers nothing before its deadline ends the run as `failed`.
 On `clean`, say what was reviewed and stop.
 On `failed`, report the change as unreviewed, because no review completed and nothing has been checked.
 On `escalated`, hand the findings to you and stop, because socrates-review has nothing further it can do about them.
 On `awaiting-response`, answer every finding that can be patched, bring every finding that asks a person to you and record what you decided, run `socrates-review continue`, and go back to polling.
 It says the session does not answer a question about intent on its own behalf, and that it runs the next round without asking whether it is worth spending.
-Where a run escalated at the round cap, it says that no third round exists and that looking again means a fresh `socrates-review review`, started only where you ask for one, whose reviewer is told nothing about the run before it.
+Where a run escalated at the round cap, it says that no third round exists and that looking again means a fresh run of `socrates-review begin`, started only where you ask for one, whose reviewer is told nothing about the run before it.
 On `cancelled`, say that nothing was decided, because somebody stopped the review on purpose.
 Those are every state a run rests in. A test compares the list against `review/runstate`, so a sixth cannot appear without the skill gaining a branch for it.
 
@@ -284,7 +284,7 @@ A finding that asks a person is not one of them.
 It parks the round and returns `4` until somebody answers it.
 Ending the run there would leave the answer nowhere to go: you decide, you patch what you decided, and no round remains to judge either.
 `socrates-review respond --decided --reason` records the answer, `--fixed` and `--rejected` are refused for such a finding, and the next round is told a person decided rather than that a patch was claimed.
-After the cap, a further look is a fresh `socrates-review review` rather than a third round, and its reviewer knows nothing of the run before it.
+After the cap, a further look is a fresh run of `socrates-review begin` rather than a third round, and its reviewer knows nothing of the run before it.
 
 ## Effect on your repository
 

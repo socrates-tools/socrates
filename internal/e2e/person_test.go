@@ -28,7 +28,7 @@ func TestSocratesSaysWhichRoundsWaitOnAPersonAndOnlyThose(t *testing.T) {
 	} {
 		t.Run(driven.named, func(t *testing.T) {
 			journey := driving(t, driven.scenario, answeredWrongly)
-			name := journey.review("count the characters of a document")
+			name := journey.begin("count the characters of a document")
 
 			state, _ := journey.waitedFor(name)
 			if state != driven.state {
@@ -67,7 +67,7 @@ func TestTheSurfaceDoesNotGrow(t *testing.T) {
 
 	session.Simulator.Scenario(dialogueScenario(unanswerableFinding, nothingFoundAgain))
 	session.Repository.Write("internal/added.go", answeredWrongly)
-	name := session.Review("--intent", "count the characters of a document")
+	name := session.Begin("--intent", "count the characters of a document")
 	session.WaitForTerminal(name)
 
 	recorded, err := os.ReadFile(filepath.Join(session.Store.Path(name), "run.json"))
@@ -91,7 +91,7 @@ func TestNoRoleSocratesSpawnsWritesForAReader(t *testing.T) {
 	session.Simulator.Scenario(dialogueScenario(questionOfIntent, nothingFoundAgain))
 	session.Repository.Write("internal/added.go", answeredWrongly)
 
-	name := session.Review("--intent", "count the characters of a document")
+	name := session.Begin("--intent", "count the characters of a document")
 	session.WaitFor(name, runstate.AwaitingResponse)
 
 	invocations := session.Simulator.Invocations()

@@ -118,12 +118,12 @@ func TestAReviewerCLISocratesReviewWillNotDriveStillReports(t *testing.T) {
 		t.Errorf("reviewer_cli reports %q as %s, and the file states %s", reported.Value, reported.Source, unsupported)
 	}
 
-	_, refused, reviewCode := session.Socrates("review")
-	if reviewCode != exit.Usage {
-		t.Fatalf("socrates-review review with %s configured exited %d, want %d", unsupported, reviewCode, exit.Usage)
+	_, refused, beginCode := session.Socrates("begin")
+	if beginCode != exit.Usage {
+		t.Fatalf("socrates-review begin with %s configured exited %d, want %d", unsupported, beginCode, exit.Usage)
 	}
 	if !strings.Contains(refused, unsupported) {
-		t.Errorf("socrates-review review does not refuse %s by name: %s", unsupported, refused)
+		t.Errorf("socrates-review begin does not refuse %s by name: %s", unsupported, refused)
 	}
 }
 

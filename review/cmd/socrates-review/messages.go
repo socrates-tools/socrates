@@ -6,7 +6,7 @@ const (
 	failurePrefix = "socrates-review: "
 
 	rootShort      = "An independent reviewer for unreviewed local changes"
-	reviewShort    = "Freeze this working tree and have somebody who did not write it review it"
+	beginShort     = "Freeze this working tree and have somebody who did not write it review it"
 	statusShort    = "Say what a review is doing, in as few lines as possible"
 	findingsShort  = "Print what a review found, as socrates-review classified it"
 	respondShort   = "Record what was decided about one finding: a fix, a rejection, a decision, a forward or a drop"
@@ -18,7 +18,7 @@ const (
 	configShort    = "Print every setting, the value in force and where that value came from"
 	configureShort = "Change a setting from a menu, one at a time, without opening the file"
 	versionShort   = "Say which release this is, and which commit it was built from"
-	superviseShort = "Conduct a review that socrates-review review started"
+	superviseShort = "Conduct a review that socrates-review begin started"
 
 	intentUsage      = "what the person asked for, in their words, or what the author of the change says they were doing"
 	baseUsage        = "the branch or commit this work targets, whose fork point with HEAD the change is reviewed against"
@@ -37,7 +37,7 @@ const (
 
 	notACommand               = "%q is not a socrates-review command: run socrates-review --help to see what socrates-review does"
 	unusableFlag              = "%s: run socrates-review --help to see what socrates-review accepts"
-	reviewTakesNoArguments    = "socrates-review review takes no arguments, and %q is one: pass what the person asked for with --intent"
+	beginTakesNoArguments     = "socrates-review begin takes no arguments, and %q is one: pass what the person asked for with --intent"
 	versionTakesNoArguments   = "socrates-review version takes no arguments, and %q is one: run socrates-review version on its own to see which build this is"
 	configTakesNoArguments    = "socrates-review config takes no arguments, and %q is one: run socrates-review config on its own to read every setting"
 	configureTakesNoArguments = "socrates-review configure takes no arguments, and %q is one: run socrates-review configure on its own to change a setting"

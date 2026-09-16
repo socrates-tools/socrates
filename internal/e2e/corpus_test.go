@@ -17,7 +17,7 @@ func TestAnAnswerIsRecordedFromTheRunThatProducedIt(t *testing.T) {
 	session.Repository.Write("go.mod", "module "+corpus.ModulePath+"\n\ngo 1.24\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Escalated {
 		t.Fatalf("the review ended as %s: %s", run.State, reason(run))

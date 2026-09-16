@@ -42,7 +42,7 @@ func TestTheWholeRoundIsHandedOverAsCardsInSeverityOrder(t *testing.T) {
 	const inTheirOwnWords = "the deletion was the bug I was chasing all morning"
 
 	driven := driving(t, dialogueScenario(fourFindings, nothingFoundAgain), answeredWrongly)
-	name := driven.review("count the characters of a document")
+	name := driven.begin("count the characters of a document")
 
 	state, _ := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse {

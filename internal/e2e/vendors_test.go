@@ -25,10 +25,10 @@ func TestAnUnsupportedCLIIsRefusedBeforeAnythingHappens(t *testing.T) {
 	status := session.Repository.Status()
 	objects := session.Repository.Git("count-objects", "-v")
 
-	out, failures, code := session.Socrates("review")
+	out, failures, code := session.Socrates("begin")
 
 	if code != 3 {
-		t.Fatalf("socrates-review review exited %d under an unsupported reviewer CLI, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates-review begin exited %d under an unsupported reviewer CLI, want the usage code: %s%s", code, out, failures)
 	}
 	if !strings.Contains(failures, turnedAway.Name) {
 		t.Errorf("the refusal reads %q, without naming the CLI that was configured", failures)
@@ -59,10 +59,10 @@ func TestAReviewerCLISocratesDoesNotKnowIsRefusedByName(t *testing.T) {
 	nameTheReviewerCLI(t, session, "a-cli-nobody-wrote")
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	_, failures, code := session.Socrates("review")
+	_, failures, code := session.Socrates("begin")
 
 	if code != 3 {
-		t.Fatalf("socrates-review review exited %d under a reviewer CLI socrates does not know, want the usage code: %s", code, failures)
+		t.Fatalf("socrates-review begin exited %d under a reviewer CLI socrates does not know, want the usage code: %s", code, failures)
 	}
 	if !strings.Contains(failures, "a-cli-nobody-wrote") {
 		t.Errorf("the refusal reads %q, without naming what was configured", failures)
@@ -87,7 +87,7 @@ func TestAFinishedRunStaysReadableUnderAnyConfiguration(t *testing.T) {
 	session.Simulator.Scenario(sealScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	nameTheReviewerCLI(t, session, unsupported[0].Name)

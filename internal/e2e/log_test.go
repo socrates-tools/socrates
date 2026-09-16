@@ -20,7 +20,7 @@ func TestAStartedRunIsOnDiskImmediately(t *testing.T) {
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	directory := session.Store.Path(name)
 
 	run := session.Recorded(name)
@@ -36,7 +36,7 @@ func TestAStartedRunIsOnDiskImmediately(t *testing.T) {
 
 	for _, expected := range []string{"run.json", runlog.FileName, "r1"} {
 		if _, err := os.Stat(filepath.Join(directory, expected)); err != nil {
-			t.Errorf("%s is not in the run directory when socrates-review review returned: %v", expected, err)
+			t.Errorf("%s is not in the run directory when socrates-review begin returned: %v", expected, err)
 		}
 	}
 }
@@ -46,7 +46,7 @@ func TestRoundOutputIsUnderTheRound(t *testing.T) {
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review("--intent", "add a thing")
+	name := session.Begin("--intent", "add a thing")
 	session.WaitForTerminal(name)
 
 	round := session.Round(name, 1)
@@ -70,7 +70,7 @@ func TestEventsAreOneJSONObjectPerLineThroughARun(t *testing.T) {
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	run := session.WaitForTerminal(name)
 	if run.State != runstate.Escalated {
 		t.Fatalf("the run ended as %s: %s", run.State, reason(run))
@@ -105,7 +105,7 @@ func TestWhatTheAgentCostIsRecordedInTheLog(t *testing.T) {
 	session.Simulator.Scenario("default:\n  input_tokens: 1234\n  output_tokens: 567\n" + strings.TrimPrefix(cleanScenario, "\ndefault:\n"))
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	name := session.Review()
+	name := session.Begin()
 	session.WaitForTerminal(name)
 
 	for _, event := range session.Events(name) {
