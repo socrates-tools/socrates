@@ -115,10 +115,20 @@ func TestAnOpenStreamReportsEachChangeOnceAndThenTheClose(t *testing.T) {
 	if event := next(t, arriving, 5*time.Second); event.name != "revision" || event.data != "1" {
 		t.Fatalf("a stream onto an open exchange stated %+v on connection, want revision 1", event)
 	}
+	if event := next(t, arriving, 5*time.Second); event.name != "uncollected" || event.data != "no" {
+		t.Fatalf("a stream onto an open exchange stated %+v on connection, want no answer uncollected", event)
+	}
 
 	held.send(t, surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}})
+	if event := next(t, arriving, 5*time.Second); event.name != "uncollected" || event.data != "yes" {
+		t.Errorf("a stream onto an open exchange stated %+v when an answer arrived, want an answer uncollected", event)
+	}
+
 	if _, arrived := held.await(t, 5*time.Second); !arrived {
 		t.Fatal("an answer that leaves the exchange open was sent and nothing was delivered")
+	}
+	if event := next(t, arriving, 5*time.Second); event.name != "uncollected" || event.data != "no" {
+		t.Errorf("a stream onto an open exchange stated %+v once the answer was collected, want no answer uncollected", event)
 	}
 
 	revision := held.exchange(t).Revise(twoDecisions())
@@ -129,5 +139,19 @@ func TestAnOpenStreamReportsEachChangeOnceAndThenTheClose(t *testing.T) {
 	held.exchange(t).End()
 	if event := next(t, arriving, 5*time.Second); event.name != "closed" {
 		t.Errorf("a stream onto an open exchange stated %+v when the exchange ended, want closed", event)
+	}
+}
+
+func TestAStreamConnectingWhileAnAnswerIsUncollectedIsToldAtOnce(t *testing.T) {
+	held := serving(t, twoDecisions(), 0)
+
+	held.send(t, surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}})
+
+	arriving := events(t, held, 5*time.Second)
+	if event := next(t, arriving, 2*time.Second); event.name != "revision" || event.data != "1" {
+		t.Fatalf("a stream opened while an answer is uncollected stated %+v first, want revision 1", event)
+	}
+	if event := next(t, arriving, 2*time.Second); event.name != "uncollected" || event.data != "yes" {
+		t.Errorf("a stream opened while an answer is uncollected stated %+v, want it told at once that an answer is uncollected", event)
 	}
 }

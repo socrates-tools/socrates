@@ -320,12 +320,19 @@ func (s *Server) live(writer http.ResponseWriter, request *http.Request) {
 	waiting := one.exchange.Changed()
 	flusher.Flush()
 
-	said := ""
+	saidChange := ""
+	saidUncollected := ""
 	for {
-		if standing := whereItStands(one.exchange.Standing()); standing != said {
-			_, _ = io.WriteString(writer, standing)
+		revision, over, uncollected := one.exchange.Standing()
+		if change := whereItStands(revision, over); change != saidChange {
+			_, _ = io.WriteString(writer, change)
 			flusher.Flush()
-			said = standing
+			saidChange = change
+		}
+		if collection := whatIsUncollected(uncollected); collection != saidUncollected {
+			_, _ = io.WriteString(writer, collection)
+			flusher.Flush()
+			saidUncollected = collection
 		}
 
 		select {
@@ -344,6 +351,13 @@ func whereItStands(revision int, over bool) string {
 		return "event: closed\ndata: yes\n\n"
 	}
 	return "event: revision\ndata: " + strconv.Itoa(revision) + "\n\n"
+}
+
+func whatIsUncollected(uncollected bool) string {
+	if uncollected {
+		return "event: uncollected\ndata: yes\n\n"
+	}
+	return "event: uncollected\ndata: no\n\n"
 }
 
 func (s *Server) answer(writer http.ResponseWriter, request *http.Request, one *held) {

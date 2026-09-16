@@ -37,14 +37,15 @@ type Decided struct {
 }
 
 type Exchange struct {
-	mu       sync.Mutex
-	read     document.Document
-	revision int
-	pending  []Answered
-	over     bool
-	changed  chan struct{}
-	readers  int
-	seen     time.Time
+	mu          sync.Mutex
+	read        document.Document
+	revision    int
+	uncollected *Answered
+	answeredAt  int
+	over        bool
+	changed     chan struct{}
+	readers     int
+	seen        time.Time
 }
 
 func NewExchange(read document.Document, at time.Time) *Exchange {
@@ -78,10 +79,14 @@ func (e *Exchange) Revise(read document.Document) int {
 	return e.revision
 }
 
-func (e *Exchange) Standing() (int, bool) {
+func (e *Exchange) Standing() (int, bool, bool) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	return e.revision, e.over
+	return e.revision, e.over, e.uncollectedLocked()
+}
+
+func (e *Exchange) uncollectedLocked() bool {
+	return e.uncollected != nil && e.answeredAt == e.revision
 }
 
 func (e *Exchange) Over() bool {
@@ -114,7 +119,8 @@ func (e *Exchange) Receive(sent Sent) (Answered, error) {
 		return Answered{}, err
 	}
 
-	e.pending = append(e.pending, answered)
+	e.uncollected = &answered
+	e.answeredAt = e.revision
 	if sent.Ends {
 		e.over = true
 	}
@@ -127,9 +133,10 @@ func (e *Exchange) Await(ctx context.Context, within time.Duration) (Answered, b
 
 	for {
 		e.mu.Lock()
-		if len(e.pending) > 0 {
-			taken := e.pending[0]
-			e.pending = e.pending[1:]
+		if e.uncollectedLocked() {
+			taken := *e.uncollected
+			e.uncollected = nil
+			e.notify()
 			e.mu.Unlock()
 			return taken, true
 		}

@@ -389,6 +389,67 @@ func TestDeliveryHappensOnce(t *testing.T) {
 	}
 }
 
+func TestASecondAnswerBeforeCollectionReplacesTheFirst(t *testing.T) {
+	held := serving(t, twoDecisions(), 0)
+
+	held.send(t, surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}, Message: "first"})
+	held.send(t, surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{1}}}, Message: "second"})
+
+	read, arrived := held.await(t, 5*time.Second)
+	if !arrived {
+		t.Fatal("two answers were sent before either was collected and nothing was delivered")
+	}
+	if read.Message != "second" {
+		t.Errorf("collecting after a second answer replaced a first yielded %q, want the second", read.Message)
+	}
+}
+
+func TestCollectingOnceAfterTwoSendsYieldsNothingFurther(t *testing.T) {
+	held := serving(t, twoDecisions(), 0)
+
+	held.send(t, surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}, Message: "first"})
+	held.send(t, surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{1}}}, Message: "second"})
+
+	if _, arrived := held.await(t, 5*time.Second); !arrived {
+		t.Fatal("two answers were sent before either was collected and nothing was delivered")
+	}
+	if again, arrived := held.await(t, 200*time.Millisecond); arrived {
+		t.Errorf("a further collection after the one held answer was taken delivered %+v", again)
+	}
+}
+
+func TestAnAnswerLeftUncollectedAcrossANewDocumentIsNotHandedToItsCaller(t *testing.T) {
+	held := serving(t, twoDecisions(), 0)
+
+	held.send(t, surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}, Message: "stale"})
+	held.exchange(t).Revise(oneOtherDecision())
+
+	if delivered, arrived := held.await(t, 200*time.Millisecond); arrived {
+		t.Errorf("an answer left uncollected when a new document was served was handed to the caller waiting on it: %+v", delivered)
+	}
+}
+
+func TestStandingSaysAnAnswerIsUncollectedUntilItIsCollected(t *testing.T) {
+	held := serving(t, twoDecisions(), 0)
+	exchange := held.exchange(t)
+
+	if _, _, uncollected := exchange.Standing(); uncollected {
+		t.Fatalf("an exchange nothing has been sent to reports an answer uncollected")
+	}
+
+	held.send(t, surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}})
+	if _, _, uncollected := exchange.Standing(); !uncollected {
+		t.Errorf("an exchange holding an answer nobody has collected does not say so")
+	}
+
+	if _, arrived := held.await(t, 5*time.Second); !arrived {
+		t.Fatal("an answer was sent and nothing was delivered")
+	}
+	if _, _, uncollected := exchange.Standing(); uncollected {
+		t.Errorf("an exchange whose one answer was collected still says it holds one uncollected")
+	}
+}
+
 func TestAPollThatStartedBeforeThePageWasOpenStillWaits(t *testing.T) {
 	held := serving(t, twoDecisions(), 0)
 
