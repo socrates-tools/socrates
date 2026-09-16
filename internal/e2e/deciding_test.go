@@ -257,7 +257,6 @@ func TestADecisionMadeOnThePageIsRecordedInTheTerminal(t *testing.T) {
 	page := opening(t, address)
 	page.evaluate(chose(asked.ID, 0), nil)
 	page.write(within(asked.ID, ".words-field"), inTheirOwnWords)
-	page.click(within(asked.ID, ".commit"))
 	page.click(".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 

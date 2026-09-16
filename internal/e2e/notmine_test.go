@@ -329,9 +329,8 @@ func TestTheHandoverLoopIsDrivenThroughThePage(t *testing.T) {
 			option = 1
 		}
 		page.evaluate(chose(finding, option), nil)
-		page.click(within(finding, ".commit"))
 	}
-	page.click(".finish")
+	pressPastTheNotice(page, ".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
 	answered := driven.polled()

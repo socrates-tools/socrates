@@ -50,7 +50,7 @@ Such a page states what was found and what was done about it, which is the whole
 One option of a decision may carry `"recommended": true`, and at most one.
 A document marking two is refused before anything is served.
 The page reads that option first and says on it, in words, that it is the one you would take.
-It selects nothing, so a decision nobody touched comes back with nothing chosen, and what to do about the finding is still theirs.
+The marked option arrives selected, so agreeing costs one press, and a decision offering options also offers taking none of them.
 
 The person answers on the page.
 Every control carries the command it becomes, `agora poll` hands that command back to you, and nothing is recorded until you run it here.

@@ -118,7 +118,7 @@ func (r *recorded) all() []string {
 
 func opening(t *testing.T, address string, options ...chromedp.ExecAllocatorOption) *reader {
 	t.Helper()
-	return openingFor(t, address, ".send", ".commit", options...)
+	return openingFor(t, address, ".send", ".decision", options...)
 }
 
 func openingNothingToAnswer(t *testing.T, address string, options ...chromedp.ExecAllocatorOption) *reader {
@@ -259,8 +259,8 @@ func chose(decision string, option int) string {
 	return fmt.Sprintf(`document.querySelector('.decision[data-decision="%s"] .choice[value="%d"]').click()`, decision, option)
 }
 
-func stateOf(decision string) string {
-	return fmt.Sprintf(`document.querySelector('.decision[data-decision="%s"]').dataset.state`, decision)
+func declined(decision string) string {
+	return fmt.Sprintf(`document.querySelector('.decision[data-decision="%s"] .decline').click()`, decision)
 }
 
 func within(decision, selector string) string {

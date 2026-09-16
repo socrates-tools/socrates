@@ -26,8 +26,6 @@
   --added-rule: #9ab98c;
   --removed: #f4e2de;
   --removed-rule: #d7a99e;
-  --settled: #e8eee0;
-  --settled-rule: #9aad7e;
   --shadow: 0 1px 2px rgba(27, 37, 41, 0.07), 0 6px 18px rgba(27, 37, 41, 0.06);
 
   --token-keyword: #0f5a75;
@@ -56,8 +54,6 @@
     --added-rule: #3d6042;
     --removed: #2b1c19;
     --removed-rule: #6d3a2f;
-    --settled: #1e2a1d;
-    --settled-rule: #4a6338;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 6px 18px rgba(0, 0, 0, 0.35);
 
     --token-keyword: #9ed0e8;
@@ -192,11 +188,6 @@ a.entry-name {
   border-radius: 10px;
   padding: 1.5rem;
   box-shadow: var(--shadow);
-}
-
-.decision[data-state='committed'] {
-  border-color: var(--settled-rule);
-  background: var(--settled);
 }
 
 .decision[data-state='closed'] {
@@ -356,7 +347,8 @@ a.entry-name {
   letter-spacing: 0.07em;
 }
 
-.option {
+.option,
+.none {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.15rem 0.6rem;
@@ -368,7 +360,8 @@ a.entry-name {
   cursor: pointer;
 }
 
-.option:focus-within {
+.option:focus-within,
+.none:focus-within {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -378,7 +371,8 @@ a.entry-name {
   background: var(--accent-quiet);
 }
 
-.choice {
+.choice,
+.decline {
   grid-row: 1 / span 2;
   margin: 0;
   width: 1.05rem;
@@ -446,13 +440,6 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-.commitment {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-}
-
 button {
   font: inherit;
   font-size: var(--text-floor);
@@ -474,20 +461,10 @@ button:disabled {
   opacity: 0.5;
 }
 
-.commit,
-.finish,
-.keep {
+.send {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
-}
-
-.committed {
-  margin: 0;
-  display: grid;
-  gap: 0.2rem;
-  color: var(--ink-soft);
-  font-size: var(--text-floor);
 }
 
 .composer {
@@ -505,11 +482,20 @@ button:disabled {
   gap: 0.35rem;
 }
 
+.bar {
+  min-width: 0;
+  margin-top: 1.75rem;
+  padding: 1.5rem;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
 .sends {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-top: 1rem;
 }
 
 .sends-meaning {
@@ -518,31 +504,79 @@ button:disabled {
   font-size: var(--text-floor);
 }
 
-.discarding {
-  margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--removed-rule);
-  border-radius: 8px;
-  background: var(--removed);
-}
-
-.discarding-said {
-  margin: 0 0 0.75rem;
-  color: var(--ink);
-  font-size: var(--text-body);
-}
-
-.discarding-choices {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
 .state {
   margin: 0.75rem 0 0;
   font-size: var(--text-floor);
   color: var(--accent);
   min-height: 1.4em;
+}
+
+.notice {
+  margin: 1rem 0 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent-quiet);
+}
+
+.notice[hidden] * {
+  display: none;
+}
+
+.notice-message {
+  margin: 0 0 0.5rem;
+  color: var(--ink);
+}
+
+.notice-decisions {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.notice-decisions a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.notice-hint {
+  margin: 0 0 0.75rem;
+  color: var(--ink);
+}
+
+.receipt {
+  display: block;
+  margin: 1rem 0 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--card-quiet);
+}
+
+.receipt-heading {
+  margin: 0 0 0.5rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.receipt-decisions {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+  color: var(--ink-soft);
+}
+
+.receipt-message {
+  margin: 0 0 0.75rem;
+  color: var(--ink-soft);
+}
+
+.receipt-message:empty {
+  display: none;
 }
 
 .hljs-keyword,
@@ -579,7 +613,8 @@ button:disabled {
   }
 
   .decision,
-  .composer {
+  .composer,
+  .bar {
     padding: 1.1rem;
   }
 

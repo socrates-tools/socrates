@@ -212,10 +212,20 @@ tbody td:first-child code { white-space: nowrap; overflow-wrap: normal; }
   <p class="standfirst">A person answering a round should choose, type, and press one button. Today they press <em>Commit this answer</em> once per finding before the send button will carry anything, and an answer they forgot to commit is thrown away. This proposal removes committing entirely.</p>
   <ul class="facts">
     <li class="fact"><b>Changes</b> the page and the client</li>
-    <li class="fact"><b>Does not change</b> the wire, the CLI, the skill</li>
+    <li class="fact"><b>Does not change</b> the wire or the CLI</li>
     <li class="fact"><b>Files</b> 3 sources, 9 test files</li>
     <li class="fact"><b>Settled</b> 3 decisions, at the end</li>
   </ul>
+  <div class="panel" style="margin-top:1.5rem">
+    <h3>Amended after it was built</h3>
+    <p>Three claims below were wrong by the time this was implemented, and are corrected in place.</p>
+    <ul class="keeps">
+      <li><span class="mark">&times;</span><span>The socrates-review skill does need an edit. One sentence of the page section both skills share said that marking selects nothing, and that sentence is now false.</span></li>
+      <li><span class="mark">&times;</span><span>The server does change. An exchange holds at most one uncollected answer rather than a queue, and collecting one is visible to the page, which is what lets the way back be withdrawn exactly when it stops working.</span></li>
+      <li><span class="mark">&times;</span><span>There is no counter and no meter. Every recommendation arrives chosen, so a counter would read full before the person touched anything.</span></li>
+    </ul>
+    <p class="sends-meaning">Marking-is-not-choosing was also reversed, which this proposal did not contemplate. <code>docs/adr/0029</code>, <code>0030</code> and <code>0031</code> hold what was decided.</p>
+  </div>
 </header>
 
 <section id="problem">
@@ -331,7 +341,7 @@ tbody td:first-child code { white-space: nowrap; overflow-wrap: normal; }
 
 <section id="prototype">
   <h2>The bottom of the page, live</h2>
-  <p class="lede">The summary bar replaces the composer's pair of send buttons. It is sticky, it says how much of the round is still unanswered, and it holds the one press that ends the person's work. Try it: choose, leave one finding blank, and submit.</p>
+  <p class="lede">The summary bar replaces the composer's pair of send buttons. It sits at the end of the page rather than fixed to the viewport, it carries no counter, and it holds the one press that ends the person's work. Try it: choose, leave one finding blank, and submit.</p>
 
   <div class="mock">
     <div class="mock-bar"><span class="dot"></span><span class="addr">127.0.0.1:8317/s/a1b2c3</span><span class="tag tag-next">Proposed &middot; interactive</span></div>
@@ -473,11 +483,11 @@ tbody td:first-child code { white-space: nowrap; overflow-wrap: normal; }
       <h3>Holds as it is</h3>
       <ul class="keeps">
         <li><span class="mark">&#10003;</span><span><code>surface.Sent</code>, <code>surface.Choice</code> and <code>surface.Answered</code> keep every field. The browser posts the same JSON to the same route.</span></li>
-        <li><span class="mark">&#10003;</span><span><code>agora poll</code> prints the same thing, so the socrates-review skill needs no edit. It never mentions committing.</span></li>
+        <li><span class="mark">&times;</span><span><strong>Wrong.</strong> <code>agora poll</code> does print the same thing, but the skill still needed an edit: its shared page section stated that a marked option selects nothing.</span></li>
         <li><span class="mark">&#10003;</span><span>No command is rendered on the page, and the surface still composes rather than runs.</span></li>
         <li><span class="mark">&#10003;</span><span>Delivery once, bounded waiting, collection per session, idle shutdown.</span></li>
-        <li><span class="mark">&#10003;</span><span>A decision the new document drops loses its answer, exactly as the current re-render rule does.</span></li>
-        <li><span class="mark">&#10003;</span><span><code>CONTEXT.md</code> gains no word. "Commit" was never one of its terms.</span></li>
+        <li><span class="mark">&times;</span><span><strong>Wrong.</strong> Nothing carries across a revision at all, not just a decision the new document drops: an identifier is unique only inside one document.</span></li>
+        <li><span class="mark">&times;</span><span><strong>Wrong.</strong> <code>CONTEXT.md</code> gained <b>answer</b>, and sharpened <b>exchange</b> and <b>option</b>.</span></li>
       </ul>
     </div>
     <div class="panel quiet">
@@ -502,8 +512,8 @@ tbody td:first-child code { white-space: nowrap; overflow-wrap: normal; }
       <thead><tr><th>File</th><th>Change</th><th>Notes</th></tr></thead>
       <tbody>
         <tr><td><code>agora/render/page.gohtml</code></td><td>Drop the <code>.commitment</code> block. Add the sticky <code>.summary</code> bar, the <code>.unanswered</code> notice and the <code>.receipt</code>.</td><td>The composer keeps the message field.</td></tr>
-        <tr><td><code>agora/web/src/surface.js</code></td><td>Read the payload from the controls at submit. Keep a draft per decision across a revision. Count what is still unanswered.</td><td>Loses roughly 60 lines, gains the counter.</td></tr>
-        <tr><td><code>agora/web/src/surface.css</code></td><td>Drop <code>.commit</code>, <code>.reopen</code>, <code>.committed</code>, <code>.commitment</code>, <code>[data-state='committed']</code>. Add the bar, the meter, the notice, the receipt.</td><td>Contrast floor and the hidden-paints-nothing rule apply to the new elements.</td></tr>
+        <tr><td><code>agora/web/src/surface.js</code></td><td>Read the payload from the controls at submit. Carry nothing across a revision. Name what was left blank before either press sends.</td><td>Loses roughly 60 lines. No counter was built.</td></tr>
+        <tr><td><code>agora/web/src/surface.css</code></td><td>Drop <code>.commit</code>, <code>.reopen</code>, <code>.committed</code>, <code>.commitment</code>, <code>[data-state='committed']</code>. Add the bar, the notice, the receipt.</td><td>Contrast floor and the hidden-paints-nothing rule apply to the new elements.</td></tr>
         <tr><td><code>agora/assets/bundle/</code></td><td><code>make assets</code>, then commit what it writes.</td><td><code>bundle_test.go</code> fails until the committed bundle matches <code>web/</code>.</td></tr>
         <tr><td><code>agora/stylesheet/stylesheet_test.go:139</code></td><td>The prefixing example names <code>.commit</code> as page chrome. Name a selector that still exists.</td><td>Behaviour unchanged, example only.</td></tr>
         <tr><td><code>internal/e2e/page_test.go</code></td><td>Five committing scenarios become: an answer left in a control is sent, a changed answer replaces the earlier one, a draft survives a re-render, a dropped decision loses its draft.</td><td>The largest single edit.</td></tr>

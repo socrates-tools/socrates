@@ -249,7 +249,6 @@ func TestTwoSessionsAreServedAtOnceAndNeitherDisturbsTheOther(t *testing.T) {
 	secondPage := opening(t, secondAddress)
 
 	secondPage.evaluate(chose("c-1", 0), nil)
-	secondPage.click(within("c-1", ".commit"))
 	secondPage.click(".finish")
 	secondPage.waitFor(`document.querySelector('.send').disabled === true`)
 
@@ -268,7 +267,6 @@ func TestTwoSessionsAreServedAtOnceAndNeitherDisturbsTheOther(t *testing.T) {
 	}
 
 	firstPage.evaluate(chose("c-1", 0), nil)
-	firstPage.click(within("c-1", ".commit"))
 	firstPage.click(".send")
 	firstPage.waitFor(`document.querySelector('.state').textContent.length > 0`)
 

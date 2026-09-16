@@ -136,7 +136,7 @@ func TestASelectorNamingThePageIsConfinedToTheIllustration(t *testing.T) {
 	}{
 		{named: "the document root", supplied: `:root{color:#222}`, kept: ".painted{"},
 		{named: "the body", supplied: `body{color:#222}`, kept: ".painted{"},
-		{named: "a name the page uses for its own chrome", supplied: `.decision .commit{color:#222}`, kept: ".painted .drawn-decision .drawn-commit{"},
+		{named: "a name the page uses for its own chrome", supplied: `.decision .send{color:#222}`, kept: ".painted .drawn-decision .drawn-send{"},
 		{named: "a decision of the page's own", supplied: `#decision-f3{color:#222}`, kept: ".painted #drawn-decision-f3{"},
 		{named: "everything", supplied: `*{color:#222}`, kept: ".painted *{"},
 	} {

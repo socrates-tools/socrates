@@ -31,6 +31,7 @@
 {{end}}
 
 {{if .Decisions}}
+<form class="exchange" data-part="sending">
 <ol class="decisions">
 {{range .Decisions}}
 <li class="decision" id="decision-{{.ID}}" data-decision="{{.ID}}" data-mode="{{.Mode}}" data-state="{{if $.Over}}closed{{else}}open{{end}}">
@@ -80,12 +81,21 @@
 {{$decision := .}}
 {{range .Options}}
 <label class="option"{{if .Recommended}} data-recommended="yes"{{end}}>
-<input class="choice" data-part="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}"{{if $.Over}} disabled{{end}}>
+<input class="choice" data-part="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}"{{if .Recommended}} checked{{end}}{{if $.Over}} disabled{{end}}>
 <span class="option-heading">
 <span class="option-label">{{.Label}}</span>
 {{if .Recommended}}<span class="option-mark">Recommended</span>{{end}}
 </span>
 {{if .Meaning}}<span class="option-meaning">{{.Meaning}}</span>{{end}}
+</label>
+{{end}}
+{{if not .Multiple}}
+<label class="none">
+<input class="decline" data-part="answering" type="radio" name="choice-{{.ID}}" data-decision="{{.ID}}"{{if $.Over}} disabled{{end}}>
+<span class="option-heading">
+<span class="option-label">None of these</span>
+</span>
+<span class="option-meaning">Write your own answer below, or leave this to whoever asked.</span>
 </label>
 {{end}}
 </fieldset>
@@ -96,11 +106,6 @@
 <textarea class="words-field" data-part="answering" name="words-{{.ID}}" data-decision="{{.ID}}" rows="3" placeholder="Answering here alone is a complete answer."{{if $.Over}} disabled{{end}}></textarea>
 </label>
 
-<div class="commitment">
-<button class="commit" data-part="answering" type="button" data-decision="{{.ID}}"{{if $.Over}} disabled{{end}}>Commit this answer</button>
-<button class="reopen" data-part="answering" type="button" data-decision="{{.ID}}" hidden{{if $.Over}} disabled{{end}}>Take this answer back</button>
-<p class="committed" hidden><span class="committed-said"></span></p>
-</div>
 </li>
 {{end}}
 </ol>
@@ -110,20 +115,29 @@
 <span class="message-label">Anything to say to whoever asked</span>
 <textarea class="message-field" data-part="sending" name="message" rows="3"{{if .Over}} disabled{{end}}></textarea>
 </label>
+</section>
+
+<footer class="bar">
 <div class="sends">
-<button class="send" data-part="sending" type="button" data-ends="no"{{if .Over}} disabled{{end}}>Send and wait for a reply</button>
-<button class="finish" data-part="sending" type="button" data-ends="yes"{{if .Over}} disabled{{end}}>Send and finish</button>
+<button class="send" data-part="sending" type="submit" data-ends="no"{{if .Over}} disabled{{end}}>Send and wait for a reply</button>
+<button class="finish" data-part="sending" type="submit" data-ends="yes"{{if .Over}} disabled{{end}}>Send and finish</button>
 </div>
 <p class="sends-meaning">Sending waits for a reply on this page. Finishing sends and closes the exchange.</p>
-<div class="discarding" hidden>
-<p class="discarding-said" role="status" aria-live="polite"></p>
-<div class="discarding-choices">
-<button class="discard" data-part="sending" type="button"{{if .Over}} disabled{{end}}>Finish anyway</button>
-<button class="keep" data-part="sending" type="button"{{if .Over}} disabled{{end}}>Keep answering</button>
+<div class="notice" hidden role="status" aria-live="polite">
+<p class="notice-message">Left blank, and about to go as nothing:</p>
+<ul class="notice-decisions"></ul>
+<p class="notice-hint">Press the same button again to send anyway.</p>
+<button class="keep-answering" data-part="sending" type="button"{{if .Over}} disabled{{end}}>Keep answering</button>
 </div>
-</div>
+<output class="receipt" data-part="sending" hidden aria-live="polite">
+<p class="receipt-heading">Sent. Here is what went:</p>
+<ul class="receipt-decisions"></ul>
+<p class="receipt-message"></p>
+<button class="amend" data-part="sending" type="button"{{if .Over}} disabled{{end}}>Amend and send again</button>
+</output>
 <p class="state" role="status" aria-live="polite">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
-</section>
+</footer>
+</form>
 {{else}}
 <section class="nothing">
 <p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>

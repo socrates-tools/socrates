@@ -23,7 +23,7 @@ const callersPalette = `:root{--panel-face:#fbf9f4;--panel-ink:#2f2b23;--panel-r
 
 const overreachingPalette = `body{background:#ff00ff}main{background:#ff00ff}` +
 	`.surface{background:#ff00ff}.decision{background:#ff00ff;display:none}` +
-	`.question{color:#ff00ff}.commit{display:none}.send{display:none}` +
+	`.question{color:#ff00ff}.finish{display:none}.send{display:none}` +
 	`#decision-c-1{background:#ff00ff}` +
 	`.panel{position:fixed;inset:0;width:400vw;height:400vh;background:#00ff00;z-index:2147483647}` +
 	`@import url(https://elsewhere/x.css);` +
@@ -140,7 +140,7 @@ const whatTheFrameCarries = `(() => {
     'body', 'main.surface', '.heading h1', '.preamble',
     '.decision', '.attribution .name', '.question', '.meaning',
     '.options legend', '.option-label', '.option-meaning', '.words-label',
-    '.commit', '.reopen', '.message-label', '.send', '.finish', '.sends-meaning', '.state',
+    '.bar', '.choice', '.message-label', '.send', '.finish', '.sends-meaning', '.state',
     '.evidence.code pre', '.evidence.illustration', '.hunk .line',
   ];
   const painted = {};
@@ -189,7 +189,7 @@ func TestACallerCannotPaintTheFrame(t *testing.T) {
 
 const whatCoversTheControls = `(() => {
   const controls = [
-    '.decision[data-decision="c-1"] .commit',
+    '.decision[data-decision="c-1"] .option',
     '.decision[data-decision="c-1"] .choice',
     '.decision[data-decision="c-1"] .words-field',
     '.send', '.finish', '.message-field',
@@ -394,7 +394,6 @@ func TestACallersColoursDoNotReachTheDecision(t *testing.T) {
 	page := opening(t, held.serve(illustrated(t, callersPalette)))
 
 	page.evaluate(chose("c-1", 0), nil)
-	page.click(within("c-1", ".commit"))
 
 	for _, preference := range []string{"light", "dark"} {
 		page.emulate(preference)

@@ -13,11 +13,21 @@ const somethingLiveOnThePage = `Array.from(document.querySelectorAll('button, .c
 
 const everythingOnThePageIsLive = `Array.from(document.querySelectorAll('button, .choice, textarea')).every((held) => !held.disabled)`
 
+const noticeIsShowing = `!document.querySelector('.notice').hidden`
+
+const noticeIsHidden = `document.querySelector('.notice').hidden`
+
+func pressPastTheNotice(page *reader, press string) {
+	page.t.Helper()
+	page.click(press)
+	page.waitFor(noticeIsShowing)
+	page.click(press)
+}
+
 func (s *surfaced) ended(t *testing.T, page *reader) {
 	t.Helper()
 
 	page.evaluate(chose("c-1", 0), nil)
-	page.click(within("c-1", ".commit"))
 	page.click(".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
@@ -51,139 +61,10 @@ func TestAReloadedPageRendersClosed(t *testing.T) {
 	rendersClosed(t, page, "a page reloaded onto an ended exchange")
 }
 
-func TestFinishingOverAnUncommittedAnswerAsksFirst(t *testing.T) {
-	held, page := read(t, twoDecisionDocument)
-
-	page.evaluate(chose("c-1", 0), nil)
-	page.click(".finish")
-	page.waitFor(`!document.querySelector('.discarding').hidden`)
-
-	var said string
-	page.evaluate(`document.querySelector('.discarding-said').textContent`, &said)
-	if !strings.Contains(said, "c-1") {
-		t.Errorf("what the page says before it discards an uncommitted answer does not name the decision holding it: %q", said)
-	}
-	if !strings.Contains(said, "will not reach") {
-		t.Errorf("what the page says before it discards an uncommitted answer does not say it will not reach whoever asked: %q", said)
-	}
-
-	var live bool
-	page.evaluate(`!document.querySelector('.send').disabled`, &live)
-	if !live {
-		t.Error("finishing over an uncommitted answer closed the page before the person confirmed")
-	}
-	if delivered, arrived := held.awaiting(shortWindow); arrived {
-		t.Errorf("finishing over an uncommitted answer sent before the person confirmed: %+v", delivered)
-	}
-}
-
-func TestConfirmingCarriesNothingThatWasNotCommitted(t *testing.T) {
-	held, page := read(t, twoDecisionDocument)
-
-	page.evaluate(chose("c-1", 0), nil)
-	page.evaluate(chose("c-2", 0), nil)
-	page.click(within("c-2", ".commit"))
-	page.click(".finish")
-	page.waitFor(`!document.querySelector('.discarding').hidden`)
-	page.click(".discard")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
-
-	delivered, arrived := held.awaiting(5 * time.Second)
-	if !arrived {
-		t.Fatal("confirming the finish delivered nothing")
-	}
-	if !delivered.Ended {
-		t.Error("confirming the finish does not report the exchange as over")
-	}
-	for _, decided := range delivered.Decisions {
-		if decided.ID == "c-1" {
-			t.Errorf("confirming the finish carried an answer that was never committed: %+v", decided)
-		}
-	}
-	if len(delivered.Decisions) != 1 || delivered.Decisions[0].ID != "c-2" {
-		t.Errorf("confirming the finish carried %+v, want the one answer that was committed", delivered.Decisions)
-	}
-}
-
-func TestDecliningLeavesTheExchangeOpen(t *testing.T) {
-	held, page := read(t, twoDecisionDocument)
-
-	page.evaluate(chose("c-1", 0), nil)
-	page.click(".finish")
-	page.waitFor(`!document.querySelector('.discarding').hidden`)
-	page.click(".keep")
-	page.waitFor(`document.querySelector('.discarding').hidden === true`)
-
-	var live bool
-	page.evaluate(`!document.querySelector('.send').disabled`, &live)
-	if !live {
-		t.Error("declining the finish closed the page")
-	}
-	if delivered, arrived := held.awaiting(shortWindow); arrived {
-		t.Errorf("declining the finish delivered something: %+v", delivered)
-	}
-
-	var ticked bool
-	page.evaluate(`document.querySelector('.decision[data-decision="c-1"] .choice[value="0"]').checked`, &ticked)
-	if !ticked {
-		t.Fatal("declining the finish took away the selection the decision held")
-	}
-
-	page.click(within("c-1", ".commit"))
-	page.click(".send")
-	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
-
-	delivered, arrived := held.awaiting(5 * time.Second)
-	if !arrived {
-		t.Fatal("what was still there to commit was committed and sent, and nothing was delivered")
-	}
-	if len(delivered.Decisions) != 1 || delivered.Decisions[0].ID != "c-1" {
-		t.Errorf("what was committed after declining came back as %+v", delivered.Decisions)
-	}
-}
-
-func TestAFinishWithNothingUncommittedIsNotAskedAbout(t *testing.T) {
-	for _, held := range []struct {
-		how    string
-		answer func(page *reader)
-	}{
-		{how: "every decision committed", answer: func(page *reader) {
-			page.evaluate(chose("c-1", 0), nil)
-			page.click(within("c-1", ".commit"))
-			page.evaluate(chose("c-2", 1), nil)
-			page.click(within("c-2", ".commit"))
-		}},
-		{how: "no decision touched at all", answer: func(page *reader) {}},
-	} {
-		t.Run(held.how, func(t *testing.T) {
-			surfaced, page := read(t, twoDecisionDocument)
-			held.answer(page)
-
-			page.click(".finish")
-			page.waitFor(`document.querySelector('.send').disabled === true`)
-
-			var asking bool
-			page.evaluate(`!document.querySelector('.discarding').hidden`, &asking)
-			if asking {
-				t.Errorf("finishing with %s asked before it sent", held.how)
-			}
-
-			delivered, arrived := surfaced.awaiting(5 * time.Second)
-			if !arrived {
-				t.Fatalf("finishing with %s delivered nothing", held.how)
-			}
-			if !delivered.Ended {
-				t.Errorf("finishing with %s does not report the exchange as over", held.how)
-			}
-		})
-	}
-}
-
 func answersWhatTheCallerAskedAgain(t *testing.T, held *surfaced, page *reader, how string) {
 	t.Helper()
 
 	page.evaluate(chose("c-3", 0), nil)
-	page.click(within("c-3", ".commit"))
 	page.click(".send")
 
 	delivered, arrived := held.awaiting(5 * time.Second)
@@ -282,48 +163,11 @@ func TestAPollOverAnEndedExchangeLeavesItEnded(t *testing.T) {
 	rendersClosed(t, page, "a page after a poll over an ended exchange")
 }
 
-func TestAPersonWhoFinishesEarlyIsToldBeforeTheirAnswerGoes(t *testing.T) {
-	// scenario: Finishing over an uncommitted answer asks first
-	held, page := read(t, oneDecisionDocument)
-
-	page.evaluate(chose("c-1", 0), nil)
-	page.click(".finish")
-	page.waitFor(`!document.querySelector('.discarding').hidden`)
-
-	var said string
-	page.evaluate(`document.querySelector('.discarding-said').textContent`, &said)
-	if !strings.Contains(said, "c-1") || !strings.Contains(said, "will not reach") {
-		t.Errorf("the page did not say what finishing was about to discard: %q", said)
-	}
-
-	page.click(".keep")
-	page.waitFor(`document.querySelector('.discarding').hidden === true`)
-
-	page.click(within("c-1", ".commit"))
-	page.write(".message-field", "this is the one")
-	page.click(".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
-
-	delivered, arrived := held.awaiting(5 * time.Second)
-	if !arrived {
-		t.Fatal("the answer the person went back and committed was never delivered")
-	}
-	if !delivered.Ended {
-		t.Error("finishing after the person confirmed does not report the exchange as over")
-	}
-	if delivered.Message != "this is the one" {
-		t.Errorf("the message the person wrote came back as %q", delivered.Message)
-	}
-	if diff := cmp.Diff([]string{"patch c-1"}, delivered.Decisions[0].Commands); diff != "" {
-		t.Errorf("what reached the caller differs (-want +got):\n%s", diff)
-	}
-}
-
 func TestACallerWhoAsksAgainIsHandedAnAddressThatTakesTheAnswer(t *testing.T) {
 	// scenario: Serving again onto an ended exchange yields an answerable page
 	held, page := read(t, oneDecisionDocument)
 
-	page.click(".finish")
+	pressPastTheNotice(page, ".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
 	finished, arrived := held.awaiting(5 * time.Second)
@@ -338,7 +182,6 @@ func TestACallerWhoAsksAgainIsHandedAnAddressThatTakesTheAnswer(t *testing.T) {
 	asked := opening(t, address)
 
 	asked.evaluate(chose("c-1", 0), nil)
-	asked.click(within("c-1", ".commit"))
 	asked.click(".finish")
 	asked.waitFor(`document.querySelector('.send').disabled === true`)
 
@@ -405,12 +248,11 @@ func TestThePageStopsSayingTheExchangeIsOver(t *testing.T) {
 	}
 }
 
-func TestAnAnswerCommittedBeforeTheEndIsNotCarriedIntoWhatComesNext(t *testing.T) {
+func TestAnAnswerChosenBeforeTheEndIsNotCarriedIntoWhatComesNext(t *testing.T) {
 	// scenario: A new document reopens an ended page
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
-	page.click(within("c-1", ".commit"))
 	page.click(".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 	if _, arrived := held.awaiting(5 * time.Second); !arrived {
@@ -420,7 +262,7 @@ func TestAnAnswerCommittedBeforeTheEndIsNotCarriedIntoWhatComesNext(t *testing.T
 	held.serveAgain(oneDecisionReply)
 	page.waitFor(reachedThePage("c-3"))
 
-	page.click(".send")
+	pressPastTheNotice(page, ".send")
 
 	delivered, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
@@ -428,7 +270,162 @@ func TestAnAnswerCommittedBeforeTheEndIsNotCarriedIntoWhatComesNext(t *testing.T
 	}
 	for _, decided := range delivered.Decisions {
 		if decided.ID == "c-1" {
-			t.Errorf("an answer committed before the exchange ended was carried into content that does not hold it: %+v", decided)
+			t.Errorf("an answer chosen before the exchange ended was carried into content that does not hold it: %+v", decided)
 		}
+	}
+}
+
+func TestEitherPressOverABlankDecisionNamesItAndSendsNothing(t *testing.T) {
+	for _, press := range []string{".send", ".finish"} {
+		t.Run(press, func(t *testing.T) {
+			held, page := read(t, twoDecisionDocument)
+
+			page.evaluate(chose("c-1", 0), nil)
+			page.evaluate(chose("c-2", 2), nil)
+			page.click(press)
+			page.waitFor(noticeIsShowing)
+
+			if delivered, arrived := held.awaiting(shortWindow); arrived {
+				t.Fatalf("pressing %s over a blank decision delivered an answer: %+v", press, delivered)
+			}
+
+			var said string
+			page.evaluate(`document.querySelector('.notice').textContent`, &said)
+			if !strings.Contains(said, "c-2") {
+				t.Errorf("the notice pressing %s raised reads %q, and it does not name the decision left blank", press, said)
+			}
+			if !strings.Contains(strings.ToLower(said), "again") {
+				t.Errorf("the notice pressing %s raised reads %q, and it does not say in plain words that pressing again sends", press, said)
+			}
+		})
+	}
+}
+
+func TestTheNoticeNamesEveryBlankDecisionAndEachNameLinksToItsCard(t *testing.T) {
+	// scenario: An entry leads to the decision that covers it
+	_, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-2", 2), nil)
+	page.click(".send")
+	page.waitFor(noticeIsShowing)
+
+	var hrefs []string
+	page.evaluate(`Array.from(document.querySelectorAll('.notice-decisions a')).map((held) => held.getAttribute('href'))`, &hrefs)
+
+	want := []string{"#decision-c-1", "#decision-c-2"}
+	if diff := cmp.Diff(want, hrefs); diff != "" {
+		t.Errorf("the notice's links to the decisions left blank differ (-want +got):\n%s", diff)
+	}
+
+	page.click(`.notice-decisions a`)
+	page.waitFor(`location.hash === '#decision-c-1'`)
+
+	var reached string
+	page.evaluate(`document.querySelector(location.hash).dataset.decision`, &reached)
+	if reached != "c-1" {
+		t.Errorf("following the notice's first link arrived at %q, want %q", reached, "c-1")
+	}
+}
+
+func TestPressingAgainSendsCarryingEveryDecisionThatWasNotBlank(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.evaluate(chose("c-2", 2), nil)
+	page.click(".send")
+	page.waitFor(noticeIsShowing)
+
+	if delivered, arrived := held.awaiting(shortWindow); arrived {
+		t.Fatalf("the first press over a blank decision delivered an answer: %+v", delivered)
+	}
+
+	page.click(".send")
+
+	delivered, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("pressing send again over the same blank decision delivered nothing")
+	}
+	if len(delivered.Decisions) != 1 || delivered.Decisions[0].ID != "c-1" {
+		t.Errorf("pressing send again carried %+v, want only the decision that was not blank", delivered.Decisions)
+	}
+
+	var hidden bool
+	page.evaluate(noticeIsHidden, &hidden)
+	if !hidden {
+		t.Error("sending after the notice was confirmed leaves the notice showing")
+	}
+}
+
+func TestDecliningTheNoticeLeavesTheExchangeOpenAndSendsNothing(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.evaluate(chose("c-2", 2), nil)
+	page.click(".send")
+	page.waitFor(noticeIsShowing)
+
+	page.click(".keep-answering")
+	page.waitFor(noticeIsHidden)
+
+	if delivered, arrived := held.awaiting(shortWindow); arrived {
+		t.Fatalf("declining the notice delivered an answer anyway: %+v", delivered)
+	}
+
+	var accepting bool
+	page.evaluate(everythingOnThePageIsLive, &accepting)
+	if !accepting {
+		t.Error("declining the notice left the page unable to take a further answer")
+	}
+}
+
+func TestAPressWithNothingBlankIsNotAskedAbout(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.evaluate(chose("c-2", 0), nil)
+	page.click(".send")
+
+	delivered, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("sending with nothing blank delivered nothing")
+	}
+	if len(delivered.Decisions) != 2 {
+		t.Errorf("sending with nothing blank carried %+v, want both decisions", delivered.Decisions)
+	}
+
+	var hidden bool
+	page.evaluate(noticeIsHidden, &hidden)
+	if !hidden {
+		t.Error("a press with nothing blank raised the notice anyway")
+	}
+}
+
+func TestPressingTheOtherPressWhileTheNoticeIsShowingRaisesItForThatPressInstead(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.evaluate(chose("c-2", 2), nil)
+	page.click(".send")
+	page.waitFor(noticeIsShowing)
+
+	page.click(".finish")
+
+	if delivered, arrived := held.awaiting(shortWindow); arrived {
+		t.Fatalf("pressing the other press while the notice is showing delivered an answer: %+v", delivered)
+	}
+
+	var hidden bool
+	page.evaluate(noticeIsHidden, &hidden)
+	if hidden {
+		t.Fatal("pressing the other press while the notice is showing closed the notice instead of raising it again")
+	}
+
+	page.click(".finish")
+	delivered, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("pressing finish again after it raised the notice delivered nothing")
+	}
+	if !delivered.Ended {
+		t.Error("pressing finish again does not end the exchange")
 	}
 }

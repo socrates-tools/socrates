@@ -359,16 +359,13 @@ func TestTheSkillSaysOneOptionCarriesIt(t *testing.T) {
 	}
 }
 
-func TestTheSkillSaysMarkingIsNotAnswering(t *testing.T) {
+func TestTheSkillSaysTheMarkedOptionArrivesSelected(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
-	for _, said := range []string{"reads that option first", "in words", "selects nothing"} {
+	for _, said := range []string{"reads that option first", "in words", "arrives selected", "taking none of them"} {
 		if !strings.Contains(page, said) {
 			t.Errorf("the page section does not say %q, so what marking an option does is left to be guessed:\n%s", said, page)
 		}
-	}
-	if !strings.Contains(page, "still theirs") {
-		t.Errorf("the page section does not say the decision remains the person's once an option is marked:\n%s", page)
 	}
 }
 

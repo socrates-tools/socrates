@@ -4,9 +4,9 @@
     the root of the repository this was built from. */
 import hljs from 'highlight.js/lib/common'
 
-const committed = new Map()
 const exchangeIsOver = 'The exchange is over. Nothing further will be sent from this page.'
 let closed = false
+let awaitingCollection = false
 
 function token() {
   return document.body.dataset.token || ''
@@ -22,10 +22,6 @@ function surface() {
 
 function cards() {
   return Array.from(document.querySelectorAll('.decision'))
-}
-
-function cardFor(named) {
-  return document.querySelector(`.decision[data-decision="${CSS.escape(named)}"]`)
 }
 
 function say(words) {
@@ -46,8 +42,14 @@ function wordsIn(card) {
   return field ? field.value : ''
 }
 
-function uncommittedIn(card) {
-  return card.dataset.state !== 'committed' && (chosenIn(card).length > 0 || wordsIn(card).trim() !== '')
+function decisionsHeld() {
+  return cards()
+    .map((card) => ({ id: card.dataset.decision, chosen: chosenIn(card), words: wordsIn(card) }))
+    .filter((answered) => answered.chosen.length > 0 || answered.words.trim() !== '')
+}
+
+function blankCards() {
+  return cards().filter((card) => chosenIn(card).length === 0 && wordsIn(card).trim() === '')
 }
 
 function nameOf(card) {
@@ -55,90 +57,141 @@ function nameOf(card) {
   return named ? named.textContent.trim() : card.dataset.decision
 }
 
-function listed(names) {
-  if (names.length === 1) {
-    return names[0]
-  }
-  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
+function notice() {
+  return document.querySelector('.notice')
 }
 
-function ask(holding) {
-  const asking = document.querySelector('.discarding')
-  if (!asking) {
+function clear(node) {
+  while (node.firstChild) {
+    node.removeChild(node.firstChild)
+  }
+}
+
+let armedFor = null
+
+function hideNotice() {
+  armedFor = null
+  const held = notice()
+  if (held) {
+    held.hidden = true
+  }
+}
+
+function showNotice(blank, ends) {
+  armedFor = ends ? 'yes' : 'no'
+  const held = notice()
+  if (!held) {
+    return
+  }
+  const list = held.querySelector('.notice-decisions')
+  if (list) {
+    clear(list)
+    blank.forEach((card) => {
+      const item = document.createElement('li')
+      const link = document.createElement('a')
+      link.href = `#decision-${card.dataset.decision}`
+      link.textContent = nameOf(card)
+      item.appendChild(link)
+      list.appendChild(item)
+    })
+  }
+  held.hidden = false
+}
+
+function receipt() {
+  return document.querySelector('.receipt')
+}
+
+function amendControl() {
+  return document.querySelector('.amend')
+}
+
+function labelAt(card, position) {
+  const input = card ? card.querySelector(`.choice[value="${position}"]`) : null
+  const option = input ? input.closest('.option') : null
+  const label = option ? option.querySelector('.option-label') : null
+  return label ? label.textContent.trim() : String(position)
+}
+
+function describe(decision) {
+  const card = document.querySelector(`.decision[data-decision="${decision.id}"]`)
+  const name = card ? nameOf(card) : decision.id
+  const chosen = decision.chosen.map((position) => labelAt(card, position))
+  const said = decision.words.trim()
+  const answer = said ? chosen.concat(said) : chosen
+  return `${name}: ${answer.join(', ')}`
+}
+
+function showReceipt(sent, ends) {
+  const held = receipt()
+  if (!held) {
     return
   }
 
-  const names = holding.map(nameOf)
-  asking.querySelector('.discarding-said').textContent = names.length === 1
-    ? `${listed(names)} holds an answer that was never committed, and it will not reach whoever asked.`
-    : `${listed(names)} hold answers that were never committed, and they will not reach whoever asked.`
-  asking.hidden = false
+  const list = held.querySelector('.receipt-decisions')
+  if (list) {
+    clear(list)
+    sent.decisions.forEach((decision) => {
+      const item = document.createElement('li')
+      item.textContent = describe(decision)
+      list.appendChild(item)
+    })
+  }
+
+  const message = held.querySelector('.receipt-message')
+  if (message) {
+    message.textContent = sent.message ? `Said to whoever asked: ${sent.message}` : ''
+  }
+
+  const amendButton = amendControl()
+  if (amendButton) {
+    amendButton.hidden = ends
+  }
+
+  held.hidden = false
 }
 
-function stopAsking() {
-  const asking = document.querySelector('.discarding')
-  if (asking) {
-    asking.hidden = true
+function hideReceipt() {
+  const held = receipt()
+  if (held) {
+    held.hidden = true
   }
 }
 
-function commit(named) {
-  const card = cardFor(named)
-  if (!card || closed) {
-    return
-  }
-  stopAsking()
+const readOnlyWhileSent = '.choice, .decline, .words-field, .message-field, .send, .finish, .keep-answering'
 
-  const chosen = chosenIn(card)
-  const answered = { id: named, chosen, words: wordsIn(card) }
-  committed.set(named, answered)
-
-  const labels = Array.from(card.querySelectorAll('.choice'))
-    .filter((choice) => choice.checked)
-    .map((choice) => choice.closest('.option').querySelector('.option-label').textContent.trim())
-
-  card.dataset.state = 'committed'
-  card.querySelectorAll('.choice, .words-field').forEach((control) => {
+function lockForSending() {
+  document.querySelectorAll(readOnlyWhileSent).forEach((control) => {
     control.disabled = true
   })
-  card.querySelector('.commit').hidden = true
-  card.querySelector('.reopen').hidden = false
-
-  const shown = card.querySelector('.committed')
-  const said = card.querySelector('.committed-said')
-  shown.hidden = false
-  said.textContent = labels.length
-    ? `Committed: ${labels.join(', ')}`
-    : 'Committed: your words alone'
-  say('')
 }
 
-function reopen(named) {
-  const card = cardFor(named)
-  if (!card || closed) {
-    return
-  }
-
-  committed.delete(named)
-  card.dataset.state = 'open'
-  card.querySelectorAll('.choice, .words-field').forEach((control) => {
+function unlockControls() {
+  document.querySelectorAll(readOnlyWhileSent).forEach((control) => {
     control.disabled = false
   })
-  card.querySelector('.commit').hidden = false
-  card.querySelector('.reopen').hidden = true
-  card.querySelector('.committed').hidden = true
+}
+
+function amend() {
+  hideReceipt()
+  awaitingCollection = false
+  unlockControls()
   say('')
 }
 
 function close() {
   closed = true
-  stopAsking()
+  hideNotice()
   document.querySelectorAll('.decision').forEach((card) => {
     card.dataset.state = 'closed'
   })
-  document.querySelectorAll('button, .choice, textarea').forEach((control) => {
+  document.querySelectorAll('button, .choice, .decline, textarea').forEach((control) => {
     control.disabled = true
   })
+  const amendButton = amendControl()
+  if (amendButton) {
+    amendButton.hidden = true
+  }
 }
 
 function takeUpWhetherItIsOver() {
@@ -156,9 +209,7 @@ async function send(ends) {
 
   const message = document.querySelector('.message-field')
   const sent = {
-    decisions: cards()
-      .map((card) => committed.get(card.dataset.decision))
-      .filter(Boolean),
+    decisions: decisionsHeld(),
     message: message ? message.value : '',
     ends,
   }
@@ -175,60 +226,49 @@ async function send(ends) {
     return
   }
 
+  showReceipt(sent, ends)
+
   if (ends) {
     close()
     say(exchangeIsOver)
     return
   }
+  lockForSending()
+  awaitingCollection = true
   say('Sent. Waiting for a reply on this page.')
 }
 
-function finish() {
-  if (closed) {
-    return
-  }
-
-  const holding = cards().filter(uncommittedIn)
-  if (holding.length) {
-    ask(holding)
-    return
-  }
-  send(true)
-}
-
-function discard() {
-  stopAsking()
-  send(true)
-}
-
-function keepAnswering() {
-  stopAsking()
-  say('Nothing was sent, and this page is still open.')
-}
-
 function bind() {
-  document.querySelectorAll('.commit').forEach((control) => {
-    control.addEventListener('click', () => commit(control.dataset.decision))
+  const form = document.querySelector('form.exchange')
+  if (form) {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault()
+      const ends = event.submitter ? event.submitter.dataset.ends === 'yes' : false
+      const blank = blankCards()
+      if (blank.length > 0 && armedFor !== (ends ? 'yes' : 'no')) {
+        showNotice(blank, ends)
+        return
+      }
+      hideNotice()
+      send(ends)
+    })
+  }
+  const keepAnswering = document.querySelector('.keep-answering')
+  if (keepAnswering) {
+    keepAnswering.addEventListener('click', hideNotice)
+  }
+  const amendButton = document.querySelector('.amend')
+  if (amendButton) {
+    amendButton.addEventListener('click', amend)
+  }
+  document.querySelectorAll('.decline').forEach((control) => {
+    control.addEventListener('change', () => {
+      const field = control.closest('.decision')?.querySelector('.words-field')
+      if (field) {
+        field.focus()
+      }
+    })
   })
-  document.querySelectorAll('.reopen').forEach((control) => {
-    control.addEventListener('click', () => reopen(control.dataset.decision))
-  })
-  const sender = document.querySelector('.send')
-  if (sender) {
-    sender.addEventListener('click', () => send(false))
-  }
-  const finisher = document.querySelector('.finish')
-  if (finisher) {
-    finisher.addEventListener('click', finish)
-  }
-  const discarding = document.querySelector('.discard')
-  if (discarding) {
-    discarding.addEventListener('click', discard)
-  }
-  const keeping = document.querySelector('.keep')
-  if (keeping) {
-    keeping.addEventListener('click', keepAnswering)
-  }
   document.querySelectorAll('pre code[class^="language-"]').forEach((block) => {
     if (block.textContent.trim()) {
       hljs.highlightElement(block)
@@ -254,36 +294,12 @@ async function take(revision) {
   document.body.dataset.revision = String(revision)
   document.body.dataset.over = read.body.dataset.over
   document.title = read.title
+  armedFor = null
+  awaitingCollection = false
 
-  const held = new Set(cards().map((card) => card.dataset.decision))
-  for (const named of Array.from(committed.keys())) {
-    if (!held.has(named)) {
-      committed.delete(named)
-    }
-  }
   bind()
   takeUpWhetherItIsOver()
-  for (const named of committed.keys()) {
-    restore(named)
-  }
   say(closed ? exchangeIsOver : 'A reply arrived, and this page is showing it.')
-}
-
-function restore(named) {
-  const card = cardFor(named)
-  const answered = committed.get(named)
-  if (!card || !answered) {
-    return
-  }
-
-  card.querySelectorAll('.choice').forEach((choice) => {
-    choice.checked = answered.chosen.includes(Number(choice.value))
-  })
-  const field = card.querySelector('.words-field')
-  if (field) {
-    field.value = answered.words
-  }
-  commit(named)
 }
 
 function follow() {
@@ -297,6 +313,16 @@ function follow() {
   live.addEventListener('closed', () => {
     close()
     say(exchangeIsOver)
+  })
+  live.addEventListener('uncollected', (event) => {
+    if (event.data === 'no' && awaitingCollection) {
+      awaitingCollection = false
+      const amendButton = amendControl()
+      if (amendButton) {
+        amendButton.hidden = true
+      }
+      say('Collected. The answer has gone.')
+    }
   })
 }
 

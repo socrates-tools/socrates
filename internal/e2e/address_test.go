@@ -695,7 +695,6 @@ func TestAPersonAnswersThroughSomethingStandingInFrontOfTheSurface(t *testing.T)
 	page := opening(t, printed)
 	page.evaluate(chose("c-1", 0), nil)
 	page.write(within("c-1", ".words-field"), inTheirOwnWords)
-	page.click(within("c-1", ".commit"))
 	page.click(".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 

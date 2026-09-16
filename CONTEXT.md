@@ -63,7 +63,7 @@ These are agora's words, and agora knows nothing about code review.
 - **document**: what a caller writes for the surface to render. Not a page.
 - **source**: the entries a caller cites, each carrying a name, a severity, an audience and a location.
 - **decision**: one card on the page, citing the source entry it came from.
-- **option**: one answer to a decision, carrying the command it becomes. The surface composes a command and never runs one.
+- **option**: one answer to a decision, carrying the command it becomes. The surface composes a command and never runs one. The control that takes none of them is not an option: it carries no command, and leaves the decision with nothing selected.
 - **illustration**: the one fragment a decision may carry, painted by the document's own stylesheet, contained so nothing in it reaches the page's own controls.
 - **session**: what the surface mints so that a page and its routes are served under a path holding it. Kept for the whole review.
 - **exchange**: the delivery of a document and the collection of what a person answered. It holds at most one uncollected answer, and a later one replaces it.

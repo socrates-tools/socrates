@@ -2,10 +2,13 @@ package e2e_test
 
 import (
 	"encoding/json"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/chromedp/chromedp"
+	"github.com/chromedp/chromedp/kb"
 	"github.com/google/go-cmp/cmp"
 	"github.com/socrates-tools/socrates/agora/surface"
 )
@@ -63,6 +66,21 @@ const oneDecisionReply = `{
   ]
 }`
 
+const reusingIdentifierReply = `{
+  "title": "an unrelated question reusing the identifier",
+  "decisions": [
+    {
+      "id": "c-1",
+      "question": "is the timeout long enough for a cold start",
+      "mode": "single-choice",
+      "options": [
+        {"label": "yes", "meaning": "measured under load", "command": "agree c-1"},
+        {"label": "raise it", "meaning": "cold starts blow past it", "command": "patch c-1"}
+      ]
+    }
+  ]
+}`
+
 func read(t *testing.T, document string) (*surfaced, *reader) {
 	t.Helper()
 
@@ -71,7 +89,7 @@ func read(t *testing.T, document string) (*surfaced, *reader) {
 	return held, opening(t, address)
 }
 
-func TestChoosingSendsNothing(t *testing.T) {
+func TestAnAnswerLeftInAControlIsSentWithoutAnyFurtherPress(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -82,12 +100,12 @@ func TestChoosingSendsNothing(t *testing.T) {
 
 	var ticked int
 	page.evaluate(`document.querySelectorAll('.choice:checked').length`, &ticked)
-	if ticked != 2 {
-		t.Errorf("selecting, deselecting and reselecting left %d options ticked, want 2", ticked)
+	if ticked != 3 {
+		t.Errorf("selecting, deselecting and reselecting left %d options ticked, want 3", ticked)
 	}
 
 	if delivered, arrived := held.awaiting(shortWindow); arrived {
-		t.Errorf("choosing delivered an answer: %+v", delivered)
+		t.Errorf("choosing delivered an answer before any press at all: %+v", delivered)
 	}
 
 	page.click(".send")
@@ -97,40 +115,25 @@ func TestChoosingSendsNothing(t *testing.T) {
 	if !arrived {
 		t.Fatal("sending delivered nothing at all")
 	}
-	if len(sent.Decisions) != 0 {
-		t.Errorf("the send that waits for a reply carried a selection nobody committed: %+v", sent.Decisions)
-	}
-
-	page.click(".finish")
-	page.waitFor(`!document.querySelector('.discarding').hidden`)
-	page.click(".discard")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
-
-	finished, arrived := held.awaiting(5 * time.Second)
-	if !arrived {
-		t.Fatal("finishing delivered nothing at all")
-	}
-	if len(finished.Decisions) != 0 {
-		t.Errorf("the send that ends carried a selection nobody committed: %+v", finished.Decisions)
+	if len(sent.Decisions) != 2 {
+		t.Fatalf("what was left in the controls was sent as %d decisions, want the two that were chosen: %+v", len(sent.Decisions), sent.Decisions)
 	}
 }
 
 func TestMultipleChoiceCarriesEveryTick(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 
-	page.evaluate(chose("c-2", 2), nil)
 	page.evaluate(chose("c-2", 0), nil)
 	page.evaluate(chose("c-2", 1), nil)
-	page.click(within("c-2", ".commit"))
-	page.click(".send")
+	pressPastTheNotice(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
-		t.Fatal("a committed decision was sent and nothing was delivered")
+		t.Fatal("a decision holding a selection was sent and nothing was delivered")
 	}
 	if len(delivered.Decisions) != 1 {
-		t.Fatalf("sending carried %d decisions, want the one that was committed: %+v", len(delivered.Decisions), delivered)
+		t.Fatalf("sending carried %d decisions, want the one holding a selection: %+v", len(delivered.Decisions), delivered)
 	}
 
 	want := []string{"the write", "the metric", "the log line"}
@@ -139,76 +142,43 @@ func TestMultipleChoiceCarriesEveryTick(t *testing.T) {
 	}
 }
 
-func TestCommittingAgainReplacesTheEarlierAnswer(t *testing.T) {
+func TestAChangedSelectionReplacesTheEarlierOneWithNoSeparateStep(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
-	page.click(within("c-1", ".commit"))
-	page.click(within("c-1", ".reopen"))
 	page.evaluate(chose("c-1", 1), nil)
-	page.click(within("c-1", ".commit"))
-	page.click(".send")
+	page.evaluate(chose("c-2", 2), nil)
+	pressPastTheNotice(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
-		t.Fatal("a committed decision was sent and nothing was delivered")
+		t.Fatal("a changed selection was sent and nothing was delivered")
 	}
 	if len(delivered.Decisions) != 1 {
-		t.Fatalf("committing twice delivered %d answers for one decision: %+v", len(delivered.Decisions), delivered)
+		t.Fatalf("changing a selection before sending delivered %d answers for one decision: %+v", len(delivered.Decisions), delivered)
 	}
 
 	want := []string{"agree c-1"}
 	if diff := cmp.Diff(want, delivered.Decisions[0].Commands); diff != "" {
-		t.Errorf("the answer delivered is not the later one (-want +got):\n%s", diff)
+		t.Errorf("the answer delivered is not the later selection (-want +got):\n%s", diff)
 	}
 }
 
-func TestACommittedAnswerIsDistinguishable(t *testing.T) {
-	_, page := read(t, twoDecisionDocument)
-
-	page.evaluate(chose("c-1", 0), nil)
-	page.click(within("c-1", ".commit"))
-	page.evaluate(chose("c-2", 1), nil)
-
-	var committed, touched string
-	page.evaluate(stateOf("c-1"), &committed)
-	page.evaluate(stateOf("c-2"), &touched)
-	if committed == touched {
-		t.Errorf("a committed decision and one merely selected in both render as %q", committed)
-	}
-
-	var shown, unshown bool
-	page.evaluate(`!document.querySelector('.decision[data-decision="c-1"] .committed').hidden`, &shown)
-	page.evaluate(`!document.querySelector('.decision[data-decision="c-2"] .committed').hidden`, &unshown)
-	if !shown {
-		t.Error("a committed decision does not show what it committed")
-	}
-	if unshown {
-		t.Error("a decision merely selected in shows a committed answer")
-	}
-
-	var said string
-	page.evaluate(`document.querySelector('.decision[data-decision="c-1"] .committed').textContent`, &said)
-	if !strings.Contains(said, "take the lock first") {
-		t.Errorf("a committed decision shows %q, and it does not say what was committed", said)
-	}
-}
-
-func TestACommittedAnswerCanBeTakenBack(t *testing.T) {
+func TestADecisionWithNothingSelectedAndNothingTypedIsOmittedFromWhatTheCallerCollects(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 
-	page.evaluate(chose("c-1", 0), nil)
-	page.click(within("c-1", ".commit"))
-	page.click(within("c-1", ".reopen"))
+	page.evaluate(chose("c-2", 2), nil)
+	page.evaluate(chose("c-2", 0), nil)
+	page.evaluate(chose("c-2", 0), nil)
 
-	var state string
-	page.evaluate(stateOf("c-1"), &state)
-	if state != "open" {
-		t.Errorf("a reopened decision is in the state %q", state)
+	var ticked int
+	page.evaluate(`document.querySelectorAll('.choice:checked').length`, &ticked)
+	if ticked != 0 {
+		t.Fatalf("ticking and unticking a box left %d options ticked, want none", ticked)
 	}
 
-	page.click(".send")
+	pressPastTheNotice(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
@@ -216,7 +186,7 @@ func TestACommittedAnswerCanBeTakenBack(t *testing.T) {
 		t.Fatal("sending delivered nothing at all")
 	}
 	if len(delivered.Decisions) != 0 {
-		t.Errorf("a decision taken back before sending was delivered: %+v", delivered.Decisions)
+		t.Errorf("a decision with nothing selected and nothing typed was sent anyway: %+v", delivered.Decisions)
 	}
 }
 
@@ -224,10 +194,21 @@ func TestSendingWithoutEndingKeepsThePageOpen(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
-	page.click(within("c-1", ".commit"))
 	page.write(".message-field", "one more look please")
 	page.click(".send")
-	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
+	page.waitFor(`!document.querySelector('.receipt').hidden`)
+
+	var said string
+	page.evaluate(`document.querySelector('.state').textContent`, &said)
+	if !strings.Contains(strings.ToLower(said), "waiting") {
+		t.Errorf("sending without ending does not say it is waiting for a reply: %q", said)
+	}
+
+	var amendable bool
+	page.evaluate(`!document.querySelector('.amend').hidden && !document.querySelector('.amend').disabled`, &amendable)
+	if !amendable {
+		t.Error("sending without ending offers no way back, and a misclick has nowhere to go")
+	}
 
 	delivered, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
@@ -240,12 +221,6 @@ func TestSendingWithoutEndingKeepsThePageOpen(t *testing.T) {
 		t.Errorf("the message a person wrote came back as %q", delivered.Message)
 	}
 
-	var closed bool
-	page.evaluate(`document.querySelector('.send').disabled`, &closed)
-	if closed {
-		t.Error("sending without ending closed the page")
-	}
-
 	held.serveAgain(oneDecisionReply)
 	page.waitFor(`!!document.querySelector('.decision[data-decision="c-3"]')`)
 
@@ -253,6 +228,169 @@ func TestSendingWithoutEndingKeepsThePageOpen(t *testing.T) {
 	page.evaluate(`document.querySelector('.heading h1').textContent`, &title)
 	if title != "one thing left" {
 		t.Errorf("the page did not take up the reply: it heads with %q", title)
+	}
+}
+
+func TestSendingShowsAReceiptAndPutsEveryControlReadOnly(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.click(".send")
+	page.waitFor(`!document.querySelector('.receipt').hidden`)
+
+	var said string
+	page.evaluate(`document.querySelector('.receipt').textContent`, &said)
+	for _, wanted := range []string{"take the lock first", "the log line"} {
+		if !strings.Contains(said, wanted) {
+			t.Errorf("the receipt does not say %q, and it is meant to list what went:\n%s", wanted, said)
+		}
+	}
+
+	var readOnly bool
+	page.evaluate(`Array.from(document.querySelectorAll('.choice, .decline, .words-field, .message-field, .send, .finish')).every((held) => held.disabled)`, &readOnly)
+	if !readOnly {
+		t.Error("sending left a control open to a further change")
+	}
+
+	var amendable bool
+	page.evaluate(`!document.querySelector('.amend').hidden && !document.querySelector('.amend').disabled`, &amendable)
+	if !amendable {
+		t.Error("sending without ending offers no way back")
+	}
+}
+
+func TestAmendingReturnsTheControlsAndASecondSendReplacesTheFirst(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.click(".send")
+	page.waitFor(`!document.querySelector('.receipt').hidden`)
+
+	page.click(".amend")
+	page.waitFor(`document.querySelector('.receipt').hidden`)
+
+	var readOnly bool
+	page.evaluate(`Array.from(document.querySelectorAll('.choice, .words-field, .message-field, .send, .finish')).some((held) => held.disabled)`, &readOnly)
+	if readOnly {
+		t.Error("amending left a control read only")
+	}
+
+	page.evaluate(chose("c-1", 1), nil)
+	page.click(".send")
+	page.waitFor(`!document.querySelector('.receipt').hidden`)
+
+	delivered, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("sending again after amending delivered nothing")
+	}
+
+	var commands []string
+	for _, decided := range delivered.Decisions {
+		if decided.ID == "c-1" {
+			commands = decided.Commands
+		}
+	}
+	if diff := cmp.Diff([]string{"agree c-1"}, commands); diff != "" {
+		t.Errorf("what was collected for c-1 is not the amended answer, and a caller collects the last word (-want +got):\n%s", diff)
+	}
+}
+
+func TestTheWayBackIsWithdrawnOnceTheCallerCollectsAndThePageSaysSo(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.click(".send")
+	page.waitFor(`!document.querySelector('.receipt').hidden`)
+
+	var waiting string
+	page.evaluate(`document.querySelector('.state').textContent`, &waiting)
+	if !strings.Contains(strings.ToLower(waiting), "waiting") {
+		t.Errorf("the page does not say it is waiting for a reply before the caller collects: %q", waiting)
+	}
+
+	var amendable bool
+	page.evaluate(`!document.querySelector('.amend').hidden`, &amendable)
+	if !amendable {
+		t.Fatal("the way back is not offered before the caller collects")
+	}
+
+	if _, failures, code := held.poll(); code != 0 {
+		t.Fatalf("agora poll exited %d: %s", code, failures)
+	}
+
+	page.waitFor(`document.querySelector('.amend').hidden`)
+
+	var said string
+	page.evaluate(`document.querySelector('.state').textContent`, &said)
+	if !strings.Contains(strings.ToLower(said), "gone") {
+		t.Errorf("the page does not say the answer has gone once the caller collects: %q", said)
+	}
+	if strings.Contains(strings.ToLower(said), "waiting") {
+		t.Errorf("the page still says it is waiting after the caller collected: %q", said)
+	}
+}
+
+func TestAConnectTimeUncollectedIsNotMistakenForACollection(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+	time.Sleep(150 * time.Millisecond)
+
+	var said string
+	page.evaluate(`document.querySelector('.state').textContent`, &said)
+	if strings.Contains(strings.ToLower(said), "gone") {
+		t.Errorf("a page that never sent anything says %q, and the stream's own connect-time report is not a collection", said)
+	}
+
+	var hidden bool
+	page.evaluate(`document.querySelector('.receipt').hidden`, &hidden)
+	if !hidden {
+		t.Error("a page that never sent anything shows a receipt")
+	}
+}
+
+func TestANewDocumentReplacesTheReceiptToo(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.click(".send")
+	page.waitFor(`!document.querySelector('.receipt').hidden`)
+
+	held.serveAgain(oneDecisionReply)
+	page.waitFor(`!!document.querySelector('.decision[data-decision="c-3"]')`)
+
+	var hidden bool
+	page.evaluate(`document.querySelector('.receipt').hidden`, &hidden)
+	if !hidden {
+		t.Error("a new document arrived and the receipt from the round before it is still showing")
+	}
+
+	var readOnly bool
+	page.evaluate(`Array.from(document.querySelectorAll('.choice, .words-field, .message-field, .send, .finish')).some((held) => held.disabled)`, &readOnly)
+	if readOnly {
+		t.Error("a new document arrived carrying a control the round before it left read only")
+	}
+}
+
+func TestFinishingShowsAReceiptThatOffersNoWayBack(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.click(".finish")
+	page.waitFor(`document.querySelector('.send').disabled === true`)
+
+	if _, arrived := held.awaiting(5 * time.Second); !arrived {
+		t.Fatal("finishing delivered nothing")
+	}
+
+	var hidden bool
+	page.evaluate(`document.querySelector('.receipt').hidden`, &hidden)
+	if hidden {
+		t.Error("finishing shows no receipt of what went")
+	}
+
+	var amendOffered bool
+	page.evaluate(`!document.querySelector('.amend').hidden`, &amendOffered)
+	if amendOffered {
+		t.Error("finishing offers a way back, and nothing further goes")
 	}
 }
 
@@ -278,27 +416,41 @@ func TestARerenderReachesAnOpenPage(t *testing.T) {
 	}
 }
 
-func TestAnAnswerCommittedButNotSentIsNotCarriedIntoNewContent(t *testing.T) {
-	// scenario: A re-render reaches an open page
+func TestANewDocumentReplacesEverySelectionEveryTypedWordAndTheMessageFieldAndNothingIsRestoredByIdentifier(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
-	page.click(within("c-1", ".commit"))
+	page.write(within("c-2", ".words-field"), "a note before the reply arrived")
+	page.write(".message-field", "one more look please")
 
-	held.serveAgain(oneDecisionReply)
-	page.waitFor(`!!document.querySelector('.decision[data-decision="c-3"]')`)
+	held.serveAgain(reusingIdentifierReply)
+	page.waitFor(`document.querySelector('.heading h1').textContent === 'an unrelated question reusing the identifier'`)
 
-	page.click(".send")
+	var ticked int
+	page.evaluate(`document.querySelectorAll('.choice:checked').length`, &ticked)
+	if ticked != 0 {
+		t.Errorf("a new document that reuses the identifier %q arrived with %d options selected, and the earlier answer was about a different question", "c-1", ticked)
+	}
+
+	var words, message string
+	page.evaluate(`(document.querySelector('.words-field') || {value: ""}).value`, &words)
+	page.evaluate(`document.querySelector('.message-field').value`, &message)
+	if words != "" {
+		t.Errorf("a new document arrived carrying the words %q a person wrote on the one before it", words)
+	}
+	if message != "" {
+		t.Errorf("a new document arrived carrying the message %q a person wrote on the one before it", message)
+	}
+
+	pressPastTheNotice(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
-		t.Fatal("sending after a re-render delivered nothing")
+		t.Fatal("sending after a new document arrived delivered nothing")
 	}
-	for _, decided := range delivered.Decisions {
-		if decided.ID == "c-1" {
-			t.Errorf("an answer committed before the re-render was carried into content that does not hold it: %+v", decided)
-		}
+	if len(delivered.Decisions) != 0 {
+		t.Errorf("an answer to the question a new document replaced was carried onto the card that reuses its identifier: %+v", delivered.Decisions)
 	}
 }
 
@@ -306,7 +458,6 @@ func TestEndingClosesTheExchange(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
-	page.click(within("c-1", ".commit"))
 	page.click(".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
@@ -343,7 +494,6 @@ func TestNoCommandReachesThePage(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
-	page.click(within("c-1", ".commit"))
 
 	var written string
 	page.evaluate(`document.documentElement.outerHTML`, &written)
@@ -358,30 +508,111 @@ func TestNoCommandReachesThePage(t *testing.T) {
 
 	delivered, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
-		t.Fatal("a committed decision was sent and nothing was delivered")
+		t.Fatal("a decision holding a selection was sent and nothing was delivered")
 	}
 	if diff := cmp.Diff([]string{"patch c-1"}, delivered.Decisions[0].Commands); diff != "" {
 		t.Errorf("what the caller was handed back differs (-want +got):\n%s\nthe command is the caller's, and it still has to arrive", diff)
 	}
 }
 
-func TestACommittedAnswerIsShownInTheWordsThePersonRead(t *testing.T) {
-	_, page := read(t, twoDecisionDocument)
+func TestWordsAloneOnADecisionAreACompleteAnswerAndComeBackWithTheWordsAndNoCommand(t *testing.T) {
+	const inTheirOwnWords = "leave it to whoever asked"
 
-	page.evaluate(chose("c-2", 0), nil)
+	held, page := read(t, twoDecisionDocument)
+
+	page.write(within("c-1", ".words-field"), inTheirOwnWords)
 	page.evaluate(chose("c-2", 2), nil)
-	page.click(within("c-2", ".commit"))
+	pressPastTheNotice(page, ".send")
+	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
-	var shown string
-	page.evaluate(`document.querySelector('.decision[data-decision="c-2"] .committed').textContent`, &shown)
-
-	for _, label := range []string{"the write", "the log line"} {
-		if !strings.Contains(shown, label) {
-			t.Errorf("what was committed is shown as %q, and it does not name the option %q the person read", shown, label)
-		}
+	delivered, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("words alone on a decision delivered nothing at all")
 	}
-	if strings.Contains(shown, "the metric") {
-		t.Errorf("what was committed is shown as %q, and it names an option nobody chose", shown)
+	if len(delivered.Decisions) != 1 {
+		t.Fatalf("words alone on one decision came back as %d answers: %+v", len(delivered.Decisions), delivered.Decisions)
+	}
+
+	said := delivered.Decisions[0]
+	if said.ID != "c-1" {
+		t.Errorf("what came back is attached to %q, and the words were written on %q", said.ID, "c-1")
+	}
+	if said.Words != inTheirOwnWords {
+		t.Errorf("the words came back as %q, want %q verbatim", said.Words, inTheirOwnWords)
+	}
+	if len(said.Chosen) != 0 || len(said.Commands) != 0 {
+		t.Errorf("words alone came back carrying %v chosen and the commands %v, and a complete answer of words alone carries no command", said.Chosen, said.Commands)
+	}
+}
+
+func TestEnterSubmitsTheForm(t *testing.T) {
+	held, page := read(t, oneDecisionDocument)
+
+	page.do(chromedp.Click(within("c-1", ".choice"), chromedp.ByQuery, chromedp.NodeVisible))
+	page.do(chromedp.KeyEvent(kb.Enter))
+	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
+
+	delivered, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("pressing enter on a control that does not swallow it delivered nothing")
+	}
+	if delivered.Ended {
+		t.Error("pressing enter reached the secondary press rather than the primary that is first in the document")
+	}
+
+	if violations := page.violations(); len(violations) != 0 {
+		t.Errorf("a real form navigation was attempted and blocked by the policy, and the submit handler is meant to prevent it: %v", violations)
+	}
+}
+
+func TestTheBarSitsAtTheEndOfThePageRatherThanFixedToTheViewport(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+	page.narrow(360, 480)
+
+	var positioned struct {
+		Position  string `json:"position"`
+		BelowFold bool   `json:"belowFold"`
+		Last      bool   `json:"last"`
+	}
+	page.evaluate(`(() => {
+  const bar = document.querySelector('.bar')
+  const style = getComputedStyle(bar)
+  return {
+    position: style.position,
+    belowFold: bar.getBoundingClientRect().top > window.innerHeight,
+    last: bar.parentElement === document.querySelector('form.exchange') && bar.nextElementSibling === null,
+  }
+})()`, &positioned)
+
+	if positioned.Position == "fixed" || positioned.Position == "sticky" {
+		t.Errorf("the bar is positioned %q, and it sits in the normal flow of the page rather than fixed to the viewport", positioned.Position)
+	}
+	if !positioned.BelowFold {
+		t.Error("the bar is visible without scrolling, and a page long enough to need scrolling was not given one")
+	}
+	if !positioned.Last {
+		t.Error("the bar is not the last thing on the page")
+	}
+}
+
+func TestAPageWhoseEveryDecisionAsksNothingShowsTheSameBarWithNoCounter(t *testing.T) {
+	normal := standing(t)
+	normalPage := opening(t, normal.serve(twoDecisionDocument))
+
+	var normalBar string
+	normalPage.evaluate(`document.querySelector('.bar').textContent.replace(/\s+/g, ' ').trim()`, &normalBar)
+
+	held := standing(t)
+	page := opening(t, held.serve(askingNothingDocument))
+
+	var barText string
+	page.evaluate(`document.querySelector('.bar').textContent.replace(/\s+/g, ' ').trim()`, &barText)
+
+	if barText != normalBar {
+		t.Errorf("a page whose every decision asks nothing shows the bar as %q, and a page with something to choose shows %q", barText, normalBar)
+	}
+	if regexp.MustCompile(`\d`).MatchString(barText) {
+		t.Errorf("the bar carries a digit, and there is no counter and no meter: %q", barText)
 	}
 }
 
@@ -408,9 +639,7 @@ func TestTheOptionTheCallerWouldTakeIsReadFirst(t *testing.T) {
 func TestRearrangingTheOptionsDoesNotRearrangeTheAnswer(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 
-	page.evaluate(chose("c-2", 2), nil)
-	page.click(within("c-2", ".commit"))
-	page.click(".send")
+	pressPastTheNotice(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	printed, failures, code := held.poll()
@@ -430,24 +659,173 @@ func TestRearrangingTheOptionsDoesNotRearrangeTheAnswer(t *testing.T) {
 	}
 }
 
-func TestMarkingIsNotChoosing(t *testing.T) {
+func TestTheRecommendationArrivesChosenAndADecisionMarkedNothingDoesNot(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 
-	var ticked int
-	page.evaluate(`document.querySelectorAll('.choice:checked').length`, &ticked)
-	if ticked != 0 {
-		t.Errorf("%d options arrive chosen, and a mark ranks an option rather than answering for the person", ticked)
+	var ticked []string
+	page.evaluate(`Array.from(document.querySelectorAll('.choice:checked')).map((held) => held.closest('.decision').dataset.decision + ':' + held.value)`, &ticked)
+	if diff := cmp.Diff([]string{"c-2:2"}, ticked); diff != "" {
+		t.Errorf("what arrives chosen before anybody touches the page differs (-want +got):\n%s", diff)
 	}
 
-	page.click(".send")
+	pressPastTheNotice(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
 		t.Fatal("sending delivered nothing at all")
 	}
-	for _, decided := range delivered.Decisions {
-		t.Errorf("a decision nobody touched was delivered: %+v", decided)
+	if len(delivered.Decisions) != 1 || delivered.Decisions[0].ID != "c-2" {
+		t.Fatalf("sending without touching anything carried %+v, want only the recommendation the document marked", delivered.Decisions)
+	}
+	if diff := cmp.Diff([]string{"the log line"}, delivered.Decisions[0].Chosen); diff != "" {
+		t.Errorf("what the recommendation carried differs (-want +got):\n%s", diff)
+	}
+}
+
+const variedSeverityDocument = `{
+  "title": "three things to settle",
+  "decisions": [
+    {
+      "id": "d-1",
+      "question": "an error needing a person",
+      "severity": "error",
+      "audience": "a person",
+      "mode": "single-choice",
+      "options": [
+        {"label": "fix it", "command": "patch d-1"},
+        {"label": "leave it", "command": "agree d-1", "recommended": true}
+      ]
+    },
+    {
+      "id": "d-2",
+      "question": "a warning the author patches",
+      "severity": "warning",
+      "audience": "the author patches",
+      "mode": "single-choice",
+      "options": [
+        {"label": "fix it", "command": "patch d-2", "recommended": true},
+        {"label": "leave it", "command": "agree d-2"}
+      ]
+    },
+    {
+      "id": "d-3",
+      "question": "an informational note",
+      "severity": "info",
+      "audience": "the author patches",
+      "mode": "single-choice",
+      "options": [
+        {"label": "fix it", "command": "patch d-3"},
+        {"label": "leave it", "command": "agree d-3", "recommended": true}
+      ]
+    }
+  ]
+}`
+
+func TestARecommendationArrivesChosenWhateverItsSeverityOrAudience(t *testing.T) {
+	_, page := read(t, variedSeverityDocument)
+
+	var ticked []string
+	page.evaluate(`Array.from(document.querySelectorAll('.choice:checked')).map((held) => held.closest('.decision').dataset.decision)`, &ticked)
+
+	want := []string{"d-1", "d-2", "d-3"}
+	if diff := cmp.Diff(want, ticked); diff != "" {
+		t.Errorf("which decisions arrive with their recommendation chosen differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestChoosingNoneOfTheseClearsTheSelectionAndMovesToTheField(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.evaluate(declined("c-1"), nil)
+
+	var ticked int
+	page.evaluate(`document.querySelectorAll('.decision[data-decision="c-1"] .choice:checked').length`, &ticked)
+	if ticked != 0 {
+		t.Errorf("choosing none of the options on c-1 left %d options ticked, want none", ticked)
+	}
+
+	var focused bool
+	page.evaluate(`document.activeElement === document.querySelector('.decision[data-decision="c-1"] .words-field')`, &focused)
+	if !focused {
+		t.Error("choosing none of the options does not move the cursor to the words field below it")
+	}
+}
+
+func TestChoosingNoneOfTheseAndTypingSendsTheWordsAndNoCommand(t *testing.T) {
+	const inTheirOwnWords = "I would rather write my own answer here"
+
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.evaluate(declined("c-1"), nil)
+	page.write(within("c-1", ".words-field"), inTheirOwnWords)
+	page.evaluate(chose("c-2", 2), nil)
+
+	pressPastTheNotice(page, ".send")
+	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
+
+	delivered, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("sending after declining every option and writing an answer delivered nothing")
+	}
+	if len(delivered.Decisions) != 1 || delivered.Decisions[0].ID != "c-1" {
+		t.Fatalf("what was sent is %+v, want only the decision that was declined and answered in words", delivered.Decisions)
+	}
+
+	said := delivered.Decisions[0]
+	if said.Words != inTheirOwnWords {
+		t.Errorf("the words came back as %q, want %q verbatim", said.Words, inTheirOwnWords)
+	}
+	if len(said.Chosen) != 0 || len(said.Commands) != 0 {
+		t.Errorf("declining every option and writing an answer came back carrying %v chosen and the commands %v", said.Chosen, said.Commands)
+	}
+}
+
+func TestChoosingNoneOfTheseAndTypingNothingLeavesTheDecisionBlank(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.evaluate(declined("c-1"), nil)
+
+	page.click(".send")
+	page.waitFor(noticeIsShowing)
+
+	if delivered, arrived := held.awaiting(shortWindow); arrived {
+		t.Fatalf("sending over a decision left blank by declining every option delivered an answer: %+v", delivered)
+	}
+
+	var said string
+	page.evaluate(`document.querySelector('.notice').textContent`, &said)
+	if !strings.Contains(said, "c-1") {
+		t.Errorf("the notice does not name the decision declining every option left blank: %q", said)
+	}
+}
+
+func TestAMultipleChoiceDecisionOffersNoWayToDeclineAndUntickingEveryBoxLeavesItBlank(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	var none int
+	page.evaluate(`document.querySelectorAll('.decision[data-decision="c-2"] .none').length`, &none)
+	if none != 0 {
+		t.Error("a multiple-choice decision renders a control for taking none of the options")
+	}
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.evaluate(chose("c-2", 2), nil)
+
+	page.click(".send")
+	page.waitFor(noticeIsShowing)
+
+	if delivered, arrived := held.awaiting(shortWindow); arrived {
+		t.Fatalf("sending over a multiple-choice decision left blank by unticking every box delivered an answer: %+v", delivered)
+	}
+
+	var said string
+	page.evaluate(`document.querySelector('.notice').textContent`, &said)
+	if !strings.Contains(said, "c-2") {
+		t.Errorf("the notice does not name the multiple-choice decision unticking every box left blank: %q", said)
 	}
 }
 
@@ -483,8 +861,7 @@ func TestAnAnnotationOnADecisionThatAskedNothingComesBack(t *testing.T) {
 	page := opening(t, held.serve(askingNothingDocument))
 
 	page.write(within("c-1", ".words-field"), inTheirOwnWords)
-	page.click(within("c-1", ".commit"))
-	page.click(".finish")
+	pressPastTheNotice(page, ".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
 	printed, failures, code := held.poll()

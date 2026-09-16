@@ -252,11 +252,16 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - Every entry of the source is rendered ahead of the decisions, and both are ordered by the severity the source carries, most severe first, informational last, an unstated severity after all of them, and ties in the order the document listed them.
 - The order is the surface's, so no field of a document reaches it, and a page with nothing to answer offers neither control and says so.
 - Every decision carries a free-text field that no document field can remove, including one that offers no options.
+- The option a document marks arrives chosen, a decision that marks none arrives with nothing chosen, and a decision offering options also offers taking none of them, which is not an option, carries no command and leaves the decision with nothing chosen.
+- What the controls hold at the submit is what is sent, so nothing is committed per decision, a decision holding no selection and no words is omitted, and a decision left blank is named before either press sends.
 - The languages the page highlights are the bundled library's common set, stated once and generated from `web/`, and a document naming one outside it is refused while one naming none renders as plain text.
 - A caller's fragment is reduced to a fixed allowlist before it is embedded, and every name it carries is prefixed by the surface.
 - A caller's stylesheet is reduced from a parse that reached the end of its input, every selector it keeps is scoped to the illustration, and the page admits it by a hash of exactly the bytes it embedded.
 - What a caller paints is contained by the illustration, so a rule inside one decides nothing about where the page's own controls land.
 - Delivery happens once, waiting is bounded, collection is per session, and the server stops once it has held no session for the idle period.
+- An exchange holds at most one uncollected answer, and a later submit replaces it rather than queueing behind it, so what a caller collects is a person's last word.
+- Collecting an answer is visible to the page, so the way back from a receipt is offered exactly while it would still reach the caller.
+- Nothing carries across a revision: not a selection, not a typed word, not the message and not the receipt, because a decision's identifier is unique only inside the document that names it.
 - A stream is told where the exchange stands when it connects rather than only when something next changes, so a client that missed a revision catches up rather than waiting on a change that has already happened.
 - The end of an exchange stops the page offering to answer and not the page listening, so a caller who writes again reaches the page the person is already looking at, and only the test about reloading reloads before it asserts.
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.

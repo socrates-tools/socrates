@@ -70,6 +70,15 @@ func attribute(node *html.Node, named string) string {
 	return ""
 }
 
+func hasAttribute(node *html.Node, named string) bool {
+	for _, held := range node.Attr {
+		if held.Key == named {
+			return true
+		}
+	}
+	return false
+}
+
 func hasClass(node *html.Node, named string) bool {
 	return slices.Contains(strings.Fields(attribute(node, "class")), named)
 }
@@ -334,14 +343,20 @@ func TestRearrangingTheOptionsDoesNotRearrangeTheAnswer(t *testing.T) {
 	}
 }
 
-func TestNothingArrivesChosen(t *testing.T) {
+func TestTheRecommendedOptionArrivesChosen(t *testing.T) {
 	read := threeOptions()
 	read.Decisions[0].Options[2].Recommended = true
 
-	for _, choice := range elements(rendered(t, read), "input") {
-		if attribute(choice, "checked") != "" {
-			t.Errorf("the option %q arrives chosen, and an answer nobody gave is indistinguishable from one they did", attribute(choice, "value"))
+	page := rendered(t, read)
+
+	var chosen []string
+	for _, choice := range elements(page, "input") {
+		if hasAttribute(choice, "checked") {
+			chosen = append(chosen, attribute(choice, "value"))
 		}
+	}
+	if diff := cmp.Diff([]string{"2"}, chosen); diff != "" {
+		t.Errorf("what arrives chosen differs from the option the document marked (-want +got):\n%s", diff)
 	}
 }
 
@@ -361,6 +376,76 @@ func TestADocumentThatMarksNothingIsUnaffected(t *testing.T) {
 				t.Error("the page carries a mark, and the document marked nothing")
 			}
 		}
+	}
+	for _, choice := range elements(page, "input") {
+		if hasAttribute(choice, "checked") {
+			t.Errorf("the option %q arrives chosen, and the document marked nothing", attribute(choice, "value"))
+		}
+	}
+}
+
+func noneControlIn(page *html.Node, decision string) *html.Node {
+	for _, held := range elements(page, "label") {
+		if !hasClass(held, "none") {
+			continue
+		}
+		for _, input := range elements(held, "input") {
+			if attribute(input, "data-decision") == decision {
+				return held
+			}
+		}
+	}
+	return nil
+}
+
+func TestASingleChoiceDecisionOffersTakingNoneOfThem(t *testing.T) {
+	page := rendered(t, oneDecision(document.One))
+
+	none := noneControlIn(page, "c-1")
+	if none == nil {
+		t.Fatal("a single-choice decision renders no control for taking none of the options")
+	}
+	if hasClass(none, "option") {
+		t.Error("the control for taking none of the options is counted as an option")
+	}
+
+	inputs := elements(none, "input")
+	if len(inputs) != 1 {
+		t.Fatalf("the control for taking none of the options carries %d inputs, want one", len(inputs))
+	}
+
+	control := inputs[0]
+	if attribute(control, "type") != "radio" {
+		t.Errorf("the control for taking none of the options renders as %q, want a radio", attribute(control, "type"))
+	}
+	if attribute(control, "data-part") != answering {
+		t.Errorf("the control for taking none of the options carries data-part %q, want %q", attribute(control, "data-part"), answering)
+	}
+	if hasClass(control, "choice") {
+		t.Error("the control for taking none of the options is counted as a choice")
+	}
+
+	var named string
+	for _, choice := range elements(page, "input") {
+		if hasClass(choice, "choice") && attribute(choice, "data-decision") == "c-1" {
+			named = attribute(choice, "name")
+			break
+		}
+	}
+	if named == "" || attribute(control, "name") != named {
+		t.Errorf("the control for taking none of the options is named %q, want the radio group %q", attribute(control, "name"), named)
+	}
+
+	if offered := len(optionsIn(page)); offered != 2 {
+		t.Errorf("a single-choice decision offering two options and a way to take none of them counts %d options", offered)
+	}
+}
+
+func TestAMultipleChoiceDecisionOffersNoWayToTakeNoneOfThem(t *testing.T) {
+	page := rendered(t, oneDecision(document.Many))
+
+	if none := noneControlIn(page, "c-1"); none != nil {
+		t.Error("a multiple-choice decision renders a control for taking none of the options")
 	}
 }
 
@@ -498,9 +583,15 @@ func everyCardCarriesTheField(page *html.Node) bool {
 
 func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 	read := citingASource()
-	read.Decisions[0].Mode = document.Many
 	read.Decisions[0].Fragment = document.Fragment{Markup: `<form><input name="smuggled"><button>publish</button></form>`}
 	read.Decisions[0].Evidence = document.Evidence{Patch: "--- a/x\n+++ b/x\n@@ -1,2 +1,2 @@\n-old\n+new\n"}
+
+	multiple := read.Decisions[0]
+	multiple.ID = "c-4"
+	multiple.Mode = document.Many
+	multiple.Fragment = document.Fragment{}
+	multiple.Evidence = document.Evidence{}
+	read.Decisions = append(read.Decisions, multiple)
 
 	page := rendered(t, read)
 
@@ -524,13 +615,17 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 	want := []string{
 		"answering choice",
 		"answering choice",
-		"answering commit",
-		"answering reopen",
+		"answering choice",
+		"answering choice",
+		"answering decline",
 		"answering words-field",
-		"sending discard",
+		"answering words-field",
+		"sending amend",
+		"sending exchange",
 		"sending finish",
-		"sending keep",
+		"sending keep-answering",
 		"sending message-field",
+		"sending receipt",
 		"sending send",
 	}
 	if !slices.Equal(want, parts) {

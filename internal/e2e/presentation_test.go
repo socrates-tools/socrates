@@ -139,7 +139,7 @@ func TestADecisionCanBeAnsweredWithoutAPointer(t *testing.T) {
 		}
 	}
 
-	for _, wanted := range []string{"choice", "words-field", "commit", "message-field", "send", "finish"} {
+	for _, wanted := range []string{"choice", "words-field", "message-field", "send", "finish"} {
 		if !seen[wanted] {
 			t.Errorf("the %s cannot be reached by keyboard alone", wanted)
 		}
@@ -406,7 +406,6 @@ func TestEveryTextMeetsTheContrastFloor(t *testing.T) {
 	_, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
-	page.click(within("c-1", ".commit"))
 
 	for _, preference := range []string{"light", "dark"} {
 		page.emulate(preference)
@@ -416,6 +415,29 @@ func TestEveryTextMeetsTheContrastFloor(t *testing.T) {
 
 		if read.Measured < 30 {
 			t.Fatalf("under a %s preference only %d texts were measured, and a check that saw almost nothing would pass forever", preference, read.Measured)
+		}
+		for _, failing := range read.Failing {
+			t.Errorf("under a %s preference %s, and the floor the page is held to is %v", preference, failing, contrastFloor)
+		}
+	}
+}
+
+func TestTheReceiptMeetsTheContrastFloor(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.write(".message-field", "one more look please")
+	page.click(".send")
+	page.waitFor(`!document.querySelector('.receipt').hidden`)
+
+	for _, preference := range []string{"light", "dark"} {
+		page.emulate(preference)
+
+		var read weighed
+		page.evaluate(measuringTheContrast, &read)
+
+		if read.Measured < 30 {
+			t.Fatalf("under a %s preference only %d texts were measured with the receipt showing, and a check that saw almost nothing would pass forever", preference, read.Measured)
 		}
 		for _, failing := range read.Failing {
 			t.Errorf("under a %s preference %s, and the floor the page is held to is %v", preference, failing, contrastFloor)
