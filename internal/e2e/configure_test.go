@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 	"github.com/socrates-tools/socrates/review/agent"
 	"github.com/socrates-tools/socrates/review/config"
-	"github.com/socrates-tools/socrates/review/exit"
 )
 
 func TestTheMenuListsEverySettingWithTheValueInForce(t *testing.T) {
@@ -30,8 +30,8 @@ func TestTheMenuListsEverySettingWithTheValueInForce(t *testing.T) {
 
 	menu.Type("q")
 	_, code := menu.Wait()
-	if code != exit.Clean {
-		t.Errorf("quitting the menu exited %d, want %d", code, exit.Clean)
+	if code != exit.NothingAsked {
+		t.Errorf("quitting the menu exited %d, want %d", code, exit.NothingAsked)
 	}
 }
 
@@ -80,7 +80,7 @@ func TestTheMenuAndTheReportAgreeAboutWhatIsInForce(t *testing.T) {
 	stateConfiguration(t, session, "reviewer_cli: codex\ndiff_ceiling: 4096\n")
 
 	printed, failures, code := session.Socrates("config")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review config exited %d: %s", code, failures)
 	}
 
@@ -298,7 +298,7 @@ func TestEverySettingWithNoFixedValuesOpensAFieldHoldingTheValueInForce(t *testi
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates("config")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review config exited %d: %s", code, failures)
 	}
 	reported := settingsIn(t, printed)
@@ -377,8 +377,8 @@ func TestQuittingTheMenuIsAKeyChosenForIt(t *testing.T) {
 	}
 
 	menu.Type("q")
-	if _, code := menu.Wait(); code != exit.Clean {
-		t.Errorf("quitting with q exited %d, want %d", code, exit.Clean)
+	if _, code := menu.Wait(); code != exit.NothingAsked {
+		t.Errorf("quitting with q exited %d, want %d", code, exit.NothingAsked)
 	}
 }
 
@@ -629,7 +629,7 @@ func TestUsingTheDefaultOnASettingAlreadyDefaultSaysSoRatherThanFailing(t *testi
 		t.Errorf("what was said names no setting:\n%s", drawn)
 	}
 	menu.Type("q")
-	if _, code := menu.Wait(); code != exit.Clean {
+	if _, code := menu.Wait(); code != exit.NothingAsked {
 		t.Errorf("defaulting a setting that was already a default exited %d", code)
 	}
 	if after := fileAt(t, path); after != held {
@@ -653,8 +653,8 @@ func TestAWriteThatCannotHappenIsSaidRatherThanSwallowed(t *testing.T) {
 	chooseOption(t, menu, "codex")
 
 	drawn, code := menu.Wait()
-	if code != exit.Usage {
-		t.Errorf("a write that could not happen exited %d, want %d:\n%s", code, exit.Usage, drawn)
+	if code != exit.Unusable {
+		t.Errorf("a write that could not happen exited %d, want %d:\n%s", code, exit.Unusable, drawn)
 	}
 	if !strings.Contains(drawn, path) {
 		t.Errorf("nothing said names the file that could not be written:\n%s", drawn)
@@ -672,8 +672,8 @@ func TestWithNoTerminalConfigureRefusesAndWritesNothing(t *testing.T) {
 	}
 
 	printed, failures, code := session.Socrates("configure")
-	if code != exit.Usage {
-		t.Fatalf("socrates-review configure with no terminal exited %d, want %d:\n%s%s", code, exit.Usage, printed, failures)
+	if code != exit.Unusable {
+		t.Fatalf("socrates-review configure with no terminal exited %d, want %d:\n%s%s", code, exit.Unusable, printed, failures)
 	}
 	if !strings.Contains(failures, "socrates-review config") {
 		t.Errorf("the refusal does not name the command that reads settings without a terminal: %s", failures)
@@ -692,8 +692,8 @@ func TestInputRedirectedFromAFileStillRefuses(t *testing.T) {
 	session := harness.Start(t)
 
 	_, failures, code := session.SocratesReading("q\n", "configure")
-	if code != exit.Usage {
-		t.Fatalf("socrates-review configure with input redirected exited %d, want %d", code, exit.Usage)
+	if code != exit.Unusable {
+		t.Fatalf("socrates-review configure with input redirected exited %d, want %d", code, exit.Unusable)
 	}
 	if !strings.Contains(failures, "socrates-review config") {
 		t.Errorf("the refusal does not name the command that reads settings without a terminal: %s", failures)
@@ -755,8 +755,8 @@ func TestTheExceptionIsOneCommandWide(t *testing.T) {
 
 	for _, command := range [][]string{{"config"}, {"begin"}} {
 		_, failures, code := session.Socrates(command...)
-		if code != exit.Usage {
-			t.Errorf("socrates-review %s with a file socrates-review cannot read exited %d, want %d", command[0], code, exit.Usage)
+		if code != exit.Unusable {
+			t.Errorf("socrates-review %s with a file socrates-review cannot read exited %d, want %d", command[0], code, exit.Unusable)
 		}
 		if !strings.Contains(failures, configurationPath(t, session)) {
 			t.Errorf("socrates-review %s does not refuse by naming the file: %s", command[0], failures)

@@ -11,6 +11,7 @@ import (
 	"github.com/chromedp/chromedp/kb"
 	"github.com/google/go-cmp/cmp"
 	"github.com/socrates-tools/socrates/agora/surface"
+	"github.com/socrates-tools/socrates/internal/exit"
 )
 
 const shortWindow = 500 * time.Millisecond
@@ -314,7 +315,7 @@ func TestTheWayBackIsWithdrawnOnceTheCallerCollectsAndThePageSaysSo(t *testing.T
 		t.Fatal("the way back is not offered before the caller collects")
 	}
 
-	if _, failures, code := held.poll(); code != 0 {
+	if _, failures, code := held.poll(); code != exit.NothingAsked {
 		t.Fatalf("agora poll exited %d: %s", code, failures)
 	}
 
@@ -643,7 +644,7 @@ func TestRearrangingTheOptionsDoesNotRearrangeTheAnswer(t *testing.T) {
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	printed, failures, code := held.poll()
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("agora poll exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, "keep c-2 log") {
@@ -865,7 +866,7 @@ func TestAnAnnotationOnADecisionThatAskedNothingComesBack(t *testing.T) {
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
 	printed, failures, code := held.poll()
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("agora poll exited %d: %s", code, failures)
 	}
 

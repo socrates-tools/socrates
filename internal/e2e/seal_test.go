@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/process"
 	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/review/exit"
 	"github.com/socrates-tools/socrates/review/runstate"
 )
 
@@ -33,8 +33,8 @@ func TestASealThatDoesNotHoldIsARefusal(t *testing.T) {
 
 	out, failures, code := session.SocratesWith(session.Repository.Root, []string{state.HomeVariable + "=" + home}, "begin")
 
-	if code != exit.Usage {
-		t.Fatalf("socrates-review begin exited %d on a filesystem that enforces nothing, want the usage code %d: %s%s", code, exit.Usage, out, failures)
+	if code != exit.Unusable {
+		t.Fatalf("socrates-review begin exited %d on a filesystem that enforces nothing, want the usage code %d: %s%s", code, exit.Unusable, out, failures)
 	}
 	if !strings.Contains(failures, "worktree") || !strings.Contains(failures, "filesystem") {
 		t.Errorf("the refusal reads %q, without naming the worktree and the filesystem", failures)

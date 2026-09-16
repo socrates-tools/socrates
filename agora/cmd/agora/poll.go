@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/socrates-tools/socrates/agora/surface"
+	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/refusal"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +34,7 @@ func newPollCommand(code *int) *cobra.Command {
 			}
 			if !arrived {
 				fmt.Fprintln(command.OutOrStdout(), nobodyAnswered)
-				*code = unanswered
+				*code = exit.SomethingAsked
 				return nil
 			}
 

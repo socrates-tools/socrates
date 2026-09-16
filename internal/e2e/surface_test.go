@@ -17,6 +17,7 @@ import (
 
 	"github.com/socrates-tools/socrates/agora/surface"
 	"github.com/socrates-tools/socrates/internal/convention"
+	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/socrates-tools/socrates/internal/testing/gitrepo"
 	"github.com/socrates-tools/socrates/internal/testing/source"
@@ -123,7 +124,7 @@ func (s *surfaced) serve(document string) string {
 	s.t.Helper()
 
 	printed, failures, code := s.reading(document, s.serving()...)
-	if code != 0 {
+	if code != exit.NothingAsked {
 		s.t.Fatalf("agora serve exited %d: %s", code, failures)
 	}
 	address := strings.TrimSpace(printed)
@@ -140,7 +141,7 @@ func (s *surfaced) serveOnto(session, document string) string {
 	s.t.Helper()
 
 	printed, failures, code := s.reading(document, s.serving("--session", session)...)
-	if code != 0 {
+	if code != exit.NothingAsked {
 		s.t.Fatalf("agora serve --session exited %d: %s", code, failures)
 	}
 	return strings.TrimSpace(printed)
@@ -186,7 +187,7 @@ func (s *surfaced) poll(arguments ...string) (string, string, int) {
 func (s *surfaced) end(session string) {
 	s.t.Helper()
 
-	if _, failures, code := s.run("end", "--session", session); code != 0 {
+	if _, failures, code := s.run("end", "--session", session); code != exit.NothingAsked {
 		s.t.Fatalf("agora end exited %d: %s", code, failures)
 	}
 }
@@ -227,7 +228,7 @@ func TestTheSurfaceOffersNothingBeyondTheFive(t *testing.T) {
 	held := standing(t)
 
 	printed, failures, code := held.run("--help")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("agora --help exited %d: %s", code, failures)
 	}
 
@@ -346,7 +347,7 @@ func TestADocumentWithNothingAtAllIsRefused(t *testing.T) {
 	held := standing(t)
 
 	printed, failures, code := held.reading(nothingAtAllDocument, "serve", "--document", "-")
-	if code == 0 {
+	if code == exit.NothingAsked {
 		t.Fatalf("a document holding nothing at all was served at %q", printed)
 	}
 	if !strings.Contains(failures, "hold nothing") {
@@ -362,7 +363,7 @@ func TestAWildcardBindIsRefusedByTheBinary(t *testing.T) {
 	held := standing(t)
 
 	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", "0.0.0.0:0")
-	if code == 0 {
+	if code == exit.NothingAsked {
 		t.Fatalf("agora serve bound every interface and printed %q", printed)
 	}
 	if !strings.Contains(failures, "0.0.0.0:0") {
@@ -436,7 +437,7 @@ func TestServeRefusesADocumentMarkingTwoOptions(t *testing.T) {
 	held := standing(t)
 
 	printed, failures, code := held.reading(twoRecommendedDocument, "serve", "--document", "-")
-	if code == 0 {
+	if code == exit.NothingAsked {
 		t.Fatalf("a document marking two options was served at %q", printed)
 	}
 	if !strings.Contains(failures, "c-1") {
@@ -493,7 +494,7 @@ func TestTheRepositoryIsUntouched(t *testing.T) {
 		})
 
 		printed, failures, code := held.run("poll", "--session", session)
-		if code != 0 {
+		if code != exit.NothingAsked {
 			t.Fatalf("agora poll exited %d: %s", code, failures)
 		}
 		if !strings.Contains(printed, "patch c-1") {
@@ -502,7 +503,7 @@ func TestTheRepositoryIsUntouched(t *testing.T) {
 		held.end(session)
 	}
 
-	if _, failures, code := held.run("stop"); code != 0 {
+	if _, failures, code := held.run("stop"); code != exit.NothingAsked {
 		t.Fatalf("agora stop exited %d: %s", code, failures)
 	}
 

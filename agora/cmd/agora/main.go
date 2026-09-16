@@ -5,19 +5,13 @@ import (
 	"os"
 
 	"github.com/socrates-tools/socrates/agora/surface"
+	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/refusal"
 	"github.com/spf13/cobra"
 )
 
-const (
-	answered   = 0
-	unanswered = 1
-	failed     = 2
-	usage      = 3
-)
-
 func main() {
-	code := answered
+	code := exit.NothingAsked
 
 	if err := newRootCommand(&code).Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, failurePrefix+err.Error())
@@ -59,7 +53,7 @@ func newRootCommand(code *int) *cobra.Command {
 
 func exitFor(err error) int {
 	if refusal.Is(err) {
-		return usage
+		return exit.Unusable
 	}
-	return failed
+	return exit.Failed
 }

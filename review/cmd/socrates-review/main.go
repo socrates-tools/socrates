@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/refusal"
-	"github.com/socrates-tools/socrates/review/exit"
 	"github.com/spf13/cobra"
 )
 
 func main() {
-	code := exit.Clean
+	code := exit.NothingAsked
 
 	if err := newRootCommand(&code).Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, failurePrefix+err.Error())
@@ -57,7 +57,7 @@ func newRootCommand(code *int) *cobra.Command {
 
 func exitFor(err error) int {
 	if refusal.Is(err) {
-		return exit.Usage
+		return exit.Unusable
 	}
 	return exit.Failed
 }

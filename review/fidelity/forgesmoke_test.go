@@ -13,12 +13,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/socrates-tools/socrates/internal/testing/simulator"
 	"github.com/socrates-tools/socrates/internal/testing/source"
 	"github.com/socrates-tools/socrates/review/agent"
 	"github.com/socrates-tools/socrates/review/dialogue"
-	"github.com/socrates-tools/socrates/review/exit"
 	"github.com/socrates-tools/socrates/review/snapshot"
 )
 
@@ -29,7 +29,7 @@ const (
 
 const (
 	whileTheRoundIsParked        = exit.Working
-	onceTheFindingsAreHandedOver = exit.Escalated
+	onceTheFindingsAreHandedOver = exit.SomethingAsked
 )
 
 const whatAReviewerFoundInTheFixture = `{"findings":[` +

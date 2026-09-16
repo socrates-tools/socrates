@@ -9,10 +9,10 @@ import (
 	"maps"
 	"slices"
 
+	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 	"github.com/socrates-tools/socrates/review/agent"
 	"github.com/socrates-tools/socrates/review/config"
-	"github.com/socrates-tools/socrates/review/exit"
 )
 
 var everySettingReported = []string{
@@ -32,7 +32,7 @@ func TestWithNoConfigurationFileEverySettingReportsItsDefault(t *testing.T) {
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates("config")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review config with no configuration file exited %d: %s", code, failures)
 	}
 
@@ -58,7 +58,7 @@ func TestOnlyTheSettingsTheFileStatesReportAsSet(t *testing.T) {
 	stateConfiguration(t, session, "diff_ceiling: 4096\nrun_retention: 72h\n")
 
 	printed, failures, code := session.Socrates("config")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review config exited %d: %s", code, failures)
 	}
 
@@ -86,7 +86,7 @@ func TestTheModelAndEffortReportedAreTheConfiguredReviewerCLIs(t *testing.T) {
 	stateConfiguration(t, session, "reviewer_cli: codex\n")
 
 	printed, failures, code := session.Socrates("config")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review config exited %d: %s", code, failures)
 	}
 
@@ -111,7 +111,7 @@ func TestAReviewerCLISocratesReviewWillNotDriveStillReports(t *testing.T) {
 	stateConfiguration(t, session, "reviewer_cli: "+unsupported+"\n")
 
 	printed, failures, code := session.Socrates("config")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review config with %s configured exited %d: %s", unsupported, code, failures)
 	}
 	if reported := settingsIn(t, printed)["reviewer_cli"]; reported.Value != unsupported || reported.Source != config.Set {
@@ -119,8 +119,8 @@ func TestAReviewerCLISocratesReviewWillNotDriveStillReports(t *testing.T) {
 	}
 
 	_, refused, beginCode := session.Socrates("begin")
-	if beginCode != exit.Usage {
-		t.Fatalf("socrates-review begin with %s configured exited %d, want %d", unsupported, beginCode, exit.Usage)
+	if beginCode != exit.Unusable {
+		t.Fatalf("socrates-review begin with %s configured exited %d, want %d", unsupported, beginCode, exit.Unusable)
 	}
 	if !strings.Contains(refused, unsupported) {
 		t.Errorf("socrates-review begin does not refuse %s by name: %s", unsupported, refused)
@@ -131,7 +131,7 @@ func TestTheFileNamedIsTheOneUnderTheStatedHome(t *testing.T) {
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates("config")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review config exited %d: %s", code, failures)
 	}
 	if first := firstLine(printed); first != configurationPath(t, session) {
@@ -144,8 +144,8 @@ func TestAConfigurationFileThatWillNotParseIsRefusedByConfigToo(t *testing.T) {
 	stateConfiguration(t, session, "roles: [not a mapping\n")
 
 	printed, failures, code := session.Socrates("config")
-	if code != exit.Usage {
-		t.Fatalf("socrates-review config with a file that does not parse exited %d, want %d", code, exit.Usage)
+	if code != exit.Unusable {
+		t.Fatalf("socrates-review config with a file that does not parse exited %d, want %d", code, exit.Unusable)
 	}
 	if !strings.Contains(failures, configurationPath(t, session)) {
 		t.Errorf("the refusal does not name the file: %s", failures)

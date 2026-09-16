@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/testing/gitrepo"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 	"github.com/socrates-tools/socrates/review/prompt"
@@ -87,7 +88,7 @@ func TestTheStatusPrintsTheBaseItResolved(t *testing.T) {
 	session.WaitFor(name, runstate.Clean)
 
 	printed, failures, code := session.Socrates("status", name)
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review status exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, "base: "+forked) {
@@ -110,7 +111,7 @@ func TestANamedBaseIsPinnedForTheWholeRun(t *testing.T) {
 	respond(t, session, name, "--finding", "f2", "--rejected", "--reason", "there is no retry loop in this function at all")
 	session.Repository.Commit("the author committed the patches while the run waited")
 
-	if _, failures, code := session.Socrates("continue", name, "--wait"); code != 0 {
+	if _, failures, code := session.Socrates("continue", name, "--wait"); code != exit.NothingAsked {
 		t.Fatalf("socrates-review continue --wait exited %d: %s", code, failures)
 	}
 
@@ -135,8 +136,8 @@ func TestABranchWithNothingAheadOfItsBaseIsNotCalledClean(t *testing.T) {
 	session.Repository.Git("switch", "--quiet", "--create", "feature")
 
 	printed, failures, code := session.Socrates("begin", "--base", "main")
-	if code != 3 {
-		t.Fatalf("reviewing a branch with nothing ahead of its base exited %d, want 3: %s\n%s", code, failures, printed)
+	if code != exit.Unusable {
+		t.Fatalf("reviewing a branch with nothing ahead of its base exited %d, want %d: %s\n%s", code, exit.Unusable, failures, printed)
 	}
 	for _, said := range []string{"nothing", "--base"} {
 		if !strings.Contains(failures, said) {
@@ -159,8 +160,8 @@ func TestAWorkingTreeWithNothingInItIsNotCalledCleanEither(t *testing.T) {
 	session.Simulator.Scenario(cleanScenario)
 
 	printed, failures, code := session.Socrates("begin")
-	if code != 3 {
-		t.Fatalf("reviewing a working tree identical to its base exited %d, want 3: %s\n%s", code, failures, printed)
+	if code != exit.Unusable {
+		t.Fatalf("reviewing a working tree identical to its base exited %d, want %d: %s\n%s", code, exit.Unusable, failures, printed)
 	}
 	if names := session.Names(); len(names) != 0 {
 		t.Errorf("a refused review left the runs %v behind", names)
@@ -173,8 +174,8 @@ func TestABaseNothingResolvesIsRefusedBeforeAnythingHappens(t *testing.T) {
 	session.Repository.Write("internal/added.go", theBranchesOwnWork)
 
 	printed, failures, code := session.Socrates("begin", "--base", "origin/develop")
-	if code != 3 {
-		t.Fatalf("reviewing against a base that does not resolve exited %d, want 3: %s\n%s", code, failures, printed)
+	if code != exit.Unusable {
+		t.Fatalf("reviewing against a base that does not resolve exited %d, want %d: %s\n%s", code, exit.Unusable, failures, printed)
 	}
 	if !strings.Contains(failures, "origin/develop") {
 		t.Errorf("the refusal does not name what was asked for: %s", failures)
@@ -197,8 +198,8 @@ func TestABaseWithNoCommonAncestorIsRefusedAndNamed(t *testing.T) {
 	session.Repository.Write("internal/added.go", theBranchesOwnWork)
 
 	printed, failures, code := session.Socrates("begin", "--base", "main")
-	if code != 3 {
-		t.Fatalf("reviewing against a base with no common ancestor exited %d, want 3: %s\n%s", code, failures, printed)
+	if code != exit.Unusable {
+		t.Fatalf("reviewing against a base with no common ancestor exited %d, want %d: %s\n%s", code, exit.Unusable, failures, printed)
 	}
 	if !strings.Contains(failures, "main") {
 		t.Errorf("the refusal does not name the base: %s", failures)
@@ -264,7 +265,7 @@ func TestAReviewFromAWorktreeOfAnotherBranchIsOfThatBranchAlone(t *testing.T) {
 	elsewhere = gitrepo.At(t, elsewhere).Root
 
 	out, failures, code := session.SocratesIn(elsewhere, "begin", "--base", "main", "--not-my-change", "--wait")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("reviewing from a worktree of another branch exited %d: %s\n%s", code, failures, out)
 	}
 

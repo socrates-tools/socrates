@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/socrates-tools/socrates/review/dialogue"
-	"github.com/socrates-tools/socrates/review/exit"
 	"github.com/socrates-tools/socrates/review/findings"
 	"github.com/socrates-tools/socrates/review/runstate"
 	"github.com/socrates-tools/socrates/review/runstore"
@@ -173,7 +172,7 @@ func reasonOf(run *runstore.Run) string {
 }
 
 func (s Status) Code() int {
-	return exit.For(s.State)
+	return s.State.Code()
 }
 
 func (s Status) Lines() []string {
@@ -206,7 +205,7 @@ func (s Status) Lines() []string {
 }
 
 func (f Findings) Code() int {
-	return exit.For(f.State)
+	return f.State.Code()
 }
 
 func (f Findings) Lines() []string {

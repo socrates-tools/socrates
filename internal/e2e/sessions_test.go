@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/socrates-tools/socrates/agora/surface"
+	"github.com/socrates-tools/socrates/internal/exit"
 )
 
 func (s *surfaced) twoPages() (string, string, string, string) {
@@ -78,7 +80,7 @@ func TestASessionIsNamedToPollIt(t *testing.T) {
 	})
 
 	printed, failures, code := held.run("poll", "--session", second)
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("agora poll --session exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, onTheSecondPage) {
@@ -90,6 +92,45 @@ func TestASessionIsNamedToPollIt(t *testing.T) {
 	}
 }
 
+func TestAPageNobodyAnsweredExitsTheCodeForSomethingAsked(t *testing.T) {
+	// scenario: A session is named to poll it, and nobody has answered it
+	held := servingSurface(t)
+
+	const session = "a-page-nobody-answered"
+	nobodyAnswers := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.URL.Path != "/sessions/"+session+"/answer" {
+			t.Errorf("agora poll asked for %q, and what waits on an answer is /sessions/%s/answer", request.URL.Path, session)
+			http.Error(writer, "that is not the route agora poll waits on", http.StatusNotFound)
+			return
+		}
+		if request.Header.Get(surface.TokenHeader) == "" {
+			t.Errorf("agora poll asked for %q carrying no token", request.URL.Path)
+		}
+		writer.WriteHeader(http.StatusNoContent)
+	}))
+	t.Cleanup(nobodyAnswers.Close)
+
+	if err := os.MkdirAll(held.surfaceHome(), 0o700); err != nil {
+		t.Fatalf("preparing a home for a surface that never answers: %v", err)
+	}
+	written, err := json.Marshal(surface.Record{Address: nobodyAnswers.Listener.Addr().String(), Token: "a-token-this-surface-never-checks"})
+	if err != nil {
+		t.Fatalf("writing a record for a surface that never answers: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(held.surfaceHome(), "surface.json"), written, 0o600); err != nil {
+		t.Fatalf("writing a record for a surface that never answers: %v", err)
+	}
+
+	held.opened = session
+	printed, failures, code := held.poll()
+	if code != exit.SomethingAsked {
+		t.Fatalf("agora poll on a page nobody answered exited %d, want %d: %s%s", code, exit.SomethingAsked, printed, failures)
+	}
+	if !strings.Contains(printed, "nobody answered") {
+		t.Errorf("agora poll on a page nobody answered does not say so: %s", printed)
+	}
+}
+
 func TestAPollNamingNoSessionIsRefused(t *testing.T) {
 	// scenario: A session is named to poll it
 	held := standing(t)
@@ -98,7 +139,7 @@ func TestAPollNamingNoSessionIsRefused(t *testing.T) {
 	for _, command := range []string{"poll", "end"} {
 		t.Run(command, func(t *testing.T) {
 			printed, failures, code := held.run(command)
-			if code == 0 {
+			if code == exit.NothingAsked {
 				t.Fatalf("agora %s naming no session succeeded: %s", command, printed)
 			}
 			if !strings.Contains(failures, "--session") {
@@ -131,7 +172,7 @@ func TestASessionTheSurfaceNeverMintedIsRefusedByTheBinary(t *testing.T) {
 	before := held.opened
 
 	printed, failures, code := held.reading(oneDecisionDocument, held.serving("--session", neverMinted)...)
-	if code == 0 {
+	if code == exit.NothingAsked {
 		t.Fatalf("naming a session the surface does not hold brought one into existence at %q", printed)
 	}
 	if !strings.Contains(failures, neverMinted) {
@@ -172,7 +213,7 @@ func TestStoppingIsTheServerNotASession(t *testing.T) {
 	firstAddress, _, secondAddress, _ := held.twoPages()
 	bound := held.record().Address
 
-	if _, failures, code := held.run("stop"); code != 0 {
+	if _, failures, code := held.run("stop"); code != exit.NothingAsked {
 		t.Fatalf("agora stop exited %d: %s", code, failures)
 	}
 	untilThePortIsFree(t, bound)
@@ -192,7 +233,7 @@ func TestStopNamesNoSession(t *testing.T) {
 	held.serve(oneDecisionDocument)
 
 	printed, failures, code := held.run("stop", "--session", held.opened)
-	if code == 0 {
+	if code == exit.NothingAsked {
 		t.Fatalf("agora stop took a session: %s", printed)
 	}
 	if !strings.Contains(failures, "session") {
@@ -212,7 +253,7 @@ func TestAServeWhosePortSomethingElseHoldsIsRefused(t *testing.T) {
 	taken := listener.Addr().String()
 
 	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", taken)
-	if code == 0 {
+	if code == exit.NothingAsked {
 		t.Fatalf("agora serve took a port something else holds and printed %q", printed)
 	}
 	if !strings.Contains(failures, taken) {
@@ -288,7 +329,7 @@ func TestAStrangerOnThePortIsNotMistakenForTheSurface(t *testing.T) {
 	held.serve(oneDecisionDocument)
 
 	bound := held.record().Address
-	if _, failures, code := held.run("stop"); code != 0 {
+	if _, failures, code := held.run("stop"); code != exit.NothingAsked {
 		t.Fatalf("agora stop exited %d: %s", code, failures)
 	}
 	untilThePortIsFree(t, bound)
@@ -301,7 +342,7 @@ func TestAStrangerOnThePortIsNotMistakenForTheSurface(t *testing.T) {
 	defer func() { _ = stranger.Close() }()
 
 	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", bound)
-	if code == 0 {
+	if code == exit.NothingAsked {
 		t.Fatalf("agora served at %q with a stranger holding the port it remembered", printed)
 	}
 	if !strings.Contains(failures, bound) || !strings.Contains(failures, "--address") {
@@ -361,7 +402,7 @@ func TestAnotherAgorasSurfaceIsNotMistakenForThisOne(t *testing.T) {
 	}
 
 	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", shared)
-	if code == 0 {
+	if code == exit.NothingAsked {
 		t.Fatalf("agora served at %q on a port another agora holds", printed)
 	}
 	if !strings.Contains(failures, shared) || !strings.Contains(failures, "--address") {

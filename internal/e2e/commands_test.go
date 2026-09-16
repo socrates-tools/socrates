@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/testing/gitrepo"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/review/exit"
 	"github.com/socrates-tools/socrates/review/runstate"
 )
 
@@ -19,7 +19,7 @@ func TestTheCommandSurfaceIsWhatItSays(t *testing.T) {
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates("--help")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates --help exited %d: %s", code, failures)
 	}
 
@@ -43,8 +43,8 @@ func TestTheOldVerbIsRefusedAsAnUnknownCommand(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	printed, failures, code := session.Socrates("review")
-	if code != exit.Usage {
-		t.Fatalf("socrates-review review exited %d, want the usage code %d: %s%s", code, exit.Usage, printed, failures)
+	if code != exit.Unusable {
+		t.Fatalf("socrates-review review exited %d, want the usage code %d: %s%s", code, exit.Unusable, printed, failures)
 	}
 	if strings.TrimSpace(printed) != "" {
 		t.Errorf("the refused command printed %q, so something started", printed)
@@ -87,7 +87,7 @@ func TestTheDefaultDoesNotBlock(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	printed, failures, code := session.Socrates("begin")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review begin exited %d: %s", code, failures)
 	}
 
@@ -102,8 +102,8 @@ func TestTheDefaultDoesNotBlock(t *testing.T) {
 	}
 
 	_, _, statusCode := session.Socrates("status", name)
-	if statusCode != 4 {
-		t.Errorf("socrates-review status of a running review exited %d, want 4", statusCode)
+	if statusCode != exit.Working {
+		t.Errorf("socrates-review status of a running review exited %d, want %d", statusCode, exit.Working)
 	}
 }
 
@@ -113,7 +113,7 @@ func TestWaitingReturnsTheVerdict(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	printed, failures, code := session.Socrates("begin", "--wait")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review begin --wait exited %d: %s\n%s", code, failures, printed)
 	}
 	if !strings.Contains(printed, string(runstate.Clean)) {
@@ -132,7 +132,7 @@ func TestStartingIsNotAVerdict(t *testing.T) {
 	session.Repository.Write("internal/added.go", "package internal\n")
 
 	printed, failures, code := session.Socrates("begin")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review begin exited %d for a run that later escalates: %s", code, failures)
 	}
 
@@ -148,9 +148,9 @@ func TestEachVerdictHasItsOwnCodeFromTheCommand(t *testing.T) {
 		state    runstate.State
 		code     int
 	}{
-		{scenario: cleanScenario, state: runstate.Clean, code: 0},
-		{scenario: escalatingScenario, state: runstate.Escalated, code: 1},
-		{scenario: "default:\n  behaviour: no-result\n", state: runstate.Failed, code: 2},
+		{scenario: cleanScenario, state: runstate.Clean, code: exit.NothingAsked},
+		{scenario: escalatingScenario, state: runstate.Escalated, code: exit.SomethingAsked},
+		{scenario: "default:\n  behaviour: no-result\n", state: runstate.Failed, code: exit.Failed},
 	} {
 		t.Run(string(verdict.state), func(t *testing.T) {
 			session := harness.Start(t)
@@ -177,8 +177,8 @@ func TestAUsageErrorIsNotAVerdictFromTheCommand(t *testing.T) {
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates("status", "20200101T000000Z-deadbeef")
-	if code != 3 {
-		t.Errorf("socrates-review status of a run that does not exist exited %d, want 3", code)
+	if code != exit.Unusable {
+		t.Errorf("socrates-review status of a run that does not exist exited %d, want %d", code, exit.Unusable)
 	}
 	if !strings.Contains(failures, "20200101T000000Z-deadbeef") {
 		t.Errorf("the refusal does not name the run asked for: %s", failures)
@@ -199,7 +199,7 @@ func TestMachineReadableOnRequest(t *testing.T) {
 	session.WaitForTerminal(name)
 
 	printed, failures, code := session.Socrates("status", "--json", name)
-	if code != 1 {
+	if code != exit.SomethingAsked {
 		t.Fatalf("socrates-review status --json exited %d: %s", code, failures)
 	}
 
@@ -235,7 +235,7 @@ func TestFindingsAreReadableFromTheCommand(t *testing.T) {
 	session.WaitForTerminal(name)
 
 	printed, failures, code := session.Socrates("findings", name)
-	if code != 1 {
+	if code != exit.SomethingAsked {
 		t.Fatalf("socrates-review findings exited %d: %s", code, failures)
 	}
 	for _, needed := range []string{
@@ -275,7 +275,7 @@ func TestTheBareCommandFindsThisRepositorysRun(t *testing.T) {
 	}
 
 	printed, failures, code := session.SocratesIn(elsewhere.Root, "status")
-	if code != 0 && code != 4 {
+	if code != exit.NothingAsked && code != exit.Working {
 		t.Fatalf("socrates-review status in the second repository exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, there) {
@@ -290,7 +290,7 @@ func mustBegin(t *testing.T, session *harness.Session, directory string) string 
 	t.Helper()
 
 	printed, failures, code := session.SocratesIn(directory, "begin")
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review begin in %s exited %d: %s", directory, code, failures)
 	}
 	return printed
@@ -301,7 +301,7 @@ func TestARepositoryWithNoRuns(t *testing.T) {
 	untouched := gitrepo.New(t)
 
 	printed, failures, code := session.SocratesIn(untouched.Root, "status")
-	if code != 3 {
+	if code != exit.Unusable {
 		t.Errorf("socrates-review status in a repository that has never been reviewed exited %d, want 3", code)
 	}
 	if !strings.Contains(failures, untouched.Root) {
@@ -322,7 +322,7 @@ func TestAnIdentifierWinsOverTheDefault(t *testing.T) {
 
 	elsewhere := gitrepo.New(t)
 	printed, failures, code := session.SocratesIn(elsewhere.Root, "status", name)
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review status of a named run exited %d from another repository: %s", code, failures)
 	}
 	if !strings.Contains(printed, name) {
@@ -340,7 +340,7 @@ func TestCancellingStopsEverything(t *testing.T) {
 	started := session.Recorded(name)
 
 	printed, failures, code := session.Socrates("cancel", name)
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review cancel exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, name) {
@@ -366,7 +366,7 @@ func TestCancellingATerminalRunChangesNothing(t *testing.T) {
 	before := session.WaitForTerminal(name)
 
 	printed, failures, code := session.Socrates("cancel", name)
-	if code != 0 {
+	if code != exit.NothingAsked {
 		t.Fatalf("socrates-review cancel of a finished run exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, string(before.State)) {
@@ -408,7 +408,7 @@ func TestAnUnreadableConfigurationFileIsARefusalFromTheCommand(t *testing.T) {
 	}
 
 	_, failures, code := session.Socrates("begin")
-	if code != 3 {
+	if code != exit.Unusable {
 		t.Errorf("socrates-review begin with a configuration file that does not parse exited %d, want 3", code)
 	}
 	if !strings.Contains(failures, path) {

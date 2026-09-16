@@ -47,7 +47,7 @@ What socrates-review is:
 - `review/follow` - following a run's event log live.
 - `review/terminal` - the pager, the plain fallback, and whether a stream is a terminal at all.
 - `review/skill` - the two skills a coding session reads, one for its own change and one for somebody else's, and installing them.
-- `review/exit`, `internal/version`, `review/config`, `review/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file both binaries read and what every setting in force is, the JSONL log, the one home both binaries write under, refusals, process groups.
+- `internal/exit`, `internal/version`, `review/config`, `review/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file both binaries read and what every setting in force is, the JSONL log, the one home both binaries write under, refusals, process groups.
 - `review/corpus` - what real reviewers answered, verbatim and embedded, and what the routing rule does with it.
 - `review/fidelity` - the recorded shapes of each real CLI, what was measured about each one's criteria, the drift check, the live smoke check and the forge check, all network behind a build tag.
 - `review/simulation` - what every simulator shares: the scenario vocabulary, the invocation log, and the run that turns one into the other.
@@ -118,7 +118,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 
 **The reviewer**
 
-- `internal/agent` is the only package that starts a model process.
+- `review/agent` is the only package that starts a model process.
 - The reviewer CLIs socrates-review drives are stated once, each beside the facts that make it qualify, and support follows from those facts rather than from a list.
 - A CLI qualifies on three things: the reviewed repository's own instructions can be kept out of the session, a terminal event says whether the work happened and what it said about a failure, and a model is selectable per invocation.
 - Whether the vendor constrains output against the schema is a tier rather than a criterion, because socrates-review validates the document either way.
@@ -150,7 +150,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 
 - Every round of a run that ended in `clean`, `awaiting-response` or `escalated` is handed over as a page, and a run that failed or was stopped is handed over as nothing whatever its rounds got as far as.
 - socrates-review states whether a round waits on a person and does nothing further about the page: no command, flag or run record names one, and it states nothing about whether a page is served.
-- `internal/presentation` is the one place an event becomes a line, and `internal/exit` owns the exit-code table.
+- `review/presentation` is the one place an event becomes a line, and `internal/exit` owns the exit-code table.
 - `status` prints the base commit the run resolved, as a bare fact and not a warning, and socrates-review says nothing about how far a named ref has moved past it.
 - `config` names the file it reads and then every setting by its YAML key, with the value in force and whether a person set it, and a setting nothing states in force prints empty rather than invented.
   Each default it reports is read from the package that owns it, so a default has one home, and a test fails where a reported one and its owner's disagree.
@@ -159,15 +159,15 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
   It writes only the key a person confirmed, as soon as they confirm it, and a person's comments, key order and blank lines survive the write.
   `use the default` removes a setting rather than writing today's default in, an emptied block goes with its last setting, and a value the loader would refuse is refused before the file is touched.
   It refuses where nothing is a terminal, naming `socrates-review config` and no library, and it is the one command that opens a file the others refuse, naming the line it could not read and offering nothing but resetting that setting.
-- `internal/configure` states every label it draws in its own `messages.go`, and the wording check reads its plain string literals rather than only its `fmt` call sites.
-- `findings --json` reports each finding's recorded resolution and whether its location is inside the change, and `internal/hunks` is the one place that question is answered.
+- `review/configure` states every label it draws in its own `messages.go`, and the wording check reads its plain string literals rather than only its `fmt` call sites.
+- `findings --json` reports each finding's recorded resolution and whether its location is inside the change, and `review/hunks` is the one place that question is answered.
 - A follower stops on the run's record or on the log, waits bounded for a log that does not exist yet, and stops on a parked round.
 - `status`, `watch` and `logs` stay three commands.
 - Every user-facing string lives in its package's `messages.go`, names what the person can do, and carries no em dash.
 
 **The skill**
 
-- `internal/skill` is the one source of both skills, and each committed copy is generated from it.
+- `review/skill` is the one source of both skills, and each committed copy is generated from it.
 - The loop for a change nobody here can patch is a second skill rather than a branch inside the first, and each skill carries a ceiling of its own that the suite reads from the skill rather than from a list.
 - The second skill relays what somebody else wrote verbatim and acts on none of it, reads the change in a worktree of its own, records the head commit and refuses to post where it moved, takes a comment's placement from what socrates-review reported, and posts nothing the person did not choose.
 - It names nothing the binary does not offer, lists every state a run rests in, teaches polling at a stated cadence, names `socrates-review watch` once and outside the loop, says once that the address `agora serve` prints holds the session `agora poll` is given and that the session is kept for the whole review, and says whose a question is.
@@ -233,7 +233,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - `LICENSE` states MIT in full and names the holder, and no source file opens with a licence header.
 - A comment carrying a borrowed work's notice and citing `NOTICE` is not that header, and one that states terms and cites nothing still is.
 - `NOTICE` names everything a shipped binary carries that socrates-review did not author, with each licence's full text rather than a link: the client bundle's libraries, the font faces embedded beside it, and the modules the two binaries link in.
-- Every file `internal/assets` embeds is accounted for in `NOTICE`, read from what is embedded rather than from `web/`.
+- Every file `agora/assets` embeds is accounted for in `NOTICE`, read from what is embedded rather than from `web/`.
 - The bundle that ships carries the copyright notice of every library bundled into it, asserted against the shipped bytes, and a bundler set to delete legal comments fails the suite.
 
 **The surface**
@@ -271,7 +271,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 **The suite**
 
 - Every end-to-end scenario runs against every supported vendor's simulator, and a supported vendor with no simulator or no recordings fails the suite.
-- Tests assert on the delivered prompt, never on socrates-review's own source text, and the prompt's reporting section is generated from `internal/findings`.
+- Tests assert on the delivered prompt, never on socrates-review's own source text, and the prompt's reporting section is generated from `review/findings`.
 - A test may not prove behaviour by reading implementation source; one that legitimately reads a Go file is named in `convention.ContractsTestsRead`.
 - A gate that cannot check what it was asked to check fails rather than reporting a pass.
 - What a real reviewer answered is kept verbatim and replayed; the corpus is classified by `dialogue.After`, and a recording is only made from a run that answered.
