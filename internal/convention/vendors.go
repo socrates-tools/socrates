@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const VendorStatementFile = "socrates-review/agent/vendor.go"
+const VendorStatementFile = "review/agent/vendor.go"
 
 func VendorsNamedOutsideTheStatement(root string, named []string) ([]string, error) {
 	var copies []string
@@ -68,7 +68,7 @@ func VendorsNamedOutsideTheStatement(root string, named []string) ([]string, err
 }
 
 const (
-	SeamFile     = "socrates-review/agent/seam.go"
+	SeamFile     = "review/agent/seam.go"
 	MessagesFile = "messages.go"
 )
 

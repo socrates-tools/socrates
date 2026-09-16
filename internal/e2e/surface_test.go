@@ -254,7 +254,7 @@ func TestSocratesReviewHasOneNameAndAgoraIsADifferentProgram(t *testing.T) {
 	tool := filepath.Join(directory, convention.Repository)
 	agora := filepath.Join(directory, "agora")
 
-	source.Build(t, "./socrates-review/cmd/socrates-review", tool)
+	source.Build(t, "./review/cmd/socrates-review", tool)
 	source.Build(t, "./agora/cmd/agora", agora)
 
 	underItsName := said(t, tool, "version")

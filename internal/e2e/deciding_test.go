@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/socrates-tools/socrates/agora/surface"
-	"github.com/socrates-tools/socrates/socrates-review/findings"
-	"github.com/socrates-tools/socrates/socrates-review/report"
-	"github.com/socrates-tools/socrates/socrates-review/runstate"
+	"github.com/socrates-tools/socrates/review/findings"
+	"github.com/socrates-tools/socrates/review/report"
+	"github.com/socrates-tools/socrates/review/runstate"
 )
 
 type reportedFinding struct {

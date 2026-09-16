@@ -16,11 +16,11 @@ TARGETS := build install release release-snapshot verify test lint fmt help skil
 .PHONY: $(TARGETS)
 
 build:
-	go build -ldflags '$(STAMP)' -o $(BINARY) ./socrates-review/cmd/socrates-review
+	go build -ldflags '$(STAMP)' -o $(BINARY) ./review/cmd/socrates-review
 	go build -ldflags '$(STAMP)' -o $(SURFACE) ./agora/cmd/agora
 
 install:
-	go install -ldflags '$(STAMP)' ./socrates-review/cmd/socrates-review
+	go install -ldflags '$(STAMP)' ./review/cmd/socrates-review
 	$(INSTALL_DIR)/socrates-review skill
 	go install -ldflags '$(STAMP)' ./agora/cmd/agora
 
@@ -55,25 +55,25 @@ help:
 	@printf '  make %s\n' $(TARGETS)
 
 skill:
-	go run ./socrates-review/cmd/socrates-review skill --to .claude/skills
+	go run ./review/cmd/socrates-review skill --to .claude/skills
 
 assets:
 	cd agora/web && pnpm install --frozen-lockfile && node build.mjs
 
 platforms:
-	go run ./socrates-review/cmd/platforms
+	go run ./review/cmd/platforms
 
 corpus-outcomes:
 	./scripts/corpus-outcomes
 
 fixtures:
-	go test -tags record -count=1 -v ./socrates-review/fidelity/
+	go test -tags record -count=1 -v ./review/fidelity/
 
 fixtures-diff:
-	go test -tags drift -count=1 ./socrates-review/fidelity/
+	go test -tags drift -count=1 ./review/fidelity/
 
 live-smoke:
-	go test -tags livesmoke -count=1 -v -timeout 20m ./socrates-review/fidelity/
+	go test -tags livesmoke -count=1 -v -timeout 20m ./review/fidelity/
 
 forge-smoke:
-	go test -tags forgesmoke -count=1 -v -timeout 10m -run TestAForge ./socrates-review/fidelity/
+	go test -tags forgesmoke -count=1 -v -timeout 10m -run TestAForge ./review/fidelity/

@@ -4,7 +4,7 @@ project_name: socrates-review
 
 builds:
   - id: socrates-review
-    main: ./socrates-review/cmd/socrates-review
+    main: ./review/cmd/socrates-review
     binary: socrates-review
     env:
       - CGO_ENABLED=0

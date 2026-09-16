@@ -10,8 +10,8 @@ import (
 
 	"github.com/socrates-tools/socrates/agora/surface"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/socrates-review/runstate"
-	"github.com/socrates-tools/socrates/socrates-review/skill"
+	"github.com/socrates-tools/socrates/review/runstate"
+	"github.com/socrates-tools/socrates/review/skill"
 )
 
 const loopPatience = 30 * time.Second

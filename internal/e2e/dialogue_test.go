@@ -10,10 +10,10 @@ import (
 	"testing"
 
 	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/socrates-review/dialogue"
-	"github.com/socrates-tools/socrates/socrates-review/prompt"
-	"github.com/socrates-tools/socrates/socrates-review/report"
-	"github.com/socrates-tools/socrates/socrates-review/runstate"
+	"github.com/socrates-tools/socrates/review/dialogue"
+	"github.com/socrates-tools/socrates/review/prompt"
+	"github.com/socrates-tools/socrates/review/report"
+	"github.com/socrates-tools/socrates/review/runstate"
 )
 
 const answeredWrongly = "package internal\n\nfunc Answer(document string) int {\n\treturn len(document)\n}\n"

@@ -9,10 +9,10 @@ import (
 	"testing"
 
 	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/socrates-review/agent"
-	"github.com/socrates-tools/socrates/socrates-review/reviewer"
-	"github.com/socrates-tools/socrates/socrates-review/runlog"
-	"github.com/socrates-tools/socrates/socrates-review/runstate"
+	"github.com/socrates-tools/socrates/review/agent"
+	"github.com/socrates-tools/socrates/review/reviewer"
+	"github.com/socrates-tools/socrates/review/runlog"
+	"github.com/socrates-tools/socrates/review/runstate"
 )
 
 func TestAStartedRunIsOnDiskImmediately(t *testing.T) {

@@ -9,9 +9,9 @@ import (
 
 	"github.com/socrates-tools/socrates/internal/process"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/socrates-review/agent"
-	"github.com/socrates-tools/socrates/socrates-review/runstate"
-	"github.com/socrates-tools/socrates/socrates-review/simulation"
+	"github.com/socrates-tools/socrates/review/agent"
+	"github.com/socrates-tools/socrates/review/runstate"
+	"github.com/socrates-tools/socrates/review/simulation"
 )
 
 const talkativeScenario = "default:\n  events: 60\n  interval: 100ms\n"

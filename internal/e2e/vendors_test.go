@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/socrates-review/agent"
+	"github.com/socrates-tools/socrates/review/agent"
 )
 
 func TestAnUnsupportedCLIIsRefusedBeforeAnythingHappens(t *testing.T) {

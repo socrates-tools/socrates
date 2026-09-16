@@ -12,18 +12,18 @@ import (
 )
 
 var socratesOwn = []string{
-	filepath.Join(convention.Repository, "cmd", convention.Repository),
-	filepath.Join("socrates-review", "agent"),
-	filepath.Join("socrates-review", "config"),
-	filepath.Join("socrates-review", "dialogue"),
-	filepath.Join("socrates-review", "findings"),
+	filepath.Join("review", "cmd", convention.Repository),
+	filepath.Join("review", "agent"),
+	filepath.Join("review", "config"),
+	filepath.Join("review", "dialogue"),
+	filepath.Join("review", "findings"),
 	filepath.Join("internal", "loopback"),
-	filepath.Join("socrates-review", "prompt"),
-	filepath.Join("socrates-review", "report"),
-	filepath.Join("socrates-review", "reviewer"),
-	filepath.Join("socrates-review", "runstore"),
-	filepath.Join("socrates-review", "skill"),
-	filepath.Join("socrates-review", "snapshot"),
+	filepath.Join("review", "prompt"),
+	filepath.Join("review", "report"),
+	filepath.Join("review", "reviewer"),
+	filepath.Join("review", "runstore"),
+	filepath.Join("review", "skill"),
+	filepath.Join("review", "snapshot"),
 }
 
 func TestSocratesReachesNothingNew(t *testing.T) {

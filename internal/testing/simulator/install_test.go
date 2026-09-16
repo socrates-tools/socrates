@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/socrates-tools/socrates/internal/testing/simulator"
-	"github.com/socrates-tools/socrates/socrates-review/findings"
+	"github.com/socrates-tools/socrates/review/findings"
 )
 
 func TestTheSimulatorAnswersUnderTheNameSocratesInvokes(t *testing.T) {

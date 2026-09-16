@@ -177,7 +177,7 @@ const dashed = "socrates refuses — and here is why"
 
 func TestALabelAMenuDrawsIsReportedWhereItIsStated(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, filepath.Join("socrates-review", "configure", "view.go"), `package configure
+	write(t, root, filepath.Join("review", "configure", "view.go"), `package configure
 
 func lines() []string {
 	return []string{"What do you want to configure?"}
@@ -189,7 +189,7 @@ func lines() []string {
 		t.Fatalf("reading the fabricated package: %v", err)
 	}
 
-	want := []string{filepath.Join("socrates-review", "configure", "view.go") + ":4"}
+	want := []string{filepath.Join("review", "configure", "view.go") + ":4"}
 	if diff := cmp.Diff(want, wording.Inline); diff != "" {
 		t.Errorf("the reported labels differ (-want +got):\n%s", diff)
 	}
@@ -197,13 +197,13 @@ func lines() []string {
 
 func TestALabelAMenuDrawsFromItsRegistryIsNotReported(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, filepath.Join("socrates-review", "configure", "view.go"), `package configure
+	write(t, root, filepath.Join("review", "configure", "view.go"), `package configure
 
 func lines() []string {
 	return []string{whatToConfigure}
 }
 `)
-	write(t, root, filepath.Join("socrates-review", "configure", "messages.go"), `package configure
+	write(t, root, filepath.Join("review", "configure", "messages.go"), `package configure
 
 const whatToConfigure = "What do you want to configure?"
 `)
@@ -237,14 +237,14 @@ func Names() []string {
 
 func TestALabelAMenuDrawsFromARawStringIsReportedToo(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, filepath.Join("socrates-review", "configure", "view.go"), "package configure\n\nfunc lines() []string {\n\treturn []string{`What do you want to configure?`}\n}\n")
+	write(t, root, filepath.Join("review", "configure", "view.go"), "package configure\n\nfunc lines() []string {\n\treturn []string{`What do you want to configure?`}\n}\n")
 
 	wording, err := UserFacingStrings(root)
 	if err != nil {
 		t.Fatalf("reading the fabricated package: %v", err)
 	}
 
-	want := []string{filepath.Join("socrates-review", "configure", "view.go") + ":4"}
+	want := []string{filepath.Join("review", "configure", "view.go") + ":4"}
 	if diff := cmp.Diff(want, wording.Inline); diff != "" {
 		t.Errorf("the reported labels differ (-want +got):\n%s", diff)
 	}
@@ -252,7 +252,7 @@ func TestALabelAMenuDrawsFromARawStringIsReportedToo(t *testing.T) {
 
 func TestThePatternAMenuPackageMatchesOnIsNotALabel(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, filepath.Join("socrates-review", "configure", "document.go"), "package configure\n\nimport \"regexp\"\n\nvar blankLine = regexp.MustCompile(`(?m)^[ \\t]*\\r?\\n`)\n")
+	write(t, root, filepath.Join("review", "configure", "document.go"), "package configure\n\nimport \"regexp\"\n\nvar blankLine = regexp.MustCompile(`(?m)^[ \\t]*\\r?\\n`)\n")
 
 	wording, err := UserFacingStrings(root)
 	if err != nil {

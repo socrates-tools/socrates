@@ -21,21 +21,21 @@ const (
 var EmDash = string(rune(0x2014))
 
 var packagesWithoutAMessageRegistry = []string{
-	filepath.Join("socrates-review", "cmd", "claudesim"),
-	filepath.Join("socrates-review", "cmd", "codexsim"),
-	filepath.Join("socrates-review", "cmd", "opencodesim"),
-	filepath.Join("socrates-review", "claudesim"),
-	filepath.Join("socrates-review", "codexsim"),
-	filepath.Join("socrates-review", "opencodesim"),
-	filepath.Join("socrates-review", "simulation"),
+	filepath.Join("review", "cmd", "claudesim"),
+	filepath.Join("review", "cmd", "codexsim"),
+	filepath.Join("review", "cmd", "opencodesim"),
+	filepath.Join("review", "claudesim"),
+	filepath.Join("review", "codexsim"),
+	filepath.Join("review", "opencodesim"),
+	filepath.Join("review", "simulation"),
 	filepath.Join("internal", "convention"),
-	filepath.Join("socrates-review", "prompt"),
+	filepath.Join("review", "prompt"),
 	filepath.Join("internal", "testing"),
-	filepath.Join("socrates-review", "testquality"),
+	filepath.Join("review", "testquality"),
 }
 
 var packagesReadForEveryLiteral = []string{
-	filepath.Join("socrates-review", "configure"),
+	filepath.Join("review", "configure"),
 }
 
 var messageCalls = map[string]map[string]int{

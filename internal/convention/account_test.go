@@ -101,8 +101,8 @@ func TestTheModulePathIsNamedForTheSuite(t *testing.T) {
 		t.Errorf("the module path ends in %q and the tool installs the same name, so the suite has no room for a second tool", named)
 	}
 
-	entry, err := os.Stat(filepath.Join(root, convention.Repository, "cmd", convention.Repository))
+	entry, err := os.Stat(filepath.Join(root, "review", "cmd", convention.Repository))
 	if err != nil || !entry.IsDir() {
-		t.Errorf("the tool is built from no %s/cmd/%s, so what the suite installs and what the build produces are different names", convention.Repository, convention.Repository)
+		t.Errorf("the tool is built from no review/cmd/%s, so what the suite installs and what the build produces are different names", convention.Repository)
 	}
 }

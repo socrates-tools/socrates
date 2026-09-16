@@ -9,10 +9,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/socrates-review/guidance"
-	"github.com/socrates-tools/socrates/socrates-review/presentation"
-	"github.com/socrates-tools/socrates/socrates-review/prompt"
-	"github.com/socrates-tools/socrates/socrates-review/runstate"
+	"github.com/socrates-tools/socrates/review/guidance"
+	"github.com/socrates-tools/socrates/review/presentation"
+	"github.com/socrates-tools/socrates/review/prompt"
+	"github.com/socrates-tools/socrates/review/runstate"
 )
 
 const aGuide = `Comments are not written in this repository, so a missing one is not a finding.

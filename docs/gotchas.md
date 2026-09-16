@@ -156,7 +156,7 @@ The test refuses to run where the directory named does enforce permissions, rath
 
 **Never revert a mutation with `git checkout <file>` while the file is new.**
 A file that is tracked at an older content reverts to that content, not to what you had a minute ago.
-This destroyed a rewrite of `internal/prompt/prompt.go` once.
+This destroyed a rewrite of `review/prompt/prompt.go` once.
 Copy the file into the scratchpad before mutating and copy it back afterwards.
 
 **A green suite against a simulator manufactures confidence.**

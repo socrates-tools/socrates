@@ -8,13 +8,13 @@ import (
 	"github.com/rogpeppe/go-internal/testscript"
 	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/socrates-tools/socrates/internal/testing/source"
-	"github.com/socrates-tools/socrates/socrates-review/simulation"
+	"github.com/socrates-tools/socrates/review/simulation"
 )
 
 func TestTheCommandLineBehavesAsItsScriptsSay(t *testing.T) {
 	binaries := t.TempDir()
-	source.Build(t, "./socrates-review/cmd/socrates-review", filepath.Join(binaries, "socrates-review"))
-	source.Build(t, "./socrates-review/cmd/claudesim", filepath.Join(binaries, "claudesim"))
+	source.Build(t, "./review/cmd/socrates-review", filepath.Join(binaries, "socrates-review"))
+	source.Build(t, "./review/cmd/claudesim", filepath.Join(binaries, "claudesim"))
 	if err := os.Symlink(filepath.Join(binaries, "claudesim"), filepath.Join(binaries, "claude")); err != nil {
 		t.Fatalf("linking the simulator as claude: %v", err)
 	}

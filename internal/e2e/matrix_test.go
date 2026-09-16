@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/socrates-review/agent"
-	"github.com/socrates-tools/socrates/socrates-review/corpus"
-	"github.com/socrates-tools/socrates/socrates-review/runstate"
-	"github.com/socrates-tools/socrates/socrates-review/runstore"
+	"github.com/socrates-tools/socrates/review/agent"
+	"github.com/socrates-tools/socrates/review/corpus"
+	"github.com/socrates-tools/socrates/review/runstate"
+	"github.com/socrates-tools/socrates/review/runstore"
 )
 
 const (

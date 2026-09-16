@@ -256,13 +256,13 @@ On `awaiting-response`, answer every finding that can be patched, bring every fi
 It says the session does not answer a question about intent on its own behalf, and that it runs the next round without asking whether it is worth spending.
 Where a run escalated at the round cap, it says that no third round exists and that looking again means a fresh `socrates-review review`, started only where you ask for one, whose reviewer is told nothing about the run before it.
 On `cancelled`, say that nothing was decided, because somebody stopped the review on purpose.
-Those are every state a run rests in. A test compares the list against `internal/runstate`, so a sixth cannot appear without the skill gaining a branch for it.
+Those are every state a run rests in. A test compares the list against `review/runstate`, so a sixth cannot appear without the skill gaining a branch for it.
 
 It teaches polling rather than following, because everything a session reads lands in its own context and it is about to need that context for the patching.
 It carries the five response rules in the same words `socrates-review findings` prints them, in front of the session before it has read a single finding.
 It also states what socrates-review will not do: it patches nothing, offers no way to explain the change to the reviewer, and refuses a rejection with no reason.
 
-Both texts have one source in `internal/skill`, and the copies under `.claude/skills/` are generated from it by `make skill`.
+Both texts have one source in `review/skill`, and the copies under `.claude/skills/` are generated from it by `make skill`.
 A test fails while a copy and its source differ, and another checks that every command and flag either skill names exists on the built binary.
 
 Exit codes are a contract:

@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/socrates-review/agent"
-	"github.com/socrates-tools/socrates/socrates-review/config"
-	"github.com/socrates-tools/socrates/socrates-review/exit"
+	"github.com/socrates-tools/socrates/review/agent"
+	"github.com/socrates-tools/socrates/review/config"
+	"github.com/socrates-tools/socrates/review/exit"
 )
 
 func TestTheMenuListsEverySettingWithTheValueInForce(t *testing.T) {

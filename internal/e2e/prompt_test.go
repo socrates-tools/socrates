@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/socrates-review/findings"
-	"github.com/socrates-tools/socrates/socrates-review/prompt"
-	"github.com/socrates-tools/socrates/socrates-review/testquality"
+	"github.com/socrates-tools/socrates/review/findings"
+	"github.com/socrates-tools/socrates/review/prompt"
+	"github.com/socrates-tools/socrates/review/testquality"
 )
 
 func TestThePromptIsOnDisk(t *testing.T) {

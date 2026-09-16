@@ -27,50 +27,50 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 
 What socrates-review is:
 
-- `cmd/socrates-review` - the binary: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, `config`, `configure`, `version`, and the hidden `supervise`.
-- `internal/snapshot` - the freeze: a temporary index, a commit, a detached worktree, and the seal that makes it unwritable.
-- `internal/runstore` - run directories, `run.json`, run selection, rounds, retention.
-- `internal/runstate` - the states and which are terminal.
-- `internal/findings` - the findings contract, the reviewer's schema, the classification and the verdict rule.
-- `internal/dialogue` - what a round leads to, which rounds wait on a person, which resolutions a finding accepts, the round cap, and the response document.
-- `internal/hunks` - the lines a change touches, read from its own diff, and whether a finding's location is one of them.
-- `internal/hygiene` - model output neutralised before it re-enters a prompt.
-- `internal/guidance` - the one file socrates-review reads out of the repository under review, the commit it is read at, and the ceiling it is held to.
-- `internal/prompt` - the delivered prompt, assembled from named sections.
-- `internal/testquality` - the test-quality rule, shared by every role that needs it.
+- `review/cmd/socrates-review` - the binary: `review`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, `config`, `configure`, `version`, and the hidden `supervise`.
+- `review/snapshot` - the freeze: a temporary index, a commit, a detached worktree, and the seal that makes it unwritable.
+- `review/runstore` - run directories, `run.json`, run selection, rounds, retention.
+- `review/runstate` - the states and which are terminal.
+- `review/findings` - the findings contract, the reviewer's schema, the classification and the verdict rule.
+- `review/dialogue` - what a round leads to, which rounds wait on a person, which resolutions a finding accepts, the round cap, and the response document.
+- `review/hunks` - the lines a change touches, read from its own diff, and whether a finding's location is one of them.
+- `review/hygiene` - model output neutralised before it re-enters a prompt.
+- `review/guidance` - the one file socrates-review reads out of the repository under review, the commit it is read at, and the ceiling it is held to.
+- `review/prompt` - the delivered prompt, assembled from named sections.
+- `review/testquality` - the test-quality rule, shared by every role that needs it.
 - `internal/platform` - the one place the supported platforms are stated, and the basis on which one qualifies.
-- `internal/agent` - the only package that starts a model process, the reviewer CLIs socrates-review drives and the basis on which one qualifies, and one file per vendor behind the seam.
-- `internal/reviewer` - beginning, supervising, responding, advancing, cancelling.
-- `internal/report` - what `status`, `findings` and `config` print.
-- `internal/configure` - the menu a person changes one setting from: the rows, the view, and the write that leaves the rest of the file alone.
-- `internal/presentation` - the one place an event becomes a line a person reads.
-- `internal/follow` - following a run's event log live.
-- `internal/terminal` - the pager, the plain fallback, and whether a stream is a terminal at all.
-- `internal/skill` - the two skills a coding session reads, one for its own change and one for somebody else's, and installing them.
-- `internal/exit`, `internal/version`, `internal/config`, `internal/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file both binaries read and what every setting in force is, the JSONL log, the one home both binaries write under, refusals, process groups.
-- `internal/corpus` - what real reviewers answered, verbatim and embedded, and what the routing rule does with it.
-- `internal/fidelity` - the recorded shapes of each real CLI, what was measured about each one's criteria, the drift check, the live smoke check and the forge check, all network behind a build tag.
+- `review/agent` - the only package that starts a model process, the reviewer CLIs socrates-review drives and the basis on which one qualifies, and one file per vendor behind the seam.
+- `review/reviewer` - beginning, supervising, responding, advancing, cancelling.
+- `review/report` - what `status`, `findings` and `config` print.
+- `review/configure` - the menu a person changes one setting from: the rows, the view, and the write that leaves the rest of the file alone.
+- `review/presentation` - the one place an event becomes a line a person reads.
+- `review/follow` - following a run's event log live.
+- `review/terminal` - the pager, the plain fallback, and whether a stream is a terminal at all.
+- `review/skill` - the two skills a coding session reads, one for its own change and one for somebody else's, and installing them.
+- `review/exit`, `internal/version`, `review/config`, `review/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file both binaries read and what every setting in force is, the JSONL log, the one home both binaries write under, refusals, process groups.
+- `review/corpus` - what real reviewers answered, verbatim and embedded, and what the routing rule does with it.
+- `review/fidelity` - the recorded shapes of each real CLI, what was measured about each one's criteria, the drift check, the live smoke check and the forge check, all network behind a build tag.
+- `review/simulation` - what every simulator shares: the scenario vocabulary, the invocation log, and the run that turns one into the other.
+- `review/claudesim`, `review/codexsim`, `review/opencodesim` - each simulator's half of its real CLI's wire contract: the arguments it reads, the stream it writes.
+- `review/cmd/claudesim`, `review/cmd/codexsim`, `review/cmd/opencodesim`, `review/cmd/corpus-outcomes`, `review/cmd/corpus-record`, `review/cmd/platforms` - the simulator and the gate binaries.
 
 What agora is:
 
-- `cmd/agora` - the binary: `serve`, `poll`, `end`, `stop`, `version`, and nothing else.
-- `internal/document` - what a caller writes for the surface to render, what it copies rather than accepts, and the languages the page can highlight.
-- `internal/sanitise` - a caller's HTML fragment reduced to a fixed allowlist, and every name it carries prefixed.
-- `internal/stylesheet` - a caller's stylesheet read as a parse, reduced to a fixed allowlist, and scoped to the illustration.
-- `internal/render` - a document to one HTML page, and a patch to the rows of a split diff.
-- `internal/assets` - the built client bundle and fonts, embedded, and the stamp of their source.
-- `internal/surface` - the loopback server and its guards, the sessions it holds, what it writes about itself and about each page, the exchange, and the bounds on waiting.
-- `web/` - the client source, the design system and the fonts, built by `make assets`.
+- `agora/cmd/agora` - the binary: `serve`, `poll`, `end`, `stop`, `version`, and nothing else.
+- `agora/document` - what a caller writes for the surface to render, what it copies rather than accepts, and the languages the page can highlight.
+- `agora/sanitise` - a caller's HTML fragment reduced to a fixed allowlist, and every name it carries prefixed.
+- `agora/stylesheet` - a caller's stylesheet read as a parse, reduced to a fixed allowlist, and scoped to the illustration.
+- `agora/render` - a document to one HTML page, and a patch to the rows of a split diff.
+- `agora/assets` - the built client bundle and fonts, embedded, and the stamp of their source.
+- `agora/surface` - the loopback server and its guards, the sessions it holds, what it writes about itself and about each page, the exchange, and the bounds on waiting.
+- `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
 
 What holds them both:
 
 - `internal/loopback` - the address bound where nothing states one, and the window walked down from it.
 - `internal/convention` - the repository's conventions as executable checks.
 - `internal/e2e` - real binaries, a real repository, real git, real processes, each vendor's simulator on `PATH`, a real browser.
-- `internal/simulation` - what every simulator shares: the scenario vocabulary, the invocation log, and the run that turns one into the other.
-- `internal/claudesim`, `internal/codexsim`, `internal/opencodesim` - each simulator's half of its real CLI's wire contract: the arguments it reads, the stream it writes.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
-- `cmd/claudesim`, `cmd/codexsim`, `cmd/opencodesim`, `cmd/corpus-outcomes`, `cmd/corpus-record`, `cmd/platforms` - the simulator and the gate binaries.
 
 ## Verification
 

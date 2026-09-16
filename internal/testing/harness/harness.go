@@ -17,11 +17,11 @@ import (
 	"github.com/socrates-tools/socrates/internal/testing/gitrepo"
 	"github.com/socrates-tools/socrates/internal/testing/simulator"
 	"github.com/socrates-tools/socrates/internal/testing/source"
-	"github.com/socrates-tools/socrates/socrates-review/agent"
-	"github.com/socrates-tools/socrates/socrates-review/runlog"
-	"github.com/socrates-tools/socrates/socrates-review/runstate"
-	"github.com/socrates-tools/socrates/socrates-review/runstore"
-	"github.com/socrates-tools/socrates/socrates-review/snapshot"
+	"github.com/socrates-tools/socrates/review/agent"
+	"github.com/socrates-tools/socrates/review/runlog"
+	"github.com/socrates-tools/socrates/review/runstate"
+	"github.com/socrates-tools/socrates/review/runstore"
+	"github.com/socrates-tools/socrates/review/snapshot"
 )
 
 const (
@@ -111,7 +111,7 @@ func buildSocrates(t *testing.T, tags ...string) string {
 	t.Helper()
 
 	binary := filepath.Join(t.TempDir(), "socrates-review")
-	source.BuildWithTags(t, "./socrates-review/cmd/socrates-review", binary, tags...)
+	source.BuildWithTags(t, "./review/cmd/socrates-review", binary, tags...)
 	return binary
 }
 

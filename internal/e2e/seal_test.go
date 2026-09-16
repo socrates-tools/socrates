@@ -10,8 +10,8 @@ import (
 	"github.com/socrates-tools/socrates/internal/process"
 	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/socrates-review/exit"
-	"github.com/socrates-tools/socrates/socrates-review/runstate"
+	"github.com/socrates-tools/socrates/review/exit"
+	"github.com/socrates-tools/socrates/review/runstate"
 )
 
 const unenforcingDirectory = "SOCRATES_TEST_UNENFORCING_DIRECTORY"

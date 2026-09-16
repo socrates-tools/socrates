@@ -14,7 +14,7 @@ import (
 	"github.com/socrates-tools/socrates/internal/loopback"
 	"github.com/socrates-tools/socrates/internal/process"
 	"github.com/socrates-tools/socrates/internal/refusal"
-	"github.com/socrates-tools/socrates/socrates-review/config"
+	"github.com/socrates-tools/socrates/review/config"
 	"github.com/spf13/cobra"
 )
 

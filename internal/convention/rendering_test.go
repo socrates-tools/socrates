@@ -6,9 +6,9 @@ import (
 
 	"github.com/socrates-tools/socrates/internal/convention"
 	"github.com/socrates-tools/socrates/internal/testing/source"
-	"github.com/socrates-tools/socrates/socrates-review/agent"
-	"github.com/socrates-tools/socrates/socrates-review/reviewer"
-	"github.com/socrates-tools/socrates/socrates-review/runlog"
+	"github.com/socrates-tools/socrates/review/agent"
+	"github.com/socrates-tools/socrates/review/reviewer"
+	"github.com/socrates-tools/socrates/review/runlog"
 )
 
 func TestOnlyOnePlaceTurnsAnEventIntoALinePeopleRead(t *testing.T) {
@@ -27,9 +27,9 @@ func TestOnlyOnePlaceTurnsAnEventIntoALinePeopleRead(t *testing.T) {
 		reviewer.EventResponse,
 	}
 	defining := []string{
-		filepath.Join("socrates-review", "runlog"),
-		filepath.Join("socrates-review", "agent"),
-		filepath.Join("socrates-review", "reviewer"),
+		filepath.Join("review", "runlog"),
+		filepath.Join("review", "agent"),
+		filepath.Join("review", "reviewer"),
 	}
 
 	naming, err := convention.FilesNamingEventKinds(source.Root(t), kinds, defining, convention.EventKindsNamed)
