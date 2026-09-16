@@ -13,11 +13,12 @@ import (
 	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 	"github.com/socrates-tools/socrates/internal/testing/source"
+	"github.com/socrates-tools/socrates/review/skill"
 )
 
 func TestOneNameIsInstalledAndNothingIsPutBesideIt(t *testing.T) {
 	root := requireMake(t)
-	directory := installed(t, root)
+	directory, home := installed(t, root)
 
 	tool := filepath.Join(directory, convention.Suite)
 	reported := versionOf(t, tool)
@@ -39,6 +40,19 @@ func TestOneNameIsInstalledAndNothingIsPutBesideIt(t *testing.T) {
 		}
 		if info, err := entry.Info(); err == nil && info.Mode().Perm()&0o111 != 0 && !info.IsDir() {
 			t.Errorf("installing put %s beside %s, and the suite publishes one binary", entry.Name(), convention.Suite)
+		}
+	}
+
+	// scenario: make install also installs the skill, under the home it was given rather than the person's own
+	for _, one := range skill.All() {
+		path := filepath.Join(skill.UserDirectoryUnder(home), one.Name, skill.FileName)
+		content, err := os.ReadFile(path)
+		if err != nil {
+			t.Errorf("make install did not install %s under the disposable home: %v", one.Name, err)
+			continue
+		}
+		if string(content) != one.Document() {
+			t.Errorf("what make install wrote for %s under %s is not what the skill's source generates", one.Name, path)
 		}
 	}
 }
@@ -69,20 +83,21 @@ func TestWhatItPrintsNamesTheTool(t *testing.T) {
 	}
 }
 
-func installed(t *testing.T, root string) string {
+func installed(t *testing.T, root string) (string, string) {
 	t.Helper()
 
 	directory := t.TempDir()
+	home := t.TempDir()
 	command := exec.Command("make", "install")
 	command.Dir = root
-	command.Env = append(append(os.Environ(), source.Toolchain()...), "GOBIN="+directory)
+	command.Env = append(append(os.Environ(), source.Toolchain()...), "GOBIN="+directory, "HOME="+home)
 
 	var failures bytes.Buffer
 	command.Stderr = &failures
 	if err := command.Run(); err != nil {
 		t.Fatalf("make install into %s: %v: %s", directory, err, failures.String())
 	}
-	return directory
+	return directory, home
 }
 
 func invoked(t *testing.T, binary string, arguments ...string) (string, string, int) {

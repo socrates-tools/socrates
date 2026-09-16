@@ -52,7 +52,11 @@ func UserDirectory() (string, error) {
 	if err != nil {
 		return "", refusal.Wrapping(err, noHomeDirectory, err)
 	}
-	return filepath.Join(home, vendorDirectory, skillsDirectory), nil
+	return UserDirectoryUnder(home), nil
+}
+
+func UserDirectoryUnder(home string) string {
+	return filepath.Join(home, vendorDirectory, skillsDirectory)
 }
 
 type Skill struct {
