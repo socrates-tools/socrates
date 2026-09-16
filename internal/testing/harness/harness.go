@@ -110,8 +110,8 @@ func (s *Session) WhereNothingReaps() *Session {
 func buildSocrates(t *testing.T, tags ...string) string {
 	t.Helper()
 
-	binary := filepath.Join(t.TempDir(), "socrates-review")
-	source.BuildWithTags(t, "./review/cmd/socrates-review", binary, tags...)
+	binary := filepath.Join(t.TempDir(), "socrates")
+	source.BuildWithTags(t, "./cmd/socrates", binary, tags...)
 	return binary
 }
 
@@ -137,6 +137,16 @@ func (s *Session) SocratesWith(directory string, environment []string, arguments
 
 func (s *Session) socratesReview(directory string, environment []string, input io.Reader, arguments ...string) (string, string, int) {
 	s.t.Helper()
+	return s.invoke(directory, environment, input, append([]string{"review"}, arguments...)...)
+}
+
+func (s *Session) Top(arguments ...string) (string, string, int) {
+	s.t.Helper()
+	return s.invoke(s.Repository.Root, nil, nil, arguments...)
+}
+
+func (s *Session) invoke(directory string, environment []string, input io.Reader, arguments ...string) (string, string, int) {
+	s.t.Helper()
 
 	command := exec.Command(s.Binary, arguments...)
 	command.Dir = directory
@@ -153,7 +163,7 @@ func (s *Session) socratesReview(directory string, environment []string, input i
 	if err := command.Run(); err != nil {
 		var exited *exec.ExitError
 		if !errors.As(err, &exited) {
-			s.t.Fatalf("running socrates-review %s: %v", strings.Join(arguments, " "), err)
+			s.t.Fatalf("running socrates %s: %v", strings.Join(arguments, " "), err)
 		}
 		code = exited.ExitCode()
 	}
@@ -173,6 +183,7 @@ type Running struct {
 func (s *Session) Starting(arguments ...string) *Running {
 	s.t.Helper()
 
+	arguments = append([]string{"review"}, arguments...)
 	command := exec.Command(s.Binary, arguments...)
 	command.Dir = s.Repository.Root
 
@@ -181,7 +192,7 @@ func (s *Session) Starting(arguments ...string) *Running {
 	command.Stderr = running.failures
 
 	if err := command.Start(); err != nil {
-		s.t.Fatalf("starting socrates-review %s: %v", strings.Join(arguments, " "), err)
+		s.t.Fatalf("starting socrates %s: %v", strings.Join(arguments, " "), err)
 	}
 	go func() { running.finished <- command.Wait() }()
 	s.t.Cleanup(running.stop)
@@ -197,13 +208,13 @@ func (r *Running) Wait() (string, string, int) {
 		if err != nil {
 			var exited *exec.ExitError
 			if !errors.As(err, &exited) {
-				r.t.Fatalf("running socrates-review %s: %v", strings.Join(r.arguments, " "), err)
+				r.t.Fatalf("running socrates %s: %v", strings.Join(r.arguments, " "), err)
 			}
 			code = exited.ExitCode()
 		}
 		return r.out.String(), r.failures.String(), code
 	case <-time.After(terminalWait):
-		r.t.Fatalf("socrates-review %s is still running after %s", strings.Join(r.arguments, " "), terminalWait)
+		r.t.Fatalf("socrates %s is still running after %s", strings.Join(r.arguments, " "), terminalWait)
 		return "", "", 0
 	}
 }
@@ -222,12 +233,12 @@ func (s *Session) Begin(arguments ...string) string {
 
 	out, failures, code := s.Socrates(append([]string{"begin"}, arguments...)...)
 	if code != 0 {
-		s.t.Fatalf("socrates-review begin exited %d: %s", code, failures)
+		s.t.Fatalf("socrates begin exited %d: %s", code, failures)
 	}
 
 	name, _, _ := strings.Cut(strings.TrimSpace(out), "\n")
 	if name == "" {
-		s.t.Fatal("socrates-review begin printed no run identifier")
+		s.t.Fatal("socrates begin printed no run identifier")
 	}
 	return name
 }

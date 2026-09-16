@@ -16,8 +16,8 @@ const (
 	Surface      = "agora"
 	FileName     = "SKILL.md"
 
-	Ceiling         = 15616
-	HandoverCeiling = 16896
+	Ceiling         = 15677
+	HandoverCeiling = 16969
 
 	vendorDirectory = ".claude"
 	skillsDirectory = "skills"

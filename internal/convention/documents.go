@@ -25,13 +25,13 @@ const (
 
 	RequirementsHeading = "## What it needs"
 	ToolchainHeading    = "## The toolchain"
-	OutOfScopeHeading   = "## What socrates-review does not defend against"
+	OutOfScopeHeading   = "## What socrates review does not defend against"
 
 	ReviewerCLIFloor   = "2.1.169"
 	ProposalHome       = "GitHub issue"
 	PrivateChannelPath = "security/advisories/new"
 
-	SendsNothing     = "socrates-review sends nothing"
+	SendsNothing     = "socrates review sends nothing"
 	SendsToTheVendor = "sends the change to"
 	NotAffiliated    = "not affiliated"
 
@@ -77,7 +77,7 @@ func RequirementsStatedFirst(root string, facts []string) (FrontMatter, error) {
 	}
 	for _, fact := range facts {
 		if !strings.Contains(section, fact) {
-			front.Missing = append(front.Missing, fmt.Sprintf("%s states what socrates-review needs without naming %s", FrontDocumentFile, fact))
+			front.Missing = append(front.Missing, fmt.Sprintf("%s states what socrates review needs without naming %s", FrontDocumentFile, fact))
 		}
 	}
 	return front, nil
@@ -227,7 +227,7 @@ func ReachUnstated(root string) ([]string, error) {
 		case vendor && !itself:
 			unstated = append(unstated, fmt.Sprintf("%s says the reviewer CLI %s its vendor and never says %q", named, SendsToTheVendor, SendsNothing))
 		case !itself && !vendor:
-			unstated = append(unstated, fmt.Sprintf("%s states neither half of where what socrates-review reads goes, and silence there is read as unknown", named))
+			unstated = append(unstated, fmt.Sprintf("%s states neither half of where what socrates review reads goes, and silence there is read as unknown", named))
 		}
 	}
 	return unstated, nil

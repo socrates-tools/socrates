@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-var StyleDirectory = filepath.Join("agora", "web", "src")
+var StyleDirectory = filepath.Join(ToolDirectory("agora"), "web", "src")
 
 var paletteSelector = ":root"
 

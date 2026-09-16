@@ -21,13 +21,13 @@ func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {
 	started := time.Now()
 	out, failures, code := session.Socrates("begin", "--intent", "add a thing")
 	if code != 0 {
-		t.Fatalf("socrates-review begin exited %d: %s", code, failures)
+		t.Fatalf("socrates review begin exited %d: %s", code, failures)
 	}
 	returned := time.Since(started)
 
 	name, _, _ := strings.Cut(strings.TrimSpace(out), "\n")
 	if name == "" {
-		t.Fatal("socrates-review begin printed no run identifier")
+		t.Fatal("socrates review begin printed no run identifier")
 	}
 
 	run := session.WaitFor(name, runstate.Reviewing)
@@ -38,7 +38,7 @@ func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {
 		t.Errorf("the reviewer %d is not running, so the command did not return early", run.Reviewer)
 	}
 	if returned > 20*time.Second {
-		t.Errorf("socrates-review begin took %s to return", returned)
+		t.Errorf("socrates review begin took %s to return", returned)
 	}
 
 	t.Run("the reviewer holds none of the invoking terminal's streams", func(t *testing.T) {

@@ -1,4 +1,4 @@
-# Contributing to socrates-review
+# Contributing to socrates
 
 ## A change starts as a proposal
 
@@ -6,7 +6,7 @@ Read this before you write anything.
 
 A change here starts as a spec, published as a GitHub issue in this repository and labelled `ready-for-agent`.
 
-The spec says, in the words of somebody using socrates-review rather than the words of the code:
+The spec says, in the words of somebody using socrates review rather than the words of the code:
 
 - the problem, and the solution to it.
 - the user stories, at length rather than in summary.
@@ -23,14 +23,14 @@ A pull request that edits code with no spec behind it will be turned away, and t
 Nothing enforces it mechanically. This repository held it with two gates that read a specification directory, and holds it by whoever reads the pull request instead.
 
 If you are not sure whether something needs a spec, open an issue and say what you want to change.
-A bug fix that restores stated behaviour does not need one. Anything that changes what socrates-review promises does.
+A bug fix that restores stated behaviour does not need one. Anything that changes what socrates review promises does.
 
 ## Out of scope
 
 `README.md` has a section called "Out of scope", and it is the shortest way to learn what a proposal should not ask for.
-socrates-review reviews. It does not land, verify, render, serve or wait for a person about a review.
-The one command that waits for a person is `socrates-review configure`, and what it waits about is socrates-review's own settings.
-Committing, pushing, opening a pull request and watching continuous integration are not socrates-review's and never become socrates-review's.
+review reviews. It does not land, verify, render, serve or wait for a person about a review.
+The one command that waits for a person is `socrates review configure`, and what it waits about is review's own settings.
+Committing, pushing, opening a pull request and watching continuous integration are not review's and never become review's.
 
 ## The toolchain
 

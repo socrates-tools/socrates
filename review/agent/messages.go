@@ -1,8 +1,8 @@
 package agent
 
 const (
-	notARole                    = "%q is not a role socrates-review has, and its roles are %v"
-	notARoleAtTheCall           = "%q is not a role socrates-review has"
+	notARole                    = "%q is not a role socrates review has, and its roles are %v"
+	notARoleAtTheCall           = "%q is not a role socrates review has"
 	noMessageInAnAssistantEvent = "an assistant event carries no message: %w"
 	readingTheStream            = "reading the agent's output stream: %w"
 	truncatedMidLine            = "the agent's output stream is truncated part-way through a line"
@@ -25,8 +25,8 @@ const (
 	anAccountOfWhyItFailed     = "a terminal event saying whether the work happened and what it says about why it did not"
 	aModelPerRole              = "a model selectable per invocation"
 
-	notASupportedReviewerCLI = "%q is not a reviewer CLI socrates-review drives, and socrates-review drives %s"
-	noImplementation         = "%q is stated as supported and socrates-review carries no implementation of it"
+	notASupportedReviewerCLI = "%q is not a reviewer CLI socrates review drives, and socrates review drives %s"
+	noImplementation         = "%q is stated as supported and socrates review carries no implementation of it"
 	noDocumentInTheAnswer    = "%s answered and its answer carries no findings document: %w"
 	writingTheSchema         = "writing the schema the reviewer is held to: %w"
 

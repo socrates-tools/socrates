@@ -1,16 +1,12 @@
 package command
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/socrates-tools/socrates/agora/surface"
-	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/refusal"
 	"github.com/spf13/cobra"
 )
 
-func NewRootCommand(code *int) *cobra.Command {
+func NewRootCommand(code *int, loadSurfaceSettings SurfaceLoader) *cobra.Command {
 	root := &cobra.Command{
 		Use:           toolName,
 		Short:         rootShort,
@@ -32,23 +28,10 @@ func NewRootCommand(code *int) *cobra.Command {
 		return refusal.New(unusableFlag, err)
 	})
 	root.AddCommand(
-		newServeCommand(),
+		newServeCommand(loadSurfaceSettings),
 		newPollCommand(code),
 		newEndCommand(),
 		newStopCommand(),
-		newVersionCommand(),
 	)
 	return root
-}
-
-func ReportFailure(err error) int {
-	fmt.Fprintln(os.Stderr, failurePrefix+err.Error())
-	return exitFor(err)
-}
-
-func exitFor(err error) int {
-	if refusal.Is(err) {
-		return exit.Unusable
-	}
-	return exit.Failed
 }

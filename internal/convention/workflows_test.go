@@ -33,7 +33,7 @@ func TestNoWorkflowReachesAForge(t *testing.T) {
 	}
 
 	for _, reaching := range reach.Reaching {
-		t.Errorf("%s, and nothing in continuous integration writes in a repository socrates-review does not own", reaching)
+		t.Errorf("%s, and nothing in continuous integration writes in a repository socrates does not own", reaching)
 	}
 	if len(reach.Workflows) == 0 {
 		t.Fatalf("there is no workflow under %s, so this check has nothing to read and would pass forever", convention.WorkflowsDirectory)

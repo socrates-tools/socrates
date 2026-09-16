@@ -1,28 +1,11 @@
 version: 2
 
-project_name: socrates-review
+project_name: socrates
 
 builds:
-  - id: socrates-review
-    main: ./review/cmd/socrates-review
-    binary: socrates-review
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - darwin
-    goarch:
-      - amd64
-      - arm64
-    flags:
-      - -trimpath
-    ldflags:
-      - -X github.com/socrates-tools/socrates/internal/version.version={{ if .IsSnapshot }}{{ else }}{{ .Tag }}{{ end }}
-      - -X github.com/socrates-tools/socrates/internal/version.commit={{ .ShortCommit }}
-
-  - id: agora
-    main: ./agora/cmd/agora
-    binary: agora
+  - id: socrates
+    main: ./cmd/socrates
+    binary: socrates
     env:
       - CGO_ENABLED=0
     goos:
@@ -38,13 +21,12 @@ builds:
       - -X github.com/socrates-tools/socrates/internal/version.commit={{ .ShortCommit }}
 
 archives:
-  - id: socrates-review
+  - id: socrates
     ids:
-      - socrates-review
-      - agora
+      - socrates
     formats:
       - tar.gz
-    name_template: socrates-review_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    name_template: socrates_{{ .Version }}_{{ .Os }}_{{ .Arch }}
     files:
       - src: LICENSE
       - src: NOTICE
@@ -86,5 +68,5 @@ release:
       --bundle checksums.txt.bundle \
       --certificate-identity-regexp 'https://github.com/socrates-tools/socrates-review/.*' \
       --certificate-oidc-issuer https://token.actions.githubusercontent.com
-    gh attestation verify socrates-review_*.tar.gz --repo socrates-tools/socrates-review
+    gh attestation verify socrates_*.tar.gz --repo socrates-tools/socrates-review
     ```

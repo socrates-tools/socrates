@@ -24,15 +24,57 @@ func TestTheCommandSurfaceIsWhatItSays(t *testing.T) {
 	}
 
 	listed := commandsIn(printed)
-	want := []string{"begin", "cancel", "config", "configure", "continue", "findings", "help", "logs", "respond", "skill", "status", "version", "watch"}
+	want := []string{"begin", "cancel", "config", "configure", "continue", "findings", "logs", "respond", "skill", "status", "watch"}
 	if !slices.Equal(listed, want) {
-		t.Errorf("socrates lists %v, want %v", listed, want)
+		t.Errorf("socrates review lists %v, want %v", listed, want)
 	}
 
 	for _, forbidden := range []string{"commit", "push", "pr", "pull-request", "merge", "land", "ci", "test", "lint", "verify"} {
 		if slices.Contains(listed, forbidden) {
 			t.Errorf("socrates lists %q, which lands or verifies a change", forbidden)
 		}
+	}
+}
+
+func TestANamespaceTypedBarePrintsHelpAndStartsNothing(t *testing.T) {
+	session := harness.Start(t)
+
+	printed, failures, code := session.Socrates()
+	if code != exit.NothingAsked {
+		t.Fatalf("socrates review exited %d: %s", code, failures)
+	}
+	if !strings.Contains(printed, "Available Commands:") {
+		t.Errorf("socrates review printed no help:\n%s", printed)
+	}
+	if names := session.Names(); len(names) != 0 {
+		t.Errorf("typing the namespace bare started a run: %v", names)
+	}
+}
+
+func TestTheTopLevelOffersNothingAWorkflowOwns(t *testing.T) {
+	session := harness.Start(t)
+
+	for _, arguments := range [][]string{
+		{"begin"},
+		{"serve"},
+		{"poll"},
+		{"status"},
+		{"findings"},
+	} {
+		printed, failures, code := session.Top(arguments...)
+		if code != exit.Unusable {
+			t.Errorf("socrates %s exited %d, want the usage code: %s%s", strings.Join(arguments, " "), code, printed, failures)
+		}
+		if strings.TrimSpace(printed) != "" {
+			t.Errorf("socrates %s printed %q, so something started", strings.Join(arguments, " "), printed)
+		}
+		if !strings.Contains(failures, arguments[0]) {
+			t.Errorf("the refusal does not name %q: %s", arguments[0], failures)
+		}
+	}
+
+	if names := session.Names(); len(names) != 0 {
+		t.Errorf("a top-level workflow verb started a run: %v", names)
 	}
 }
 
@@ -44,12 +86,12 @@ func TestTheOldVerbIsRefusedAsAnUnknownCommand(t *testing.T) {
 
 	printed, failures, code := session.Socrates("review")
 	if code != exit.Unusable {
-		t.Fatalf("socrates-review review exited %d, want the usage code %d: %s%s", code, exit.Unusable, printed, failures)
+		t.Fatalf("socrates review review exited %d, want the usage code %d: %s%s", code, exit.Unusable, printed, failures)
 	}
 	if strings.TrimSpace(printed) != "" {
 		t.Errorf("the refused command printed %q, so something started", printed)
 	}
-	for _, named := range []string{"review", "socrates-review"} {
+	for _, named := range []string{"review", "socrates review"} {
 		if !strings.Contains(failures, named) {
 			t.Errorf("the refusal does not name %q: %s", named, failures)
 		}
@@ -88,22 +130,22 @@ func TestTheDefaultDoesNotBlock(t *testing.T) {
 
 	printed, failures, code := session.Socrates("begin")
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review begin exited %d: %s", code, failures)
+		t.Fatalf("socrates review begin exited %d: %s", code, failures)
 	}
 
 	name := firstLine(printed)
-	if !strings.Contains(printed, "socrates-review status "+name) {
-		t.Errorf("socrates-review begin does not say how to follow the run:\n%s", printed)
+	if !strings.Contains(printed, "socrates review status "+name) {
+		t.Errorf("socrates review begin does not say how to follow the run:\n%s", printed)
 	}
 
 	run := session.WaitFor(name, runstate.Reviewing)
 	if run.State.Terminal() {
-		t.Fatalf("the run was already %s when socrates-review begin returned", run.State)
+		t.Fatalf("the run was already %s when socrates review begin returned", run.State)
 	}
 
 	_, _, statusCode := session.Socrates("status", name)
 	if statusCode != exit.Working {
-		t.Errorf("socrates-review status of a running review exited %d, want %d", statusCode, exit.Working)
+		t.Errorf("socrates review status of a running review exited %d, want %d", statusCode, exit.Working)
 	}
 }
 
@@ -114,15 +156,15 @@ func TestWaitingReturnsTheVerdict(t *testing.T) {
 
 	printed, failures, code := session.Socrates("begin", "--wait")
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review begin --wait exited %d: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates review begin --wait exited %d: %s\n%s", code, failures, printed)
 	}
 	if !strings.Contains(printed, string(runstate.Clean)) {
-		t.Errorf("socrates-review begin --wait does not report the verdict:\n%s", printed)
+		t.Errorf("socrates review begin --wait does not report the verdict:\n%s", printed)
 	}
 
 	run := session.Run(firstLine(printed))
 	if run.State != runstate.Clean {
-		t.Errorf("the run is %s after socrates-review begin --wait returned zero", run.State)
+		t.Errorf("the run is %s after socrates review begin --wait returned zero", run.State)
 	}
 }
 
@@ -133,7 +175,7 @@ func TestStartingIsNotAVerdict(t *testing.T) {
 
 	printed, failures, code := session.Socrates("begin")
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review begin exited %d for a run that later escalates: %s", code, failures)
+		t.Fatalf("socrates review begin exited %d for a run that later escalates: %s", code, failures)
 	}
 
 	run := session.WaitForTerminal(firstLine(printed))
@@ -164,10 +206,10 @@ func TestEachVerdictHasItsOwnCodeFromTheCommand(t *testing.T) {
 			}
 
 			if _, _, code := session.Socrates("status", name); code != verdict.code {
-				t.Errorf("socrates-review status of a %s run exited %d, want %d", verdict.state, code, verdict.code)
+				t.Errorf("socrates review status of a %s run exited %d, want %d", verdict.state, code, verdict.code)
 			}
 			if _, _, code := session.Socrates("findings", name); code != verdict.code {
-				t.Errorf("socrates-review findings of a %s run exited %d, want %d", verdict.state, code, verdict.code)
+				t.Errorf("socrates review findings of a %s run exited %d, want %d", verdict.state, code, verdict.code)
 			}
 		})
 	}
@@ -178,7 +220,7 @@ func TestAUsageErrorIsNotAVerdictFromTheCommand(t *testing.T) {
 
 	printed, failures, code := session.Socrates("status", "20200101T000000Z-deadbeef")
 	if code != exit.Unusable {
-		t.Errorf("socrates-review status of a run that does not exist exited %d, want %d", code, exit.Unusable)
+		t.Errorf("socrates review status of a run that does not exist exited %d, want %d", code, exit.Unusable)
 	}
 	if !strings.Contains(failures, "20200101T000000Z-deadbeef") {
 		t.Errorf("the refusal does not name the run asked for: %s", failures)
@@ -200,7 +242,7 @@ func TestMachineReadableOnRequest(t *testing.T) {
 
 	printed, failures, code := session.Socrates("status", "--json", name)
 	if code != exit.SomethingAsked {
-		t.Fatalf("socrates-review status --json exited %d: %s", code, failures)
+		t.Fatalf("socrates review status --json exited %d: %s", code, failures)
 	}
 
 	var status struct {
@@ -213,7 +255,7 @@ func TestMachineReadableOnRequest(t *testing.T) {
 		} `json:"findings"`
 	}
 	if err := json.Unmarshal([]byte(printed), &status); err != nil {
-		t.Fatalf("socrates-review status --json printed something other than one JSON object: %v:\n%s", err, printed)
+		t.Fatalf("socrates review status --json printed something other than one JSON object: %v:\n%s", err, printed)
 	}
 	if status.Run != name || status.State != string(runstate.Escalated) || status.Round != 1 {
 		t.Errorf("the object reads %+v", status)
@@ -222,7 +264,7 @@ func TestMachineReadableOnRequest(t *testing.T) {
 		t.Errorf("the counts read %+v", status.Findings)
 	}
 	if strings.Count(strings.TrimSpace(printed), "\n") != 0 {
-		t.Errorf("socrates-review status --json printed more than one line:\n%s", printed)
+		t.Errorf("socrates review status --json printed more than one line:\n%s", printed)
 	}
 }
 
@@ -236,7 +278,7 @@ func TestFindingsAreReadableFromTheCommand(t *testing.T) {
 
 	printed, failures, code := session.Socrates("findings", name)
 	if code != exit.SomethingAsked {
-		t.Fatalf("socrates-review findings exited %d: %s", code, failures)
+		t.Fatalf("socrates review findings exited %d: %s", code, failures)
 	}
 	for _, needed := range []string{
 		"f1", "error", "internal/added.go:1", "The added file answers wrongly for an empty input.", "informational",
@@ -244,7 +286,7 @@ func TestFindingsAreReadableFromTheCommand(t *testing.T) {
 		"medium", "one changed path answers wrongly without erroring",
 	} {
 		if !strings.Contains(printed, needed) {
-			t.Errorf("socrates-review findings does not print %q:\n%s", needed, printed)
+			t.Errorf("socrates review findings does not print %q:\n%s", needed, printed)
 		}
 	}
 
@@ -253,7 +295,7 @@ func TestFindingsAreReadableFromTheCommand(t *testing.T) {
 		Findings []map[string]any `json:"findings"`
 	}
 	if err := json.Unmarshal([]byte(asJSON), &reported); err != nil {
-		t.Fatalf("socrates-review findings --json printed something other than one JSON object: %v:\n%s", err, asJSON)
+		t.Fatalf("socrates review findings --json printed something other than one JSON object: %v:\n%s", err, asJSON)
 	}
 	if reported.Findings[2]["action"] != "ask-user" {
 		t.Errorf("the finding that stated no action is reported as %v", reported.Findings[2]["action"])
@@ -276,13 +318,13 @@ func TestTheBareCommandFindsThisRepositorysRun(t *testing.T) {
 
 	printed, failures, code := session.SocratesIn(elsewhere.Root, "status")
 	if code != exit.NothingAsked && code != exit.Working {
-		t.Fatalf("socrates-review status in the second repository exited %d: %s", code, failures)
+		t.Fatalf("socrates review status in the second repository exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, there) {
-		t.Errorf("socrates-review status in the second repository reported %q, want the run %s", printed, there)
+		t.Errorf("socrates review status in the second repository reported %q, want the run %s", printed, there)
 	}
 	if strings.Contains(printed, here) {
-		t.Errorf("socrates-review status in the second repository reported the first repository's run:\n%s", printed)
+		t.Errorf("socrates review status in the second repository reported the first repository's run:\n%s", printed)
 	}
 }
 
@@ -291,7 +333,7 @@ func mustBegin(t *testing.T, session *harness.Session, directory string) string 
 
 	printed, failures, code := session.SocratesIn(directory, "begin")
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review begin in %s exited %d: %s", directory, code, failures)
+		t.Fatalf("socrates review begin in %s exited %d: %s", directory, code, failures)
 	}
 	return printed
 }
@@ -302,13 +344,13 @@ func TestARepositoryWithNoRuns(t *testing.T) {
 
 	printed, failures, code := session.SocratesIn(untouched.Root, "status")
 	if code != exit.Unusable {
-		t.Errorf("socrates-review status in a repository that has never been reviewed exited %d, want 3", code)
+		t.Errorf("socrates review status in a repository that has never been reviewed exited %d, want 3", code)
 	}
 	if !strings.Contains(failures, untouched.Root) {
 		t.Errorf("the refusal does not name the repository: %s", failures)
 	}
 	if strings.TrimSpace(printed) != "" {
-		t.Errorf("socrates-review status printed a report for a repository with no runs:\n%s", printed)
+		t.Errorf("socrates review status printed a report for a repository with no runs:\n%s", printed)
 	}
 }
 
@@ -323,10 +365,10 @@ func TestAnIdentifierWinsOverTheDefault(t *testing.T) {
 	elsewhere := gitrepo.New(t)
 	printed, failures, code := session.SocratesIn(elsewhere.Root, "status", name)
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review status of a named run exited %d from another repository: %s", code, failures)
+		t.Fatalf("socrates review status of a named run exited %d from another repository: %s", code, failures)
 	}
 	if !strings.Contains(printed, name) {
-		t.Errorf("socrates-review status reported %q, want the run %s", printed, name)
+		t.Errorf("socrates review status reported %q, want the run %s", printed, name)
 	}
 }
 
@@ -341,10 +383,10 @@ func TestCancellingStopsEverything(t *testing.T) {
 
 	printed, failures, code := session.Socrates("cancel", name)
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review cancel exited %d: %s", code, failures)
+		t.Fatalf("socrates review cancel exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, name) {
-		t.Errorf("socrates-review cancel does not name the run it stopped:\n%s", printed)
+		t.Errorf("socrates review cancel does not name the run it stopped:\n%s", printed)
 	}
 
 	run := session.Recorded(name)
@@ -367,10 +409,10 @@ func TestCancellingATerminalRunChangesNothing(t *testing.T) {
 
 	printed, failures, code := session.Socrates("cancel", name)
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review cancel of a finished run exited %d: %s", code, failures)
+		t.Fatalf("socrates review cancel of a finished run exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, string(before.State)) {
-		t.Errorf("socrates-review cancel does not say the run had already finished as %s:\n%s", before.State, printed)
+		t.Errorf("socrates review cancel does not say the run had already finished as %s:\n%s", before.State, printed)
 	}
 
 	after := session.Recorded(name)
@@ -409,7 +451,7 @@ func TestAnUnreadableConfigurationFileIsARefusalFromTheCommand(t *testing.T) {
 
 	_, failures, code := session.Socrates("begin")
 	if code != exit.Unusable {
-		t.Errorf("socrates-review begin with a configuration file that does not parse exited %d, want 3", code)
+		t.Errorf("socrates review begin with a configuration file that does not parse exited %d, want 3", code)
 	}
 	if !strings.Contains(failures, path) {
 		t.Errorf("the refusal does not name the file: %s", failures)

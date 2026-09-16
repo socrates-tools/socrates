@@ -94,10 +94,10 @@ func TestAForgePutsAForwardedFindingWhereSocratesSaidItGoes(t *testing.T) {
 
 	for _, finding := range reported.Findings {
 		if finding.Inside == nil {
-			t.Fatalf("socrates-review says nothing about whether %s is inside the change, and where its comment goes is read from that", finding.ID)
+			t.Fatalf("socrates review says nothing about whether %s is inside the change, and where its comment goes is read from that", finding.ID)
 		}
 		if *finding.Inside != insideTheChange[finding.ID] {
-			t.Fatalf("socrates-review reports %s at %s:%d as inside the change: %t, and the pull request's diff holds that line: %t",
+			t.Fatalf("socrates review reports %s at %s:%d as inside the change: %t, and the pull request's diff holds that line: %t",
 				finding.ID, finding.File, finding.Line, *finding.Inside, insideTheChange[finding.ID])
 		}
 	}
@@ -135,7 +135,7 @@ func TestAForgePutsAForwardedFindingWhereSocratesSaidItGoes(t *testing.T) {
 				t.Errorf("%s landed on %s:%d and the forge holds it against no position in the diff, so it reads as outdated rather than as a comment on the change", finding.ID, posted.Path, posted.Line)
 			}
 			if posted.Body != finding.Description {
-				t.Errorf("what reached the pull request reads %q, and socrates-review recorded %q", posted.Body, finding.Description)
+				t.Errorf("what reached the pull request reads %q, and socrates review recorded %q", posted.Body, finding.Description)
 			}
 			t.Logf("%s landed at %s", finding.ID, posted.HTMLURL)
 		}
@@ -188,8 +188,8 @@ func theirChangeCheckedOut(t *testing.T, pull pullRequest) string {
 func socratesReview(t *testing.T) string {
 	t.Helper()
 
-	binary := filepath.Join(t.TempDir(), "socrates-review")
-	source.Build(t, "./review/cmd/socrates-review", binary)
+	binary := filepath.Join(t.TempDir(), "socrates")
+	source.Build(t, "./cmd/socrates", binary)
 	return binary
 }
 
@@ -203,7 +203,7 @@ func reviewed(t *testing.T, binary, clone string, pull pullRequest) string {
 
 	name, _, _ := strings.Cut(strings.TrimSpace(printed), "\n")
 	if name == "" {
-		t.Fatal("socrates-review begin printed no run identifier")
+		t.Fatal("socrates review begin printed no run identifier")
 	}
 	return name
 }
@@ -219,10 +219,10 @@ func whatSocratesReported(t *testing.T, binary, clone, name string, want int) re
 	var read reportedRound
 	printed := socrates(t, binary, clone, want, "findings", name, "--json")
 	if err := json.Unmarshal([]byte(printed), &read); err != nil {
-		t.Fatalf("reading what socrates-review findings --json reported: %v\n%s", err, printed)
+		t.Fatalf("reading what socrates review findings --json reported: %v\n%s", err, printed)
 	}
 	if len(read.Findings) == 0 {
-		t.Fatal("socrates-review reported no findings, so there is nothing to forward")
+		t.Fatal("socrates review reported no findings, so there is nothing to forward")
 	}
 	return read
 }
@@ -232,7 +232,7 @@ func commentOnALine(t *testing.T, pull pullRequest, finding reportedFinding) pos
 
 	posted, code := commentOnALineAllowingRefusal(t, pull, finding)
 	if code != 0 {
-		t.Fatalf("the forge refused a comment on %s:%d, which socrates-review reports as inside the change", finding.File, finding.Line)
+		t.Fatalf("the forge refused a comment on %s:%d, which socrates review reports as inside the change", finding.File, finding.Line)
 	}
 	return posted
 }
@@ -322,9 +322,9 @@ func git(t *testing.T, directory string, arguments ...string) string {
 func socrates(t *testing.T, binary, clone string, want int, arguments ...string) string {
 	t.Helper()
 
-	printed, code := run(t, binary, clone, arguments...)
+	printed, code := run(t, binary, clone, append([]string{"review"}, arguments...)...)
 	if code != want {
-		t.Fatalf("socrates-review %s exited %d, want %d: %s", strings.Join(arguments, " "), code, want, printed)
+		t.Fatalf("socrates review %s exited %d, want %d: %s", strings.Join(arguments, " "), code, want, printed)
 	}
 	return printed
 }

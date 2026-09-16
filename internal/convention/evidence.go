@@ -17,6 +17,7 @@ var ContractsTestsRead = map[string]string{
 	filepath.Join("review", "claudesim", "failure_test.go"):        "the file the simulator wrote into a temporary directory, which is the observable side effect that scenario asks for",
 	filepath.Join("internal", "convention", "account_test.go"):     "the account this project answers to, where the source is the subject of the check and not a proxy for anything else",
 	filepath.Join("internal", "convention", "comments_test.go"):    "this repository's no-commentary convention, where the source is the subject of the check and not a proxy for anything else",
+	filepath.Join("internal", "convention", "crosstool_test.go"):   "the rule that no tool imports another tool, which is a structural invariant of this module",
 	filepath.Join("internal", "convention", "documents_test.go"):   "what a person reads before they trust the tool, install it or propose a change to it, which is a property of this repository's documents and reads no Go file at all",
 	filepath.Join("internal", "convention", "evidence_test.go"):    "this convention itself, which is a property of the test suite",
 	filepath.Join("internal", "convention", "ignorance_test.go"):   "the rule that the surface names nothing of the other tool, which is a property of this repository's source rather than a proxy for behaviour",

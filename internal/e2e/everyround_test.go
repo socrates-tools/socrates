@@ -223,7 +223,7 @@ func TestAPageNobodyWaitsOnDoesNotStopTheLoop(t *testing.T) {
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {
-		t.Fatalf("the first round left the run %s and socrates-review status exited %d, want a parked run", state, code)
+		t.Fatalf("the first round left the run %s and socrates review status exited %d, want a parked run", state, code)
 	}
 
 	_, address := driven.handedOver(name, "what an independent reviewer said", nil)
@@ -239,12 +239,12 @@ func TestAPageNobodyWaitsOnDoesNotStopTheLoop(t *testing.T) {
 		t.Fatalf("recording a rejection while a page nobody waits on stands open exited %d: %s", code, failures)
 	}
 	if _, failures, code := driven.run("continue", name); code != 0 {
-		t.Fatalf("socrates-review continue while a page nobody waits on stands open exited %d: %s", code, failures)
+		t.Fatalf("socrates review continue while a page nobody waits on stands open exited %d: %s", code, failures)
 	}
 
 	state, code = driven.waitedFor(name)
 	if state != runstate.Clean || code != 0 {
-		t.Fatalf("the second round left the run %s and socrates-review status exited %d, want clean", state, code)
+		t.Fatalf("the second round left the run %s and socrates review status exited %d, want clean", state, code)
 	}
 
 	held := driven.serving()

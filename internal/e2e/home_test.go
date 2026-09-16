@@ -54,7 +54,7 @@ func TestARelativeHomeIsRefused(t *testing.T) {
 	out, failures, code := session.SocratesWith(session.Repository.Root, []string{state.HomeVariable + "=" + relative}, "begin")
 
 	if code != exit.Unusable {
-		t.Fatalf("socrates-review begin with a relative home exited %d, want the usage code %d: %s%s", code, exit.Unusable, out, failures)
+		t.Fatalf("socrates review begin with a relative home exited %d, want the usage code %d: %s%s", code, exit.Unusable, out, failures)
 	}
 	if !strings.Contains(failures, state.HomeVariable) || !strings.Contains(failures, relative) {
 		t.Errorf("the refusal reads %q, without naming the variable and the path", failures)
@@ -86,7 +86,7 @@ func TestARunIsFoundBesideTheConfiguration(t *testing.T) {
 
 	_, failures, code := session.Socrates("begin")
 	if code != exit.Unusable {
-		t.Fatalf("socrates-review begin exited %d with a configuration file beside the runs that does not parse, want %d", code, exit.Unusable)
+		t.Fatalf("socrates review begin exited %d with a configuration file beside the runs that does not parse, want %d", code, exit.Unusable)
 	}
 	if !strings.Contains(failures, beside) {
 		t.Errorf("the refusal reads %q, and the configuration socrates reads lives beside the runs at %s", failures, beside)

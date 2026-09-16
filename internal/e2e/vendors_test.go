@@ -28,7 +28,7 @@ func TestAnUnsupportedCLIIsRefusedBeforeAnythingHappens(t *testing.T) {
 	out, failures, code := session.Socrates("begin")
 
 	if code != 3 {
-		t.Fatalf("socrates-review begin exited %d under an unsupported reviewer CLI, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates review begin exited %d under an unsupported reviewer CLI, want the usage code: %s%s", code, out, failures)
 	}
 	if !strings.Contains(failures, turnedAway.Name) {
 		t.Errorf("the refusal reads %q, without naming the CLI that was configured", failures)
@@ -62,7 +62,7 @@ func TestAReviewerCLISocratesDoesNotKnowIsRefusedByName(t *testing.T) {
 	_, failures, code := session.Socrates("begin")
 
 	if code != 3 {
-		t.Fatalf("socrates-review begin exited %d under a reviewer CLI socrates does not know, want the usage code: %s", code, failures)
+		t.Fatalf("socrates review begin exited %d under a reviewer CLI socrates does not know, want the usage code: %s", code, failures)
 	}
 	if !strings.Contains(failures, "a-cli-nobody-wrote") {
 		t.Errorf("the refusal reads %q, without naming what was configured", failures)
@@ -92,18 +92,21 @@ func TestAFinishedRunStaysReadableUnderAnyConfiguration(t *testing.T) {
 
 	nameTheReviewerCLI(t, session, unsupported[0].Name)
 
+	if out, failures, code := session.Top("version"); code == 3 || strings.TrimSpace(out) == "" {
+		t.Errorf("socrates version was refused under an unsupported reviewer CLI, and it neither spawns nor reaps: %d %s", code, failures)
+	}
+
 	for _, arguments := range [][]string{
-		{"version"},
 		{"status", name},
 		{"findings", name},
 		{"logs", name},
 	} {
 		out, failures, code := session.Socrates(arguments...)
 		if code == 3 {
-			t.Errorf("socrates %s was refused under an unsupported reviewer CLI, and it neither spawns nor reaps: %s", strings.Join(arguments, " "), failures)
+			t.Errorf("socrates review %s was refused under an unsupported reviewer CLI, and it neither spawns nor reaps: %s", strings.Join(arguments, " "), failures)
 		}
 		if strings.TrimSpace(out) == "" {
-			t.Errorf("socrates %s printed nothing under an unsupported reviewer CLI: %s", strings.Join(arguments, " "), failures)
+			t.Errorf("socrates review %s printed nothing under an unsupported reviewer CLI: %s", strings.Join(arguments, " "), failures)
 		}
 	}
 }

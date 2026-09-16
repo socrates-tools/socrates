@@ -14,7 +14,7 @@ The recipe that works is a temporary index plus `add -A`, which honours `.gitign
 `read-tree` creates the temporary index from `HEAD`, and `add -A` stages into that.
 Point it at an existing file and you are staging into somebody's index.
 Point it at a directory that does not exist and git fails.
-socrates-review makes a temporary directory and names a file inside it that git then creates.
+review makes a temporary directory and names a file inside it that git then creates.
 
 **A snapshot commit is only reproducible if you pin the dates.**
 `commit-tree` folds the author and committer timestamps into the commit, so the same tree produced a new SHA every second.
@@ -45,7 +45,7 @@ An empty configuration file is the defaults, not an error, so that case is handl
 
 **cobra has no typed usage error.**
 An unknown flag reaches you through `SetFlagErrorFunc`, and an unknown command comes back from `Execute` as a plain error indistinguishable by type.
-socrates-review gives the root command `ArbitraryArgs` and a `RunE` that refuses the first argument itself, so a usage error is a refusal and exits `3` rather than looking like a failed review.
+review gives the root command `ArbitraryArgs` and a `RunE` that refuses the first argument itself, so a usage error is a refusal and exits `3` rather than looking like a failed review.
 
 **`go vet` is not the whitespace gate.**
 `gofmt -l .` is, and `make lint` runs it first, so formatting is never something to remember separately.
@@ -54,7 +54,7 @@ socrates-review gives the root command `ArbitraryArgs` and a `RunE` that refuses
 
 **Restricting the reviewer's tools does not restrict where else tools come from.**
 `--tools` is an allowlist over the vendor's built-in set and nothing else.
-It says nothing about the customisations the machine loads, and one of those writes wherever it likes the moment it starts: socrates-review's first live run failed because a configured tool source wrote a `.serena` directory into the snapshot worktree, and the round correctly refused a write the reviewer never asked to make.
+It says nothing about the customisations the machine loads, and one of those writes wherever it likes the moment it starts: review's first live run failed because a configured tool source wrote a `.serena` directory into the snapshot worktree, and the round correctly refused a write the reviewer never asked to make.
 A later run found the same session holding script execution, file upload and browser control, none of which `--tools` had any opinion about.
 
 **`--safe-mode` is the one flag that answers all of it.**
@@ -65,47 +65,47 @@ So the residual is a hook an administrator's policy configures, along with a pol
 A policy-configured tool source is not in that residual, which the measurement below shows going away, and the vendor's documentation puts managed plugins, managed skills and managed memory with it.
 That half is documentation rather than measurement, because the tool list does not say what contributed a tool and its `plugins` field is an inventory of the machine.
 A policy hook contributes no tool for the list check to see, but its command is a child of the session, whose working directory is the sealed worktree, so a write it makes there is refused and the comparison afterwards catches one the seal did not.
-What nothing socrates-review holds bounds is where that command reaches outside the worktree, so the residual is socrates-review's to state rather than to close: the flag that would ask to replace a managed set is the one refused at startup.
+What nothing review holds bounds is where that command reaches outside the worktree, so the residual is review's to state rather than to close: the flag that would ask to replace a managed set is the one refused at startup.
 Measured on this machine, which deploys a managed configuration: without it the opening event named four external sources, with it none, and the plugin-contributed `LSP` tool disappeared from the session's tool list at the same time.
 It is not refused by a managed configuration, which is the trap the flags below fall into.
 
-**`--safe-mode` arrived in 2.1.169, and socrates-review keeps no fallback.**
+**`--safe-mode` arrived in 2.1.169, and review keeps no fallback.**
 An older CLI dies at startup on an unknown option, every round of every run.
 Recognising that text to say something better is the pattern this repository deleted for being fragile, so the floor is stated in the README prerequisites instead and the CLI's own message is what a person reads.
 
 **The flags that ask to replace a managed set are refused at startup.**
 `You cannot use --strict-mcp-config when an enterprise MCP config is present`, exit status 1, and the refusal is deliberate rather than a bug: a managed configuration is a managed set and that flag asks to replace it.
 The file lives outside the person's control, at `/etc/claude-code/managed-mcp.json` on Linux.
-socrates-review sent it anyway once and fell back on the refusal, which is where a second invocation, a retry and a log line reading `the reviewer failed` on every round of every run all came from.
+review sent it anyway once and fell back on the refusal, which is where a second invocation, a retry and a log line reading `the reviewer failed` on every round of every run all came from.
 Nothing sends it now, and the simulator no longer accepts it, so putting it back fails every test that runs a reviewer rather than quietly reintroducing the fallback.
 
-**A settings allowlist also works, and was what socrates-review used before `--safe-mode`.**
+**A settings allowlist also works, and was what review used before `--safe-mode`.**
 An empty `allowedMcpServers` supplied through `--settings` is evaluated before a source loads, including one from a managed configuration, and an empty array is documented as distinct from unset: unset permits everything, empty permits nothing.
 It took a reviewer's session from 74 externally contributed tools to none.
-`--safe-mode` replaced it because it covers hooks and plugins too, and because it needs no vendor feature named in socrates-review's own vocabulary.
+`--safe-mode` replaced it because it covers hooks and plugins too, and because it needs no vendor feature named in review's own vocabulary.
 
 **The session's tool list is read rather than trusted.**
-socrates-review takes `tools` from the stream's opening event, subtracts what it asked for, and records the remainder.
+review takes `tools` from the stream's opening event, subtracts what it asked for, and records the remainder.
 Anything a customisation contributes lands in that list, so one check covers every source rather than one of them.
 An externally contributed tool is recognisable in that list by an `mcp__` prefix, which is how the live run that found this was diagnosed.
 
 **Two of the opening event's fields are about the session and the rest are an inventory of the machine.**
 Under `--safe-mode` its `skills`, `plugins`, `slash_commands` and `agents` fields name everything installed on the machine, and a check that read them would report a customisation on every run of every machine that has one.
-`tools` and `mcp_servers` are the two that answer for the session: the tool list holds only what socrates-review asked for, and the source list is empty.
+`tools` and `mcp_servers` are the two that answer for the session: the tool list holds only what review asked for, and the source list is empty.
 The measurement is what separates them, not the field names: with the flag the sources named went from four to none while the plugin inventory beside them did not move.
 
 **The opening event is not always the first line of the stream.**
 Without `--safe-mode` a `SessionStart` hook fires first on this machine and its `hook_started` event arrives before `system`/`init`; with the flag no hook of this machine's own runs and the init event is first, though a machine whose policy configures one would still see it fire.
-socrates-review matches the event by type and subtype wherever it appears, so this is one more thing the flag makes true rather than something to rely on.
+review matches the event by type and subtype wherever it appears, so this is one more thing the flag makes true rather than something to rely on.
 
 **A tool list at the opening event can be incomplete, so the source list is read beside it.**
 External sources connect asynchronously, so a probe on this machine reported four of them in the opening event while the tool list held none of their tools yet.
 Reading only the list would leave a machine that loaded a source anyway recording nothing at all, which is indistinguishable from a clean session.
 Both fields are read, and they are blind in different places: the list misses a source whose tools are still arriving, the source list misses a built-in the vendor added.
-Neither reading fails a round, and what covers a source that connects after socrates-review has read the event is `--safe-mode` not loading it and the comparison after the round.
+Neither reading fails a round, and what covers a source that connects after review has read the event is `--safe-mode` not loading it and the comparison after the round.
 
 **Pinning `mcp_servers` against the recordings survives a re-record, and pinning `mcp_servers[].name` would not.**
-Under socrates-review's own invocation the field comes back as an empty array, so no `[].name` is derived from it and a guard requiring one fails reading as though the vendor had removed a field.
+Under review's own invocation the field comes back as an empty array, so no `[].name` is derived from it and a guard requiring one fails reading as though the vendor had removed a field.
 `fidelity.ShapesOf` records the key before it walks the value, so an empty array still yields the field itself.
 That is the same trap the earlier guard fell into, one field along.
 
@@ -115,7 +115,7 @@ A tool that writes at startup has its write refused and the session carries on, 
 
 **`chmod` returning no error is not evidence that permissions are enforced.**
 A filesystem can accept the call and ignore the bits, and `root` ignores them by design.
-socrates-review attempts one write in the sealed worktree before spawning a reviewer, and refuses the review where that write succeeds.
+review attempts one write in the sealed worktree before spawning a reviewer, and refuses the review where that write succeeds.
 
 **`os.Chmod` follows symlinks.**
 Sealing a worktree by walking it would reach outside the worktree through any symlink in the change under review, which is a write in somebody else's tree.
@@ -143,7 +143,7 @@ A page reachable both with and without a trailing slash needs `/sessions/{sessio
 ## Testing
 
 **One journey needs a filesystem that ignores permission bits, and skips without one.**
-`TestASealThatDoesNotHoldIsARefusal` in `internal/e2e` is the only test of what `socrates-review begin` does where the seal cannot be enforced, and no test can manufacture such a filesystem.
+`TestASealThatDoesNotHoldIsARefusal` in `internal/e2e` is the only test of what `socrates review begin` does where the seal cannot be enforced, and no test can manufacture such a filesystem.
 Name one and it runs:
 
 ```sh
@@ -173,7 +173,7 @@ The check is one-directional: every field the simulator produces must exist in t
 The other direction would fail permanently and be turned off within a week.
 
 **`testscript` scripts assert exit codes through `sh`.**
-`exec` fails a script on any non-zero status and there is no assertion for a specific code, so `exec sh -c 'socrates-review status; echo exit=$?'` plus `stdout 'exit=3'` is how the contract gets checked.
+`exec` fails a script on any non-zero status and there is no assertion for a specific code, so `exec sh -c 'socrates review status; echo exit=$?'` plus `stdout 'exit=3'` is how the contract gets checked.
 `cp stdout file` is how you keep output for a later assertion, and `$WORK` is expanded inside single quotes.
 
 ## Continuous integration

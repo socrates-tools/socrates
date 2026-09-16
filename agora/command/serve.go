@@ -14,9 +14,11 @@ import (
 	"github.com/socrates-tools/socrates/internal/loopback"
 	"github.com/socrates-tools/socrates/internal/process"
 	"github.com/socrates-tools/socrates/internal/refusal"
-	"github.com/socrates-tools/socrates/review/config"
+	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/spf13/cobra"
 )
+
+const namespace = "agora"
 
 const (
 	servingVariable = "AGORA_SERVING"
@@ -28,7 +30,7 @@ const (
 	reachDeadline = 20 * time.Second
 )
 
-func newServeCommand() *cobra.Command {
+func newServeCommand(loadSurfaceSettings SurfaceLoader) *cobra.Command {
 	var from, address, session string
 
 	command := &cobra.Command{
@@ -36,11 +38,10 @@ func newServeCommand() *cobra.Command {
 		Short: serveShort,
 		Args:  cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
-			read, err := config.Load()
+			configured, err := loadSurfaceSettings()
 			if err != nil {
 				return err
 			}
-			configured := read.Surface
 			if !command.Flags().Changed(addressFlag) && configured.Bind != "" {
 				address = configured.Bind
 			}
@@ -71,7 +72,7 @@ func newServeCommand() *cobra.Command {
 			if _, err := document.Read(raw); err != nil {
 				return err
 			}
-			file, err := config.Path()
+			file, err := state.Configuration()
 			if err != nil {
 				return err
 			}
@@ -89,7 +90,7 @@ func inTheForeground() bool {
 	return os.Getenv(servingVariable) != ""
 }
 
-func aPortWasCommittedTo(command *cobra.Command, configured config.Surface) bool {
+func aPortWasCommittedTo(command *cobra.Command, configured SurfaceSettings) bool {
 	return command.Flags().Changed(addressFlag) || configured.Bind != "" || configured.ReachedAt != ""
 }
 
@@ -169,7 +170,7 @@ func start(command *cobra.Command, raw []byte, address string, said stated, sess
 		return fmt.Errorf(readingThisBinary, err)
 	}
 
-	spawned := exec.Command(binary, "serve", "--"+addressFlag, binding)
+	spawned := exec.Command(binary, namespace, "serve", "--"+addressFlag, binding)
 	spawned.Env = append(os.Environ(), servingVariable+"=yes")
 	spawned.Stdin = nil
 	spawned.Stdout = nil

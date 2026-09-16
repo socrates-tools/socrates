@@ -23,8 +23,8 @@ func theQuestionAsADecision(read reportedRound) []map[string]any {
 		case "f3":
 			decision["mode"] = "single-choice"
 			decision["options"] = []map[string]any{
-				{"label": "the function stays", "meaning": "the migration reads it", "command": `socrates-review respond --finding f3 --decided --reason "the endpoint stays, because the migration reads it"`, "recommended": true},
-				{"label": "take it out", "meaning": "nothing reads it", "command": `socrates-review respond --finding f3 --decided --reason "nothing reads it"`},
+				{"label": "the function stays", "meaning": "the migration reads it", "command": `socrates review respond --finding f3 --decided --reason "the endpoint stays, because the migration reads it"`, "recommended": true},
+				{"label": "take it out", "meaning": "nothing reads it", "command": `socrates review respond --finding f3 --decided --reason "nothing reads it"`},
 			}
 		case "f4":
 			decision["meaning"] = "the deletion is gone, and the entry is dropped by whichever reader took it last"

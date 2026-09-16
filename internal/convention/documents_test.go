@@ -58,7 +58,7 @@ func TestARequirementsSectionThatArrivesLateIsRead(t *testing.T) {
 	if front.Sections[0] == convention.RequirementsHeading {
 		t.Errorf("a document explaining before it states its requirements was read as stating them first: %v", front.Sections)
 	}
-	want := []string{convention.FrontDocumentFile + " states what socrates-review needs without naming account"}
+	want := []string{convention.FrontDocumentFile + " states what socrates review needs without naming account"}
 	if diff := cmp.Diff(want, front.Missing); diff != "" {
 		t.Errorf("what a requirements section missing a fact reports differs (-want +got):\n%s", diff)
 	}
@@ -97,15 +97,15 @@ func TestAFloorAheadOfTheModuleIsReportedNamingBoth(t *testing.T) {
 	}
 }
 
-func TestTheSecondBinaryIsExplained(t *testing.T) {
+func TestEveryInstalledBinaryIsExplained(t *testing.T) {
 	root := source.Root(t)
 
 	installed, err := convention.BinariesInstalled(root)
 	if err != nil {
 		t.Fatalf("reading what installing puts on a path: %v", err)
 	}
-	if len(installed) < 2 {
-		t.Fatalf("installing puts %v on a path, and this check is about the second one", installed)
+	if len(installed) == 0 {
+		t.Fatalf("installing puts nothing on a path, so this check has nothing to compare and would pass forever")
 	}
 
 	unexplained, err := convention.BinariesUnexplained(root)

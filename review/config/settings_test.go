@@ -36,7 +36,7 @@ func TestEverySettingIsReportedInTheOrderTheFileIsWritten(t *testing.T) {
 		keys = append(keys, setting.Key)
 	}
 	if diff := cmp.Diff(everySetting, keys); diff != "" {
-		t.Errorf("what socrates-review reports about itself differs from what the file holds (-want +got):\n%s", diff)
+		t.Errorf("what socrates review reports about itself differs from what the file holds (-want +got):\n%s", diff)
 	}
 }
 
@@ -94,17 +94,17 @@ func TestAReviewerCLISocratesReviewDoesNotDriveIsReportedRatherThanCorrected(t *
 
 	reported := valuesOf(loaded.Settings())
 	if reported["reviewer_cli"] != unsupported {
-		t.Errorf("reviewer_cli reports %q, and the file states %s, which socrates-review refuses to drive when a review starts", reported["reviewer_cli"], unsupported)
+		t.Errorf("reviewer_cli reports %q, and the file states %s, which socrates review refuses to drive when a review starts", reported["reviewer_cli"], unsupported)
 	}
 	for _, key := range []string{"roles.reviewer.model", "roles.reviewer.effort"} {
 		if reported[key] != "" {
-			t.Errorf("%s reports %q, and socrates-review routes nothing to a CLI it does not drive", key, reported[key])
+			t.Errorf("%s reports %q, and socrates review routes nothing to a CLI it does not drive", key, reported[key])
 		}
 	}
 
 	shipped, _ := agent.Named(agent.DefaultVendor)
 	if reported["roles.reviewer.model"] == shipped.Routing[agent.Reviewer].Model {
-		t.Error("the model reported is the one socrates-review shipped with, and the file names another CLI")
+		t.Error("the model reported is the one socrates review shipped with, and the file names another CLI")
 	}
 }
 
@@ -238,7 +238,7 @@ func TestTheReviewerCLIsValuesAreTheOnesSocratesReviewDrives(t *testing.T) {
 			continue
 		}
 		if diff := cmp.Diff(agent.SupportedNames(), setting.Choices); diff != "" {
-			t.Errorf("reviewer_cli offers something other than the CLIs socrates-review drives (-want +got):\n%s", diff)
+			t.Errorf("reviewer_cli offers something other than the CLIs socrates review drives (-want +got):\n%s", diff)
 		}
 		for _, unsupported := range agent.Unsupported() {
 			if slices.Contains(setting.Choices, unsupported.Name) {

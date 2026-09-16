@@ -51,7 +51,7 @@ func TestTheHandoverSkillNamesTheBaseAndSaysWhatItResolvesTo(t *testing.T) {
 			t.Errorf("the handover skill does not name %q, so the review would be of the wrong change:\n%s", stated, handover)
 		}
 	}
-	for _, said := range []string{"neither fetches nor rebases", "socrates-review status"} {
+	for _, said := range []string{"neither fetches nor rebases", "socrates review status"} {
 		if !strings.Contains(handover, said) {
 			t.Errorf("the handover skill does not say %q", said)
 		}
@@ -112,7 +112,7 @@ func TestWhereACommentGoesComesFromSocrates(t *testing.T) {
 		t.Errorf("the handover skill does not say the card tells the person which of the two forwarding a finding would be:\n%s", handover)
 	}
 	if !strings.Contains(handover, "treat that finding as outside the change") {
-		t.Error("the handover skill does not say what to do where socrates-review states no location")
+		t.Error("the handover skill does not say what to do where socrates review states no location")
 	}
 }
 
@@ -123,7 +123,7 @@ func TestNothingIsPostedThatThePersonDidNotChoose(t *testing.T) {
 		t.Errorf("the handover skill does not say that nothing is posted the person did not choose:\n%s", handover)
 	}
 
-	for _, stated := range []string{"Read every comment body back from", "findings --json", "what socrates-review recorded"} {
+	for _, stated := range []string{"Read every comment body back from", "findings --json", "what socrates review recorded"} {
 		if !strings.Contains(handover, stated) {
 			t.Errorf("the handover skill does not say %q, so a comment body could be anything the page handed back:\n%s", stated, handover)
 		}
@@ -148,8 +148,8 @@ func TestADropsReasonStaysOnThisMachine(t *testing.T) {
 func TestNoSecondRoundFollowsAHandover(t *testing.T) {
 	said := sectionAbout(t, skill.HandoverDocument(), string(runstate.AwaitingResponse))
 
-	if !strings.Contains(said, "socrates-review continue") {
-		t.Errorf("the handover skill does not say to run socrates-review continue once every finding is answered:\n%s", said)
+	if !strings.Contains(said, "socrates review continue") {
+		t.Errorf("the handover skill does not say to run socrates review continue once every finding is answered:\n%s", said)
 	}
 	if !strings.Contains(said, "No second round follows") {
 		t.Errorf("the handover skill does not say that no second round follows:\n%s", said)
@@ -190,13 +190,13 @@ func TestEveryBranchOfTheHandoverThatHasAResultServesAPage(t *testing.T) {
 
 	for _, state := range []runstate.State{runstate.Clean, runstate.Escalated, runstate.AwaitingResponse} {
 		said := sectionAbout(t, handover, string(state))
-		if !strings.Contains(said, "agora serve") {
+		if !strings.Contains(said, "socrates agora serve") {
 			t.Errorf("the %s branch of the handover skill hands nothing over as a page:\n%s", state, said)
 		}
 	}
 	for _, state := range []runstate.State{runstate.Failed, runstate.Cancelled} {
 		said := sectionAbout(t, handover, string(state))
-		if strings.Contains(said, "agora serve") {
+		if strings.Contains(said, "socrates agora serve") {
 			t.Errorf("the %s branch of the handover skill serves a page, and nothing was reviewed to put on one:\n%s", state, said)
 		}
 		if !strings.Contains(said, "post nothing") {

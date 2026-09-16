@@ -35,8 +35,8 @@ func TestAReleaseArchiveGivesWhatInstallingFromSourceGives(t *testing.T) {
 		}
 	})
 
-	t.Run("An archive carries the tool and the second binary", func(t *testing.T) {
-		carried := []string{convention.Repository, "agora"}
+	t.Run("An archive carries the tool", func(t *testing.T) {
+		carried := []string{convention.Suite}
 		for _, named := range carried {
 			entry, err := os.Stat(filepath.Join(extracted, named))
 			if err != nil {

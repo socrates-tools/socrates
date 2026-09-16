@@ -52,6 +52,7 @@ func (s *Session) SocratesInATerminal(arguments ...string) *Terminal {
 func (s *Session) SocratesInATerminalWith(environment []string, arguments ...string) *Terminal {
 	s.t.Helper()
 
+	arguments = append([]string{"review"}, arguments...)
 	command := exec.Command(s.Binary, arguments...)
 	command.Dir = s.Repository.Root
 	if len(environment) > 0 {
@@ -60,7 +61,7 @@ func (s *Session) SocratesInATerminalWith(environment []string, arguments ...str
 
 	device, err := pty.StartWithSize(command, &pty.Winsize{Rows: screenRows, Cols: screenColumns})
 	if err != nil {
-		s.t.Fatalf("starting socrates-review %s in a pseudo-terminal: %v", strings.Join(arguments, " "), err)
+		s.t.Fatalf("starting socrates %s in a pseudo-terminal: %v", strings.Join(arguments, " "), err)
 	}
 
 	attached := &Terminal{
@@ -96,7 +97,7 @@ func (a *Terminal) Type(keys string) {
 
 	a.typedOver, a.typed = a.Drawn(), true
 	if _, err := io.WriteString(a.device, keys); err != nil {
-		a.t.Fatalf("typing %q at socrates-review %s: %v", keys, strings.Join(a.arguments, " "), err)
+		a.t.Fatalf("typing %q at socrates %s: %v", keys, strings.Join(a.arguments, " "), err)
 	}
 }
 
@@ -114,7 +115,7 @@ func (a *Terminal) Await(wanted string) string {
 		}
 		time.Sleep(drawnPoll)
 	}
-	a.t.Fatalf("socrates-review %s never drew %q, and the screen reads:\n%s", strings.Join(a.arguments, " "), wanted, a.Drawn())
+	a.t.Fatalf("socrates %s never drew %q, and the screen reads:\n%s", strings.Join(a.arguments, " "), wanted, a.Drawn())
 	return ""
 }
 
@@ -181,14 +182,14 @@ func (a *Terminal) Wait() (string, int) {
 		if err != nil {
 			var exited *exec.ExitError
 			if !errors.As(err, &exited) {
-				a.t.Fatalf("running socrates-review %s in a pseudo-terminal: %v", strings.Join(a.arguments, " "), err)
+				a.t.Fatalf("running socrates %s in a pseudo-terminal: %v", strings.Join(a.arguments, " "), err)
 			}
 			code = exited.ExitCode()
 		}
 		time.Sleep(drawnPoll)
 		return a.Drawn(), code
 	case <-time.After(terminalWait):
-		a.t.Fatalf("socrates-review %s is still running after %s, and the screen reads:\n%s", strings.Join(a.arguments, " "), terminalWait, a.Drawn())
+		a.t.Fatalf("socrates %s is still running after %s, and the screen reads:\n%s", strings.Join(a.arguments, " "), terminalWait, a.Drawn())
 		return "", 0
 	}
 }

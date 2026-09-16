@@ -36,7 +36,7 @@ func TestAStartedRunIsOnDiskImmediately(t *testing.T) {
 
 	for _, expected := range []string{"run.json", runlog.FileName, "r1"} {
 		if _, err := os.Stat(filepath.Join(directory, expected)); err != nil {
-			t.Errorf("%s is not in the run directory when socrates-review begin returned: %v", expected, err)
+			t.Errorf("%s is not in the run directory when socrates review begin returned: %v", expected, err)
 		}
 	}
 }

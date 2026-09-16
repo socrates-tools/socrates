@@ -89,7 +89,7 @@ func TestTheStatusPrintsTheBaseItResolved(t *testing.T) {
 
 	printed, failures, code := session.Socrates("status", name)
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review status exited %d: %s", code, failures)
+		t.Fatalf("socrates review status exited %d: %s", code, failures)
 	}
 	if !strings.Contains(printed, "base: "+forked) {
 		t.Errorf("the status does not say the change was reviewed against %s:\n%s", forked, printed)
@@ -112,7 +112,7 @@ func TestANamedBaseIsPinnedForTheWholeRun(t *testing.T) {
 	session.Repository.Commit("the author committed the patches while the run waited")
 
 	if _, failures, code := session.Socrates("continue", name, "--wait"); code != exit.NothingAsked {
-		t.Fatalf("socrates-review continue --wait exited %d: %s", code, failures)
+		t.Fatalf("socrates review continue --wait exited %d: %s", code, failures)
 	}
 
 	second, present := session.Recorded(name).Reviewed(2)
@@ -224,7 +224,7 @@ func TestReviewingUncommittedWorkNamesNoBase(t *testing.T) {
 }
 
 func TestSocratesReachesNoRemoteToResolveABase(t *testing.T) {
-	// scenario: socrates-review neither fetches nor rebases
+	// scenario: socrates review neither fetches nor rebases
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 

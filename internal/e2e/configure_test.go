@@ -81,7 +81,7 @@ func TestTheMenuAndTheReportAgreeAboutWhatIsInForce(t *testing.T) {
 
 	printed, failures, code := session.Socrates("config")
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review config exited %d: %s", code, failures)
+		t.Fatalf("socrates review config exited %d: %s", code, failures)
 	}
 
 	menu := session.SocratesInATerminal("configure")
@@ -96,7 +96,7 @@ func TestTheMenuAndTheReportAgreeAboutWhatIsInForce(t *testing.T) {
 			continue
 		}
 		if row.Value != reported.Value || row.Source != reported.Source {
-			t.Errorf("the menu says %s is %q as %s, and socrates-review config says %q as %s", key, row.Value, row.Source, reported.Value, reported.Source)
+			t.Errorf("the menu says %s is %q as %s, and socrates review config says %q as %s", key, row.Value, row.Source, reported.Value, reported.Source)
 		}
 	}
 }
@@ -135,7 +135,7 @@ func TestTheListOffersOnlyTheReviewerCLIsSocratesReviewDrives(t *testing.T) {
 
 	for _, supported := range agent.SupportedNames() {
 		if !strings.Contains(drawn, supported) {
-			t.Errorf("the list offers no %s, and socrates-review drives it:\n%s", supported, drawn)
+			t.Errorf("the list offers no %s, and socrates review drives it:\n%s", supported, drawn)
 		}
 	}
 	for _, unsupported := range agent.Unsupported() {
@@ -299,7 +299,7 @@ func TestEverySettingWithNoFixedValuesOpensAFieldHoldingTheValueInForce(t *testi
 
 	printed, failures, code := session.Socrates("config")
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review config exited %d: %s", code, failures)
+		t.Fatalf("socrates review config exited %d: %s", code, failures)
 	}
 	reported := settingsIn(t, printed)
 
@@ -660,7 +660,7 @@ func TestAWriteThatCannotHappenIsSaidRatherThanSwallowed(t *testing.T) {
 		t.Errorf("nothing said names the file that could not be written:\n%s", drawn)
 	}
 	if strings.Contains(drawn, "set to codex") {
-		t.Errorf("socrates-review said the setting was written and it was not:\n%s", drawn)
+		t.Errorf("socrates review said the setting was written and it was not:\n%s", drawn)
 	}
 }
 
@@ -673,9 +673,9 @@ func TestWithNoTerminalConfigureRefusesAndWritesNothing(t *testing.T) {
 
 	printed, failures, code := session.Socrates("configure")
 	if code != exit.Unusable {
-		t.Fatalf("socrates-review configure with no terminal exited %d, want %d:\n%s%s", code, exit.Unusable, printed, failures)
+		t.Fatalf("socrates review configure with no terminal exited %d, want %d:\n%s%s", code, exit.Unusable, printed, failures)
 	}
-	if !strings.Contains(failures, "socrates-review config") {
+	if !strings.Contains(failures, "socrates review config") {
 		t.Errorf("the refusal does not name the command that reads settings without a terminal: %s", failures)
 	}
 	for _, library := range []string{"bubbletea", "charm", "tea", "ultraviolet"} {
@@ -684,7 +684,7 @@ func TestWithNoTerminalConfigureRefusesAndWritesNothing(t *testing.T) {
 		}
 	}
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		t.Errorf("a refused socrates-review configure created %s", path)
+		t.Errorf("a refused socrates review configure created %s", path)
 	}
 }
 
@@ -693,9 +693,9 @@ func TestInputRedirectedFromAFileStillRefuses(t *testing.T) {
 
 	_, failures, code := session.SocratesReading("q\n", "configure")
 	if code != exit.Unusable {
-		t.Fatalf("socrates-review configure with input redirected exited %d, want %d", code, exit.Unusable)
+		t.Fatalf("socrates review configure with input redirected exited %d, want %d", code, exit.Unusable)
 	}
-	if !strings.Contains(failures, "socrates-review config") {
+	if !strings.Contains(failures, "socrates review config") {
 		t.Errorf("the refusal does not name the command that reads settings without a terminal: %s", failures)
 	}
 }
@@ -737,7 +737,7 @@ func TestResettingTheUnreadableSettingLeavesAFileTheLoaderAccepts(t *testing.T) 
 
 	after := fileAt(t, path)
 	if strings.Contains(after, "reviewer_temperature") {
-		t.Errorf("the setting socrates-review could not read is still there:\n%s", after)
+		t.Errorf("the setting socrates review could not read is still there:\n%s", after)
 	}
 	for _, kept := range []string{"# the ceiling I chose", "diff_ceiling: 4096", "run_retention: 72h"} {
 		if !strings.Contains(after, kept) {
@@ -756,10 +756,10 @@ func TestTheExceptionIsOneCommandWide(t *testing.T) {
 	for _, command := range [][]string{{"config"}, {"begin"}} {
 		_, failures, code := session.Socrates(command...)
 		if code != exit.Unusable {
-			t.Errorf("socrates-review %s with a file socrates-review cannot read exited %d, want %d", command[0], code, exit.Unusable)
+			t.Errorf("socrates review %s with a file socrates review cannot read exited %d, want %d", command[0], code, exit.Unusable)
 		}
 		if !strings.Contains(failures, configurationPath(t, session)) {
-			t.Errorf("socrates-review %s does not refuse by naming the file: %s", command[0], failures)
+			t.Errorf("socrates review %s does not refuse by naming the file: %s", command[0], failures)
 		}
 	}
 }

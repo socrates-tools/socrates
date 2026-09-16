@@ -33,14 +33,14 @@ func TestWithNoConfigurationFileEverySettingReportsItsDefault(t *testing.T) {
 
 	printed, failures, code := session.Socrates("config")
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review config with no configuration file exited %d: %s", code, failures)
+		t.Fatalf("socrates review config with no configuration file exited %d: %s", code, failures)
 	}
 
 	reported := settingsIn(t, printed)
 	for _, key := range everySettingReported {
 		setting, present := reported[key]
 		if !present {
-			t.Errorf("socrates-review config reports nothing for %s:\n%s", key, printed)
+			t.Errorf("socrates review config reports nothing for %s:\n%s", key, printed)
 			continue
 		}
 		if setting.Source != config.Default {
@@ -48,7 +48,7 @@ func TestWithNoConfigurationFileEverySettingReportsItsDefault(t *testing.T) {
 		}
 	}
 	if _, err := os.Stat(configurationPath(t, session)); !os.IsNotExist(err) {
-		t.Errorf("socrates-review config created %s", configurationPath(t, session))
+		t.Errorf("socrates review config created %s", configurationPath(t, session))
 	}
 }
 
@@ -59,7 +59,7 @@ func TestOnlyTheSettingsTheFileStatesReportAsSet(t *testing.T) {
 
 	printed, failures, code := session.Socrates("config")
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review config exited %d: %s", code, failures)
+		t.Fatalf("socrates review config exited %d: %s", code, failures)
 	}
 
 	reported := settingsIn(t, printed)
@@ -77,7 +77,7 @@ func TestOnlyTheSettingsTheFileStatesReportAsSet(t *testing.T) {
 		}
 	}
 	if len(reported) != len(everySettingReported) {
-		t.Errorf("socrates-review config reports %d of the %d settings:\n%s", len(reported), len(everySettingReported), printed)
+		t.Errorf("socrates review config reports %d of the %d settings:\n%s", len(reported), len(everySettingReported), printed)
 	}
 }
 
@@ -87,7 +87,7 @@ func TestTheModelAndEffortReportedAreTheConfiguredReviewerCLIs(t *testing.T) {
 
 	printed, failures, code := session.Socrates("config")
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review config exited %d: %s", code, failures)
+		t.Fatalf("socrates review config exited %d: %s", code, failures)
 	}
 
 	reported := settingsIn(t, printed)
@@ -112,7 +112,7 @@ func TestAReviewerCLISocratesReviewWillNotDriveStillReports(t *testing.T) {
 
 	printed, failures, code := session.Socrates("config")
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review config with %s configured exited %d: %s", unsupported, code, failures)
+		t.Fatalf("socrates review config with %s configured exited %d: %s", unsupported, code, failures)
 	}
 	if reported := settingsIn(t, printed)["reviewer_cli"]; reported.Value != unsupported || reported.Source != config.Set {
 		t.Errorf("reviewer_cli reports %q as %s, and the file states %s", reported.Value, reported.Source, unsupported)
@@ -120,10 +120,10 @@ func TestAReviewerCLISocratesReviewWillNotDriveStillReports(t *testing.T) {
 
 	_, refused, beginCode := session.Socrates("begin")
 	if beginCode != exit.Unusable {
-		t.Fatalf("socrates-review begin with %s configured exited %d, want %d", unsupported, beginCode, exit.Unusable)
+		t.Fatalf("socrates review begin with %s configured exited %d, want %d", unsupported, beginCode, exit.Unusable)
 	}
 	if !strings.Contains(refused, unsupported) {
-		t.Errorf("socrates-review begin does not refuse %s by name: %s", unsupported, refused)
+		t.Errorf("socrates review begin does not refuse %s by name: %s", unsupported, refused)
 	}
 }
 
@@ -132,10 +132,10 @@ func TestTheFileNamedIsTheOneUnderTheStatedHome(t *testing.T) {
 
 	printed, failures, code := session.Socrates("config")
 	if code != exit.NothingAsked {
-		t.Fatalf("socrates-review config exited %d: %s", code, failures)
+		t.Fatalf("socrates review config exited %d: %s", code, failures)
 	}
 	if first := firstLine(printed); first != configurationPath(t, session) {
-		t.Errorf("socrates-review config names %q, and the file under the stated home is %s", first, configurationPath(t, session))
+		t.Errorf("socrates review config names %q, and the file under the stated home is %s", first, configurationPath(t, session))
 	}
 }
 
@@ -145,13 +145,13 @@ func TestAConfigurationFileThatWillNotParseIsRefusedByConfigToo(t *testing.T) {
 
 	printed, failures, code := session.Socrates("config")
 	if code != exit.Unusable {
-		t.Fatalf("socrates-review config with a file that does not parse exited %d, want %d", code, exit.Unusable)
+		t.Fatalf("socrates review config with a file that does not parse exited %d, want %d", code, exit.Unusable)
 	}
 	if !strings.Contains(failures, configurationPath(t, session)) {
 		t.Errorf("the refusal does not name the file: %s", failures)
 	}
 	if strings.Contains(printed, string(config.Default)) {
-		t.Errorf("socrates-review config reported settings while the file will not parse:\n%s", printed)
+		t.Errorf("socrates review config reported settings while the file will not parse:\n%s", printed)
 	}
 }
 
@@ -183,7 +183,7 @@ func settingsIn(t *testing.T, printed string) map[string]config.Setting {
 		reported[fields[0]] = config.Setting{Key: fields[0], Value: strings.Join(fields[1:len(fields)-1], " "), Source: source}
 	}
 	if len(reported) == 0 {
-		t.Fatalf("socrates-review config reported no setting at all:\n%s", printed)
+		t.Fatalf("socrates review config reported no setting at all:\n%s", printed)
 	}
 	return reported
 }

@@ -10,6 +10,8 @@ const (
 	codeIndent       = "    "
 	codeMarker       = "`"
 	inlineCodeMarker = "|"
+
+	Dispatcher = "socrates"
 )
 
 type Invocation struct {
@@ -20,6 +22,11 @@ type Invocation struct {
 
 func Binaries() []string {
 	return []string{Name, Surface}
+}
+
+var namespaces = map[string]string{
+	"review": Name,
+	"agora":  Surface,
 }
 
 func Named() []Invocation {
@@ -33,14 +40,20 @@ func Named() []Invocation {
 
 	for _, code := range written {
 		binary, command := "", ""
+		awaitingNamespace := false
 		awaitingCommand := false
 
 		for word := range strings.FieldsSeq(code) {
 			word = strings.Trim(word, "`.,:;\"'()[]")
 
 			switch {
-			case slices.Contains(Binaries(), word):
-				binary, command, awaitingCommand = word, "", true
+			case word == Dispatcher:
+				awaitingNamespace = true
+			case awaitingNamespace:
+				awaitingNamespace = false
+				if resolved, is := namespaces[word]; is {
+					binary, command, awaitingCommand = resolved, "", true
+				}
 			case awaitingCommand:
 				awaitingCommand = false
 				if !strings.HasPrefix(word, "-") {

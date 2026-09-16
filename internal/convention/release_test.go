@@ -50,7 +50,7 @@ func TestATargetOutsideTheSupportedSetIsReported(t *testing.T) {
 	}
 }
 
-func TestAReleaseBuildsTheToolUnderOneNameAndTheSecondBinary(t *testing.T) {
+func TestAReleaseBuildsOneBinaryAndTheArchiveCarriesItWithTheLicenceAndNotice(t *testing.T) {
 	root := source.Root(t)
 
 	building, err := convention.AReleaseBuilds(root)
@@ -58,13 +58,12 @@ func TestAReleaseBuildsTheToolUnderOneNameAndTheSecondBinary(t *testing.T) {
 		t.Fatalf("reading what a release builds: %v", err)
 	}
 
-	tool := convention.BuildsProducing(building, convention.Repository)
-	surface := convention.BuildsProducing(building, "agora")
-	if len(tool) != 1 || len(surface) != 1 {
-		t.Fatalf("%s produces %d binaries named %s and %d named agora, and a release carries one of each", convention.ReleaseConfigurationFile, len(tool), convention.Repository, len(surface))
+	tool := convention.BuildsProducing(building, convention.Suite)
+	if len(tool) != 1 {
+		t.Fatalf("%s produces %d binaries named %s, and a release carries one", convention.ReleaseConfigurationFile, len(tool), convention.Suite)
 	}
-	if len(building) != 2 {
-		t.Errorf("%s produces %d binaries, and a release carries the tool under its one name beside the second binary", convention.ReleaseConfigurationFile, len(building))
+	if len(building) != 1 {
+		t.Errorf("%s produces %d binaries, and the suite publishes one", convention.ReleaseConfigurationFile, len(building))
 	}
 
 	archives, err := convention.AReleaseArchives(root)
@@ -76,10 +75,8 @@ func TestAReleaseBuildsTheToolUnderOneNameAndTheSecondBinary(t *testing.T) {
 	}
 
 	for _, archive := range archives {
-		for _, carried := range []string{tool[0].ID, surface[0].ID} {
-			if !slices.Contains(archive.Builds, carried) {
-				t.Errorf("the archive %s carries %v, and not %s", archive.ID, archive.Builds, carried)
-			}
+		if !slices.Contains(archive.Builds, tool[0].ID) {
+			t.Errorf("the archive %s carries %v, and not %s", archive.ID, archive.Builds, tool[0].ID)
 		}
 		for _, stated := range []string{convention.LicenceFile, convention.NoticeFile} {
 			if !slices.Contains(archive.Files, stated) {

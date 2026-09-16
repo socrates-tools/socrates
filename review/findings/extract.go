@@ -74,7 +74,7 @@ func DeliveryInstruction() string {
 	return strings.Join([]string{
 		"End your final message with the findings document and nothing after it.",
 		"Write it as one fenced block of JSON, opened with ```json and closed with ```, holding the whole document and nothing else.",
-		"socrates-review reads the last fenced block of your final message, so anything you quote while reasoning must come before it.",
+		"socrates review reads the last fenced block of your final message, so anything you quote while reasoning must come before it.",
 		"A final message with no fenced block, or one whose last block is not the document, fails the round.",
 	}, " ")
 }

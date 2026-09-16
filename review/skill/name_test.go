@@ -60,26 +60,36 @@ func TestOneConstantNamesTheSkillAndReadsItsInvocations(t *testing.T) {
 		t.Fatal("the skills are read to name no invocation at all, so this check reads nothing")
 	}
 	for _, invocation := range named {
-		if !strings.Contains(everything, invocation.Binary+" "+invocation.Command) {
+		if !strings.Contains(everything, typedInvocation(invocation.Binary, invocation.Command)) {
 			t.Errorf("a skill is read to name %q, which appears under no other name than %q", invocation.Command, invocation.Binary)
 		}
 	}
+}
+
+func typedInvocation(binary, command string) string {
+	switch binary {
+	case skill.Name:
+		return skill.Dispatcher + " review " + command
+	case skill.Surface:
+		return skill.Dispatcher + " agora " + command
+	}
+	return binary + " " + command
 }
 
 func TestTheSkillNamesTheOneNameTheToolHas(t *testing.T) {
 	document := skill.Document()
 
 	if skill.Name != convention.Repository {
-		t.Errorf("the skill is named %q and the tool is named %q, so the skill teaches a command that is not the one the tool installs", skill.Name, convention.Repository)
+		t.Errorf("the skill is named %q and the repository is named %q, and the skill keeps that name because .claude/skills is a flat namespace with no dispatcher of its own", skill.Name, convention.Repository)
 	}
-	if !strings.Contains(document, skill.Name+" begin") {
-		t.Errorf("the skill names no invocation of %s at all", skill.Name)
+	if !strings.Contains(document, skill.Dispatcher+" review begin") {
+		t.Error("the skill names no invocation of socrates review at all")
 	}
 	for _, invocation := range skill.Named() {
 		if invocation.Binary == skill.Name || invocation.Binary == skill.Surface {
 			continue
 		}
-		t.Errorf("the skill writes an invocation under %q, and the tool has no name but %q for one to use instead", invocation.Binary, skill.Name)
+		t.Errorf("the skill writes an invocation under %q, and the tool has no namespace but review or agora for one to use instead", invocation.Binary)
 	}
 }
 

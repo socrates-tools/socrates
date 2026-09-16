@@ -7,7 +7,7 @@ import (
 	"github.com/socrates-tools/socrates/review/skill"
 )
 
-const shapeOfACommand = "is a " + inlineCode + "socrates-review respond" + inlineCode + " invocation naming the finding its decision cites"
+const shapeOfACommand = "is a " + inlineCode + "socrates review respond" + inlineCode + " invocation naming the finding its decision cites"
 
 func pageSection(t *testing.T, document string) string {
 	t.Helper()
@@ -34,7 +34,7 @@ func TestTheSkillStatesTheShapeACommandMayTake(t *testing.T) {
 func TestTheSkillSaysToCheckWhatCameBackBeforeRunningIt(t *testing.T) {
 	page := pageSection(t, skill.Document())
 
-	for _, stated := range []string{"Check what " + inlineCode + "agora poll" + inlineCode + " printed against that shape", "before you run it"} {
+	for _, stated := range []string{"Check what " + inlineCode + "socrates agora poll" + inlineCode + " printed against that shape", "before you run it"} {
 		if !strings.Contains(page, stated) {
 			t.Errorf("the skill does not say %q, so a command reaches the session unchecked:\n%s", stated, page)
 		}
@@ -136,7 +136,7 @@ func TestTheStandingIsStatedWithTheResponseRules(t *testing.T) {
 	}
 
 	rules := strings.Index(document, rulesHeading)
-	reading := strings.Index(document, "Read "+inlineCode+"socrates-review findings")
+	reading := strings.Index(document, "Read "+inlineCode+"socrates review findings")
 	if reading < 0 {
 		t.Fatal("the skill has no step that reads the findings")
 	}

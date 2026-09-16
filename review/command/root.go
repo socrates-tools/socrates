@@ -1,10 +1,6 @@
 package command
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/refusal"
 	"github.com/spf13/cobra"
 )
@@ -39,20 +35,7 @@ func NewRootCommand(code *int) *cobra.Command {
 		newSkillCommand(),
 		newConfigCommand(),
 		newConfigureCommand(),
-		newVersionCommand(),
 		newSuperviseCommand(),
 	)
 	return root
-}
-
-func ReportFailure(err error) int {
-	fmt.Fprintln(os.Stderr, failurePrefix+err.Error())
-	return exitFor(err)
-}
-
-func exitFor(err error) int {
-	if refusal.Is(err) {
-		return exit.Unusable
-	}
-	return exit.Failed
 }

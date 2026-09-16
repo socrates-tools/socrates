@@ -48,12 +48,12 @@ func (j *journey) reported(name string) reportedRound {
 
 	printed, failures, _ := j.run("findings", name, "--json")
 	if printed == "" {
-		j.t.Fatalf("socrates-review findings --json printed nothing for %s: %s", name, failures)
+		j.t.Fatalf("socrates review findings --json printed nothing for %s: %s", name, failures)
 	}
 
 	var read reportedRound
 	if err := json.Unmarshal([]byte(printed), &read); err != nil {
-		j.t.Fatalf("reading what socrates-review findings --json reported: %v\n%s", err, printed)
+		j.t.Fatalf("reading what socrates review findings --json reported: %v\n%s", err, printed)
 	}
 	return read
 }
@@ -146,8 +146,8 @@ func everyFindingAsADecision(read reportedRound) []map[string]any {
 			"meaning":  "this is what it costs the change",
 			"mode":     "single-choice",
 			"options": []map[string]any{
-				{"label": "look again once I have changed this", "meaning": "a fresh reviewer reads the change as it then stands", "command": `socrates-review begin --intent "` + finding.ID + `"`},
-				{"label": "read what it said again", "meaning": "the findings as socrates printed them", "command": "socrates-review findings " + read.Run},
+				{"label": "look again once I have changed this", "meaning": "a fresh reviewer reads the change as it then stands", "command": `socrates review begin --intent "` + finding.ID + `"`},
+				{"label": "read what it said again", "meaning": "the findings as socrates printed them", "command": "socrates review findings " + read.Run},
 			},
 		})
 	}
@@ -169,10 +169,10 @@ func TestARoundThatWaitsOnAPersonIsWaitedOn(t *testing.T) {
 
 	read := driven.reported(name)
 	if !read.AwaitsAPerson {
-		t.Fatalf("socrates-review findings --json does not report the round as one that waits on a person: %+v", read)
+		t.Fatalf("socrates review findings --json does not report the round as one that waits on a person: %+v", read)
 	}
 	if len(read.Findings) == 0 {
-		t.Fatal("socrates-review findings --json reported no finding, so there is nothing to hand over")
+		t.Fatal("socrates review findings --json reported no finding, so there is nothing to hand over")
 	}
 
 	address := driven.serve(documentFor(t, "three things this change was told", read, everyFindingAsADecision(read)))
@@ -201,13 +201,13 @@ func TestARoundThatWaitsOnAPersonIsWaitedOn(t *testing.T) {
 				t.Errorf("%s is shown under the name %q, and the source the decision cites named it %q", finding.ID, name, finding.name())
 			}
 			if severity != finding.Severity {
-				t.Errorf("%s is shown with the severity %q, and socrates-review findings --json reported %q", finding.ID, severity, finding.Severity)
+				t.Errorf("%s is shown with the severity %q, and socrates review findings --json reported %q", finding.ID, severity, finding.Severity)
 			}
 			if audience != finding.audience() {
-				t.Errorf("%s is shown to %q, and socrates-review findings --json reported %q", finding.ID, audience, finding.audience())
+				t.Errorf("%s is shown to %q, and socrates review findings --json reported %q", finding.ID, audience, finding.audience())
 			}
 			if location != finding.location() {
-				t.Errorf("%s is shown at %q, and socrates-review findings --json reported %q", finding.ID, location, finding.location())
+				t.Errorf("%s is shown at %q, and socrates review findings --json reported %q", finding.ID, location, finding.location())
 			}
 		}
 	})
@@ -249,8 +249,8 @@ func TestADecisionMadeOnThePageIsRecordedInTheTerminal(t *testing.T) {
 		"meaning":  "nothing socrates can do closes this one",
 		"mode":     "single-choice",
 		"options": []map[string]any{
-			{"label": "the function stays", "meaning": "the importer reads it", "command": `socrates-review respond --finding ` + asked.ID + ` --decided --reason "the function stays"`},
-			{"label": "take it out", "meaning": "nothing reads it", "command": `socrates-review respond --finding ` + asked.ID + ` --decided --reason "take the function out"`},
+			{"label": "the function stays", "meaning": "the importer reads it", "command": `socrates review respond --finding ` + asked.ID + ` --decided --reason "the function stays"`},
+			{"label": "take it out", "meaning": "nothing reads it", "command": `socrates review respond --finding ` + asked.ID + ` --decided --reason "take the function out"`},
 		},
 	}}))
 
@@ -273,7 +273,7 @@ func TestADecisionMadeOnThePageIsRecordedInTheTerminal(t *testing.T) {
 	}
 
 	if _, err := os.Stat(driven.session.Round(name, 1).ResponsesPath()); !os.IsNotExist(err) {
-		t.Errorf("the run holds a response before socrates-review respond was run: %v", err)
+		t.Errorf("the run holds a response before socrates review respond was run: %v", err)
 	}
 	if waiting, _, _ := driven.run("status", name); !strings.Contains(waiting, "needing a person rather than a patch: 1") {
 		t.Errorf("the run does not still wait on the person after they answered on the page:\n%s", waiting)
@@ -286,7 +286,7 @@ func TestADecisionMadeOnThePageIsRecordedInTheTerminal(t *testing.T) {
 	recorded := readResponses(t, driven.session, name)
 	held, found := recorded.For(asked.ID)
 	if !found {
-		t.Fatalf("the run holds no response for %s once socrates-review respond has run", asked.ID)
+		t.Fatalf("the run holds no response for %s once socrates review respond has run", asked.ID)
 	}
 
 	t.Run("The person's own words reach the record", func(t *testing.T) {

@@ -26,13 +26,20 @@ var BuildConstrainedFiles = map[string]string{
 }
 
 type Scope struct {
-	Module string
-	From   []string
+	Module  string
+	From    []string
+	Shallow bool
 }
 
 var Socrates = Scope{
 	Module: "github.com/socrates-tools/socrates",
-	From:   []string{filepath.Join("review", "cmd", Repository)},
+	From:   []string{filepath.Join(ToolDirectory("review"), "command")},
+}
+
+var Dispatcher = Scope{
+	Module:  Socrates.Module,
+	From:    []string{filepath.Join("cmd", "socrates"), filepath.Join("internal", "dispatcher")},
+	Shallow: true,
 }
 
 type Reach struct {
@@ -139,6 +146,14 @@ func readTree(root string) ([]sourceFile, error) {
 }
 
 func (scope Scope) closure(files []sourceFile) map[string]bool {
+	if scope.Shallow {
+		reached := map[string]bool{}
+		for _, start := range scope.From {
+			reached[start] = true
+		}
+		return reached
+	}
+
 	byDirectory := map[string][]sourceFile{}
 	for _, file := range files {
 		byDirectory[file.directory] = append(byDirectory[file.directory], file)

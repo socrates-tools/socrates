@@ -22,6 +22,7 @@ import (
 
 const (
 	RunMarker         = "SOCRATES_RUN"
+	Namespace         = "review"
 	SuperviseCommand  = "supervise"
 	supervisorLogName = "supervisor.log"
 )
@@ -218,7 +219,7 @@ func spawnSupervisor(binary, directory, name string) error {
 	}
 	defer func() { _ = log.Close() }()
 
-	command := exec.Command(binary, SuperviseCommand, name)
+	command := exec.Command(binary, Namespace, SuperviseCommand, name)
 	command.Dir = directory
 	command.Env = append(os.Environ(), RunMarker+"="+name)
 	command.Stdin = nil

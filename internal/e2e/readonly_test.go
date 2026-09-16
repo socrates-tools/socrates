@@ -80,7 +80,7 @@ func eventNaming(t *testing.T, session *harness.Session, name, said string) stri
 
 	printed, failures, _ := session.Socrates("logs", name)
 	if printed == "" {
-		t.Fatalf("socrates-review logs printed nothing for %s: %s", name, failures)
+		t.Fatalf("socrates review logs printed nothing for %s: %s", name, failures)
 	}
 	return lineSaying(printed, said)
 }

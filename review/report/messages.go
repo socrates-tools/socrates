@@ -18,12 +18,12 @@ const (
 	personAudience        = "needs a person"
 	patchableAudience     = "can be patched"
 	informationalAudience = "informational"
-	encodingFailed        = "encoding what socrates-review concluded: %w"
+	encodingFailed        = "encoding what socrates review concluded: %w"
 
-	awaitingLine        = "awaiting responses: socrates-review is waiting for the author, or for a person the author asks, and no process of this run is running"
+	awaitingLine        = "awaiting responses: socrates review is waiting for the author, or for a person the author asks, and no process of this run is running"
 	unansweredLine      = "unanswered: %d"
 	awaitingAPersonLine = "of those, needing a person rather than a patch: %d"
-	readyLine           = "ready to continue: run socrates-review continue to start the next round"
+	readyLine           = "ready to continue: run socrates review continue to start the next round"
 
 	awaitsAPersonLine = "awaits a person: this round holds what only a person can act on, so wait for what they answer"
 

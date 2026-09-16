@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/socrates-tools/socrates/agora/surface"
-	"github.com/socrates-tools/socrates/internal/convention"
 	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/socrates-tools/socrates/internal/testing/gitrepo"
@@ -71,8 +70,8 @@ func standing(t *testing.T) *surfaced {
 func servingSurface(t *testing.T) *surfaced {
 	t.Helper()
 
-	binary := filepath.Join(t.TempDir(), "agora")
-	source.Build(t, "./agora/cmd/agora", binary)
+	binary := filepath.Join(t.TempDir(), "socrates")
+	source.Build(t, "./cmd/socrates", binary)
 
 	home := t.TempDir()
 	held := &surfaced{t: t, binary: binary, home: home, where: t.TempDir(), bind: aPortTheOperatingSystemChooses}
@@ -98,7 +97,7 @@ func (s *surfaced) run(arguments ...string) (string, string, int) {
 func (s *surfaced) reading(input string, arguments ...string) (string, string, int) {
 	s.t.Helper()
 
-	command := exec.Command(s.binary, arguments...)
+	command := exec.Command(s.binary, append([]string{"agora"}, arguments...)...)
 	command.Dir = s.where
 	command.Env = append(os.Environ(), state.HomeVariable+"="+s.home)
 	command.Env = append(command.Env, source.Toolchain()...)
@@ -224,7 +223,7 @@ func (s *surfaced) answerOn(session string, sent surface.Sent) {
 	}
 }
 
-func TestTheSurfaceOffersNothingBeyondTheFive(t *testing.T) {
+func TestTheSurfaceOffersNothingBeyondTheFour(t *testing.T) {
 	held := standing(t)
 
 	printed, failures, code := held.run("--help")
@@ -233,10 +232,9 @@ func TestTheSurfaceOffersNothingBeyondTheFive(t *testing.T) {
 	}
 
 	offered := commandsIn(printed)
-	offered = slices.DeleteFunc(offered, func(named string) bool { return named == "help" })
 	slices.Sort(offered)
 
-	want := []string{"end", "poll", "serve", "stop", "version"}
+	want := []string{"end", "poll", "serve", "stop"}
 	if !slices.Equal(want, offered) {
 		t.Errorf("the surface offers %v beside the help the command library brings, want %v", offered, want)
 	}
@@ -248,42 +246,19 @@ func TestTheSurfaceOffersNothingBeyondTheFive(t *testing.T) {
 	}
 }
 
-func TestSocratesReviewHasOneNameAndAgoraIsADifferentProgram(t *testing.T) {
-	gitrepo.Hermetic(t)
+func TestAgoraTypedBarePrintsHelpAndStartsNothing(t *testing.T) {
+	held := standing(t)
 
-	directory := t.TempDir()
-	tool := filepath.Join(directory, convention.Repository)
-	agora := filepath.Join(directory, "agora")
-
-	source.Build(t, "./review/cmd/socrates-review", tool)
-	source.Build(t, "./agora/cmd/agora", agora)
-
-	underItsName := said(t, tool, "version")
-	if !strings.Contains(underItsName, convention.Repository) {
-		t.Errorf("the tool does not name itself %s: %s", convention.Repository, underItsName)
+	printed, failures, code := held.run()
+	if code != exit.NothingAsked {
+		t.Fatalf("socrates agora exited %d: %s", code, failures)
 	}
-
-	separate := said(t, agora, "version")
-	if strings.Contains(separate, convention.Repository) {
-		t.Errorf("the surface reports itself as the tool: %s", separate)
+	if !strings.Contains(printed, "Available Commands:") {
+		t.Errorf("socrates agora printed no help:\n%s", printed)
 	}
-	if !strings.Contains(separate, "agora") {
-		t.Errorf("the surface does not name itself: %s", separate)
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
+		t.Error("typing the namespace bare left a session behind, and it starts no server")
 	}
-}
-
-func said(t *testing.T, binary string, arguments ...string) string {
-	t.Helper()
-
-	command := exec.Command(binary, arguments...)
-	command.Env = append(os.Environ(), source.Toolchain()...)
-
-	var printed bytes.Buffer
-	command.Stdout = &printed
-	if err := command.Run(); err != nil {
-		t.Fatalf("running %s %v: %v", binary, arguments, err)
-	}
-	return strings.TrimSpace(printed.String())
 }
 
 func TestServeReturnsBeforeThePersonHasReadAnything(t *testing.T) {
@@ -529,21 +504,21 @@ func equalTrees(before, after map[string]string) bool {
 
 const surfaceCeiling = 32 << 20
 
-func TestTheSurfaceWeighsWhatSomebodyHasSeen(t *testing.T) {
+func TestTheBinaryWeighsWhatSomebodyHasSeen(t *testing.T) {
 	// scenario: A diff renders from a patch
 	gitrepo.Hermetic(t)
 
-	binary := filepath.Join(t.TempDir(), "agora")
-	source.Build(t, "./agora/cmd/agora", binary)
+	binary := filepath.Join(t.TempDir(), "socrates")
+	source.Build(t, "./cmd/socrates", binary)
 
 	held, err := os.Stat(binary)
 	if err != nil {
-		t.Fatalf("measuring the surface: %v", err)
+		t.Fatalf("measuring the binary: %v", err)
 	}
 
-	t.Logf("the surface weighs %d bytes", held.Size())
+	t.Logf("the binary weighs %d bytes", held.Size())
 	if held.Size() > surfaceCeiling {
-		t.Errorf("the surface weighs %d bytes, and the weight somebody looked at and accepted is %d", held.Size(), surfaceCeiling)
+		t.Errorf("the binary weighs %d bytes, and the weight somebody looked at and accepted is %d", held.Size(), surfaceCeiling)
 	}
 }
 

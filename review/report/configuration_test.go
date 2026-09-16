@@ -15,7 +15,7 @@ func TestTheFileIsNamedBeforeWhatIsInForce(t *testing.T) {
 
 	lines := report.ConfigurationAt(path, config.Config{}).Lines()
 	if lines[0] != path {
-		t.Errorf("the first line reads %q, and it is the file socrates-review reads", lines[0])
+		t.Errorf("the first line reads %q, and it is the file socrates review reads", lines[0])
 	}
 }
 

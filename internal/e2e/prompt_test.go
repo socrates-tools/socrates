@@ -243,7 +243,7 @@ func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
 
 	documented, _, code := session.Socrates("begin", "--help")
 	if code != 0 {
-		t.Fatalf("socrates-review begin --help exited %d", code)
+		t.Fatalf("socrates review begin --help exited %d", code)
 	}
 
 	taking := flagsTakingAValue(documented)
@@ -266,7 +266,7 @@ func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
 	for _, invented := range []string{"--rationale", "--summary", "--notes", "--author-notes", "--session", "--reasoning"} {
 		_, failures, code := session.Socrates("begin", invented, "I refactored the parser and it all works")
 		if code == 0 {
-			t.Errorf("socrates-review begin %s was accepted", invented)
+			t.Errorf("socrates review begin %s was accepted", invented)
 		}
 		if !strings.Contains(failures, invented) {
 			t.Errorf("refusing %s does not name it: %s", invented, failures)
@@ -276,7 +276,7 @@ func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
 	const positional = "I refactored the parser and it all works"
 	_, failures, code := session.Socrates("begin", positional)
 	if code == 0 {
-		t.Error("socrates-review begin accepted free text as a positional argument")
+		t.Error("socrates review begin accepted free text as a positional argument")
 	}
 	if !strings.Contains(failures, positional) {
 		t.Errorf("refusing a positional argument does not name what was refused: %s", failures)

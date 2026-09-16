@@ -29,12 +29,12 @@ func reportedFor(t *testing.T, session *harness.Session, name string) reportedRo
 
 	printed, failures, code := session.Socrates("findings", name, "--json")
 	if printed == "" {
-		t.Fatalf("socrates-review findings --json printed nothing (%d): %s", code, failures)
+		t.Fatalf("socrates review findings --json printed nothing (%d): %s", code, failures)
 	}
 
 	var read reportedRound
 	if err := json.Unmarshal([]byte(printed), &read); err != nil {
-		t.Fatalf("reading what socrates-review findings --json reported: %v\n%s", err, printed)
+		t.Fatalf("reading what socrates review findings --json reported: %v\n%s", err, printed)
 	}
 	return read
 }
@@ -44,7 +44,7 @@ func refuse(t *testing.T, session *harness.Session, arguments ...string) string 
 
 	printed, failures, code := session.Socrates(arguments...)
 	if code != 3 {
-		t.Fatalf("socrates-review %s exited %d, want a refusal: %s\n%s", strings.Join(arguments, " "), code, failures, printed)
+		t.Fatalf("socrates review %s exited %d, want a refusal: %s\n%s", strings.Join(arguments, " "), code, failures, printed)
 	}
 	return failures
 }
@@ -98,7 +98,7 @@ func TestAChangeThatIsNotMineIsForwardedDroppedOrRejected(t *testing.T) {
 	t.Run("A forward carries no reason of mine", func(t *testing.T) {
 		refused := refuse(t, session, "respond", name, "--finding", "f1", "--forwarded", "--reason", "worth raising")
 		if !strings.Contains(refused, "recorded") {
-			t.Errorf("the refusal does not say the forwarded text is the one socrates-review recorded: %s", refused)
+			t.Errorf("the refusal does not say the forwarded text is the one socrates review recorded: %s", refused)
 		}
 	})
 
@@ -115,7 +115,7 @@ func TestAChangeThatIsNotMineIsForwardedDroppedOrRejected(t *testing.T) {
 
 	printed := respond(t, session, name, "--finding", "f2", "--dropped", "--reason", "true, and not worth a comment on a change this size")
 	if !strings.Contains(printed, "a response can address") {
-		t.Errorf("socrates-review respond does not say the round is answered:\n%s", printed)
+		t.Errorf("socrates review respond does not say the round is answered:\n%s", printed)
 	}
 
 	t.Run("What was recorded is reported", func(t *testing.T) {
@@ -126,14 +126,14 @@ func TestAChangeThatIsNotMineIsForwardedDroppedOrRejected(t *testing.T) {
 
 		want := map[string]string{"f1": "forwarded", "f2": "dropped", "f3": "forwarded", "f4": "", "f5": "forwarded"}
 		if diff := cmp.Diff(want, recorded); diff != "" {
-			t.Errorf("what socrates-review reports as recorded differs (-want +got):\n%s", diff)
+			t.Errorf("what socrates review reports as recorded differs (-want +got):\n%s", diff)
 		}
 	})
 
 	t.Run("The run ends with the findings handed over", func(t *testing.T) {
 		out, failures, code := session.Socrates("continue", name, "--wait")
 		if code != 1 {
-			t.Fatalf("socrates-review continue of a change that is not mine exited %d, want 1: %s\n%s", code, failures, out)
+			t.Fatalf("socrates review continue of a change that is not mine exited %d, want 1: %s\n%s", code, failures, out)
 		}
 		if !strings.Contains(out, string(runstate.Escalated)) {
 			t.Errorf("the run did not end escalated:\n%s", out)
@@ -160,7 +160,7 @@ func TestAChangeThatIsNotMineIsForwardedDroppedOrRejected(t *testing.T) {
 			t.Errorf("the reason the person gave is not recorded against the run:\n%s", recorded)
 		}
 		if printed, _, _ := session.Socrates("findings", name); strings.Contains(printed, "not worth a comment") {
-			t.Errorf("what socrates-review prints for a person carries the reason a finding was dropped for, and that reason is nobody else's:\n%s", printed)
+			t.Errorf("what socrates review prints for a person carries the reason a finding was dropped for, and that reason is nobody else's:\n%s", printed)
 		}
 	})
 }
@@ -239,7 +239,7 @@ func TestTheStatusOfAChangeThatIsNotMineSaysTheWholeRoundIsAPersons(t *testing.T
 
 	printed, failures, code := session.Socrates("status", name)
 	if code != 4 {
-		t.Fatalf("socrates-review status of a parked handover exited %d: %s", code, failures)
+		t.Fatalf("socrates review status of a parked handover exited %d: %s", code, failures)
 	}
 	for _, said := range []string{
 		"findings: 5 in total, 5 for the person, 0 to patch, 0 informational",
@@ -253,11 +253,11 @@ func TestTheStatusOfAChangeThatIsNotMineSaysTheWholeRoundIsAPersons(t *testing.T
 
 	reported, _, _ := session.Socrates("findings", name)
 	if !strings.Contains(reported, awaitsAPerson) {
-		t.Errorf("socrates-review findings does not report the round as one that waits on a person:\n%s", reported)
+		t.Errorf("socrates review findings does not report the round as one that waits on a person:\n%s", reported)
 	}
 	for _, rule := range dialogue.HandoverRules() {
 		if !strings.Contains(reported, rule) {
-			t.Errorf("socrates-review findings does not carry the rule %q:\n%s", rule, reported)
+			t.Errorf("socrates review findings does not carry the rule %q:\n%s", rule, reported)
 		}
 	}
 }
@@ -267,7 +267,7 @@ func (j *journey) reviewingTheirChange(base, intent string) string {
 
 	printed, failures, code := j.run("begin", "--base", base, "--not-my-change", "--intent", intent)
 	if code != 0 {
-		j.t.Fatalf("socrates-review begin --not-my-change exited %d: %s\n%s", code, failures, printed)
+		j.t.Fatalf("socrates review begin --not-my-change exited %d: %s\n%s", code, failures, printed)
 	}
 	return firstLine(printed)
 }
@@ -281,8 +281,8 @@ func dispositionsFor(read reportedRound) []map[string]any {
 			"meaning":  "this is what raising it would say to whoever wrote the change",
 			"mode":     "single-choice",
 			"options": []map[string]any{
-				{"label": "raise it with them", "meaning": "they read the finding as socrates-review recorded it", "command": "socrates-review respond --finding " + finding.ID + " --forwarded"},
-				{"label": "leave it", "meaning": "true, and nobody hears about it", "command": `socrates-review respond --finding ` + finding.ID + ` --dropped --reason "not worth a comment on a change this size"`},
+				{"label": "raise it with them", "meaning": "they read the finding as socrates review recorded it", "command": "socrates review respond --finding " + finding.ID + " --forwarded"},
+				{"label": "leave it", "meaning": "true, and nobody hears about it", "command": `socrates review respond --finding ` + finding.ID + ` --dropped --reason "not worth a comment on a change this size"`},
 			},
 		})
 	}
@@ -300,12 +300,12 @@ func TestTheHandoverLoopIsDrivenThroughThePage(t *testing.T) {
 	name := driven.reviewingTheirChange("main", "Count the characters of a document, because the importer needs a length.")
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {
-		t.Fatalf("a round of a change that is not mine left the run %s and socrates-review status exited %d, want a parked run", state, code)
+		t.Fatalf("a round of a change that is not mine left the run %s and socrates review status exited %d, want a parked run", state, code)
 	}
 
 	read := driven.reported(name)
 	if !read.AwaitsAPerson {
-		t.Fatalf("socrates-review findings --json does not report the round as one that waits on a person: %+v", read)
+		t.Fatalf("socrates review findings --json does not report the round as one that waits on a person: %+v", read)
 	}
 	if len(read.Findings) != 5 {
 		t.Fatalf("the round reported %d findings, and every one of them is the person's to decide", len(read.Findings))
@@ -340,8 +340,8 @@ func TestTheHandoverLoopIsDrivenThroughThePage(t *testing.T) {
 
 	for _, decided := range answered.Decisions {
 		for _, command := range decided.Commands {
-			if !strings.HasPrefix(command, "socrates-review respond --finding "+decided.ID+" ") {
-				t.Errorf("the page handed back %q, and an option's command is a socrates-review respond invocation naming the finding its decision cites", command)
+			if !strings.HasPrefix(command, "socrates review respond --finding "+decided.ID+" ") {
+				t.Errorf("the page handed back %q, and an option's command is a socrates review respond invocation naming the finding its decision cites", command)
 			}
 			if !strings.Contains(command, "--"+string(chosen[decided.ID])) {
 				t.Errorf("the command for %s reads %q, and the person chose %s", decided.ID, command, chosen[decided.ID])
@@ -358,12 +358,12 @@ func TestTheHandoverLoopIsDrivenThroughThePage(t *testing.T) {
 	}
 
 	if _, failures, exit := driven.run("continue", name); exit != 1 {
-		t.Fatalf("socrates-review continue of a handover round exited %d, want the verdict it reached: %s", exit, failures)
+		t.Fatalf("socrates review continue of a handover round exited %d, want the verdict it reached: %s", exit, failures)
 	}
 
 	ended, exit := driven.waitedFor(name)
 	if ended != runstate.Escalated || exit != 1 {
-		t.Fatalf("the run ended %s and socrates-review status exited %d, want the findings handed over", ended, exit)
+		t.Fatalf("the run ended %s and socrates review status exited %d, want the findings handed over", ended, exit)
 	}
 	if run := driven.session.Run(name); !strings.Contains(reason(run), "handed to whoever wrote the change") {
 		t.Errorf("the verdict does not say the findings were handed over: %q", reason(run))

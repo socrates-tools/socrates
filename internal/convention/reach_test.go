@@ -12,7 +12,7 @@ import (
 )
 
 var socratesOwn = []string{
-	filepath.Join("review", "cmd", convention.Repository),
+	filepath.Join("review", "command"),
 	filepath.Join("review", "agent"),
 	filepath.Join("review", "config"),
 	filepath.Join("review", "dialogue"),
@@ -52,6 +52,24 @@ func TestSocratesReachesNothingNew(t *testing.T) {
 
 	if len(reach.Tagged) == 0 {
 		t.Fatal("no file is behind a build tag, so this check has nothing to compare and would pass forever")
+	}
+}
+
+func TestTheDispatcherAndItsBinaryReachNoNetworkDirectly(t *testing.T) {
+	root := source.Root(t)
+
+	reach, err := convention.NetworkReach(root, convention.Dispatcher, convention.BuildConstrainedFiles)
+	if err != nil {
+		t.Fatalf("reading what the dispatcher and its binary reach: %v", err)
+	}
+
+	want := []string{filepath.Join("cmd", "socrates"), filepath.Join("internal", "dispatcher")}
+	if diff := cmp.Diff(want, reach.Measured); diff != "" {
+		t.Errorf("what is measured is not the dispatcher's and the binary's own files (-want +got):\n%s", diff)
+	}
+
+	for _, reaching := range reach.Reaching {
+		t.Errorf("%s, and neither the dispatcher nor the binary's own main reaches the network directly", reaching)
 	}
 }
 

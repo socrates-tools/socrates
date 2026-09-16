@@ -37,7 +37,7 @@ func TestARoundInsideAReviewIsRefused(t *testing.T) {
 	)
 
 	if code != 3 {
-		t.Fatalf("socrates-review continue exited %d, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates review continue exited %d, want the usage code: %s%s", code, out, failures)
 	}
 	if !strings.Contains(failures, outer) {
 		t.Errorf("the refusal reads %q, without naming the outer run", failures)
@@ -62,7 +62,7 @@ func TestAReviewInsideAReviewIsRefused(t *testing.T) {
 	)
 
 	if code != 3 {
-		t.Fatalf("socrates-review begin exited %d, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates review begin exited %d, want the usage code: %s%s", code, out, failures)
 	}
 	if !strings.Contains(failures, outer) {
 		t.Errorf("the refusal reads %q, without naming the outer run", failures)

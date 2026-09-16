@@ -1,14 +1,12 @@
 package command
 
-const toolName = "socrates-review"
+const toolName = "review"
 
 const (
-	failurePrefix = "socrates-review: "
-
 	rootShort      = "An independent reviewer for unreviewed local changes"
 	beginShort     = "Freeze this working tree and have somebody who did not write it review it"
 	statusShort    = "Say what a review is doing, in as few lines as possible"
-	findingsShort  = "Print what a review found, as socrates-review classified it"
+	findingsShort  = "Print what a review found, as socrates review classified it"
 	respondShort   = "Record what was decided about one finding: a fix, a rejection, a decision, a forward or a drop"
 	continueShort  = "Snapshot the patched working tree and have a fresh reviewer judge the answers"
 	watchShort     = "Follow a review as it happens and exit with its verdict"
@@ -17,8 +15,7 @@ const (
 	skillShort     = "Install the skill that teaches a coding session to drive a review"
 	configShort    = "Print every setting, the value in force and where that value came from"
 	configureShort = "Change a setting from a menu, one at a time, without opening the file"
-	versionShort   = "Say which release this is, and which commit it was built from"
-	superviseShort = "Conduct a review that socrates-review begin started"
+	superviseShort = "Conduct a review that socrates review begin started"
 
 	intentUsage      = "what the person asked for, in their words, or what the author of the change says they were doing"
 	baseUsage        = "the branch or commit this work targets, whose fork point with HEAD the change is reviewed against"
@@ -35,18 +32,17 @@ const (
 	noteUsage        = "what was done about the fixed finding, or - to read it from standard input"
 	toUsage          = "the skills directory to write to, instead of the one under your home directory"
 
-	notACommand               = "%q is not a socrates-review command: run socrates-review --help to see what socrates-review does"
-	unusableFlag              = "%s: run socrates-review --help to see what socrates-review accepts"
-	beginTakesNoArguments     = "socrates-review begin takes no arguments, and %q is one: pass what the person asked for with --intent"
-	versionTakesNoArguments   = "socrates-review version takes no arguments, and %q is one: run socrates-review version on its own to see which build this is"
-	configTakesNoArguments    = "socrates-review config takes no arguments, and %q is one: run socrates-review config on its own to read every setting"
-	configureTakesNoArguments = "socrates-review configure takes no arguments, and %q is one: run socrates-review configure on its own to change a setting"
+	notACommand               = "%q is not a socrates review command: run socrates review --help to see what socrates review does"
+	unusableFlag              = "%s: run socrates review --help to see what socrates review accepts"
+	beginTakesNoArguments     = "socrates review begin takes no arguments, and %q is one: pass what the person asked for with --intent"
+	configTakesNoArguments    = "socrates review config takes no arguments, and %q is one: run socrates review config on its own to read every setting"
+	configureTakesNoArguments = "socrates review configure takes no arguments, and %q is one: run socrates review configure on its own to change a setting"
 	oneRunAtATime             = "%s names a second run, and a command reports on one: name one run or none at all"
 
-	nameTheFinding            = "socrates-review respond answers one finding, and none was named: pass --finding with an identifier socrates-review findings printed"
-	oneAnswerAtATime          = "socrates-review respond records one answer to one finding, and this names %d of them: pass exactly one of %s"
+	nameTheFinding            = "socrates review respond answers one finding, and none was named: pass --finding with an identifier socrates review findings printed"
+	oneAnswerAtATime          = "socrates review respond records one answer to one finding, and this names %d of them: pass exactly one of %s"
 	reasonBelongsToAClaim     = "--reason says why a finding is wrong or what a person decided about it, and this answer records a fix: pass --note to say what was done about it"
-	aForwardCarriesTheFinding = "a forward hands over the finding as socrates-review recorded it, so --reason adds nothing anybody reads: pass --%s on its own, and record a reason where you drop or reject a finding instead"
+	aForwardCarriesTheFinding = "a forward hands over the finding as socrates review recorded it, so --reason adds nothing anybody reads: pass --%s on its own, and record a reason where you drop or reject a finding instead"
 	noteBelongsToAFix         = "--note says what was done about a fixed finding, and this answer records that it is %s: pass --reason instead, because that is the claim the next reviewer judges"
 	readingStandardInput      = "reading the reason from standard input: %w"
 
@@ -61,9 +57,9 @@ const (
 
 	stillStarting = "run %s is %s, and its reviewer has written nothing yet"
 
-	followIt         = "follow it with: socrates-review status %s"
+	followIt         = "follow it with: socrates review status %s"
 	stoppedIt        = "run %s is cancelled, and nothing was decided about the change"
 	alreadyEnded     = "run %s already ended as %s, so there was nothing to stop"
 	locatingHere     = "locating the working directory: %w"
-	locatingSocrates = "locating socrates-review itself: %w"
+	locatingSocrates = "locating socrates itself: %w"
 )

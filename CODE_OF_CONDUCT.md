@@ -2,7 +2,7 @@
 
 ## What is expected
 
-socrates-review is a project about reading each other's work honestly, so the standard here is the one the tool itself is built on: judge the change, not the person who wrote it.
+socrates is a project about reading each other's work honestly, so the standard here is the one the tool itself is built on: judge the change, not the person who wrote it.
 
 - Say what is wrong with a change and why, and give the reason.
   A rejection with no reason is refused by the tool and it is refused here too.

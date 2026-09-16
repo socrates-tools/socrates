@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/socrates-tools/socrates/internal/convention"
+	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 	"github.com/socrates-tools/socrates/internal/testing/source"
 )
@@ -18,15 +19,14 @@ func TestOneNameIsInstalledAndNothingIsPutBesideIt(t *testing.T) {
 	root := requireMake(t)
 	directory := installed(t, root)
 
-	tool := filepath.Join(directory, convention.Repository)
+	tool := filepath.Join(directory, convention.Suite)
 	reported := versionOf(t, tool)
 	if commit := gitSaid(t, root, "rev-parse", "--short=7", "HEAD"); !strings.Contains(reported, commit) {
 		t.Errorf("the installed binary reports %q, which does not name the commit %s", reported, commit)
 	}
 
-	installedTool, err := os.Stat(tool)
-	if err != nil {
-		t.Fatalf("the tool was not installed under %s: %v", convention.Repository, err)
+	if _, err := os.Stat(tool); err != nil {
+		t.Fatalf("the tool was not installed under %s: %v", convention.Suite, err)
 	}
 
 	entries, err := os.ReadDir(directory)
@@ -34,15 +34,11 @@ func TestOneNameIsInstalledAndNothingIsPutBesideIt(t *testing.T) {
 		t.Fatalf("reading what installing put on the path: %v", err)
 	}
 	for _, entry := range entries {
-		if entry.Name() == convention.Repository {
+		if entry.Name() == convention.Suite {
 			continue
 		}
-		beside, err := os.Stat(filepath.Join(directory, entry.Name()))
-		if err != nil {
-			continue
-		}
-		if os.SameFile(installedTool, beside) {
-			t.Errorf("installing put %s beside %s and the two are one binary, and the tool answers to one name", entry.Name(), convention.Repository)
+		if info, err := entry.Info(); err == nil && info.Mode().Perm()&0o111 != 0 && !info.IsDir() {
+			t.Errorf("installing put %s beside %s, and the suite publishes one binary", entry.Name(), convention.Suite)
 		}
 	}
 }
@@ -51,24 +47,24 @@ func TestWhatItPrintsNamesTheTool(t *testing.T) {
 	session := harness.Start(t)
 
 	printed, failures, code := invoked(t, session.Binary, "kaboom")
-	if code != 3 {
-		t.Fatalf("an unknown command was refused with %d, want 3: %s", code, failures)
+	if code != exit.Unusable {
+		t.Fatalf("an unknown command was refused with %d, want %d: %s", code, exit.Unusable, failures)
 	}
-	if !strings.Contains(failures, convention.Repository) {
-		t.Errorf("what it printed does not name %s: %q", convention.Repository, failures)
+	if !strings.Contains(failures, convention.Suite) {
+		t.Errorf("what it printed does not name %s: %q", convention.Suite, failures)
 	}
 
 	helped, helpFailures, code := invoked(t, session.Binary, "--help")
 	if code != 0 {
 		t.Fatalf("--help exited %d: %s", code, helpFailures)
 	}
-	if !strings.Contains(helped, convention.Repository) {
-		t.Errorf("what --help printed does not name %s: %q", convention.Repository, helped)
+	if !strings.Contains(helped, convention.Suite) {
+		t.Errorf("what --help printed does not name %s: %q", convention.Suite, helped)
 	}
 
 	for _, said := range strings.Fields(printed + failures + helped + helpFailures) {
-		if said == "socrates" || said == "scrat" {
-			t.Errorf("what it printed names %q, and the command a person can type is %s", said, convention.Repository)
+		if said == convention.Repository || said == "scrat" {
+			t.Errorf("what it printed offers %q, and that name was retired: run %s instead", said, convention.Suite)
 		}
 	}
 }

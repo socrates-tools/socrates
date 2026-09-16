@@ -1,7 +1,7 @@
 # Context
 
-socrates-review puts an independent reviewer in front of unreviewed local changes.
-`agora` is a second and separate program that serves one document as one page, waits for a person, and prints what they answered.
+`socrates review` puts an independent reviewer in front of unreviewed local changes.
+`socrates agora` is a second namespace, inside the same binary, that serves one document as one page, waits for a person, and prints what they answered.
 
 This file is the vocabulary.
 Use these words rather than synonyms, in a spec, an issue title, a test name or a commit message.
@@ -9,11 +9,11 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 
 ## The freeze
 
-- **run**: one review of one change, from `socrates-review begin` to a terminal state. Identified by a name every later command takes as its argument.
+- **run**: one review of one change, from `socrates review begin` to a terminal state. Identified by a name every later command takes as its argument.
 - **round**: one reviewer reading one snapshot, inside a run. A run has at most two.
 - **base**: the commit a round is diffed against. Recorded once per run when it begins, and unchanged for the life of the run, so both rounds are diffed against the same thing.
 - **fork point**: `merge-base(<ref>, HEAD)`, what a base named with `--base` resolves to, so a diff is the branch's own work rather than the branch's work plus the inverse of everything the named ref did since.
-- **gap**: how far a named ref is ahead of the fork point. Zero after a rebase onto that ref, and socrates-review says nothing about it.
+- **gap**: how far a named ref is ahead of the fork point. Zero after a rebase onto that ref, and review says nothing about it.
 - **head**: what a round's snapshot tree is built from. Always the working tree, so it holds committed and uncommitted work alike.
 - **snapshot**: the commit a round freezes the head into. Built through a temporary index so the person's own index is never touched, content-addressed, and named by no ref.
 - **worktree**: the detached checkout of a snapshot that a reviewer is given as its working directory. Never the person's own repository directory.
@@ -23,11 +23,11 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 ## The reviewer
 
 - **reviewer**: the model process a round spawns to read the snapshot. It wrote none of the code and inherits no session from a previous round.
-- **reviewer CLI**: the vendor command socrates-review drives to spawn a reviewer. One qualifies on stated facts rather than by being listed.
-- **seam**: the boundary at `internal/agent`, the only package that starts a model process. Nothing above it names a vendor, a flag or an event shape.
+- **reviewer CLI**: the vendor command review drives to spawn a reviewer. One qualifies on stated facts rather than by being listed.
+- **seam**: the boundary at `review/agent`, the only package that starts a model process. Nothing above it names a vendor, a flag or an event shape.
 - **tier**: whether a vendor constrains output against the schema. A tier and not a criterion, because the document is validated either way.
-- **intent**: one line of what the author says they were doing, passed to `socrates-review begin`. A claim the reviewer judges against the code, and not a statement of what the change does.
-- **prompt**: what is delivered to a reviewer, assembled from named sections. Tests assert on it rather than on socrates-review's own source text.
+- **intent**: one line of what the author says they were doing, passed to `socrates review begin`. A claim the reviewer judges against the code, and not a statement of what the change does.
+- **prompt**: what is delivered to a reviewer, assembled from named sections. Tests assert on it rather than on review's own source text.
 - **hygiene**: model output neutralised on the way into a prompt, per field, and never on the way to disk.
 
 ## What comes back
@@ -52,7 +52,7 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 
 ## The settings
 
-- **setting**: one thing a person can configure, named by its YAML key, carrying the value in force, whether that value is theirs or a default, and the default it falls back to. What `socrates-review config` reports and what `socrates-review configure` offers are the same set.
+- **setting**: one thing a person can configure, named by its YAML key, carrying the value in force, whether that value is theirs or a default, and the default it falls back to. What `socrates review config` reports and what `socrates review configure` offers are the same set.
 - **source**: whether a setting's value is `set` or `default`. Not agora's source, which is a different word in a different vocabulary.
 - **use the default**: removing a setting's line, rather than writing today's default into the file, so that the file holds only what a person decided.
 

@@ -14,7 +14,7 @@ const (
 	escalatedHeading = "### escalated"
 	parkedHeading    = "### awaiting-response"
 	cancelledHeading = "### cancelled"
-	waitingStep      = "poll " + inlineCode + "socrates-review status"
+	waitingStep      = "poll " + inlineCode + "socrates review status"
 )
 
 var branchesThatHaveAResult = []string{cleanHeading, escalatedHeading, parkedHeading}
@@ -96,7 +96,7 @@ func TestEveryBranchThatHasAResultSaysToServeThePage(t *testing.T) {
 		if !strings.Contains(section, "page") {
 			t.Errorf("%s says nothing about a page, and every round that reached a result is handed over as one:\n%s", branch, section)
 		}
-		for _, said := range []string{"agora serve", "address"} {
+		for _, said := range []string{"socrates agora serve", "address"} {
 			if !strings.Contains(section, said) {
 				t.Errorf("%s does not say %q, so the page it drafts is never put in front of anybody:\n%s", branch, said, section)
 			}
@@ -142,7 +142,7 @@ func TestEveryBranchThatHasAResultSaysToServeThePage(t *testing.T) {
 			"whichever of the two it holds",
 			"read again on every one of those turns",
 			"what costs you is the finding prose rather than who answers it",
-			"socrates-review findings --json",
+			"socrates review findings --json",
 			"the document and a sentence",
 		} {
 			if !strings.Contains(parked, said) {
@@ -153,7 +153,7 @@ func TestEveryBranchThatHasAResultSaysToServeThePage(t *testing.T) {
 
 	t.Run("The driving session owns the surface", func(t *testing.T) {
 		parked := strings.ToLower(sectionOf(t, document, parkedHeading))
-		for _, said := range []string{"serve that document yourself", "agora poll", "would exit owning the surface"} {
+		for _, said := range []string{"serve that document yourself", "socrates agora poll", "would exit owning the surface"} {
 			if !strings.Contains(parked, said) {
 				t.Errorf("the parked branch does not say %q, so the delegate is left owning a surface it is about to exit:\n%s", said, parked)
 			}
@@ -176,11 +176,11 @@ func TestTheSkillSaysWhichBranchesWait(t *testing.T) {
 	}
 
 	for _, waiting := range []string{escalatedHeading, parkedHeading} {
-		if !strings.Contains(strings.ToLower(sectionOf(t, document, waiting)), "agora poll") {
+		if !strings.Contains(strings.ToLower(sectionOf(t, document, waiting)), "socrates agora poll") {
 			t.Errorf("%s does not say to wait on the page, and socrates reports rounds of it as ones that await a person", waiting)
 		}
 	}
-	if clean := strings.ToLower(sectionOf(t, document, cleanHeading)); strings.Contains(clean, "agora poll") {
+	if clean := strings.ToLower(sectionOf(t, document, cleanHeading)); strings.Contains(clean, "socrates agora poll") {
 		t.Errorf("the clean branch waits on the page, and it stops a session for an answer nobody was asked for:\n%s", clean)
 	}
 }
@@ -209,7 +209,7 @@ func TestARoundTheAuthorAnswersAloneGetsAPageNobodyWaitsOn(t *testing.T) {
 			t.Errorf("the parked branch does not say %q, so a round the author answers alone reaches nobody or stops the loop:\n%s", said, parked)
 		}
 	}
-	for _, said := range []string{"socrates-review respond", "socrates-review continue"} {
+	for _, said := range []string{"socrates review respond", "socrates review continue"} {
 		if !strings.Contains(parked, said) {
 			t.Errorf("the parked branch no longer says %q", said)
 		}
@@ -245,8 +245,8 @@ func TestThePageIsNotInThePollingLoop(t *testing.T) {
 	if strings.Contains(strings.ToLower(step), "page") {
 		t.Errorf("the step a session runs in a loop names a page, and a page is made once after the run has stopped moving:\n%s", step)
 	}
-	if counted := strings.Count(document, "socrates-review watch"); counted != 1 {
-		t.Errorf("the skill names socrates-review watch %d times, want once", counted)
+	if counted := strings.Count(document, "socrates review watch"); counted != 1 {
+		t.Errorf("the skill names socrates review watch %d times, want once", counted)
 	}
 }
 
@@ -271,7 +271,7 @@ func TestAControlCarriesItsCommandAndShowsItToNobody(t *testing.T) {
 func TestTheSkillSaysHowAnAnswerReachesTheRun(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
-	for _, said := range []string{"the person answers on the page", "agora poll", "socrates-review respond", "their own words"} {
+	for _, said := range []string{"the person answers on the page", "socrates agora poll", "socrates review respond", "their own words"} {
 		if !strings.Contains(page, said) {
 			t.Errorf("the page section does not say %q, so an answer given on the page reaches no run:\n%s", said, page)
 		}
@@ -284,7 +284,7 @@ func TestTheSkillSaysHowAnAnswerReachesTheRun(t *testing.T) {
 func TestAPageIsServedLocallyAndPublishedNowhere(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
-	if !strings.Contains(page, "agora serve") {
+	if !strings.Contains(page, "socrates agora serve") {
 		t.Errorf("the page section names no local surface to serve the page with:\n%s", page)
 	}
 	for _, elsewhere := range []string{"artifact", "upload", "publish", "host", "link", "claude.ai", "https://"} {
@@ -313,7 +313,7 @@ func TestADecisionIsStillThePersonsToMake(t *testing.T) {
 func TestTheSkillSaysThePageAndTheTerminalUseTheSameIdentifiers(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
 
-	for _, said := range []string{"identifier", "severity", "audience", "f3", "socrates-review findings --json"} {
+	for _, said := range []string{"identifier", "severity", "audience", "f3", "socrates review findings --json"} {
 		if !strings.Contains(page, said) {
 			t.Errorf("the page section does not say %q, so a person naming a finding leaves the session guessing which one", said)
 		}
@@ -503,8 +503,8 @@ func TestTheSkillSaysToCarryTheSessionFromServeToPoll(t *testing.T) {
 	page := sectionOf(t, skill.Document(), pageHeading)
 
 	for _, said := range []string{
-		"agora serve --document ./round.json" + inlineCode + " prints the loopback address of its page",
-		"agora poll --session",
+		"socrates agora serve --document ./round.json" + inlineCode + " prints the loopback address of its page",
+		"socrates agora poll --session",
 		"the session at the end of the address",
 	} {
 		if !strings.Contains(page, said) {
@@ -520,7 +520,7 @@ func TestALaterRoundReachesThePageThePersonAlreadyHas(t *testing.T) {
 	for _, said := range []string{
 		"Keep that session for the whole review",
 		"the page they already have",
-		"agora serve --session",
+		"socrates agora serve --session",
 		"you hand over no second address",
 	} {
 		if !strings.Contains(page, said) {
@@ -543,12 +543,12 @@ func TestALaterRoundReachesThePageThePersonAlreadyHas(t *testing.T) {
 func TestTheSessionIsStatedOnceRatherThanOnEveryBranch(t *testing.T) {
 	document := skill.Document()
 
-	if counted := strings.Count(document, "agora poll --session"); counted != 1 {
-		t.Errorf("the skill says how the session reaches agora poll %d times, want once, and the copy a session reads first is the one that gets softened", counted)
+	if counted := strings.Count(document, "socrates agora poll --session"); counted != 1 {
+		t.Errorf("the skill says how the session reaches socrates agora poll %d times, want once, and the copy a session reads first is the one that gets softened", counted)
 	}
 	for _, branch := range []string{escalatedHeading, parkedHeading} {
 		if strings.Contains(sectionOf(t, document, branch), "--session") {
-			t.Errorf("%s restates how the session reaches agora poll, and it is stated once where the page is described", branch)
+			t.Errorf("%s restates how the session reaches socrates agora poll, and it is stated once where the page is described", branch)
 		}
 	}
 }

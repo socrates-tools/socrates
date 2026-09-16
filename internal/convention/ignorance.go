@@ -11,15 +11,14 @@ import (
 )
 
 var SurfaceDirectories = []string{
-	filepath.Join("agora", "cmd", "agora"),
-	filepath.Join("agora", "command"),
-	filepath.Join("agora", "assets"),
-	filepath.Join("agora", "document"),
-	filepath.Join("agora", "render"),
-	filepath.Join("agora", "sanitise"),
-	filepath.Join("agora", "stylesheet"),
-	filepath.Join("agora", "surface"),
-	filepath.Join("agora", "web", "src"),
+	filepath.Join(ToolDirectory("agora"), "command"),
+	filepath.Join(ToolDirectory("agora"), "assets"),
+	filepath.Join(ToolDirectory("agora"), "document"),
+	filepath.Join(ToolDirectory("agora"), "render"),
+	filepath.Join(ToolDirectory("agora"), "sanitise"),
+	filepath.Join(ToolDirectory("agora"), "stylesheet"),
+	filepath.Join(ToolDirectory("agora"), "surface"),
+	filepath.Join(ToolDirectory("agora"), "web", "src"),
 }
 
 var surfaceExtensions = []string{".go", ".gohtml", ".css", ".js", ".json"}

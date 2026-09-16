@@ -34,13 +34,13 @@ func TestASealThatDoesNotHoldIsARefusal(t *testing.T) {
 	out, failures, code := session.SocratesWith(session.Repository.Root, []string{state.HomeVariable + "=" + home}, "begin")
 
 	if code != exit.Unusable {
-		t.Fatalf("socrates-review begin exited %d on a filesystem that enforces nothing, want the usage code %d: %s%s", code, exit.Unusable, out, failures)
+		t.Fatalf("socrates review begin exited %d on a filesystem that enforces nothing, want the usage code %d: %s%s", code, exit.Unusable, out, failures)
 	}
 	if !strings.Contains(failures, "worktree") || !strings.Contains(failures, "filesystem") {
 		t.Errorf("the refusal reads %q, without naming the worktree and the filesystem", failures)
 	}
 	if strings.TrimSpace(out) != "" {
-		t.Errorf("socrates-review begin printed %q, so a person is following a run that never started", out)
+		t.Errorf("socrates review begin printed %q, so a person is following a run that never started", out)
 	}
 
 	runs, err := os.ReadDir(filepath.Join(home, "runs"))
@@ -79,7 +79,7 @@ func TestCancellingARunWhoseReviewerWentAwayLiftsTheSeal(t *testing.T) {
 	}
 
 	if _, failures, code := session.Socrates("cancel", name); code != 0 {
-		t.Fatalf("socrates-review cancel exited %d: %s", code, failures)
+		t.Fatalf("socrates review cancel exited %d: %s", code, failures)
 	}
 
 	if recorded := session.Recorded(name).State; recorded != runstate.Failed {

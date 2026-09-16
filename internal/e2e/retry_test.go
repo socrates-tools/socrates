@@ -33,7 +33,7 @@ func TestCancellingStopsTheReviewerThatIsAnswering(t *testing.T) {
 	}
 
 	if _, failures, code := session.Socrates("cancel", name); code != 0 {
-		t.Fatalf("socrates-review cancel exited %d: %s", code, failures)
+		t.Fatalf("socrates review cancel exited %d: %s", code, failures)
 	}
 
 	run := session.Recorded(name)

@@ -71,7 +71,7 @@ func (j *journey) begin(intent string) string {
 
 	printed, failures, code := j.run("begin", "--intent", intent)
 	if code != 0 {
-		j.t.Fatalf("socrates-review begin --intent exited %d: %s\n%s", code, failures, printed)
+		j.t.Fatalf("socrates review begin --intent exited %d: %s\n%s", code, failures, printed)
 	}
 	return firstLine(printed)
 }
@@ -86,7 +86,7 @@ func (j *journey) waitedFor(name string) (runstate.State, int) {
 		printed, failures, code := j.run("status", name)
 		state := stateIn(printed)
 		if state == "" {
-			j.t.Fatalf("socrates-review status printed no state for %s: %s%s", name, printed, failures)
+			j.t.Fatalf("socrates review status printed no state for %s: %s%s", name, printed, failures)
 		}
 		if slices.Contains(stops, state) {
 			return state, code
@@ -94,7 +94,7 @@ func (j *journey) waitedFor(name string) (runstate.State, int) {
 		time.Sleep(20 * time.Millisecond)
 	}
 
-	j.t.Fatalf("polling socrates-review status for %s reported no state to act on within %s", name, loopPatience)
+	j.t.Fatalf("polling socrates review status for %s reported no state to act on within %s", name, loopPatience)
 	return "", 0
 }
 
@@ -112,7 +112,7 @@ func (j *journey) findings(name string) string {
 
 	printed, failures, _ := j.run("findings", name)
 	if printed == "" {
-		j.t.Fatalf("socrates-review findings printed nothing for %s: %s", name, failures)
+		j.t.Fatalf("socrates review findings printed nothing for %s: %s", name, failures)
 	}
 	return printed
 }
@@ -146,7 +146,7 @@ func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 
 		state, code := driven.waitedFor(name)
 		if state != runstate.Escalated || code != 1 {
-			t.Fatalf("the run is %s and socrates-review status exited %d, want escalated", state, code)
+			t.Fatalf("the run is %s and socrates review status exited %d, want escalated", state, code)
 		}
 
 		reported := driven.findings(name)
@@ -169,7 +169,7 @@ func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 
 		state, code := driven.waitedFor(name)
 		if state != runstate.Failed || code != 2 {
-			t.Fatalf("the run is %s and socrates-review status exited %d, want failed", state, code)
+			t.Fatalf("the run is %s and socrates review status exited %d, want failed", state, code)
 		}
 		if reported := driven.findings(name); !strings.Contains(reported, "no review completed") {
 			t.Errorf("what the loop reads about a failed run does not say that no review completed:\n%s", reported)
@@ -185,7 +185,7 @@ func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 
 		state, code := driven.waitedFor(name)
 		if state != runstate.AwaitingResponse || code != 4 {
-			t.Fatalf("the run is %s and socrates-review status exited %d, want a parked run", state, code)
+			t.Fatalf("the run is %s and socrates review status exited %d, want a parked run", state, code)
 		}
 
 		if _, failures, refused := driven.run("continue", name); refused != 3 {
@@ -206,7 +206,7 @@ func TestTheLoopAnswersAQuestionAndReachesAVerdict(t *testing.T) {
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {
-		t.Fatalf("a round holding a question left the run %s and socrates-review status exited %d, want a parked run", state, code)
+		t.Fatalf("a round holding a question left the run %s and socrates review status exited %d, want a parked run", state, code)
 	}
 	driven.wroteNothingItself()
 
@@ -233,12 +233,12 @@ func TestTheLoopAnswersAQuestionAndReachesAVerdict(t *testing.T) {
 		t.Fatalf("recording what a person decided exited %d: %s", code, failures)
 	}
 	if _, failures, code := driven.run("continue", name); code != 0 {
-		t.Fatalf("socrates-review continue with everything answered exited %d: %s", code, failures)
+		t.Fatalf("socrates review continue with everything answered exited %d: %s", code, failures)
 	}
 
 	state, code = driven.waitedFor(name)
 	if state != runstate.Clean || code != 0 {
-		t.Fatalf("the round that judged the decision left the run %s and socrates-review status exited %d, want clean", state, code)
+		t.Fatalf("the round that judged the decision left the run %s and socrates review status exited %d, want clean", state, code)
 	}
 
 	invocations := driven.session.Simulator.Invocations()
@@ -297,7 +297,7 @@ func TestAParkedRoundWaitsOnAQuestionAndOnAPatch(t *testing.T) {
 		t.Errorf("the status does not report zero unanswered once every finding has an answer:\n%s", answered)
 	}
 	if _, failures, code := driven.run("continue", name); code != 0 {
-		t.Fatalf("socrates-review continue with everything answered exited %d: %s", code, failures)
+		t.Fatalf("socrates review continue with everything answered exited %d: %s", code, failures)
 	}
 
 	driven.wroteNothingItself()
@@ -321,12 +321,12 @@ func TestAQuestionThatReachesTheCapEscalatesWithEverythingKept(t *testing.T) {
 		t.Fatalf("recording a rejection exited %d: %s", code, failures)
 	}
 	if _, failures, code := driven.run("continue", name); code != 0 {
-		t.Fatalf("socrates-review continue exited %d: %s", code, failures)
+		t.Fatalf("socrates review continue exited %d: %s", code, failures)
 	}
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.Escalated || code != 1 {
-		t.Fatalf("a question at the final permitted round left the run %s and socrates-review status exited %d, want escalated", state, code)
+		t.Fatalf("a question at the final permitted round left the run %s and socrates review status exited %d, want escalated", state, code)
 	}
 
 	run := driven.session.Run(name)
@@ -369,7 +369,7 @@ func TestTheLoopTheSkillDescribesReachesAVerdict(t *testing.T) {
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {
-		t.Fatalf("the first round left the run %s and socrates-review status exited %d, want a parked run", state, code)
+		t.Fatalf("the first round left the run %s and socrates review status exited %d, want a parked run", state, code)
 	}
 	driven.wroteNothingItself()
 
@@ -388,12 +388,12 @@ func TestTheLoopTheSkillDescribesReachesAVerdict(t *testing.T) {
 		t.Fatalf("recording a rejection exited %d: %s", code, failures)
 	}
 	if _, failures, code := driven.run("continue", name); code != 0 {
-		t.Fatalf("socrates-review continue exited %d: %s", code, failures)
+		t.Fatalf("socrates review continue exited %d: %s", code, failures)
 	}
 
 	state, code = driven.waitedFor(name)
 	if state != runstate.Clean || code != 0 {
-		t.Fatalf("the second round left the run %s and socrates-review status exited %d, want clean", state, code)
+		t.Fatalf("the second round left the run %s and socrates review status exited %d, want clean", state, code)
 	}
 
 	driven.wroteNothingItself()
@@ -408,7 +408,7 @@ func TestTheLoopCarriesTheSessionFromServeToPollAndReachesAVerdict(t *testing.T)
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {
-		t.Fatalf("a round holding a question left the run %s and socrates-review status exited %d, want a parked run", state, code)
+		t.Fatalf("a round holding a question left the run %s and socrates review status exited %d, want a parked run", state, code)
 	}
 
 	read := driven.reported(name)
@@ -428,8 +428,8 @@ func TestTheLoopCarriesTheSessionFromServeToPollAndReachesAVerdict(t *testing.T)
 		"meaning":  "nothing socrates can do closes this one",
 		"mode":     "single-choice",
 		"options": []map[string]any{
-			{"label": "the function stays", "meaning": "the importer reads it", "command": `socrates-review respond --finding ` + asked.ID + ` --decided --reason "the function stays"`},
-			{"label": "take it out", "meaning": "nothing reads it", "command": `socrates-review respond --finding ` + asked.ID + ` --decided --reason "take the function out"`},
+			{"label": "the function stays", "meaning": "the importer reads it", "command": `socrates review respond --finding ` + asked.ID + ` --decided --reason "the function stays"`},
+			{"label": "take it out", "meaning": "nothing reads it", "command": `socrates review respond --finding ` + asked.ID + ` --decided --reason "take the function out"`},
 		},
 	}}))
 
@@ -459,12 +459,12 @@ func TestTheLoopCarriesTheSessionFromServeToPollAndReachesAVerdict(t *testing.T)
 		t.Fatalf("recording a rejection exited %d: %s", code, failures)
 	}
 	if _, failures, code := driven.run("continue", name); code != 0 {
-		t.Fatalf("socrates-review continue with everything answered exited %d: %s", code, failures)
+		t.Fatalf("socrates review continue with everything answered exited %d: %s", code, failures)
 	}
 
 	state, code = driven.waitedFor(name)
 	if state != runstate.Clean || code != 0 {
-		t.Fatalf("the round that judged what the person answered on the page left the run %s and socrates-review status exited %d, want clean", state, code)
+		t.Fatalf("the round that judged what the person answered on the page left the run %s and socrates review status exited %d, want clean", state, code)
 	}
 
 	judging := driven.session.Simulator.Invocations()[1].Prompt
@@ -482,7 +482,7 @@ func TestALaterRoundIsWrittenToThePageThePersonAlreadyHas(t *testing.T) {
 
 	state, code := driven.waitedFor(name)
 	if state != runstate.AwaitingResponse || code != 4 {
-		t.Fatalf("a round holding a question left the run %s and socrates-review status exited %d, want a parked run", state, code)
+		t.Fatalf("a round holding a question left the run %s and socrates review status exited %d, want a parked run", state, code)
 	}
 
 	first := driven.reported(name)
@@ -507,12 +507,12 @@ func TestALaterRoundIsWrittenToThePageThePersonAlreadyHas(t *testing.T) {
 		t.Fatalf("recording a rejection exited %d: %s", refused, failures)
 	}
 	if _, failures, refused := driven.run("continue", name); refused != 0 {
-		t.Fatalf("socrates-review continue with everything answered exited %d: %s", refused, failures)
+		t.Fatalf("socrates review continue with everything answered exited %d: %s", refused, failures)
 	}
 
 	state, code = driven.waitedFor(name)
 	if state != runstate.Escalated || code != 1 {
-		t.Fatalf("the second round left the run %s and socrates-review status exited %d, want escalated", state, code)
+		t.Fatalf("the second round left the run %s and socrates review status exited %d, want escalated", state, code)
 	}
 
 	second := driven.reported(name)
@@ -559,8 +559,8 @@ func oneQuestionAsADecision(t *testing.T, read reportedRound) []map[string]any {
 		"meaning":  "nothing socrates can do closes this one",
 		"mode":     "single-choice",
 		"options": []map[string]any{
-			{"label": "it stays", "meaning": "what is there is what the product wants", "command": `socrates-review respond --finding ` + asked.ID + ` --decided --reason "it stays"`},
-			{"label": "take it out", "meaning": "nothing reads it", "command": `socrates-review respond --finding ` + asked.ID + ` --decided --reason "take it out"`},
+			{"label": "it stays", "meaning": "what is there is what the product wants", "command": `socrates review respond --finding ` + asked.ID + ` --decided --reason "it stays"`},
+			{"label": "take it out", "meaning": "nothing reads it", "command": `socrates review respond --finding ` + asked.ID + ` --decided --reason "take it out"`},
 		},
 	}}
 }

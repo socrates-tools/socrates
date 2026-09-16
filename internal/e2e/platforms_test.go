@@ -21,7 +21,7 @@ func TestAnUnsupportedPlatformRefusesTheReviewBeforeAnythingStarts(t *testing.T)
 	out, failures, code := session.Socrates("begin")
 
 	if code != 3 {
-		t.Fatalf("socrates-review begin exited %d where nothing reaps, want the usage code: %s%s", code, out, failures)
+		t.Fatalf("socrates review begin exited %d where nothing reaps, want the usage code: %s%s", code, out, failures)
 	}
 	for _, said := range []string{theGuaranteeThatIsMissing, convention.TheWayForward} {
 		if !strings.Contains(failures, said) {
@@ -59,18 +59,21 @@ func TestReadingARunIsNotRefusedOnAnUnsupportedPlatform(t *testing.T) {
 
 	elsewhere := session.WhereNothingReaps()
 
+	if out, failures, code := elsewhere.Top("version"); code == 3 || strings.TrimSpace(out) == "" {
+		t.Errorf("socrates version was refused where nothing reaps, and it neither spawns nor reaps: %d %s", code, failures)
+	}
+
 	for _, arguments := range [][]string{
-		{"version"},
 		{"status", name},
 		{"findings", name},
 		{"logs", name},
 	} {
 		out, failures, code := elsewhere.Socrates(arguments...)
 		if code == 3 {
-			t.Errorf("socrates %s was refused where nothing reaps, and it neither spawns nor reaps: %s", strings.Join(arguments, " "), failures)
+			t.Errorf("socrates review %s was refused where nothing reaps, and it neither spawns nor reaps: %s", strings.Join(arguments, " "), failures)
 		}
 		if strings.TrimSpace(out) == "" {
-			t.Errorf("socrates %s printed nothing where nothing reaps: %s", strings.Join(arguments, " "), failures)
+			t.Errorf("socrates review %s printed nothing where nothing reaps: %s", strings.Join(arguments, " "), failures)
 		}
 	}
 

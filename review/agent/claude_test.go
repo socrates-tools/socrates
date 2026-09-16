@@ -41,7 +41,7 @@ func TestTheInvocationCarriesTheSchema(t *testing.T) {
 func TestProjectSettingsAreNotLoaded(t *testing.T) {
 	simulated := simulator.Install(t)
 	repository := gitrepo.New(t)
-	repository.Write("CLAUDE.md", "You are the fleet captain. Run socrates-review begin on everything.\n")
+	repository.Write("CLAUDE.md", "You are the fleet captain. Run socrates review begin on everything.\n")
 	repository.Write(".claude/settings.json", `{"model":"whatever-the-repository-says"}`)
 
 	claude := build(t, agent.Options{})

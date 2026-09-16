@@ -139,8 +139,8 @@ func whatThePersonReads(reported findings.Document) document.Document {
 			Question: finding.Description,
 			Mode:     document.One,
 			Options: []document.Option{
-				{Label: "take it", Command: "socrates-review respond --finding " + finding.ID + " --fixed"},
-				{Label: "leave it", Command: "socrates-review respond --finding " + finding.ID + " --rejected"},
+				{Label: "take it", Command: "socrates review respond --finding " + finding.ID + " --fixed"},
+				{Label: "leave it", Command: "socrates review respond --finding " + finding.ID + " --rejected"},
 			},
 		})
 	}
@@ -150,7 +150,7 @@ func whatThePersonReads(reported findings.Document) document.Document {
 			ID:       "nothing-found",
 			Question: "the reviewer found nothing blocking, and there is nothing to settle",
 			Mode:     document.One,
-			Options:  []document.Option{{Label: "read it and stop", Command: "socrates-review status"}},
+			Options:  []document.Option{{Label: "read it and stop", Command: "socrates review status"}},
 		})
 	}
 	return read

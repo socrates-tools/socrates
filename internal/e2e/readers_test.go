@@ -16,7 +16,7 @@ func TestStatusStaysSmallWhenTheReviewerIsLoud(t *testing.T) {
 	loud := lineCountOfStatus(t, loudScenario)
 
 	if loud != quiet {
-		t.Errorf("socrates-review status printed %d lines for a loud reviewer and %d for a quiet one", loud, quiet)
+		t.Errorf("socrates review status printed %d lines for a loud reviewer and %d for a quiet one", loud, quiet)
 	}
 }
 
@@ -35,7 +35,7 @@ func lineCountOfStatus(t *testing.T, scenario string) int {
 
 	printed, failures, code := session.Socrates("status", name)
 	if code != 0 {
-		t.Fatalf("socrates-review status exited %d: %s", code, failures)
+		t.Fatalf("socrates review status exited %d: %s", code, failures)
 	}
 	return strings.Count(strings.TrimSpace(printed), "\n") + 1
 }

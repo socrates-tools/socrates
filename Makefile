@@ -1,5 +1,4 @@
-BINARY := bin/socrates-review
-SURFACE := bin/agora
+BINARY := bin/socrates
 MODULE := github.com/socrates-tools/socrates
 LINTER := github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
 RELEASER := github.com/goreleaser/goreleaser/v2@v2.17.1
@@ -16,13 +15,11 @@ TARGETS := build install release release-snapshot verify test lint fmt help skil
 .PHONY: $(TARGETS)
 
 build:
-	go build -ldflags '$(STAMP)' -o $(BINARY) ./review/cmd/socrates-review
-	go build -ldflags '$(STAMP)' -o $(SURFACE) ./agora/cmd/agora
+	go build -ldflags '$(STAMP)' -o $(BINARY) ./cmd/socrates
 
 install:
-	go install -ldflags '$(STAMP)' ./review/cmd/socrates-review
-	$(INSTALL_DIR)/socrates-review skill
-	go install -ldflags '$(STAMP)' ./agora/cmd/agora
+	go install -ldflags '$(STAMP)' ./cmd/socrates
+	$(INSTALL_DIR)/socrates review skill
 
 release:
 	go run $(RELEASER) release --clean
@@ -55,7 +52,7 @@ help:
 	@printf '  make %s\n' $(TARGETS)
 
 skill:
-	go run ./review/cmd/socrates-review skill --to .claude/skills
+	go run ./cmd/socrates review skill --to .claude/skills
 
 assets:
 	cd agora/web && pnpm install --frozen-lockfile && node build.mjs

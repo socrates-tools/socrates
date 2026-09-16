@@ -16,7 +16,7 @@ import (
 	"github.com/socrates-tools/socrates/review/hunks"
 )
 
-const commitMessage = "socrates-review snapshot"
+const commitMessage = "socrates snapshot"
 
 const worktreeDirectory = "worktree"
 
@@ -25,11 +25,11 @@ func WorktreePath(runDirectory string) string {
 }
 
 var commitIdentity = []string{
-	"GIT_AUTHOR_NAME=socrates-review",
-	"GIT_AUTHOR_EMAIL=socrates-review@localhost",
+	"GIT_AUTHOR_NAME=socrates",
+	"GIT_AUTHOR_EMAIL=socrates@localhost",
 	"GIT_AUTHOR_DATE=@0 +0000",
-	"GIT_COMMITTER_NAME=socrates-review",
-	"GIT_COMMITTER_EMAIL=socrates-review@localhost",
+	"GIT_COMMITTER_NAME=socrates",
+	"GIT_COMMITTER_EMAIL=socrates@localhost",
 	"GIT_COMMITTER_DATE=@0 +0000",
 }
 
@@ -103,7 +103,7 @@ func take(ctx context.Context, root, base string) (Snapshot, error) {
 		return Snapshot{}, err
 	}
 
-	indexDirectory, err := os.MkdirTemp("", "socrates-review-index-")
+	indexDirectory, err := os.MkdirTemp("", "socrates-index-")
 	if err != nil {
 		return Snapshot{}, fmt.Errorf(creatingAnIndexDirectory, err)
 	}
