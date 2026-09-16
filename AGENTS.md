@@ -27,7 +27,8 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 
 What socrates-review is:
 
-- `review/cmd/socrates-review` - the binary: `begin`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, `config`, `configure`, `version`, and the hidden `supervise`.
+- `review/cmd/socrates-review` - the binary: builds `review/command`'s tree, runs it, and turns an error into an exit code.
+- `review/command` - the command tree: `begin`, `status`, `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `skill`, `config`, `configure`, `version`, and the hidden `supervise`.
 - `review/snapshot` - the freeze: a temporary index, a commit, a detached worktree, and the seal that makes it unwritable.
 - `review/runstore` - run directories, `run.json`, run selection, rounds, retention.
 - `review/runstate` - the states and which are terminal.
@@ -56,7 +57,8 @@ What socrates-review is:
 
 What agora is:
 
-- `agora/cmd/agora` - the binary: `serve`, `poll`, `end`, `stop`, `version`, and nothing else.
+- `agora/cmd/agora` - the binary: builds `agora/command`'s tree, runs it, and turns an error into an exit code.
+- `agora/command` - the command tree: `serve`, `poll`, `end`, `stop`, `version`, and nothing else.
 - `agora/document` - what a caller writes for the surface to render, what it copies rather than accepts, and the languages the page can highlight.
 - `agora/sanitise` - a caller's HTML fragment reduced to a fixed allowlist, and every name it carries prefixed.
 - `agora/stylesheet` - a caller's stylesheet read as a parse, reduced to a fixed allowlist, and scoped to the illustration.
