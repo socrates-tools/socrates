@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
   - name: A vulnerability
-    url: https://github.com/socrates-tools/socrates-review/security/advisories/new
+    url: https://github.com/socrates-tools/socrates/security/advisories/new
     about: Report it privately. Do not open a public issue.
   - name: How socrates works, and why
-    url: https://github.com/socrates-tools/socrates-review/blob/main/SUPPORT.md
+    url: https://github.com/socrates-tools/socrates/blob/main/SUPPORT.md
     about: What to read before opening anything, and where each kind of question goes.

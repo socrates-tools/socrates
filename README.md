@@ -38,8 +38,8 @@ A release archive is the quickest route.
 It carries `socrates` along with `LICENSE` and `NOTICE`, so extracting one gives you the same binary as a source install.
 
 ```sh
-tag=$(gh release view --repo socrates-tools/socrates-review --json tagName --jq .tagName)
-gh release download "$tag" --repo socrates-tools/socrates-review --pattern "socrates_*_$(uname -s | tr 'A-Z' 'a-z')_*.tar.gz" --pattern checksums.txt
+tag=$(gh release view --repo socrates-tools/socrates --json tagName --jq .tagName)
+gh release download "$tag" --repo socrates-tools/socrates --pattern "socrates_*_$(uname -s | tr 'A-Z' 'a-z')_*.tar.gz" --pattern checksums.txt
 sha256sum --check --ignore-missing checksums.txt
 tar -xzf socrates_*.tar.gz -C ~/.local/bin socrates
 socrates review skill
@@ -49,12 +49,12 @@ Check the download against this repository rather than against whoever pushed th
 The checksums carry a keyless signature, and the release records build provenance saying which workflow and which commit produced each archive:
 
 ```sh
-gh release download "$tag" --repo socrates-tools/socrates-review --pattern 'checksums.txt.bundle'
+gh release download "$tag" --repo socrates-tools/socrates --pattern 'checksums.txt.bundle'
 cosign verify-blob checksums.txt \
   --bundle checksums.txt.bundle \
-  --certificate-identity-regexp 'https://github.com/socrates-tools/socrates-review/.*' \
+  --certificate-identity-regexp 'https://github.com/socrates-tools/socrates/.*' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
-gh attestation verify socrates_*.tar.gz --repo socrates-tools/socrates-review
+gh attestation verify socrates_*.tar.gz --repo socrates-tools/socrates
 ```
 
 GitHub stores build provenance for public repositories only, so the last of those three applies from the first release published from one.
@@ -195,7 +195,7 @@ These three are not supported, and what each lacks is the first criterion:
 | `pi` | a way to keep the reviewed repository's own instructions out of the reviewer's session, and a terminal event saying whether the work happened and what it says about why it did not |
 
 No such mechanism was found in their documentation, which is weaker than a finding that none exists.
-Settling each is one recording rather than a redesign, and https://github.com/socrates-tools/socrates-review/issues/20 is where that is tracked.
+Settling each is one recording rather than a redesign, and https://github.com/socrates-tools/socrates/issues/20 is where that is tracked.
 A CLI that clears the bar is a new row here rather than a new design.
 
 Naming a CLI socrates review does not drive is refused by name, before a snapshot is taken and before a reviewer is spawned.

@@ -1,6 +1,6 @@
 # Issue tracker: GitHub
 
-Issues and specs for this repo live as GitHub issues, in `socrates-tools/socrates-review`.
+Issues and specs for this repo live as GitHub issues, in `socrates-tools/socrates`.
 Use the `gh` CLI for all operations.
 
 ## Conventions

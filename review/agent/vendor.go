@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const DeferredSurvey = "https://github.com/socrates-tools/socrates-review/issues/20"
+const DeferredSurvey = "https://github.com/socrates-tools/socrates/issues/20"
 
 type Tier string
 

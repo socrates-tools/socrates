@@ -2,7 +2,7 @@
 
 ## Reporting something privately
 
-Use GitHub's private vulnerability reporting: [open a draft advisory](https://github.com/socrates-tools/socrates-review/security/advisories/new).
+Use GitHub's private vulnerability reporting: [open a draft advisory](https://github.com/socrates-tools/socrates/security/advisories/new).
 It is private to you and the maintainer, and it is the only channel for anything you would not put in a public issue.
 
 Do not open a public issue for a vulnerability.

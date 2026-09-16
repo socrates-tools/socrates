@@ -303,7 +303,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 
 ### Issue tracker
 
-Issues live in this repo's GitHub Issues (`socrates-tools/socrates-review`), read and written via the `gh` CLI.
+Issues live in this repo's GitHub Issues (`socrates-tools/socrates`), read and written via the `gh` CLI.
 See `docs/agents/issue-tracker.md`.
 
 ### Domain docs

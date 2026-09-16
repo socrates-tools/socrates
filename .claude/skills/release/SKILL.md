@@ -28,7 +28,7 @@ Everything before the tag is yours: deciding the version, writing what the relea
    Read what is under `## [Unreleased]` and pick from that rather than from the commit log.
 
    ```sh
-   gh release view --repo socrates-tools/socrates-review --json tagName --jq .tagName
+   gh release view --repo socrates-tools/socrates --json tagName --jq .tagName
    ```
 
 3. Write the changelog entry.
@@ -78,8 +78,8 @@ A build that is not at a tag says it is a development build rather than borrowin
 ## Watch it through
 
 ```sh
-gh run list --repo socrates-tools/socrates-review --workflow release.yml --limit 1
-gh run watch --repo socrates-tools/socrates-review <run-id>
+gh run list --repo socrates-tools/socrates --workflow release.yml --limit 1
+gh run watch --repo socrates-tools/socrates <run-id>
 ```
 
 The run has two jobs, and they mean different things when they fail.
@@ -100,7 +100,7 @@ A tag is retired in two steps, and the first one decides whether the second is a
 1. Establish that the version is unspent.
 
    ```sh
-   gh release view vX.Y.Z --repo socrates-tools/socrates-review --json tagName,isDraft,assets
+   gh release view vX.Y.Z --repo socrates-tools/socrates --json tagName,isDraft,assets
    ```
 
    A tag with a published release is spent.
@@ -123,8 +123,8 @@ A tag is retired in two steps, and the first one decides whether the second is a
 ## Confirm what shipped
 
 ```sh
-tag=$(gh release view --repo socrates-tools/socrates-review --json tagName --jq .tagName)
-gh release view "$tag" --repo socrates-tools/socrates-review
+tag=$(gh release view --repo socrates-tools/socrates --json tagName --jq .tagName)
+gh release view "$tag" --repo socrates-tools/socrates
 ```
 
 The release should carry one `tar.gz` per supported platform, `checksums.txt`, a `checksums.txt.bundle` signature, and a bill of materials per archive.
