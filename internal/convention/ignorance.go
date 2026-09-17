@@ -64,7 +64,7 @@ func WordsOfTheOtherTool(root string, directories []string) (Ignorance, error) {
 			}
 			if entry.IsDir() {
 				generated := slices.Contains(generatedDirectories, entry.Name())
-				if path != filepath.Join(root, directory) && (generated || skipped(entry.Name())) {
+				if path != filepath.Join(root, directory) && (generated || skipped(path, entry.Name())) {
 					return filepath.SkipDir
 				}
 				return nil

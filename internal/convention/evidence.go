@@ -23,6 +23,7 @@ var ContractsTestsRead = map[string]string{
 	filepath.Join("internal", "convention", "ignorance_test.go"):   "the rule that the surface names nothing of the other tool, which is a property of this repository's source rather than a proxy for behaviour",
 	filepath.Join("internal", "convention", "languages_test.go"):   "the rule that the languages the page can highlight are stated once, where the bundle that ships is the subject of the check and not a proxy for behaviour",
 	filepath.Join("internal", "convention", "licence_test.go"):     "the rule that the terms are stated once at the root and never as a header, where the source is the subject of the check and not a proxy for anything else",
+	filepath.Join("internal", "convention", "nested_test.go"):      "the rule that a checkout nested under the root is not this repository's own source, where which files a check reads is the subject of the check and not a proxy for behaviour",
 	filepath.Join("internal", "convention", "notice_test.go"):      "the rule that everything embedded is accounted for in the notice, where what a binary distributes is the subject of the check and not a proxy for anything else",
 	filepath.Join("internal", "convention", "palette_test.go"):     "the rule that the page paints from one stated palette, which is a property of this repository's source rather than a proxy for behaviour",
 	filepath.Join("internal", "convention", "platforms_test.go"):   "the rule that the supported platforms are stated once, where the source, what a release builds and what a person reads are the subjects of the check and not proxies for behaviour",
@@ -72,7 +73,7 @@ func TestsReadingGoFiles(root string, named map[string]string) (Reading, error) 
 			return err
 		}
 		if entry.IsDir() {
-			if path != root && skipped(entry.Name()) {
+			if path != root && skipped(path, entry.Name()) {
 				return filepath.SkipDir
 			}
 			return nil

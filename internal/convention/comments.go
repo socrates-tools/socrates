@@ -5,6 +5,7 @@ import (
 	"go/parser"
 	"go/token"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -33,7 +34,7 @@ func Comments(root string) ([]Commentary, error) {
 			return err
 		}
 		if entry.IsDir() {
-			if path != root && skipped(entry.Name()) {
+			if path != root && skipped(path, entry.Name()) {
 				return filepath.SkipDir
 			}
 			return nil
@@ -83,8 +84,13 @@ func exempt(text string) bool {
 	return false
 }
 
-func skipped(name string) bool {
-	return slices.Contains(skippedDirectories, name)
+func skipped(path, name string) bool {
+	return slices.Contains(skippedDirectories, name) || nestedCheckout(path)
+}
+
+func nestedCheckout(path string) bool {
+	_, err := os.Stat(filepath.Join(path, ".git"))
+	return err == nil
 }
 
 func firstLine(text string) string {

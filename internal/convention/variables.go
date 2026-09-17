@@ -31,7 +31,7 @@ func VariablesNamedToAPerson(root string) ([]NamedVariable, error) {
 			return walked
 		}
 		if entry.IsDir() {
-			if path != root && skipped(entry.Name()) {
+			if path != root && skipped(path, entry.Name()) {
 				return filepath.SkipDir
 			}
 			return nil
@@ -101,7 +101,7 @@ func variablesTheSourceReads(root string) (map[string]bool, error) {
 			return walked
 		}
 		if entry.IsDir() {
-			if path != root && skipped(entry.Name()) {
+			if path != root && skipped(path, entry.Name()) {
 				return filepath.SkipDir
 			}
 			return nil

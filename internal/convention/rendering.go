@@ -38,7 +38,7 @@ func FilesNamingEventKinds(root string, kinds, defining []string, named map[stri
 			return err
 		}
 		if entry.IsDir() {
-			if path != root && skipped(entry.Name()) {
+			if path != root && skipped(path, entry.Name()) {
 				return filepath.SkipDir
 			}
 			return nil

@@ -30,7 +30,7 @@ func ColoursWrittenWhereTheyAreUsed(root, directory string) (Palette, error) {
 			return err
 		}
 		if entry.IsDir() {
-			if path != filepath.Join(root, directory) && skipped(entry.Name()) {
+			if path != filepath.Join(root, directory) && skipped(path, entry.Name()) {
 				return filepath.SkipDir
 			}
 			return nil

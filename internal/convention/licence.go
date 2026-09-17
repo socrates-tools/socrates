@@ -57,7 +57,7 @@ func LicenceHeaders(root string) ([]LicenceHeader, error) {
 		}
 
 		if entry.IsDir() {
-			if path != root && (skipped(entry.Name()) || relative == GeneratedBundle) {
+			if path != root && (skipped(path, entry.Name()) || relative == GeneratedBundle) {
 				return filepath.SkipDir
 			}
 			return nil

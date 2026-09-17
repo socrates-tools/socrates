@@ -64,7 +64,7 @@ func AccountsOtherThanTheOrganisation(root string) ([]NamedAccount, error) {
 		}
 
 		if entry.IsDir() {
-			if path != root && skipped(entry.Name()) {
+			if path != root && skipped(path, entry.Name()) {
 				return filepath.SkipDir
 			}
 			return nil
