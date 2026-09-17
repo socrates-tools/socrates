@@ -8,7 +8,7 @@ Everything socrates review prints names `socrates review`.
 It serves one document as one page on a loopback address, waits for a person, and prints what they answered.
 It knows nothing about code review, and nothing review does reaches it yet.
 
-`socrates design` is a third namespace, and like review it is a skill rather than a command surface.
+`socrates design` is a third namespace, and a skill rather than a tool.
 The namespace holds one operation, `socrates design skill`, which installs it.
 A design interviews a person over agora and leaves a spec and its decisions behind, and it knows nothing about review, which is the other workflow sharing this binary.
 The dispatcher that routes `socrates` to a namespace holds wiring and nothing else: `internal/dispatcher` mounts review's command tree, agora's command tree and design's command tree, and is the only thing that imports all three.
@@ -87,7 +87,7 @@ What holds them all:
 - `internal/convention` - the repository's conventions as executable checks.
 - `internal/e2e` - real binaries, a real repository, real git, real processes, each vendor's simulator on `PATH`, a real browser.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
-- `internal/skill` - the machinery neither tool owns: the ceiling a skill is held to, installing one under a directory, and reading which invocations a document names so one the binary does not offer fails the suite.
+- `internal/skill` - the machinery no tool owns: the ceiling a skill is held to, installing one under a directory, and reading which invocations a document names so one the binary does not offer fails the suite.
 
 ## Verification
 

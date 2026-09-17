@@ -167,7 +167,7 @@ review and agora share one home and one optional configuration file, and nothing
 
 ## design, a second workflow
 
-`socrates design` is a second workflow, and like review it is a skill rather than a command surface.
+`socrates design` is a second workflow, and a skill rather than a tool.
 It interviews a person over agora and leaves a spec and its decisions behind.
 The namespace holds one operation, because design's machinery is agora and the session rather than a run store of its own:
 
