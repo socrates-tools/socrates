@@ -3,6 +3,7 @@ package command
 import (
 	"fmt"
 
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/review/skill"
 	"github.com/spf13/cobra"
 )
@@ -16,14 +17,14 @@ func newSkillCommand() *cobra.Command {
 		Args:  cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
 			if target == "" {
-				chosen, err := skill.UserDirectory()
+				chosen, err := skillkit.UserDirectory(skillInvocation)
 				if err != nil {
 					return err
 				}
 				target = chosen
 			}
 
-			written, err := skill.Install(target)
+			written, err := skillkit.Install(target, skill.All(), skillInvocation)
 			if err != nil {
 				return err
 			}

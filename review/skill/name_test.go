@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/socrates-tools/socrates/internal/convention"
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/review/skill"
 )
 
@@ -26,7 +27,7 @@ func documentOf(t *testing.T, named string) string {
 func TestOneConstantNamesTheSkillAndReadsItsInvocations(t *testing.T) {
 	directory := t.TempDir()
 
-	written, err := skill.Install(directory)
+	written, err := skillkit.Install(directory, skill.All(), skillkit.Dispatcher+" review skill")
 	if err != nil {
 		t.Fatalf("installing the skills: %v", err)
 	}
@@ -55,7 +56,7 @@ func TestOneConstantNamesTheSkillAndReadsItsInvocations(t *testing.T) {
 		}
 	}
 
-	named := skill.Named()
+	named := skillkit.Named(skill.All(), skill.Namespaces)
 	if len(named) == 0 {
 		t.Fatal("the skills are read to name no invocation at all, so this check reads nothing")
 	}
@@ -69,9 +70,9 @@ func TestOneConstantNamesTheSkillAndReadsItsInvocations(t *testing.T) {
 func typedInvocation(binary, command string) string {
 	switch binary {
 	case skill.Name:
-		return skill.Dispatcher + " review " + command
+		return skillkit.Dispatcher + " review " + command
 	case skill.Surface:
-		return skill.Dispatcher + " agora " + command
+		return skillkit.Dispatcher + " agora " + command
 	}
 	return binary + " " + command
 }
@@ -82,10 +83,10 @@ func TestTheSkillNamesTheOneNameTheToolHas(t *testing.T) {
 	if skill.Name != convention.Repository {
 		t.Errorf("the skill is named %q and the repository is named %q, and the skill keeps that name because .claude/skills is a flat namespace with no dispatcher of its own", skill.Name, convention.Repository)
 	}
-	if !strings.Contains(document, skill.Dispatcher+" review begin") {
+	if !strings.Contains(document, skillkit.Dispatcher+" review begin") {
 		t.Error("the skill names no invocation of socrates review at all")
 	}
-	for _, invocation := range skill.Named() {
+	for _, invocation := range skillkit.Named(skill.All(), skill.Namespaces) {
 		if invocation.Binary == skill.Name || invocation.Binary == skill.Surface {
 			continue
 		}
@@ -96,16 +97,16 @@ func TestTheSkillNamesTheOneNameTheToolHas(t *testing.T) {
 func TestTheSkillIsInstalledUnderTheProductsName(t *testing.T) {
 	directory := t.TempDir()
 
-	written, err := skill.Install(directory)
+	written, err := skillkit.Install(directory, skill.All(), skillkit.Dispatcher+" review skill")
 	if err != nil {
 		t.Fatalf("installing the skills: %v", err)
 	}
 
 	for _, want := range []string{
-		filepath.Join(directory, convention.Repository, skill.FileName),
-		filepath.Join(directory, convention.Repository+"-handover", skill.FileName),
+		filepath.Join(directory, convention.Repository, skillkit.FileName),
+		filepath.Join(directory, convention.Repository+"-handover", skillkit.FileName),
 	} {
-		if !slices.ContainsFunc(written, func(installed skill.Installed) bool { return installed.Path == want }) {
+		if !slices.ContainsFunc(written, func(installed skillkit.Installed) bool { return installed.Path == want }) {
 			t.Errorf("nothing was installed at %s, and what was installed is %+v", want, written)
 		}
 		if _, err := os.Stat(want); err != nil {

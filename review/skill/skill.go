@@ -2,11 +2,9 @@ package skill
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/socrates-tools/socrates/internal/refusal"
+	"github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/review/dialogue"
 )
 
@@ -14,14 +12,19 @@ const (
 	Name         = "socrates-review"
 	HandoverName = Name + "-handover"
 	Surface      = "agora"
-	FileName     = "SKILL.md"
 
 	Ceiling         = 15677
 	HandoverCeiling = 16969
-
-	vendorDirectory = ".claude"
-	skillsDirectory = "skills"
 )
+
+var Namespaces = map[string]string{
+	"review": Name,
+	"agora":  Surface,
+}
+
+func Binaries() []string {
+	return []string{Name, Surface}
+}
 
 func Document() string {
 	return assembled(frontMatter, purpose, rules(), thePage(theAnswerAPageCarries), theLoop, prohibitions)
@@ -32,7 +35,7 @@ func thePage(answer string) string {
 }
 
 func assembled(parts ...string) string {
-	return strings.ReplaceAll(strings.Join(parts, "\n\n")+"\n", inlineCodeMarker, codeMarker)
+	return strings.ReplaceAll(strings.Join(parts, "\n\n")+"\n", skill.InlineCodeMarker, skill.CodeMarker)
 }
 
 func rules() string {
@@ -47,50 +50,9 @@ func stating(rules []string) string {
 	return strings.Join(stated, "\n")
 }
 
-func UserDirectory() (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", refusal.Wrapping(err, noHomeDirectory, err)
-	}
-	return UserDirectoryUnder(home), nil
-}
-
-func UserDirectoryUnder(home string) string {
-	return filepath.Join(home, vendorDirectory, skillsDirectory)
-}
-
-type Skill struct {
-	Name     string
-	Document func() string
-	Ceiling  int
-}
-
-func All() []Skill {
-	return []Skill{
+func All() []skill.Skill {
+	return []skill.Skill{
 		{Name: Name, Document: Document, Ceiling: Ceiling},
 		{Name: HandoverName, Document: HandoverDocument, Ceiling: HandoverCeiling},
 	}
-}
-
-type Installed struct {
-	Name string
-	Path string
-}
-
-func Install(directory string) ([]Installed, error) {
-	var written []Installed
-
-	for _, one := range All() {
-		path := filepath.Join(directory, one.Name, FileName)
-
-		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-			return nil, refusal.Wrapping(err, theTargetCannotBeWritten, path, err)
-		}
-		if err := os.WriteFile(path, []byte(one.Document()), 0o644); err != nil {
-			return nil, refusal.Wrapping(err, theTargetCannotBeWritten, path, err)
-		}
-		written = append(written, Installed{Name: one.Name, Path: path})
-	}
-
-	return written, nil
 }

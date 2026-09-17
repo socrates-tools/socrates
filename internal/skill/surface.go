@@ -7,11 +7,11 @@ import (
 )
 
 const (
-	codeIndent       = "    "
-	codeMarker       = "`"
-	inlineCodeMarker = "|"
-
 	Dispatcher = "socrates"
+
+	CodeIndent       = "    "
+	CodeMarker       = "`"
+	InlineCodeMarker = "|"
 )
 
 type Invocation struct {
@@ -20,21 +20,12 @@ type Invocation struct {
 	Flag    string
 }
 
-func Binaries() []string {
-	return []string{Name, Surface}
-}
-
-var namespaces = map[string]string{
-	"review": Name,
-	"agora":  Surface,
-}
-
-func Named() []Invocation {
+func Named(skills []Skill, namespaces map[string]string) []Invocation {
 	var named []Invocation
 	seen := map[Invocation]bool{}
 
 	var written []string
-	for _, one := range All() {
+	for _, one := range skills {
 		written = append(written, codeIn(one.Document())...)
 	}
 
@@ -73,11 +64,11 @@ func codeIn(document string) []string {
 	var code []string
 
 	for line := range strings.SplitSeq(document, "\n") {
-		if strings.HasPrefix(line, codeIndent) {
+		if strings.HasPrefix(line, CodeIndent) {
 			code = append(code, strings.TrimSpace(line))
 			continue
 		}
-		spans := strings.Split(line, codeMarker)
+		spans := strings.Split(line, CodeMarker)
 		for position := 1; position < len(spans); position += 2 {
 			code = append(code, spans[position])
 		}
@@ -86,10 +77,10 @@ func codeIn(document string) []string {
 	return code
 }
 
-func Unavailable(offered map[string]map[string][]string) []string {
+func Unavailable(skills []Skill, namespaces map[string]string, offered map[string]map[string][]string) []string {
 	var absent []string
 
-	for _, named := range Named() {
+	for _, named := range Named(skills, namespaces) {
 		commands, built := offered[named.Binary]
 		if !built {
 			absent = append(absent, fmt.Sprintf(noSuchBinary, named.Binary, named.Command, named.Binary))

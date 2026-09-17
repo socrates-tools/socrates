@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/review/skill"
 )
 
 func TestProseNamingTheProductIsNotAnInvocation(t *testing.T) {
 	var commands []string
-	for _, named := range skill.Named() {
+	for _, named := range skillkit.Named(skill.All(), skill.Namespaces) {
 		attributed := named.Binary + " " + named.Command
 		if !slices.Contains(commands, attributed) {
 			commands = append(commands, attributed)

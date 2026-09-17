@@ -1,16 +1,14 @@
-package skill
+package skill_test
 
-import "testing"
+import (
+	"testing"
+
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
+	"github.com/socrates-tools/socrates/review/skill"
+)
 
 func TestASkillOverItsCeilingFailsTheSuite(t *testing.T) {
-	for _, one := range All() {
-		rendered := len(one.Document())
-
-		if rendered > one.Ceiling {
-			t.Errorf("%s: "+theSkillIsTooLarge, one.Name, rendered, one.Ceiling)
-		}
-		if one.Ceiling == 0 {
-			t.Errorf("%s states no ceiling, so nothing bounds what every session that reads it reads", one.Name)
-		}
+	for _, violation := range skillkit.CeilingViolations(skill.All()) {
+		t.Error(violation)
 	}
 }

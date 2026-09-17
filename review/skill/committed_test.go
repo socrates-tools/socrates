@@ -5,13 +5,14 @@ import (
 	"path/filepath"
 	"testing"
 
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/internal/testing/source"
 	"github.com/socrates-tools/socrates/review/skill"
 )
 
 func committedPath(t *testing.T, named string) string {
 	t.Helper()
-	return filepath.Join(source.Root(t), ".claude", "skills", named, skill.FileName)
+	return filepath.Join(source.Root(t), ".claude", "skills", named, skillkit.FileName)
 }
 
 func TestDriftFailsTheSuite(t *testing.T) {

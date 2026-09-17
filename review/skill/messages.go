@@ -224,15 +224,6 @@ That is the design and not a limitation to work around: an account written by th
 
 A rejection is a claim, and it goes to the next reviewer, which judges it.
 It is not a way to make a finding go away, and a rejection without a reason is refused.`
-
-	noSuchBinary  = "the skill names %s %s, and this repository builds no binary called %s"
-	noSuchCommand = "the skill names %s %s, and %s offers no such command"
-	noSuchFlag    = "the skill names %s %s %s, and that command offers no such flag"
-
-	theTargetCannotBeWritten = "socrates review could not write the skill to %s: %s. Name a directory you can write with socrates review skill --to"
-	theSkillIsTooLarge       = "the skill renders %d bytes and its ceiling is %d: every session that reviews anything reads all of it, so move the reasoning for a rule into docs/adr/ rather than raising this"
-
-	noHomeDirectory = "socrates review installs the skill under your home directory, and it could not find one: %s. Name where to write it with socrates review skill --to"
 )
 
 const (

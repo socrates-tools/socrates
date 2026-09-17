@@ -32,6 +32,8 @@ const (
 	noteUsage        = "what was done about the fixed finding, or - to read it from standard input"
 	toUsage          = "the skills directory to write to, instead of the one under your home directory"
 
+	skillInvocation = "socrates review skill"
+
 	notACommand               = "%q is not a socrates review command: run socrates review --help to see what socrates review does"
 	unusableFlag              = "%s: run socrates review --help to see what socrates review accepts"
 	beginTakesNoArguments     = "socrates review begin takes no arguments, and %q is one: pass what the person asked for with --intent"

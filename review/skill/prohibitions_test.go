@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/review/skill"
 )
 
@@ -65,7 +66,7 @@ func TestNoChannelIsImpliedForTheAuthorsAccount(t *testing.T) {
 		"stop":      "stops the surface",
 	}
 
-	for _, named := range skill.Named() {
+	for _, named := range skillkit.Named(skill.All(), skill.Namespaces) {
 		if _, allowed := commands[named.Command]; !allowed {
 			t.Errorf("the skill names %s %s, and nothing says why it is not a way to send the reviewer the session's own account of the change", named.Binary, named.Command)
 			continue

@@ -11,6 +11,7 @@ import (
 
 	"github.com/socrates-tools/socrates/internal/convention"
 	"github.com/socrates-tools/socrates/internal/exit"
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 	"github.com/socrates-tools/socrates/internal/testing/source"
 	"github.com/socrates-tools/socrates/review/skill"
@@ -45,7 +46,7 @@ func TestOneNameIsInstalledAndNothingIsPutBesideIt(t *testing.T) {
 
 	// scenario: make install also installs the skill, under the home it was given rather than the person's own
 	for _, one := range skill.All() {
-		path := filepath.Join(skill.UserDirectoryUnder(home), one.Name, skill.FileName)
+		path := filepath.Join(skillkit.UserDirectoryUnder(home), one.Name, skillkit.FileName)
 		content, err := os.ReadFile(path)
 		if err != nil {
 			t.Errorf("make install did not install %s under the disposable home: %v", one.Name, err)

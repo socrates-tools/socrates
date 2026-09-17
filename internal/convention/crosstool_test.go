@@ -136,3 +136,21 @@ func TestAPackageImportingNeitherToolIsNotReported(t *testing.T) {
 		t.Errorf("internal, which is not a tool, is reported as one: %v", crossing)
 	}
 }
+
+func TestTheRegisteredToolsCatchAGenuineCrossToolImport(t *testing.T) {
+	root := t.TempDir()
+
+	mkdir(t, filepath.Join(root, "review", "command"))
+	mkdir(t, filepath.Join(root, "agora", "surface"))
+
+	write(t, filepath.Join(root, "review", "command", "root.go"), "package command\n\nimport \"example.com/two/agora/surface\"\n\nvar _ = surface.Serve\n")
+	write(t, filepath.Join(root, "agora", "surface", "surface.go"), "package surface\n\nfunc Serve() {}\n")
+
+	crossing, err := convention.CrossToolImports(root, "example.com/two", convention.Tools)
+	if err != nil {
+		t.Fatalf("reading a fabricated tree: %v", err)
+	}
+	if len(crossing) == 0 {
+		t.Fatal("convention.Tools reports no crossing for a review file importing an agora one, so the registry TestNoToolImportsAnotherTool reads is not wired to catch a genuine violation")
+	}
+}

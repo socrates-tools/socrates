@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/socrates-tools/socrates/agora/surface"
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 	"github.com/socrates-tools/socrates/review/runstate"
 	"github.com/socrates-tools/socrates/review/skill"
@@ -20,7 +21,7 @@ type journey struct {
 	t        *testing.T
 	session  *harness.Session
 	surface  *surfaced
-	ran      []skill.Invocation
+	ran      []skillkit.Invocation
 	status   string
 	contents map[string]string
 }
@@ -58,10 +59,10 @@ func (j *journey) run(command string, arguments ...string) (string, string, int)
 }
 
 func (j *journey) noted(binary, command string, arguments []string) {
-	j.ran = append(j.ran, skill.Invocation{Binary: binary, Command: command})
+	j.ran = append(j.ran, skillkit.Invocation{Binary: binary, Command: command})
 	for _, argument := range arguments {
 		if strings.HasPrefix(argument, "--") {
-			j.ran = append(j.ran, skill.Invocation{Binary: binary, Command: command, Flag: argument})
+			j.ran = append(j.ran, skillkit.Invocation{Binary: binary, Command: command, Flag: argument})
 		}
 	}
 }
@@ -131,7 +132,7 @@ func (j *journey) wroteNothingItself() {
 func (j *journey) namedNothingTheSkillDoesNot() {
 	j.t.Helper()
 
-	named := skill.Named()
+	named := skillkit.Named(skill.All(), skill.Namespaces)
 	for _, ran := range j.ran {
 		if !slices.Contains(named, ran) {
 			j.t.Errorf("the journey ran %s %s %s, which the skill does not name, so it is not the loop the skill describes", ran.Binary, ran.Command, ran.Flag)
