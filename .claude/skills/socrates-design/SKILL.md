@@ -86,7 +86,8 @@ The card still carries the field a person writes in, for whoever wants to reopen
 List every settled card ahead of the round's open questions.
 That is what keeps the block first and contiguous: nothing else about a design document reorders a card, so the position you list it in is the position it renders in.
 
-Carry one line per settled question into the preamble too, so the argument reads without scrolling past the block below it:
+Carry one sentence per settled question into the preamble too, so the argument reads without scrolling past the block below it.
+The preamble is one paragraph on the page, so write it as sentences rather than as lines:
 
     "preamble": "q1: the surface, matching what agora's own source already calls it. q2: no round cap, because nothing here spawns a process for one to protect."
 

@@ -46,8 +46,8 @@ func TestTheSkillStatesASettledCardCarriesNoOptionsAndNoMode(t *testing.T) {
 func TestTheSkillStatesThePreambleCarriesOneLinePerSettledQuestion(t *testing.T) {
 	settled := sectionOf(t, skill.Document(), settledHeading)
 
-	if !strings.Contains(settled, "Carry one line per settled question into the preamble too, so the argument reads without scrolling past the block below it") {
-		t.Errorf("the settled section does not say the preamble carries one line per settled question:\n%s", settled)
+	if !strings.Contains(settled, "Carry one sentence per settled question into the preamble too") {
+		t.Errorf("the settled section does not say the preamble carries one sentence per settled question:\n%s", settled)
 	}
 	if !strings.Contains(settled, `"preamble":`) {
 		t.Errorf("the settled section shows no example preamble carrying a settled question's line:\n%s", settled)
