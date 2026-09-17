@@ -15,7 +15,7 @@ const (
 	aModeWithoutOptions            = "%s offers no option and states the mode %q, and a mode is how a person chooses among options"
 	unknownLanguage                = "%s carries evidence in %q, and the page highlights only %v. Name one of those, or name none and the evidence renders as plain text"
 	optionStatesNothingFor         = "option %d of %s states no %q"
-	optionCarriesNoCommand         = "option %q of %s carries no command, so what the page shows and what the terminal runs could not be the same string"
+	decisionMixesCommandedOptions  = "%s offers an option that carries a command and one that does not, so a person choosing between its options would not be choosing between things of the same kind"
 	moreThanOneRecommended         = "%s recommends %d of its options, and a recommendation a person has to assemble is not one: mark the one option you would take"
 	namesNothingInTheSource        = "%s names nothing in the source it cites"
 	sourceEntryCarriesNoIdentifier = "source entry %d carries no identifier, so nothing could cite it"

@@ -69,9 +69,9 @@ func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
 			names:  []string{"pick-a-few", "d-1"},
 		},
 		{
-			named:  "an option with no command",
+			named:  "a decision mixing an option that carries a command with one that does not",
 			broken: func(d *document.Document) { d.Decisions[0].Options[1].Command = "" },
-			names:  []string{"drop it", "d-1"},
+			names:  []string{"d-1"},
 		},
 		{
 			named:  "a decision with no identifier",
@@ -152,6 +152,25 @@ func statingSomething() document.Document {
 	written.Decisions[0].Options = nil
 	written.Decisions[0].Mode = ""
 	return written
+}
+
+func withNoCommandOnEitherOption() document.Document {
+	written := whole()
+	written.Decisions[0].Options[0].Command = ""
+	written.Decisions[0].Options[1].Command = ""
+	return written
+}
+
+func TestADecisionWhoseOptionsAllCarryNoCommandIsAccepted(t *testing.T) {
+	read, err := document.Read(raw(t, withNoCommandOnEitherOption()))
+	if err != nil {
+		t.Fatalf("reading a document whose decision offers options that all carry no command: %v", err)
+	}
+	for _, option := range read.Decisions[0].Options {
+		if option.Command != "" {
+			t.Errorf("an option that named no command came back naming %q", option.Command)
+		}
+	}
 }
 
 func TestADecisionMayStateSomethingRatherThanAsk(t *testing.T) {

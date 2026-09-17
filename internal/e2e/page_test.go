@@ -735,6 +735,35 @@ func TestARecommendationArrivesChosenWhateverItsSeverityOrAudience(t *testing.T)
 	}
 }
 
+const noSeverityAnywhereDocument = `{
+  "title": "an argument with no severity",
+  "source": [
+    {"id": "d-3", "name": "the third thing settled"},
+    {"id": "d-1", "name": "the first thing settled"},
+    {"id": "d-2", "name": "the second thing settled"}
+  ],
+  "decisions": [
+    {"id": "d-3", "question": "the third question", "mode": "single-choice", "options": [{"label": "yes", "command": "agree d-3"}]},
+    {"id": "d-1", "question": "the first question", "mode": "single-choice", "options": [{"label": "yes", "command": "agree d-1"}]},
+    {"id": "d-2", "question": "the second question", "mode": "single-choice", "options": [{"label": "yes", "command": "agree d-2"}]}
+  ]
+}`
+
+func TestADocumentStatingNoSeverityAnywhereRendersCardsInTheOrderItListedThem(t *testing.T) {
+	_, page := read(t, noSeverityAnywhereDocument)
+
+	var cards, listed []string
+	page.evaluate(`Array.from(document.querySelectorAll('.decision')).map((held) => held.dataset.decision)`, &cards)
+	page.evaluate(`Array.from(document.querySelectorAll('.entry .entry-name')).map((held) => held.textContent.trim())`, &listed)
+
+	if diff := cmp.Diff([]string{"d-3", "d-1", "d-2"}, cards); diff != "" {
+		t.Errorf("a document stating no severity anywhere did not render its decisions in the order it listed them (-want +got):\n%s", diff)
+	}
+	if diff := cmp.Diff([]string{"the third thing settled", "the first thing settled", "the second thing settled"}, listed); diff != "" {
+		t.Errorf("a document stating no severity anywhere did not render its source entries in the order it listed them (-want +got):\n%s", diff)
+	}
+}
+
 func TestChoosingNoneOfTheseClearsTheSelectionAndMovesToTheField(t *testing.T) {
 	_, page := read(t, twoDecisionDocument)
 
@@ -913,6 +942,64 @@ func TestAPageOfCardsThatAskNothingOffersNoControls(t *testing.T) {
 	page.evaluate(`Array.from(document.querySelectorAll('.decision')).every((held) => !!held.querySelector('.words-field'))`, &carried)
 	if !carried {
 		t.Error("a card that asks nothing carries no field for a person to write in")
+	}
+}
+
+const optionsWithNoCommandDocument = `{
+  "title": "one design question",
+  "decisions": [
+    {
+      "id": "d-1",
+      "question": "what should the surface be called",
+      "meaning": "the vocabulary settles what the term means later",
+      "mode": "single-choice",
+      "options": [
+        {"label": "the surface", "meaning": "what the loopback server is"},
+        {"label": "the page", "meaning": "what a person reads"}
+      ]
+    }
+  ]
+}`
+
+func TestADecisionWhoseOptionsAllCarryNoCommandIsServedAndRendered(t *testing.T) {
+	held := standing(t)
+	page := opening(t, held.serve(optionsWithNoCommandDocument))
+
+	var offered []string
+	page.evaluate(`Array.from(document.querySelectorAll('.decision[data-decision="d-1"] .choice')).map((held) => held.value)`, &offered)
+	if diff := cmp.Diff([]string{"0", "1"}, offered); diff != "" {
+		t.Errorf("options that carry no command do not render as controls to choose between (-want +got):\n%s", diff)
+	}
+
+	var none int
+	page.evaluate(`document.querySelectorAll('.decision[data-decision="d-1"] .none').length`, &none)
+	if none != 1 {
+		t.Errorf("a decision offering options that carry no command offers %d controls to take none of them, want 1", none)
+	}
+
+	page.evaluate(chose("d-1", 1), nil)
+	page.click(".send")
+	page.waitFor(`document.querySelector('.send').disabled === true`)
+
+	printed, failures, code := held.poll()
+	if code != exit.NothingAsked {
+		t.Fatalf("agora poll exited %d: %s", code, failures)
+	}
+
+	var answered surface.Answered
+	if err := json.Unmarshal([]byte(printed), &answered); err != nil {
+		t.Fatalf("reading back what agora poll printed: %v\n%s", err, printed)
+	}
+	if len(answered.Decisions) != 1 {
+		t.Fatalf("choosing the one decision's option came back as %d answers:\n%s", len(answered.Decisions), printed)
+	}
+
+	decided := answered.Decisions[0]
+	if diff := cmp.Diff([]string{"the page"}, decided.Chosen); diff != "" {
+		t.Errorf("what was chosen came back differently (-want +got):\n%s", diff)
+	}
+	if len(decided.Commands) != 0 {
+		t.Errorf("an option that carries no command came back carrying the commands %v", decided.Commands)
 	}
 }
 

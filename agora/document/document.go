@@ -132,17 +132,22 @@ func Validate(read Document) error {
 		if len(decision.Options) > 0 && !slices.Contains(modes, decision.Mode) {
 			return fmt.Errorf(unknownMode, named, decision.Mode, modes)
 		}
-		recommended := 0
+		recommended, commanded, bare := 0, 0, 0
 		for offered, option := range decision.Options {
 			if strings.TrimSpace(option.Label) == "" {
 				return fmt.Errorf(optionStatesNothingFor, offered+1, named, "label")
 			}
 			if strings.TrimSpace(option.Command) == "" {
-				return fmt.Errorf(optionCarriesNoCommand, option.Label, named)
+				bare++
+			} else {
+				commanded++
 			}
 			if option.Recommended {
 				recommended++
 			}
+		}
+		if commanded > 0 && bare > 0 {
+			return fmt.Errorf(decisionMixesCommandedOptions, named)
 		}
 		if recommended > 1 {
 			return fmt.Errorf(moreThanOneRecommended, named, recommended)

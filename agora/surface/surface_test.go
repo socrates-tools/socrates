@@ -319,6 +319,42 @@ func TestMultipleChoiceCarriesEveryTickInDocumentOrder(t *testing.T) {
 	}
 }
 
+func decisionWithNoCommand() document.Document {
+	return document.Document{
+		Title: "one question with no command to become",
+		Decisions: []document.Decision{
+			{
+				ID:       "q-1",
+				Question: "what should the surface be called",
+				Mode:     document.One,
+				Options: []document.Option{
+					{Label: "the surface"},
+					{Label: "the page"},
+				},
+			},
+		},
+	}
+}
+
+func TestAnOptionThatCarriesNoCommandComesBackCarryingNone(t *testing.T) {
+	held := serving(t, decisionWithNoCommand(), 0)
+
+	held.send(t, surface.Sent{Decisions: []surface.Choice{{ID: "q-1", Chosen: []int{1}}}})
+
+	answered, arrived := held.await(t, 5*time.Second)
+	if !arrived {
+		t.Fatal("an answer was sent and nothing was delivered")
+	}
+
+	decided := answered.Decisions[0]
+	if diff := cmp.Diff([]string{"the page"}, decided.Chosen); diff != "" {
+		t.Errorf("what was chosen differs (-want +got):\n%s", diff)
+	}
+	if len(decided.Commands) != 0 {
+		t.Errorf("an option that carries no command came back carrying %v, and a session that ran it would run an empty command", decided.Commands)
+	}
+}
+
 func TestTheCommandIsWhatComesBack(t *testing.T) {
 	read := twoDecisions()
 	held := serving(t, read, 0)
