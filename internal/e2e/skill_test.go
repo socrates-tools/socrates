@@ -10,11 +10,23 @@ import (
 
 	"github.com/socrates-tools/socrates/review/report"
 
+	designskill "github.com/socrates-tools/socrates/design/skill"
 	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 	"github.com/socrates-tools/socrates/internal/testing/source"
 	"github.com/socrates-tools/socrates/review/skill"
 )
+
+func allSkills() []skillkit.Skill {
+	return append(append([]skillkit.Skill{}, skill.All()...), designskill.All()...)
+}
+
+func allNamespaces() map[string]string {
+	combined := map[string]string{}
+	maps.Copy(combined, skill.Namespaces)
+	maps.Copy(combined, designskill.Namespaces)
+	return combined
+}
 
 func committedSkill(t *testing.T, session *harness.Session) string {
 	t.Helper()
@@ -136,6 +148,81 @@ func TestADirectoryThatCannotBeWritten(t *testing.T) {
 	}
 }
 
+func committedDesignSkill(t *testing.T, session *harness.Session) string {
+	t.Helper()
+	return session.File(filepath.Join(source.Root(t), ".claude", "skills", designskill.Name, skillkit.FileName))
+}
+
+func designUserLevelPath(t *testing.T) string {
+	t.Helper()
+
+	home := os.Getenv("HOME")
+	if home == "" {
+		t.Fatal("the harness left no home directory, so this test would write into the person's own")
+	}
+	return filepath.Join(home, ".claude", "skills", designskill.Name, skillkit.FileName)
+}
+
+func TestInstallingDesignNamesThePath(t *testing.T) {
+	session := harness.Start(t)
+	path := designUserLevelPath(t)
+
+	printed, failures, code := session.Top("design", "skill")
+	if code != 0 {
+		t.Fatalf("socrates design skill exited %d: %s\n%s", code, failures, printed)
+	}
+	if !strings.Contains(printed, path) {
+		t.Errorf("socrates design skill does not say where it wrote, and %s is where it did:\n%s", path, printed)
+	}
+	if written := session.File(path); written != committedDesignSkill(t, session) {
+		t.Errorf("what was installed at user level is not the skill this repository ships:\n%s", written)
+	}
+}
+
+func TestInstallingDesignTwice(t *testing.T) {
+	session := harness.Start(t)
+	path := designUserLevelPath(t)
+
+	first, failures, code := session.Top("design", "skill")
+	if code != 0 {
+		t.Fatalf("socrates design skill exited %d: %s", code, failures)
+	}
+
+	second, refused, again := session.Top("design", "skill")
+	if again != 0 {
+		t.Fatalf("socrates design skill run a second time exited %d: %s", again, refused)
+	}
+	if second != first {
+		t.Errorf("the second installation says something else:\nfirst:\n%s\nsecond:\n%s", first, second)
+	}
+	if written := session.File(path); written != committedDesignSkill(t, session) {
+		t.Errorf("installing twice left something other than the skill at %s:\n%s", path, written)
+	}
+}
+
+func TestInstallingDesignWritesNothingInTheRepository(t *testing.T) {
+	session := harness.Start(t)
+	session.Repository.Write("internal/added.go", "package internal\n")
+
+	before := session.Repository.Status()
+	tracked := workingTree(t, session.Repository.Root)
+
+	printed, failures, code := session.Top("design", "skill")
+	if code != 0 {
+		t.Fatalf("socrates design skill exited %d: %s", code, failures)
+	}
+
+	if after := session.Repository.Status(); after != before {
+		t.Errorf("git status changed:\nbefore:\n%s\nafter:\n%s", before, after)
+	}
+	if after := workingTree(t, session.Repository.Root); !maps.Equal(after, tracked) {
+		t.Errorf("the working tree changed:\nbefore: %v\nafter: %v", tracked, after)
+	}
+	if strings.Contains(printed, session.Repository.Root) {
+		t.Errorf("socrates design skill wrote inside the repository under review:\n%s", printed)
+	}
+}
+
 func surfaceOf(t *testing.T, session *harness.Session) map[string][]string {
 	t.Helper()
 
@@ -175,34 +262,54 @@ func surfaceOfTheSurface(t *testing.T) map[string][]string {
 	return offered
 }
 
+func surfaceOfDesign(t *testing.T, session *harness.Session) map[string][]string {
+	t.Helper()
+
+	printed, failures, code := session.Top("design", "--help")
+	if code != 0 {
+		t.Fatalf("socrates design --help exited %d: %s", code, failures)
+	}
+
+	offered := map[string][]string{}
+	for _, command := range commandsIn(printed) {
+		help, refused, exit := session.Top("design", command, "--help")
+		if exit != 0 {
+			t.Fatalf("socrates design %s --help exited %d: %s", command, exit, refused)
+		}
+		offered[command] = flagsIn(help)
+	}
+	return offered
+}
+
 func everySurface(t *testing.T, session *harness.Session) map[string]map[string][]string {
 	t.Helper()
 
 	return map[string]map[string][]string{
-		skill.Name:    surfaceOf(t, session),
-		skill.Surface: surfaceOfTheSurface(t),
+		skill.Name:       surfaceOf(t, session),
+		skill.Surface:    surfaceOfTheSurface(t),
+		designskill.Name: surfaceOfDesign(t, session),
 	}
 }
 
 func TestEveryCommandNamedIsReal(t *testing.T) {
 	session := harness.Start(t)
 
-	named := skillkit.Named(skill.All(), skill.Namespaces)
+	named := skillkit.Named(allSkills(), allNamespaces())
 	if len(named) < 6 {
-		t.Fatalf("the skill names %d invocations, and a check that matched almost nothing would pass forever: %v", len(named), named)
+		t.Fatalf("the skills name %d invocations, and a check that matched almost nothing would pass forever: %v", len(named), named)
 	}
 
 	attributed := map[string]int{}
 	for _, invocation := range named {
 		attributed[invocation.Binary]++
 	}
-	for _, binary := range skill.Binaries() {
+	for _, binary := range append(append([]string{}, skill.Binaries()...), designskill.Binaries()...) {
 		if attributed[binary] == 0 {
-			t.Errorf("the skill names nothing of %s, and a binary nothing is attributed to is a binary this check never reads", binary)
+			t.Errorf("the skills name nothing of %s, and a binary nothing is attributed to is a binary this check never reads", binary)
 		}
 	}
 
-	for _, absent := range skillkit.Unavailable(skill.All(), skill.Namespaces, everySurface(t, session)) {
+	for _, absent := range skillkit.Unavailable(allSkills(), allNamespaces(), everySurface(t, session)) {
 		t.Error(absent)
 	}
 }
@@ -212,7 +319,7 @@ func TestARemovedFlagFailsTheSuite(t *testing.T) {
 	offered := everySurface(t, session)
 
 	flagged := 0
-	for _, named := range skillkit.Named(skill.All(), skill.Namespaces) {
+	for _, named := range skillkit.Named(allSkills(), allNamespaces()) {
 		if named.Flag == "" {
 			continue
 		}
@@ -221,7 +328,7 @@ func TestARemovedFlagFailsTheSuite(t *testing.T) {
 		t.Run(named.Binary+" "+named.Command+" "+named.Flag, func(t *testing.T) {
 			without := withoutTheFlag(offered, named)
 
-			absent := skillkit.Unavailable(skill.All(), skill.Namespaces, without)
+			absent := skillkit.Unavailable(allSkills(), allNamespaces(), without)
 			if len(absent) == 0 {
 				t.Fatalf("the check passes with %s removed from %s %s", named.Flag, named.Binary, named.Command)
 			}
@@ -234,45 +341,49 @@ func TestARemovedFlagFailsTheSuite(t *testing.T) {
 	}
 
 	if flagged == 0 {
-		t.Fatal("the skill names no flag at all, so this check has nothing to remove")
+		t.Fatal("the skills name no flag at all, so this check has nothing to remove")
 	}
 }
 
-func TestAFlagOfTheSecondBinaryIsCheckedToo(t *testing.T) {
+func TestAFlagOfASecondBinaryIsCheckedToo(t *testing.T) {
 	session := harness.Start(t)
 	offered := everySurface(t, session)
 
-	surfaced := 0
-	for _, named := range skillkit.Named(skill.All(), skill.Namespaces) {
-		if named.Binary != skill.Surface || named.Flag == "" {
-			continue
-		}
-		surfaced++
+	for _, binary := range []string{skill.Surface, designskill.Name} {
+		t.Run(binary, func(t *testing.T) {
+			surfaced := 0
+			for _, named := range skillkit.Named(allSkills(), allNamespaces()) {
+				if named.Binary != binary || named.Flag == "" {
+					continue
+				}
+				surfaced++
 
-		for _, reported := range skillkit.Unavailable(skill.All(), skill.Namespaces, withoutTheFlag(offered, named)) {
-			if !strings.Contains(reported, named.Flag) || !strings.Contains(reported, "skill") {
-				t.Errorf("the check reports %q for a flag of %s, which names neither the flag nor the skill", reported, named.Binary)
+				for _, reported := range skillkit.Unavailable(allSkills(), allNamespaces(), withoutTheFlag(offered, named)) {
+					if !strings.Contains(reported, named.Flag) || !strings.Contains(reported, "skill") {
+						t.Errorf("the check reports %q for a flag of %s, which names neither the flag nor the skill", reported, named.Binary)
+					}
+				}
+				if len(skillkit.Unavailable(allSkills(), allNamespaces(), withoutTheFlag(offered, named))) == 0 {
+					t.Errorf("the check passes with %s removed from %s %s", named.Flag, named.Binary, named.Command)
+				}
 			}
-		}
-		if len(skillkit.Unavailable(skill.All(), skill.Namespaces, withoutTheFlag(offered, named))) == 0 {
-			t.Errorf("the check passes with %s removed from %s %s", named.Flag, named.Binary, named.Command)
-		}
-	}
 
-	if surfaced == 0 {
-		t.Fatalf("the skill names no flag of %s, so this check reads nothing of the second binary", skill.Surface)
-	}
+			if surfaced == 0 {
+				t.Fatalf("the skills name no flag of %s, so this check reads nothing of that binary", binary)
+			}
 
-	unrecognised := maps.Clone(offered)
-	delete(unrecognised, skill.Surface)
-	absent := skillkit.Unavailable(skill.All(), skill.Namespaces, unrecognised)
-	if len(absent) == 0 {
-		t.Fatalf("the check passes with %s attributed to no binary at all, so an invocation it does not recognise is skipped rather than failed", skill.Surface)
-	}
-	for _, reported := range absent {
-		if !strings.Contains(reported, skill.Surface) {
-			t.Errorf("the check reports %q without naming the binary nothing is known about", reported)
-		}
+			unrecognised := maps.Clone(offered)
+			delete(unrecognised, binary)
+			absent := skillkit.Unavailable(allSkills(), allNamespaces(), unrecognised)
+			if len(absent) == 0 {
+				t.Fatalf("the check passes with %s attributed to no binary at all, so an invocation it does not recognise is skipped rather than failed", binary)
+			}
+			for _, reported := range absent {
+				if !strings.Contains(reported, binary) {
+					t.Errorf("the check reports %q without naming the binary nothing is known about", reported)
+				}
+			}
+		})
 	}
 }
 

@@ -165,6 +165,16 @@ socrates agora stop                             # shuts it down, taking every pa
 
 review and agora share one home and one optional configuration file, and nothing else.
 
+## design, a second workflow
+
+`socrates design` is a second workflow, and like review it is a skill rather than a command surface.
+It interviews a person over agora and leaves a spec and its decisions behind, once the interview is built.
+Today it installs its skill and nothing else:
+
+```sh
+socrates design skill                    # writes the skill under ~/.claude/skills/
+```
+
 ## Reviewer CLIs
 
 socrates review does not contain a reviewer.

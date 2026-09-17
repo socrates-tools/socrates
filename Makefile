@@ -20,6 +20,7 @@ build:
 install:
 	go install -ldflags '$(STAMP)' ./cmd/socrates
 	$(INSTALL_DIR)/socrates review skill
+	$(INSTALL_DIR)/socrates design skill
 
 release:
 	go run $(RELEASER) release --clean
@@ -53,6 +54,7 @@ help:
 
 skill:
 	go run ./cmd/socrates review skill --to .claude/skills
+	go run ./cmd/socrates design skill --to .claude/skills
 
 assets:
 	cd agora/web && pnpm install --frozen-lockfile && node build.mjs

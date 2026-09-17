@@ -5,7 +5,7 @@ const (
 
 	failurePrefix = "socrates: "
 
-	rootShort    = "Route to a workflow or a component: review, or agora"
+	rootShort    = "Route to a workflow or a component: review, agora, or design"
 	versionShort = "Say which release this is, and which commit it was built from"
 
 	notACommand             = "%q is not a socrates command: run socrates --help to see what socrates does"

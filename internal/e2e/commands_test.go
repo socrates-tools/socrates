@@ -51,6 +51,25 @@ func TestANamespaceTypedBarePrintsHelpAndStartsNothing(t *testing.T) {
 	}
 }
 
+func TestTheDesignNamespaceTypedBarePrintsHelpAndStartsNothing(t *testing.T) {
+	session := harness.Start(t)
+	before := session.Repository.Status()
+
+	printed, failures, code := session.Top("design")
+	if code != exit.NothingAsked {
+		t.Fatalf("socrates design exited %d: %s", code, failures)
+	}
+	if !strings.Contains(printed, "Available Commands:") {
+		t.Errorf("socrates design printed no help:\n%s", printed)
+	}
+	if names := session.Names(); len(names) != 0 {
+		t.Errorf("typing the design namespace bare started a run: %v", names)
+	}
+	if after := session.Repository.Status(); after != before {
+		t.Errorf("typing the design namespace bare changed the repository under review:\nbefore:\n%s\nafter:\n%s", before, after)
+	}
+}
+
 func TestTheTopLevelOffersNothingAWorkflowOwns(t *testing.T) {
 	session := harness.Start(t)
 

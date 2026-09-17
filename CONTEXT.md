@@ -2,6 +2,7 @@
 
 `socrates review` puts an independent reviewer in front of unreviewed local changes.
 `socrates agora` is a second namespace, inside the same binary, that serves one document as one page, waits for a person, and prints what they answered.
+`socrates design` is a second workflow, inside the same binary, a skill rather than a command surface, that interviews a person over agora and leaves a spec and its decisions behind.
 
 This file is the vocabulary.
 Use these words rather than synonyms, in a spec, an issue title, a test name or a commit message.

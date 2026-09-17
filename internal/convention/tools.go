@@ -8,6 +8,7 @@ type Tool struct {
 var Tools = []Tool{
 	{Namespace: "review", Directory: "review"},
 	{Namespace: "agora", Directory: "agora"},
+	{Namespace: "design", Directory: "design"},
 }
 
 func ToolDirectory(namespace string) string {
