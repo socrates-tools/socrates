@@ -8,7 +8,7 @@
 
 `socrates` is one binary, and `agora`'s page server is linked into it beside the reviewer.
 
-This supersedes `docs/monorepo/spec.md`'s decision that socrates-review links none of agora's Go code, which was written down specifically to stop itself being undone by accident.
+This supersedes `docs/changes/monorepo/spec.md`'s decision that socrates-review links none of agora's Go code, which was written down specifically to stop itself being undone by accident.
 That decision's real content was never that the binary omits an HTTP server.
 It was that no review code reaches the page and no review command names one.
 Both halves are restated here as an import-graph rule rather than as a fact about what a binary happens to link: no shipped file under `review/` imports any package under `agora/`, and the only thing that imports both is `internal/dispatcher`, which is not a tool.
@@ -24,7 +24,7 @@ Folding into one binary makes that agreement load-bearing rather than coincident
 
 ## Rejected
 
-- Leaving the review binary without a server and shipping `agora` as a second binary, which is what `docs/monorepo/spec.md` chose and what this decision undoes.
+- Leaving the review binary without a server and shipping `agora` as a second binary, which is what `docs/changes/monorepo/spec.md` chose and what this decision undoes.
   A second binary makes the one-name promise a promise about one of two things a person finds on their `PATH`, and the next workflow after review would face the same choice with no better answer.
 - Loosening the import-graph rule to "the review command tree imports nothing of agora's" while leaving some other review package free to import agora, which would let the boundary erode one package at a time with nothing to catch it.
 - Recording the exit table in its own decision record.

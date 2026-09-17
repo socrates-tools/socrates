@@ -13,7 +13,7 @@ One tool, so one home and one configuration file: review and agora alike read `~
 
 `CONTEXT.md` defines the vocabulary and `docs/adr/` holds the decisions, each with what it rejected and why.
 This file is the map: the layout, the verification sequence, and the invariants the design rests on.
-A change starts as a spec published to this repository's issues, and `CONTRIBUTING.md` says how.
+A change starts as a spec, committed to `docs/changes/<slug>/spec.md` and published to this repository's issues, and `CONTRIBUTING.md` says how.
 
 ## Scope
 

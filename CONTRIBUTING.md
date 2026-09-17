@@ -6,6 +6,8 @@ Read this before you write anything.
 
 A change here starts as a spec, published as a GitHub issue in this repository and labelled `ready-for-agent`.
 
+The spec is committed to `docs/changes/<slug>/spec.md` and published from there, so a change's folder holds its spec and, later, its tickets.
+
 The spec says, in the words of somebody using socrates review rather than the words of the code:
 
 - the problem, and the solution to it.

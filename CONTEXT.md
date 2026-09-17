@@ -56,6 +56,16 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 - **source**: whether a setting's value is `set` or `default`. Not agora's source, which is a different word in a different vocabulary.
 - **use the default**: removing a setting's line, rather than writing today's default into the file, so that the file holds only what a person decided.
 
+## The design
+
+- **change**: one unit of work, from the spec that opens it to the diff a reviewer reads. Named by a slug, and `docs/changes/<slug>/` holds its spec and its tickets.
+- **spec**: what a design leaves behind, holding the problem, the solution, the user stories and the decisions. Published as an issue, and committed to the change's own folder.
+- **design**: one interview about one change, from its first round to the spec and the decision records it writes. The interview is the session itself, so nothing runs between one round and the next.
+- **design round**: one page of questions put to a person, inside a design. Not review's round, which is a different word in a different vocabulary.
+- **frontier**: every question whose prerequisites are settled. What one design round asks, and a design ends when it is empty.
+- **question**: one thing a design needs decided, carrying the answers it offers and the one the session would take. Identified for the life of the design, so it keeps its name across rounds.
+- **settled**: a question the person has answered. It stays on every later page as a card that states the answer and offers nothing.
+
 ## The page
 
 These are agora's words, and agora knows nothing about code review.
