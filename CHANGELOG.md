@@ -1,45 +1,66 @@
 # Changelog
 
-What each release means to somebody who has socrates-review installed.
+What each release means to somebody who has socrates installed.
 Written by hand: the commit messages in this repository say what a change is, and this says what it is for.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and socrates-review is versioned by [semantic versioning](https://semver.org/spec/v2.0.0.html).
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and socrates is versioned by [semantic versioning](https://semver.org/spec/v2.0.0.html).
 While the major version is `0`, a minor release may change the surface half in ways a script has to follow.
 
 ## [Unreleased]
 
+### Changed
+
+- **The suite publishes one binary, `socrates`, and every workflow is reached through it.**
+  v0.1.0 put `socrates`, `scrat` and `agora` on your `PATH`.
+  This puts one name there, and `socrates review` and `socrates agora` are namespaces inside it rather than programs of their own.
+  Remove `scrat` and `agora` yourself; nothing removes them for you.
+- **A review begins with `socrates review begin`.**
+  It was `socrates review`, which named the workflow twice once the namespace named it.
+- **Every other review command moved under `review`.**
+  `socrates status` is `socrates review status`, and the same for `findings`, `respond`, `continue`, `watch`, `logs`, `cancel`, `config`, `configure` and `skill`.
+- **The page's commands moved under `agora`.**
+  `agora serve` is `socrates agora serve`, and the same for `poll`, `end` and `stop`.
+- **`socrates version` answers for the whole suite**, so a version in a bug report identifies one set of behaviour.
+  `agora version` is gone, because there is no second program to ask.
+- **Nothing is carried forward.**
+  There is no shim, no alias and no deprecation period: the old names are not commands, and typing one is refused as an unknown command.
+- **What socrates reads and writes moved to `~/.socrates/review`.**
+  `~/.socrates` is now the brand's root, holding one directory per tool, and `SOCRATES_HOME` moves the root rather than this tool's home.
+  Nothing migrates the old layout: remove `~/.socrates` and run `socrates review skill` again.
+- **The skill is installed at `.claude/skills/socrates-review/`.**
+  It keeps the brand-qualified name because that directory is a flat namespace with no dispatcher to route a bare word.
+  Remove `.claude/skills/socrates/` yourself; nothing removes it for you.
+- **One exit code means one thing whichever namespace produced it**, so a script can branch on it without knowing which ran.
+  `0` is nothing is asked of you, `1` is something is asked of you, `2` is the command failed, `3` is the command was not usable, and `4` is the work is still running.
+  A clean review and an answered page are both `0`, and an escalated review and an unanswered page are both `1`.
+  No code changed value, so a script that branched on them branches the same way.
+- **One archive carries one binary**, with `LICENSE` and `NOTICE` beside it.
+  Extracting it gives you what installing from source gives you, as before.
+- `.socrates/review-guide.md` in a repository under review is unchanged, and a guide you already committed keeps working.
+
 ### Added
 
-- socrates-review now drives `codex` and `opencode` as well as `claude`.
-  If you run one of those and have no Anthropic account, socrates-review works for you now, and the first thing `README.md` puts in front of you is no longer a coupling.
+- socrates now drives `codex` and `opencode` as well as `claude`.
+  If you run one of those and have no Anthropic account, socrates works for you now, and the first thing `README.md` puts in front of you is no longer a coupling.
   Name the one you want in `reviewer_cli` in `~/.socrates/review/config.yaml`.
-- Which CLIs socrates-review drives follows from a stated bar rather than from a list somebody maintains.
+- Which CLIs socrates drives follows from a stated bar rather than from a list somebody maintains.
   A CLI qualifies where the reviewed repository's own instructions can be kept out of the reviewer's session, where a terminal event says whether the work happened and what it said about a failure, and where a model is selectable per invocation.
   `README.md` names the three that clear it, the three that do not, and which capability each of those lacks.
 - A findings document now arrives one of two ways, and both reach the same check.
-  Where the vendor constrains the output against socrates-review's schema it is used as it stands; where it does not, the reviewer is asked to end its message with the document and socrates-review extracts it.
+  Where the vendor constrains the output against socrates' schema it is used as it stands; where it does not, the reviewer is asked to end its message with the document and socrates extracts it.
   A document that does not parse or does not satisfy the schema fails the round either way, so `clean` still means what it meant.
-- A run records which reviewer CLI answered and how its document arrived, and `socrates-review status` prints both.
+- A run records which reviewer CLI answered and how its document arrived, and `socrates review status` prints both.
+- `socrates review config` prints every setting, the value in force and whether you set it, and `socrates review configure` changes one from a menu without opening the file.
 
-### Changed
+### Notes
 
-- **The tool is now `socrates-review`, published under the `socrates-tools` organisation.**
-  The command you type, the skill it installs and the repository it lives in all carry that name.
-  `socrates` is the brand the organisation publishes under rather than this tool, so a second tool under it has a name to take.
-- **`scrat` is gone.**
-  There is no short name, and nothing is installed beside `socrates-review`.
-  Write an alias if you want a shorter word, and spell it however you like.
-- **What both binaries read and write moved to `~/.socrates/review`.**
-  `~/.socrates` is now the brand's root, holding one directory per tool, and `SOCRATES_HOME` moves the root rather than this tool's home.
-  Nothing migrates the old layout: remove `~/.socrates` and run `socrates-review skill` again.
-- The skill is installed at `.claude/skills/socrates-review/`.
-  Remove `.claude/skills/socrates/` yourself; nothing removes it for you.
-- `.socrates/review-guide.md` in a repository under review is unchanged, and a guide you already committed keeps working.
 - An absent `reviewer_cli` runs `claude`, so an existing `~/.socrates/review/config.yaml` needs no edit and nothing about an existing run changes.
-- A run recorded before socrates-review named a vendor reads as `claude`, because that is what answered.
+- A run recorded before socrates named a vendor reads as `claude`, because that is what answered.
 - A `model` you state under `roles` is passed to the CLI you named and nothing translates it, because each CLI names its models its own way.
   Leave it out to let that CLI choose.
-- Naming a reviewer CLI socrates-review does not drive is refused before a snapshot is taken and before a reviewer is spawned, naming the CLI and the guarantee it does not offer.
+- Naming a reviewer CLI socrates does not drive is refused before a snapshot is taken and before a reviewer is spawned, naming the CLI and the guarantee it does not offer.
+- The binary that runs reviews now contains an HTTP server, because the page folded into it.
+  Running a review still starts no server and reaches no network; `socrates agora serve` binds a loopback address on purpose.
 
 ## [0.1.0] - 2026-09-01
 
@@ -69,5 +90,5 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates-review/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/socrates-tools/socrates-review/releases/tag/v0.1.0
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.1.0
