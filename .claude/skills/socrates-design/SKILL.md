@@ -101,6 +101,67 @@ Read the repository, its history and what it already says of itself before a que
 No question reaches the page that reading the repository would have answered.
 A round asks a person to decide something, never to tell you something you could have looked up yourself.
 
+## Keeping the glossary
+
+`CONTEXT.md` is maintained during the interview, not after it.
+A term worth writing down is written down as soon as it settles, in the round it settled in.
+
+Read `CONTEXT.md` before writing an entry.
+A term that conflicts with an entry already there, or that renames something the glossary already calls something else, is never applied silently: put it on a card of its own and let the person decide.
+The value of the glossary is that the person agreed to the word.
+
+## Writing the spec
+
+The spec goes to `docs/changes/<slug>/spec.md`, on this repository's own template.
+Title it, state the ADRs it produced on the line beneath the title, and write these sections in this order and no other: Problem Statement, Solution, User Stories, Implementation Decisions, Testing Decisions, Out of Scope, Further Notes.
+Write the user stories at length rather than in summary, and write the implementation and testing decisions in enough detail to say which modules change, how their interfaces change and which seams the tests use.
+Further Notes carries anything that fits none of the six sections above it, including, where a design ends early, what it left open.
+
+## Writing the decisions
+
+A decision earns an ADR of its own when all three of these hold together: it is hard to reverse, it is surprising without context, and it is the result of a real trade-off.
+Not one or two of the three, all three, joined by and rather than or: with or almost every decision would qualify and the rule would stop meaning anything.
+A decision that fails even one of the three stays inside the spec's Implementation Decisions and gets no file of its own.
+
+Number the file after the highest number already in `docs/adr/`, and name it `docs/adr/NNNN-<sentence>.md`.
+Its front matter states `Status: accepted`, `Date`, and `Part of: <slug>`.
+Its Decision section says what was decided and why.
+
+Its Rejected section is built from the options the person declined, and from nothing else.
+Every alternative in it was a card the person saw, and the reason it lost is in the words they wrote beside the choice.
+An option nobody was offered never appears there: the section is a record of the page, not a reconstruction of what the session considered.
+
+## The last round
+
+There is no round cap.
+The frontier decides when a design stops, and it stops once the frontier is empty.
+
+When it empties, the last round is one card, and it is the only card on that page: the shape of what was agreed, what will be written and the path it will be written to.
+A person approves a location rather than discovers one:
+
+    {"title": "one card before the spec is written",
+     "decisions": [{"id": "write", "question": "write the spec now",
+                    "meaning": "shape: Problem Statement, Solution, User Stories, Implementation Decisions, Testing Decisions, Out of Scope, Further Notes. path: docs/changes/<slug>/spec.md",
+                    "mode": "single-choice",
+                    "options": [{"label": "write it, and open it as an issue", "meaning": "this repository states an issue tracker", "recommended": true},
+                                {"label": "write it, and leave publishing for later"}]}]}
+
+Offer publishing on this same card where the repository states an issue tracker, such as `docs/agents/issue-tracker.md`.
+State nothing about publishing where it does not, and offer only the choice to write.
+A person who wants a different path takes *None of these* and writes it in the words field: the card proposes a location, and does not insist on it.
+
+## Ending early
+
+The person can end a design at any round, not only the one carrying the last card.
+The page's own *Send and finish* ends the exchange on any round, and `socrates agora end --session <session>` ends it from outside, over a page nobody is going to answer again.
+
+Write the spec anyway.
+Everything settled up to that point becomes its answer in the spec exactly as it would on a normal end, and every question the frontier still held, whether it ever reached a page or not, is listed under a heading in Further Notes that says the design ended early:
+
+    ### The design ended early
+
+Name each one and what it was asking, so whoever picks the spec up next can see what the interview never reached rather than guessing that nothing was left.
+
 ## Installing elsewhere
 
 This document installs under `~/.claude/skills` by default.

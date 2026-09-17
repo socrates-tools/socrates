@@ -7,8 +7,13 @@ Everything socrates review prints names `socrates review`.
 `socrates agora` is a second namespace inside the same binary, not a second program.
 It serves one document as one page on a loopback address, waits for a person, and prints what they answered.
 It knows nothing about code review, and nothing review does reaches it yet.
-The dispatcher that routes `socrates` to a namespace holds wiring and nothing else: `internal/dispatcher` mounts review's command tree and agora's command tree, and is the only thing that imports both.
+
+`socrates design` is a third namespace, and like review it is a skill rather than a command surface.
+The namespace holds one operation, `socrates design skill`, which installs it.
+A design interviews a person over agora and leaves a spec and its decisions behind, and it knows nothing about review, which is the other workflow sharing this binary.
+The dispatcher that routes `socrates` to a namespace holds wiring and nothing else: `internal/dispatcher` mounts review's command tree, agora's command tree and design's command tree, and is the only thing that imports all three.
 One tool, so one home and one configuration file: review and agora alike read `~/.socrates/review/config.yaml` and write under `~/.socrates/review`.
+design reads and writes neither: nothing about a design outlives the session that ran it beside the spec, the ADRs and the glossary entries it wrote to the repository being designed for.
 `~/.socrates` is the brand's root, holding one directory per tool published under it, and `SOCRATES_HOME` moves the root.
 
 `CONTEXT.md` defines the vocabulary and `docs/adr/` holds the decisions, each with what it rejected and why.
@@ -71,12 +76,18 @@ What agora is:
 - `agora/surface` - the loopback server and its guards, the sessions it holds, what it writes about itself and about each page, the exchange, and the bounds on waiting.
 - `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
 
-What holds them both:
+What design is:
+
+- `design/command` - the command tree: one operation, `skill`, that installs it.
+- `design/skill` - the skill's source: the rounds, the page, what was settled, the glossary, the spec, the decisions, the last round, ending early, and installing elsewhere.
+
+What holds them all:
 
 - `internal/loopback` - the address bound where nothing states one, and the window walked down from it.
 - `internal/convention` - the repository's conventions as executable checks.
 - `internal/e2e` - real binaries, a real repository, real git, real processes, each vendor's simulator on `PATH`, a real browser.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
+- `internal/skill` - the machinery neither tool owns: the ceiling a skill is held to, installing one under a directory, and reading which invocations a document names so one the binary does not offer fails the suite.
 
 ## Verification
 
@@ -182,6 +193,15 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - It says every control carries the command it becomes and that the page shows that command to nobody, and it names each decision from the finding's identifier rather than titling it.
 - It says every finding in the round gets a card of its own, that a finding the session resolved states what resolved it and offers no options, and that what foregrounds the rest is the severity order rather than shortening, listing or omitting anything.
 - The loop it describes is driven end to end through the real binary, not read.
+
+**The design skill**
+
+- `design/skill` is tested the way `review/skill` is: the rendered document is the subject, its ceiling is enforced, the committed copy must match what the package renders, and every invocation it names must exist in the binary's command surface with the flags it names, across both namespaces it covers.
+- The skill writes no severity, no `None of these` option and no command on any option it composes: a design answer runs nothing, and a design question is earlier or later in the argument rather than more or less severe.
+- A settled question renders as a card with no options and no mode, states the answer and the person's own words, and the settled block stays first and contiguous ahead of what is still open because list order is the only order a design document has.
+- The ADR criterion the skill states is a conjunction, tested as one: hard to reverse, surprising without context, and the result of a real trade-off, never any one or two of the three.
+- There is no round cap: a person can end a design at any round, on the page or with `socrates agora end`, and either way the exchange ends carrying only what was actually answered, leaving everything else for the session to record as unsettled.
+- The loop is driven end to end through the real binary: a round renders with its recommendation chosen, and what the person answers, including approving the last round's card, reaches the session through `socrates agora poll`. What the binary cannot drive, because nothing in it writes a file, is the spec and the ADRs themselves: those are the session's to write from what `socrates agora poll` handed it.
 
 **The binaries**
 

@@ -10,7 +10,7 @@ const (
 	Name    = "socrates-design"
 	Surface = "agora"
 
-	Ceiling = 7088
+	Ceiling = 11407
 )
 
 var Namespaces = map[string]string{
@@ -23,7 +23,8 @@ func Binaries() []string {
 }
 
 func Document() string {
-	return assembled(frontMatter, purpose, theRoundsSection, pageTemplate, theSettledSection, theFactsSection, installingElsewhere)
+	return assembled(frontMatter, purpose, theRoundsSection, pageTemplate, theSettledSection, theFactsSection,
+		theGlossarySection, theSpecSection, theDecisionsSection, theLastRoundSection, theEndingSection, installingElsewhere)
 }
 
 func assembled(parts ...string) string {
