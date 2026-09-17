@@ -78,7 +78,7 @@ A design session does not reconstruct what was considered, because it is what of
 14. As somebody reading a decision a year later, I want the rejection in the words of the person who rejected it, so that I am reading a record rather than a rationalisation.
 15. As somebody reading a decision a year later, I want one directory holding every decision the repository has made, so that finding one is a listing rather than a search.
 16. As somebody reading a decision a year later, I want the decision to name the change it came from, so that I can read the argument around it.
-17. As somebody picking up a change, I want its spec and its tickets in one folder, so that what is only about this change is in one place.
+17. As somebody picking up a change, I want its spec filed under the change's own name, so that finding it is knowing which change I am picking up.
 
 **A coding session running the interview**
 
@@ -132,7 +132,8 @@ A term that needs writing down is written down as it settles.
 A term that conflicts with an entry already there, or that renames something, is a card of its own, because the value of the glossary is that the person agreed to the word.
 
 **A change is a folder and a decision is a file.**
-`docs/changes/<slug>/` holds the spec and, later, the tickets: what is only ever about this change.
+`docs/changes/<slug>/` holds the spec: what is only ever about this change.
+The tickets are issues, because a ticket carries a state, an assignee and a blocking edge that a committed file cannot.
 `docs/adr/NNNN-<sentence>.md` holds the decisions, numbered across the repository, each carrying `Part of: <slug>`.
 An ADR outlives the change that produced it, is read by people who never heard of it, and amends ADRs from other changes, so its number is repository-wide and its home is one directory.
 `docs/one-command/` and `docs/monorepo/` move under `docs/changes/`.
@@ -187,7 +188,7 @@ Asserting on served markup would test the renderer, which is review's rule and i
 
 ## Out of Scope
 
-- Cutting tickets from a spec. The folder anticipates them and this workflow does not write them.
+- Cutting tickets from a spec. They are a later workflow, and they land on the tracker.
 - A design session store. Nothing is recorded but the spec, the ADRs and the glossary.
 - A transcript of the interview. What survives a design is what it decided, not what was said on the way.
 - Implementing what a spec describes. Design designs.
