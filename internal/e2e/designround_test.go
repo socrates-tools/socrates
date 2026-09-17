@@ -39,6 +39,33 @@ const designRoundDocument = `{
 
 const inTheirOwnWordsAboutTheCap = "no cap, because nothing here spawns a process for a cap to protect"
 
+const designRoundTwoDocument = `{
+  "title": "one question left before the spec is written",
+  "preamble": "q1: the surface, matching what agora's own source already calls it. q2: no round cap, because nothing here spawns a process for one to protect.",
+  "decisions": [
+    {
+      "id": "q1",
+      "question": "what should the loopback server be called in the glossary",
+      "meaning": "settled: the surface, matching what agora's own source already calls it"
+    },
+    {
+      "id": "q2",
+      "question": "should a design round carry a cap the way a review round does",
+      "meaning": "settled: no cap, because nothing here spawns a process for a cap to protect"
+    },
+    {
+      "id": "q3",
+      "question": "should CONTEXT.md gain an entry for the surface today or wait until the spec is written",
+      "meaning": "the glossary is maintained as terms settle",
+      "mode": "single-choice",
+      "options": [
+        {"label": "write it now", "meaning": "the term is already settled", "recommended": true},
+        {"label": "wait for the spec", "meaning": "batch every glossary change with the write"}
+      ]
+    }
+  ]
+}`
+
 func TestADesignRoundArrivesChosenAndWhatThePersonAnsweredReachesTheSession(t *testing.T) {
 	held := standing(t)
 	address := held.serve(designRoundDocument)
@@ -101,6 +128,65 @@ func TestADesignRoundArrivesChosenAndWhatThePersonAnsweredReachesTheSession(t *t
 	}
 	if !strings.Contains(printed, "q2") {
 		t.Fatalf("what agora poll printed does not name q2 at all:\n%s", printed)
+	}
+
+	nothingLeftTheMachine(t, address, page.requests.all())
+}
+
+func TestASecondDesignRoundOpensWithTheSettledBlockFirstAndContiguous(t *testing.T) {
+	held := standing(t)
+	address := held.serve(designRoundDocument)
+	page := opening(t, address)
+
+	page.write(within("q2", ".words-field"), inTheirOwnWordsAboutTheCap)
+	page.click(".send")
+	page.waitFor(`!document.querySelector('.receipt').hidden`)
+
+	if _, failures, code := held.poll(); code != exit.NothingAsked {
+		t.Fatalf("agora poll exited %d: %s", code, failures)
+	}
+
+	held.serveAgain(designRoundTwoDocument)
+	page.waitFor(reachedThePage("q3"))
+
+	var order []string
+	page.evaluate(`Array.from(document.querySelectorAll('.decision')).map((held) => held.dataset.decision)`, &order)
+	if diff := cmp.Diff([]string{"q1", "q2", "q3"}, order); diff != "" {
+		t.Errorf("the settled block does not render first and contiguous ahead of the open question (-want +got):\n%s", diff)
+	}
+
+	var settledModes []string
+	page.evaluate(`['q1', 'q2'].map((id) => document.querySelector('.decision[data-decision="' + id + '"]').dataset.mode)`, &settledModes)
+	for position, mode := range settledModes {
+		if mode != "" {
+			t.Errorf("the settled decision at position %d states the mode %q, and a settled card states none", position, mode)
+		}
+	}
+
+	var settledOptions int
+	page.evaluate(`document.querySelectorAll('.decision[data-decision="q1"] .choice, .decision[data-decision="q2"] .choice').length`, &settledOptions)
+	if settledOptions != 0 {
+		t.Errorf("a settled card offers %d options, and a settled card offers nothing", settledOptions)
+	}
+
+	var openOptions int
+	page.evaluate(`document.querySelectorAll('.decision[data-decision="q3"] .choice').length`, &openOptions)
+	if openOptions == 0 {
+		t.Error("the open question in round two offers no options at all")
+	}
+
+	var settledText string
+	page.evaluate(`document.querySelector('.decision[data-decision="q2"] .meaning').textContent`, &settledText)
+	if !strings.Contains(settledText, "no cap") || !strings.Contains(settledText, "cap to protect") {
+		t.Errorf("the settled card for q2 does not carry the answer and the person's own words: %q", settledText)
+	}
+
+	var preamble string
+	page.evaluate(`document.querySelector('.preamble').textContent`, &preamble)
+	for _, said := range []string{"q1:", "the surface", "q2:", "no round cap"} {
+		if !strings.Contains(preamble, said) {
+			t.Errorf("the preamble does not carry %q, and the argument should read without scrolling past the settled block: %q", said, preamble)
+		}
 	}
 
 	nothingLeftTheMachine(t, address, page.requests.all())

@@ -58,6 +58,21 @@ func TestTheSessionIsMintedOnceAndKeptForTheWholeDesign(t *testing.T) {
 	}
 }
 
+func TestTheSkillSaysWhenAnIllustrationEarnsItsPlace(t *testing.T) {
+	page := sectionOf(t, skill.Document(), pageHeading)
+
+	for _, said := range []string{
+		"A decision may also carry one illustration, painted by the document's own stylesheet",
+		"Draw one where the choice is a shape",
+		"Skip it where the choice is a name, a threshold or a policy",
+		"An illustration that only repeats what the words already said costs the person attention and costs the skill its ceiling for nothing",
+	} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so a session has no rule for when an illustration earns its place:\n%s", said, page)
+		}
+	}
+}
+
 func TestFactsAreFoundRatherThanAsked(t *testing.T) {
 	facts := sectionOf(t, skill.Document(), factsHeading)
 

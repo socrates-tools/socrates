@@ -51,6 +51,17 @@ A decision you mark nothing on arrives with nothing chosen: marking nothing says
 A single-choice decision already renders a further control below its options, labelled *None of these*, which clears the selection and moves the cursor into the words field below it.
 Write the real options and nothing else, and never write that option yourself.
 
+A decision may also carry one illustration, painted by the document's own stylesheet, in a field of its own:
+
+    {"fragment": {"markup": "<figure>...</figure>"}}
+
+State the look once for the whole document in `"stylesheet"`.
+The surface reduces both the markup and the stylesheet to an allowlist and scopes every selector it keeps to the illustration.
+
+Draw one where the choice is a shape: a layout, an arrangement of panels, a screen the person already recognises by its structure rather than by a description of it.
+Skip it where the choice is a name, a threshold or a policy, anything a sentence already carries in full.
+An illustration that only repeats what the words already said costs the person attention and costs the skill its ceiling for nothing.
+
 The person answers on the page.
 `socrates agora poll --session <session>` hands back what they chose and anything they wrote, in their own words.
 Their words are not a record you carry to somebody else to judge, the way a reviewer's finding is: here the person is deciding the design itself, so what they write is the decision, taken into the spec and the ADR it becomes exactly as they wrote it.
@@ -58,6 +69,29 @@ Their words are not a record you carry to somebody else to judge, the way a revi
 Mint the session once, with the first `socrates agora serve`, so the person is given one address.
 Keep that session for the whole design: serve every later round to the page they already have with `socrates agora serve --session <session>`, so a further round costs them no second address.
 agora collects a session after 45 minutes with no reader, and because no design state lives outside the session, losing one costs an address and no work: serve the accumulated document again and the person is handed a new one to replace it.
+
+## What was settled
+
+Round two opens with what round one settled, above what is still open, on the page the person already has.
+Nothing carries across a revision, so a settled card is not carried over from the round before it: write it afresh, from what `socrates agora poll` last handed back.
+
+A settled card states the question, the answer and the person's own words, and offers nothing:
+
+    {"id": "q2", "question": "should a design round carry a cap the way a review round does",
+     "meaning": "settled: no cap, because nothing here spawns a process for a cap to protect"}
+
+Such a card carries no options and states no mode either: a document giving a mode to a decision that offers nothing is refused before anything is served.
+The card still carries the field a person writes in, for whoever wants to reopen it.
+
+List every settled card ahead of the round's open questions.
+That is what keeps the block first and contiguous: nothing else about a design document reorders a card, so the position you list it in is the position it renders in.
+
+Carry one line per settled question into the preamble too, so the argument reads without scrolling past the block below it:
+
+    "preamble": "q1: the surface, matching what agora's own source already calls it. q2: no round cap, because nothing here spawns a process for one to protect."
+
+Identifiers are stable for the life of the design: q2 is q2 from the round it is first asked to the round the spec is written.
+A person reopening something they settled two rounds ago names it, and the spec and the ADR it becomes are already written against that name.
 
 ## Facts
 
