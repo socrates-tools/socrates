@@ -40,8 +40,7 @@ The document is one decision per question in the round:
                     "options": [{"label": "...", "meaning": "...", "recommended": true},
                                 {"label": "...", "meaning": "..."}]}]}
 
-A design answer runs nothing, so no option of it carries a command.
-A decision whose options run something and one whose options run nothing are different shapes, and a document may not mix the two inside one decision.
+A design answer runs nothing, so no option of it carries a command, and every option of one decision carries the same kind of thing.
 State no severity anywhere, on a decision or on a source entry: a design question is not more or less severe than another one, it is earlier or later in the argument, and the surface renders every card in the order you listed it.
 
 One option of a decision may carry `"recommended": true`, and at most one is ever marked.
