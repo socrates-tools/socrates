@@ -29,7 +29,7 @@ Nothing uses it except review.
 
 ## Solution
 
-`socrates design` is a second workflow, and like review it is a skill rather than a command surface.
+`socrates design` is a second workflow, and a skill rather than a tool.
 
 A coding session reads the skill, interviews the person over agora, and leaves a spec and its decisions behind.
 
