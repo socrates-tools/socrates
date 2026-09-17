@@ -10,7 +10,7 @@ const (
 	Name    = "socrates-design"
 	Surface = "agora"
 
-	Ceiling = 1095
+	Ceiling = 1096
 )
 
 var Namespaces = map[string]string{

@@ -14,7 +14,7 @@ It settles what a change is for and leaves behind a record of the decisions, rat
 What it leaves behind:
 
 - |docs/changes/<slug>/spec.md|, the spec.
-- |docs/adr/NNNN-<sentence>.md|, one per decision that is hard to reverse, surprising without context, or the result of a real trade-off.
+- |docs/adr/NNNN-<sentence>.md|, one per decision that is hard to reverse, surprising without context, and the result of a real trade-off.
 - |CONTEXT.md|, maintained as terms settle.
 
 The interview is put to a person on a page, the same way socrates review hands a finding to one, rather than as prose in a terminal:
