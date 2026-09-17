@@ -336,6 +336,27 @@ func decisionWithNoCommand() document.Document {
 	}
 }
 
+func decisionWithBlankCommands() document.Document {
+	written := decisionWithNoCommand()
+	written.Decisions[0].Options[0].Command = "   "
+	return written
+}
+
+func TestAnOptionWhoseCommandIsBlankComesBackCarryingNone(t *testing.T) {
+	held := serving(t, decisionWithBlankCommands(), 0)
+
+	held.send(t, surface.Sent{Decisions: []surface.Choice{{ID: "q-1", Chosen: []int{0}}}})
+
+	answered, arrived := held.await(t, 5*time.Second)
+	if !arrived {
+		t.Fatal("an answer was sent and nothing was delivered")
+	}
+
+	if commands := answered.Decisions[0].Commands; len(commands) != 0 {
+		t.Errorf("an option whose command is blank came back carrying %q, and the document layer reads that option as carrying none", commands)
+	}
+}
+
 func TestAnOptionThatCarriesNoCommandComesBackCarryingNone(t *testing.T) {
 	held := serving(t, decisionWithNoCommand(), 0)
 

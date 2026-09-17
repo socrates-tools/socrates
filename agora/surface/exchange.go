@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -197,14 +198,14 @@ func resolve(read document.Document, sent Sent) (Answered, error) {
 		}
 
 		decided := Decided{ID: decision.ID, Words: choice.Words}
-		commanded := len(decision.Options) > 0 && decision.Options[0].Command != ""
 		for _, offered := range slices.Sorted(slices.Values(choice.Chosen)) {
 			if offered < 0 || offered >= len(decision.Options) {
 				return Answered{}, fmt.Errorf(answerNamesNoOption, offered, choice.ID)
 			}
-			decided.Chosen = append(decided.Chosen, decision.Options[offered].Label)
-			if commanded {
-				decided.Commands = append(decided.Commands, decision.Options[offered].Command)
+			option := decision.Options[offered]
+			decided.Chosen = append(decided.Chosen, option.Label)
+			if strings.TrimSpace(option.Command) != "" {
+				decided.Commands = append(decided.Commands, option.Command)
 			}
 		}
 		answered.Decisions = append(answered.Decisions, decided)
