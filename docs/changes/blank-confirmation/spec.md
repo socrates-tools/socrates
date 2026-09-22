@@ -105,11 +105,17 @@ It carries `autofocus` and the primary styling, per ADR 41.
 The `.state` live region stays and keeps saying what it says today.
 `take`, which replaces the surface on a revision, closes any open dialog rather than clearing an armed flag, because a revision replaces the cards the dialog is naming.
 
+**The dialog names neither of the buttons that raise it.**
+Its presses are *Send anyway* and *Go back and answer*, whichever button was pressed.
+The person knows which button they pressed, because pressing it is what raised the dialog, and repeating it back to them explains nothing they do not already know.
+*Send anyway* means do what I told you anyway, which is true of both buttons, so one word covers the send and the finish without the dialog having to decide which it is looking at.
+Per ADR 41.
+
 **The words the dialog says.**
 The heading names the count: *Send with 2 of 5 left blank?*
 The body states the consequence in the page's own register: *A decision left blank goes as nothing. Whoever asked will see no answer to it.*
-The presses are *Send anyway* and *Go back and answer*.
-These are the spec's proposal and not a settled answer; see Further Notes.
+The heading and the body are the spec's proposal and not a settled answer; see Further Notes.
+The two presses are settled.
 
 **The glossary gains one word.**
 `CONTEXT.md`, under The page, gains **confirmation**: the dialog a press raises where any decision is blank, naming each one, and the only thing on the page standing between a press and a send.
@@ -171,8 +177,7 @@ It is a client change, a template change, a stylesheet change and the e2e scenar
 
 The interview ended on round one, so the frontier below reached no page.
 
-- **Whether the dialog says something different over *Send and finish*.** Finishing closes the exchange, and nothing further can be sent from the page afterwards, so there is no amending a send that went out with three cards blank. The trigger is settled and covers both presses, but whether the dialog names which press it is confirming, and whether it says more about the one that cannot be taken back, was never asked.
-- **The exact words.** The heading, the body sentence and the two presses are proposed in Implementation Decisions and were not put to anybody.
+- **The heading and the body sentence.** Both are proposed in Implementation Decisions and were not put to anybody. The two presses are settled and are not open.
 - **Whether the dialog names what will go as well as what will not.** It could list the answered decisions beside the blank ones, which makes it a summary of the whole send rather than a question about the gaps.
 - **Whether a page with every decision blank reads differently.** *Send with 5 of 5 left blank?* is a different sentence from a page with two gaps in it, and it may deserve different words rather than the same ones with different numbers.
 - **The last card.** The design never reached the round that proposes where the spec lands and whether it is published to the tracker, so `docs/changes/blank-confirmation/spec.md` is the session's choice under the repository's own convention rather than a path anybody approved, and nothing has been published.

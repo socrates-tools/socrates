@@ -10,6 +10,10 @@ The dialog that confirms a send over a decision left blank opens on *Send anyway
 That press carries the cursor when the dialog opens, so Enter takes it, and it is drawn as the primary of the two.
 *Go back and answer* is the quiet one beside it.
 
+The word is *Send anyway* whichever button raised the dialog.
+The dialog names neither *Send and wait for a reply* nor *Send and finish*, because the person knows which of the two they pressed: pressing it is what put the dialog in front of them.
+*Send anyway* means do what I told you anyway, which is true of both, so the dialog carries one word for the send and the finish alike and never has to say which it is standing in front of.
+
 The usual shape of a confirmation is the other way round.
 A dialog standing in front of something consequential conventionally rests on the safe press, so that a person who answers it without reading it is returned to where they were rather than carried forward.
 
