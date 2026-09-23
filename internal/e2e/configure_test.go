@@ -3,6 +3,7 @@ package e2e_test
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
@@ -12,6 +13,8 @@ import (
 	"github.com/socrates-tools/socrates/review/agent"
 	"github.com/socrates-tools/socrates/review/config"
 )
+
+var wrappedOnto = regexp.MustCompile(`\n *`)
 
 func TestTheMenuListsEverySettingWithTheValueInForce(t *testing.T) {
 	session := harness.Start(t)
@@ -384,15 +387,16 @@ func TestQuittingTheMenuIsAKeyChosenForIt(t *testing.T) {
 
 func TestASettingWithNoValueInForceOpensAnEmptyField(t *testing.T) {
 	session := harness.Start(t)
+	stateConfiguration(t, session, "reviewer_cli: codex\n")
 
 	menu := session.SocratesInATerminal("configure")
 	menu.Await(everySettingReported[0])
-	menu.MoveTo("surface.reached_at")
+	menu.MoveTo("roles.reviewer.model")
 	menu.Type(harness.Enter)
 	drawn := menu.Await("use the default")
 
 	if field := fieldIn(t, drawn); field != "" {
-		t.Errorf("the field holds %q, and nothing states a value for surface.reached_at:\n%s", field, drawn)
+		t.Errorf("the field holds %q, and nothing states a value for roles.reviewer.model under codex:\n%s", field, drawn)
 	}
 
 	menu.Type(harness.Escape)
@@ -401,7 +405,7 @@ func TestASettingWithNoValueInForceOpensAnEmptyField(t *testing.T) {
 	menu.Wait()
 }
 
-func TestADurationASizeAndAnAddressAreEachTypedAndWritten(t *testing.T) {
+func TestADurationASizeAndANameAreEachTypedAndWritten(t *testing.T) {
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 
@@ -411,13 +415,11 @@ func TestADurationASizeAndAnAddressAreEachTypedAndWritten(t *testing.T) {
 	}{
 		{key: "agent_deadline", value: "45m"},
 		{key: "diff_ceiling", value: "8192"},
-		{key: "surface.bind", value: "127.0.0.1:18019"},
 		{key: "roles.reviewer.model", value: "sonnet"},
 		{key: "roles.reviewer.effort", value: "low"},
 		{key: "guidance_ceiling", value: "8192"},
 		{key: "log_ceiling", value: "2097152"},
 		{key: "run_retention", value: "72h"},
-		{key: "surface.reached_at", value: "http://localhost:18019/"},
 	}
 
 	menu := session.SocratesInATerminal("configure")
@@ -542,7 +544,7 @@ func TestEverySettingOffersTheDefaultAndNamesIt(t *testing.T) {
 		if !slices.ContainsFunc(optionsIn(drawn), func(offered string) bool { return strings.HasPrefix(offered, "use the default") }) {
 			t.Errorf("%s offers no way back to the default:\n%s", key, drawn)
 		}
-		if named := defaultNamedIn(drawn); key != "surface.reached_at" && named == "" {
+		if named := defaultNamedIn(drawn); named == "" {
 			t.Errorf("%s offers the default without naming what it would fall back to:\n%s", key, drawn)
 		}
 
@@ -749,6 +751,52 @@ func TestResettingTheUnreadableSettingLeavesAFileTheLoaderAccepts(t *testing.T) 
 	}
 }
 
+func TestASurfaceBlockLeftInReviewsFileOpensNamingAgorasFile(t *testing.T) {
+	session := harness.Start(t)
+	path := configurationPath(t, session)
+	stateConfiguration(t, session, "# the ceiling I chose\ndiff_ceiling: 4096\nsurface:\n  bind: 127.0.0.1:18019\n  reached_at: http://localhost:18019/\n")
+	agoras := filepath.Join(session.Root, "agora", "config.yaml")
+
+	menu := session.SocratesInATerminal("configure")
+	drawn := menu.Await("reset surface")
+
+	if !strings.Contains(asOneLine(drawn), agoras) {
+		t.Errorf("the reason the file cannot be read does not name %s:\n%s", agoras, drawn)
+	}
+	if !strings.Contains(drawn, "line 3") {
+		t.Errorf("the line named is not the one that opens the surface block:\n%s", drawn)
+	}
+	if !strings.Contains(drawn, "reset surface to its default") {
+		t.Errorf("the offer is not resetting the whole surface block:\n%s", drawn)
+	}
+
+	menu.Type(harness.Enter)
+	drawn = menu.Await(everySettingReported[0])
+	if !strings.Contains(asOneLine(drawn), "surface is no longer stated in "+path) {
+		t.Errorf("resetting the surface block does not say it is gone from %s:\n%s", path, drawn)
+	}
+	if strings.Contains(drawn, "uses the default") {
+		t.Errorf("resetting a block socrates review has no setting for says it uses a default:\n%s", drawn)
+	}
+	menu.Type("q")
+	menu.Wait()
+
+	after := fileAt(t, path)
+	for _, gone := range []string{"surface", "bind", "reached_at"} {
+		if strings.Contains(after, gone) {
+			t.Errorf("resetting the surface block left %q behind:\n%s", gone, after)
+		}
+	}
+	for _, kept := range []string{"# the ceiling I chose", "diff_ceiling: 4096"} {
+		if !strings.Contains(after, kept) {
+			t.Errorf("%q was dropped along with the surface block:\n%s", kept, after)
+		}
+	}
+	if _, err := os.Stat(agoras); err == nil {
+		t.Errorf("resetting the surface block wrote %s, and nothing moves a person's settings for them", agoras)
+	}
+}
+
 func TestTheExceptionIsOneCommandWide(t *testing.T) {
 	session := harness.Start(t)
 	stateConfiguration(t, session, "reviewer_temperature: 0.5\n")
@@ -762,6 +810,10 @@ func TestTheExceptionIsOneCommandWide(t *testing.T) {
 			t.Errorf("socrates review %s does not refuse by naming the file: %s", command[0], failures)
 		}
 	}
+}
+
+func asOneLine(drawn string) string {
+	return wrappedOnto.ReplaceAllString(drawn, "")
 }
 
 func offersAList(drawn string) bool {

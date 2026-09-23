@@ -69,11 +69,11 @@ func TestASettingSaysWhetherItIsSetOrADefault(t *testing.T) {
 }
 
 func TestASettingWithNoValueInForceLeavesItsValueEmpty(t *testing.T) {
-	lines := report.ConfigurationAt("config.yaml", config.Config{}).Lines()
+	lines := report.ConfigurationAt("config.yaml", config.Config{ReviewerCLI: "codex"}).Lines()
 
-	reached := lineFor(t, lines, "surface.reached_at")
-	if fields := strings.Fields(reached); len(fields) != 2 {
-		t.Errorf("surface.reached_at reads %q, and nothing states one, so its value column is empty", reached)
+	model := lineFor(t, lines, "roles.reviewer.model")
+	if fields := strings.Fields(model); len(fields) != 2 {
+		t.Errorf("roles.reviewer.model under codex reads %q, and nothing states one, so its value column is empty", model)
 	}
 }
 

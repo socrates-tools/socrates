@@ -57,7 +57,7 @@ func StartFor(t *testing.T, vendor agent.Vendor) *Session {
 
 	root := t.TempDir()
 	t.Setenv(state.HomeVariable, root)
-	home := state.HomeUnder(root)
+	home := state.Review.HomeUnder(root)
 	if err := os.MkdirAll(home, 0o755); err != nil {
 		t.Fatalf("making the home the tool writes under: %v", err)
 	}

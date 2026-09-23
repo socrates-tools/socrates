@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/socrates-tools/socrates/internal/loopback"
 	"github.com/socrates-tools/socrates/review/agent"
 	"github.com/socrates-tools/socrates/review/config"
 	"github.com/socrates-tools/socrates/review/guidance"
@@ -26,8 +25,6 @@ var everySetting = []string{
 	"agent_deadline",
 	"log_ceiling",
 	"run_retention",
-	"surface.bind",
-	"surface.reached_at",
 }
 
 func TestEverySettingIsReportedInTheOrderTheFileIsWritten(t *testing.T) {
@@ -109,9 +106,9 @@ func TestAReviewerCLISocratesReviewDoesNotDriveIsReportedRatherThanCorrected(t *
 }
 
 func TestASettingNothingHasAValueForIsReportedEmpty(t *testing.T) {
-	reported := valuesOf((config.Config{}).Settings())
-	if reported["surface.reached_at"] != "" {
-		t.Errorf("surface.reached_at reports %q, and nothing states one", reported["surface.reached_at"])
+	reported := valuesOf((config.Config{ReviewerCLI: "codex"}).Settings())
+	if reported["roles.reviewer.model"] != "" {
+		t.Errorf("roles.reviewer.model under codex reports %q, and nothing states one", reported["roles.reviewer.model"])
 	}
 }
 
@@ -149,8 +146,6 @@ func defaultsThatDrifted(of config.Config, reported []config.Setting) []string {
 		"agent_deadline":        lasts(agent.DefaultDeadline),
 		"log_ceiling":           counts(runlog.DefaultCeiling),
 		"run_retention":         lasts(runstore.DefaultRetention),
-		"surface.bind":          reads(loopback.DefaultAddress),
-		"surface.reached_at":    reads(""),
 	}
 
 	var drifted []string

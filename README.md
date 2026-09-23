@@ -163,7 +163,7 @@ socrates agora poll --session <session>         # blocks until somebody answers,
 socrates agora stop                             # shuts it down, taking every page with it
 ```
 
-review and agora share one home and one optional configuration file, and nothing else.
+review and agora share one home and nothing else, and each reads an optional configuration file of its own.
 
 ## design, a second workflow
 
@@ -304,8 +304,9 @@ It includes untracked files, since a freshly implemented feature is mostly untra
 No ref names the snapshot commit, so ordinary garbage collection reclaims it once the worktree is gone.
 `git status` before and after a review is byte-identical, and a test holds that.
 
-Everything review and agora read and everything they write lives under one home, `~/.socrates/review`.
-`~/.socrates` is the root the `socrates` brand keeps, and each tool published under it owns one directory there, so `SOCRATES_HOME` moves the root and this tool follows it.
+Everything review reads and writes, and everything agora writes, lives under `~/.socrates/review`.
+agora reads one file of its own, `~/.socrates/agora/config.yaml`.
+`~/.socrates` is the root the `socrates` brand keeps, and each tool published under it owns one directory there, so `SOCRATES_HOME` moves the root and every tool follows it.
 Runs are `~/.socrates/review/runs/`, one directory per run, legible with `ls` and `cat`.
 What agora writes about a page is `~/.socrates/review/surface/`, beside them.
 
@@ -327,7 +328,8 @@ socrates is not affiliated with, endorsed by or sponsored by any of these vendor
 
 ## Configuration
 
-One optional file, at `~/.socrates/review/config.yaml`, beside the runs, read by review and agora alike.
+Each tool reads one optional file of its own.
+socrates review reads `~/.socrates/review/config.yaml`, beside the runs, and socrates agora reads `~/.socrates/agora/config.yaml`.
 socrates review never creates it, never reads configuration out of the repository under review, and refuses rather than quietly running on defaults when the file will not parse.
 The one file socrates review does read out of a repository is the review guide below, and it configures nothing.
 
@@ -342,9 +344,6 @@ guidance_ceiling: 16384
 agent_deadline: 30m
 log_ceiling: 1048576
 run_retention: 336h
-surface:
-  bind: 127.0.0.1:18018
-  reached_at: http://localhost:18018/
 ```
 
 `socrates review config` prints every setting, the value in force on this machine and whether you set it or socrates review defaulted it, so the sample above is a sample and that command is the report.
@@ -362,7 +361,22 @@ Naming one socrates review does not drive is refused.
 Each CLI names its models its own way, so a `model` you state under `roles` is passed to the CLI you named and nothing translates it.
 Leave it out to let that CLI choose its own.
 
-The `surface` block is what an operator states about the page a person reads: the loopback address it binds, and the address a person is handed where that is not the one it bound.
+### The page's own file
+
+`~/.socrates/agora/config.yaml` holds one block, `surface`, which is what an operator states about the page a person reads: the loopback address it binds, and the address a person is handed where that is not the one it bound.
+
+```yaml
+surface:
+  bind: 127.0.0.1:18018
+  reached_at: http://localhost:18018/
+```
+
+socrates agora refuses a file it cannot read, or a field the block does not have, rather than serving on defaults.
+`socrates review config` and `socrates review configure` report and change review's settings only, so neither lists these two.
+
+A `surface` block left in `~/.socrates/review/config.yaml` is refused, naming `~/.socrates/agora/config.yaml`.
+Move the block into that file as it stands.
+Nothing moves it for you, and `socrates review configure` offers only to reset it.
 
 ## The review guide
 
@@ -400,7 +414,7 @@ The page is served on `127.0.0.1:18018` and can be opened from that machine and 
 The document quotes the code it was written about, so nothing widens the bind and there is no tunnel and no share command.
 
 Where nothing states an address and something else already holds that port, the surface counts down through a window of ten ports and takes the first one free, rather than refusing over a port nobody chose.
-Stating either field of the `surface` block stops it counting.
+Stating either field of the `surface` block in `~/.socrates/agora/config.yaml` stops it counting.
 An operator who states one has aimed something at a port, so a port held by something else is refused rather than walked past.
 Serving a page names the port it bound, which is the one to forward.
 
@@ -419,7 +433,7 @@ Publishing the port in a compose file does not work: it forwards to the containe
 A forwarder must run inside the namespace the surface is in.
 Your editor's port forwarding does, `ssh -L 18018:127.0.0.1:18018 <host>` does, and a reverse proxy running alongside it does.
 
-Then state where a person reaches it, so the address printed is one that opens:
+Then state where a person reaches it in `~/.socrates/agora/config.yaml`, so the address printed is one that opens:
 
 ```yaml
 surface:

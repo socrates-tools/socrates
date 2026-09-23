@@ -59,3 +59,31 @@ func TestAnImportOfAnotherToolsPackageIsStillReported(t *testing.T) {
 		t.Errorf("what a file importing the other tool reports differs (-want +got):\n%s", diff)
 	}
 }
+
+func TestEveryPackageOfTheSurfaceIsReadForTheOtherToolsWords(t *testing.T) {
+	root := source.Root(t)
+
+	unread, err := convention.PackagesOutside(root, convention.ToolDirectory("agora"), convention.SurfaceDirectories)
+	if err != nil {
+		t.Fatalf("reading which of the surface's packages are read: %v", err)
+	}
+	for _, unread := range unread {
+		t.Errorf("%s holds Go source and is not in convention.SurfaceDirectories, so what it names goes unread", unread)
+	}
+}
+
+func TestAPackageOfTheSurfaceNobodyListedIsReported(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "surface", "listed", "listed.go"), "package listed\n")
+	writeNested(t, filepath.Join(root, "surface", "added", "added.go"), "package added\n")
+	writeNested(t, filepath.Join(root, "surface", "web", "node_modules", "left", "left.go"), "package left\n")
+
+	unread, err := convention.PackagesOutside(root, "surface", []string{filepath.Join("surface", "listed")})
+	if err != nil {
+		t.Fatalf("reading which packages of a fabricated tree are read: %v", err)
+	}
+
+	if diff := cmp.Diff([]string{filepath.Join("surface", "added")}, unread); diff != "" {
+		t.Errorf("what a package nobody listed reports differs (-want +got):\n%s", diff)
+	}
+}

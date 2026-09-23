@@ -87,7 +87,7 @@ func TestAForgePutsAForwardedFindingWhereSocratesSaidItGoes(t *testing.T) {
 
 	root := t.TempDir()
 	t.Setenv(state.HomeVariable, root)
-	t.Cleanup(func() { _ = snapshot.Unseal(state.HomeUnder(root)) })
+	t.Cleanup(func() { _ = snapshot.Unseal(state.Review.HomeUnder(root)) })
 
 	name := reviewed(t, binary, clone, pull)
 	reported := whatSocratesReported(t, binary, clone, name, whileTheRoundIsParked)

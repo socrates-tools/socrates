@@ -17,7 +17,6 @@ var socratesOwn = []string{
 	filepath.Join("review", "config"),
 	filepath.Join("review", "dialogue"),
 	filepath.Join("review", "findings"),
-	filepath.Join("internal", "loopback"),
 	filepath.Join("review", "prompt"),
 	filepath.Join("review", "report"),
 	filepath.Join("review", "reviewer"),
@@ -73,34 +72,35 @@ func TestTheDispatcherAndItsBinaryReachNoNetworkDirectly(t *testing.T) {
 	}
 }
 
-func TestASecondBinaryInTheModuleIsNotSocratesReachingFurther(t *testing.T) {
+func TestAToolTheReviewTreeDoesNotReachImportingTheNetworkIsNotReported(t *testing.T) {
 	root := t.TempDir()
-	scope := convention.Scope{Module: "example.com/two", From: []string{filepath.Join("cmd", "socrates")}}
+	scope := convention.Scope{Module: "example.com/two", From: []string{filepath.Join("review", "command")}}
 
-	mkdir(t, filepath.Join(root, "cmd", "socrates"))
-	mkdir(t, filepath.Join(root, "cmd", "other"))
-	mkdir(t, filepath.Join(root, "internal", "reviewer"))
-
-	write(t, filepath.Join(root, "cmd", "socrates", "main.go"), "package main\n\nimport \"example.com/two/internal/reviewer\"\n\nvar _ = reviewer.Begin\n")
-	write(t, filepath.Join(root, "internal", "reviewer", "reviewer.go"), "package reviewer\n\nfunc Begin() {}\n")
+	write := func(relative, content string) {
+		t.Helper()
+		writeNested(t, filepath.Join(root, relative), content)
+	}
+	write(filepath.Join("review", "command", "root.go"), "package command\n\nimport \"example.com/two/review/reviewer\"\n\nvar _ = reviewer.Begin\n")
+	write(filepath.Join("review", "reviewer", "reviewer.go"), "package reviewer\n\nfunc Begin() {}\n")
 
 	before, err := convention.NetworkReach(root, scope, nil)
 	if err != nil {
 		t.Fatalf("reading what a fabricated tree reaches: %v", err)
 	}
 
-	write(t, filepath.Join(root, "cmd", "other", "main.go"), "package main\n\nimport \"net/http\"\n\nvar server = &http.Server{}\n")
+	write(filepath.Join("agora", "surface", "server.go"), "package surface\n\nimport \"net/http\"\n\nvar server = &http.Server{}\n")
+	write(filepath.Join("internal", "dispatcher", "root.go"), "package dispatcher\n\nimport (\n\t_ \"example.com/two/agora/surface\"\n\t_ \"example.com/two/review/command\"\n)\n")
 
 	after, err := convention.NetworkReach(root, scope, nil)
 	if err != nil {
-		t.Fatalf("reading what a fabricated tree reaches once a second binary is there: %v", err)
+		t.Fatalf("reading what a fabricated tree reaches once the page server and the dispatcher are there: %v", err)
 	}
 
 	if len(after.Reaching) != 0 {
-		t.Errorf("a second binary importing the network is reported as socrates reaching it: %v", after.Reaching)
+		t.Errorf("the page server importing the network is reported as the review tree reaching it: %v", after.Reaching)
 	}
 	if diff := cmp.Diff(before.Measured, after.Measured); diff != "" {
-		t.Errorf("what socrates reaches changed when a second binary appeared (-before +after):\n%s", diff)
+		t.Errorf("what the review tree reaches changed when the page server and the dispatcher appeared (-before +after):\n%s", diff)
 	}
 }
 

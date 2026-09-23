@@ -2,7 +2,10 @@ package configure
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
+
+	"github.com/charmbracelet/x/ansi"
 )
 
 func (m *menu) lines() []string {
@@ -58,10 +61,11 @@ func (m *menu) movingThroughTheOptions() string {
 func (m *menu) repairLines() []string {
 	one := m.broken[0]
 
-	lines := []string{fmt.Sprintf(cannotBeUnderstood, m.path), ""}
-	lines = append(lines, fmt.Sprintf(theOffendingLine, one.line, one.text))
+	lines := m.wrapped(fmt.Sprintf(cannotBeUnderstood, m.path), "")
+	lines = append(lines, "")
+	lines = append(lines, m.wrapped(fmt.Sprintf(theOffendingLine, one.line, one.text), indent)...)
 	for _, said := range strings.Split(one.reason, newline) {
-		lines = append(lines, indent+said)
+		lines = append(lines, m.wrapped(indent+said, indent)...)
 	}
 	lines = append(lines, "")
 
@@ -75,7 +79,22 @@ func (m *menu) saidLines() []string {
 	if len(m.said) == 0 {
 		return nil
 	}
-	return append(append([]string{}, m.said...), "")
+	var lines []string
+	for _, said := range m.said {
+		lines = append(lines, m.wrapped(said, "")...)
+	}
+	return append(lines, "")
+}
+
+func (m *menu) wrapped(line, continuation string) []string {
+	if m.width <= len(continuation) {
+		return []string{line}
+	}
+	wrapped := strings.Split(ansi.Wrap(line, m.width-len(continuation), string(filepath.Separator)), newline)
+	for at := 1; at < len(wrapped); at++ {
+		wrapped[at] = continuation + wrapped[at]
+	}
+	return wrapped
 }
 
 func marker(at bool) string {

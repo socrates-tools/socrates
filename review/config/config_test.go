@@ -54,9 +54,6 @@ diff_ceiling: 4096
 agent_deadline: 45m
 log_ceiling: 8192
 run_retention: 72h
-surface:
-  bind: 127.0.0.1:7788
-  reached_at: https://agora.example:8443/
 `)
 
 	loaded, err := config.LoadFrom(path)
@@ -70,7 +67,6 @@ surface:
 		AgentDeadline: 45 * time.Minute,
 		LogCeiling:    8192,
 		RunRetention:  72 * time.Hour,
-		Surface:       config.Surface{Bind: "127.0.0.1:7788", ReachedAt: "https://agora.example:8443/"},
 	}
 	if diff := cmp.Diff(want, loaded); diff != "" {
 		t.Errorf("the configuration differs (-want +got):\n%s", diff)
@@ -104,29 +100,47 @@ func TestASettingSocratesDoesNotHaveIsARefusal(t *testing.T) {
 	}
 }
 
-func TestASurfaceBlockThatNamesAFieldSocratesDoesNotKnowIsRefused(t *testing.T) {
-	path := write(t, "surface:\n  proxy: something.example\n")
+func TestASurfaceBlockIsRefusedByNamingTheFileItBelongsIn(t *testing.T) {
+	stated := t.TempDir()
+	t.Setenv(state.HomeVariable, stated)
+	agoras := filepath.Join(stated, "agora", state.ConfigurationFile)
 
-	_, err := config.LoadFrom(path)
-	if !refusal.Is(err) {
-		t.Fatalf("a surface block naming a field socrates does not know gave %v, want a refusal", err)
-	}
-	if !strings.Contains(err.Error(), "proxy") {
-		t.Errorf("the refusal does not name the field: %s", err)
+	for _, block := range []string{
+		"surface:\n  bind: 127.0.0.1:7788\n",
+		"diff_ceiling: 4096\nsurface:\n  reached_at: https://agora.example:8443/\n",
+		"surface:\n",
+	} {
+		path := write(t, block)
+
+		_, err := config.LoadFrom(path)
+		if !refusal.Is(err) {
+			t.Fatalf("a configuration file stating %q gave %v, want a refusal", block, err)
+		}
+		for _, named := range []string{path, "surface", agoras} {
+			if !strings.Contains(err.Error(), named) {
+				t.Errorf("the refusal of %q does not name %s: %s", block, named, err)
+			}
+		}
 	}
 }
 
-func TestWhatTheSurfaceOnceReadOnItsOwnIsRefusedOutsideTheBlock(t *testing.T) {
-	for _, stated := range []string{"bind: 127.0.0.1:0\n", "reached_at: https://agora.example:8443/\n"} {
-		named, _, _ := strings.Cut(stated, ":")
+func TestASurfaceBlockIsRefusedFromContentAloneToo(t *testing.T) {
+	t.Setenv(state.HomeVariable, t.TempDir())
 
-		_, err := config.LoadFrom(write(t, stated))
-		if !refusal.Is(err) {
-			t.Fatalf("a configuration file stating %s at the top gave %v, want a refusal", named, err)
-		}
-		if !strings.Contains(err.Error(), named) {
-			t.Errorf("the refusal does not name the field: %s", err)
-		}
+	if err := config.Parse("config.yaml", []byte("surface:\n  bind: 127.0.0.1:7788\n")); !refusal.Is(err) {
+		t.Errorf("parsing a surface block gave %v, want the refusal the loader gives", err)
+	}
+}
+
+func TestAFileThatIsNotAMappingIsRefusedWithoutMentioningASurfaceBlock(t *testing.T) {
+	t.Setenv(state.HomeVariable, t.TempDir())
+
+	_, err := config.LoadFrom(write(t, "- surface\n"))
+	if !refusal.Is(err) {
+		t.Fatalf("a configuration file holding a list gave %v, want a refusal", err)
+	}
+	if strings.Contains(err.Error(), "agora") {
+		t.Errorf("a file holding no surface block was refused as though it did: %s", err)
 	}
 }
 
@@ -199,7 +213,7 @@ func TestTheConfigurationIsResolvedByTheOneRuleThePackageDoesNotOwn(t *testing.T
 	if err != nil {
 		t.Fatalf("resolving the configuration path: %v", err)
 	}
-	home, err := state.Home()
+	home, err := state.Review.Home()
 	if err != nil {
 		t.Fatalf("resolving socrates' home: %v", err)
 	}

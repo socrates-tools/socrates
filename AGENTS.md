@@ -12,7 +12,8 @@ It knows nothing about code review, and nothing review does reaches it yet.
 The namespace holds one operation, `socrates design skill`, which installs it.
 A design interviews a person over agora and leaves a spec and its decisions behind, and it knows nothing about review, which is the other workflow sharing this binary.
 The dispatcher that routes `socrates` to a namespace holds wiring and nothing else: `internal/dispatcher` mounts review's command tree, agora's command tree and design's command tree, and is the only thing that imports all three.
-One tool, so one home and one configuration file: review and agora alike read `~/.socrates/review/config.yaml` and write under `~/.socrates/review`.
+Each tool reads one configuration file of its own: review reads `~/.socrates/review/config.yaml` and agora reads `~/.socrates/agora/config.yaml`, per ADR 42.
+Both write under `~/.socrates/review`.
 design reads and writes neither: nothing about a design outlives the session that ran it beside the spec, the ADRs and the glossary entries it wrote to the repository being designed for.
 `~/.socrates` is the brand's root, holding one directory per tool published under it, and `SOCRATES_HOME` moves the root.
 
@@ -58,7 +59,7 @@ What review is:
 - `review/follow` - following a run's event log live.
 - `review/terminal` - the pager, the plain fallback, and whether a stream is a terminal at all.
 - `review/skill` - the two skills a coding session reads, one for its own change and one for somebody else's, and installing them.
-- `internal/exit`, `internal/version`, `review/config`, `review/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file review and agora alike read and what every setting in force is, the JSONL log, the one home both write under, refusals, process groups.
+- `internal/exit`, `internal/version`, `review/config`, `review/runlog`, `internal/state`, `internal/refusal`, `internal/process` - the small owned things: exit codes, the linked build stamp, the one optional configuration file review reads and what every setting in force is, the JSONL log, the brand's root and each tool's directory under it, refusals, process groups.
 - `review/corpus` - what real reviewers answered, verbatim and embedded, and what the routing rule does with it.
 - `review/fidelity` - the recorded shapes of each real CLI, what was measured about each one's criteria, the drift check, the live smoke check and the forge check, all network behind a build tag.
 - `review/simulation` - what every simulator shares: the scenario vocabulary, the invocation log, and the run that turns one into the other.
@@ -68,12 +69,13 @@ What review is:
 What agora is:
 
 - `agora/command` - the command tree: `serve`, `poll`, `end`, `stop`, and nothing else.
+- `agora/config` - the one optional configuration file agora reads, which holds the `surface` block and nothing of review's.
 - `agora/document` - what a caller writes for the surface to render, what it copies rather than accepts, and the languages the page can highlight.
 - `agora/sanitise` - a caller's HTML fragment reduced to a fixed allowlist, and every name it carries prefixed.
 - `agora/stylesheet` - a caller's stylesheet read as a parse, reduced to a fixed allowlist, and scoped to the illustration.
 - `agora/render` - a document to one HTML page, and a patch to the rows of a split diff.
 - `agora/assets` - the built client bundle and fonts, embedded, and the stamp of their source.
-- `agora/surface` - the loopback server and its guards, the sessions it holds, what it writes about itself and about each page, the exchange, and the bounds on waiting.
+- `agora/surface` - the loopback server and its guards, the address bound where nothing states one and the window walked down from it, the sessions it holds, what it writes about itself and about each page, the exchange, and the bounds on waiting.
 - `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
 
 What design is:
@@ -83,7 +85,6 @@ What design is:
 
 What holds them all:
 
-- `internal/loopback` - the address bound where nothing states one, and the window walked down from it.
 - `internal/convention` - the repository's conventions as executable checks.
 - `internal/e2e` - real binaries, a real repository, real git, real processes, each vendor's simulator on `PATH`, a real browser.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
@@ -176,6 +177,9 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
   It writes only the key a person confirmed, as soon as they confirm it, and a person's comments, key order and blank lines survive the write.
   `use the default` removes a setting rather than writing today's default in, an emptied block goes with its last setting, and a value the loader would refuse is refused before the file is touched.
   It refuses where nothing is a terminal, naming `socrates review config` and no library, and it is the one command that opens a file the others refuse, naming the line it could not read and offering nothing but resetting that setting.
+  A block that is wrong as a whole is named and reset as the block rather than by its first field, and what the menu says is wrapped at the terminal's width rather than cut off.
+- A configuration file carrying a `surface` block is refused by every review command but `configure`, naming `~/.socrates/agora/config.yaml` as where the block belongs, before a snapshot is taken and before a reviewer is spawned.
+  `configure` offers to reset the block, and nothing moves it into agora's file or rewrites the file unasked.
 - `review/configure` states every label it draws in its own `messages.go`, and the wording check reads its plain string literals rather than only its `fmt` call sites.
 - `findings --json` reports each finding's recorded resolution and whether its location is inside the change, and `review/hunks` is the one place that question is answered.
 - A follower stops on the run's record or on the log, waits bounded for a log that does not exist yet, and stops on a parked round.
@@ -266,12 +270,13 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 
 - It binds a loopback address; nothing widens it, and an address that is not one is refused before any server starts.
 - It takes the first free port of a fixed window counting down where nothing states one, and a whole window held is a refusal naming it.
-  The window is stated once, outside the server, so what reads the address bound where nothing states one reaches no network.
+  The window is stated once, in `agora/surface` beside the guards that judge an address.
 - A port an operator committed to, by flag or by either field of the `surface` block, is bound or refused and never walked past.
 - The surface mints a session, `--session` never brings one into existence, and every page and every route of it is served under a path holding that session.
 - It turns away a request naming a host it did not bind, and every state-changing route carries a token: a session's own answers for that session and no other, and the one minted when the server started answers everywhere.
 - It composes a command and never runs one, the command it hands back is the option's own string, and no command is rendered on the page.
-- It writes only under review's home, in a directory of its own beside the runs, and it resolves no home and reads no configuration file of its own.
+- It writes only under review's home, in a directory of its own beside the runs.
+- What an operator states about it is read from `~/.socrates/agora/config.yaml`, in agora's own directory under the brand's root, and from no other file, and a file it cannot read or a field the `surface` block does not have is refused, naming the file.
 - A caller writes a document rather than a page, and the name, severity, audience and location come from the source a decision cites.
 - A document may hold no decision, and one holding no decision, no source entry and no preamble is refused.
 - A decision may carry no options, and such a card states something and offers no control a person could mistake for a choice; one carrying no options and stating a mode is refused.

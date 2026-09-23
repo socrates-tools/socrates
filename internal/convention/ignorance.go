@@ -12,6 +12,7 @@ import (
 
 var SurfaceDirectories = []string{
 	filepath.Join(ToolDirectory("agora"), "command"),
+	filepath.Join(ToolDirectory("agora"), "config"),
 	filepath.Join(ToolDirectory("agora"), "assets"),
 	filepath.Join(ToolDirectory("agora"), "document"),
 	filepath.Join(ToolDirectory("agora"), "render"),
@@ -103,4 +104,43 @@ func WordsOfTheOtherTool(root string, directories []string) (Ignorance, error) {
 
 	slices.Sort(read.Naming)
 	return read, nil
+}
+
+func PackagesOutside(root, tool string, listed []string) ([]string, error) {
+	var unread []string
+	err := filepath.WalkDir(filepath.Join(root, tool), func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			if path != filepath.Join(root, tool) && (slices.Contains(generatedDirectories, entry.Name()) || skipped(path, entry.Name())) {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if filepath.Ext(path) != ".go" {
+			return nil
+		}
+
+		directory, relErr := filepath.Rel(root, filepath.Dir(path))
+		if relErr != nil {
+			return relErr
+		}
+		if !slices.Contains(unread, directory) && !slices.ContainsFunc(listed, covering(directory)) {
+			unread = append(unread, directory)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	slices.Sort(unread)
+	return unread, nil
+}
+
+func covering(directory string) func(string) bool {
+	return func(listed string) bool {
+		return directory == listed || strings.HasPrefix(directory, listed+string(filepath.Separator))
+	}
 }

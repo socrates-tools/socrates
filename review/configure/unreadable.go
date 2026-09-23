@@ -42,6 +42,9 @@ func unreadableIn(path string, content []byte) []unreadable {
 			continue
 		}
 
+		if one.heldByABlockThatIsWrong(path) {
+			continue
+		}
 		err := config.Parse(path, one.inItsOwnRight(lines))
 		if err == nil {
 			continue
@@ -61,6 +64,13 @@ func unreadableIn(path string, content []byte) []unreadable {
 func (r region) inItsOwnRight(lines []string) []byte {
 	stated := append(append([]string{}, r.ancestors...), lines[r.from:r.to]...)
 	return []byte(strings.Join(stated, newline) + newline)
+}
+
+func (r region) heldByABlockThatIsWrong(path string) bool {
+	if len(r.ancestors) == 0 {
+		return false
+	}
+	return config.Parse(path, []byte(strings.Join(r.ancestors, newline)+newline)) != nil
 }
 
 func regionsIn(lines []string) []region {

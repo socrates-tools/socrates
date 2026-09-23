@@ -60,7 +60,7 @@ func TestTheToolWritesUnderItsOwnDirectoryInTheBrandsRoot(t *testing.T) {
 	t.Setenv("HOME", own)
 	t.Setenv("USERPROFILE", own)
 
-	home, err := state.Home()
+	home, err := state.Review.Home()
 	if err != nil {
 		t.Fatalf("resolving the tool's home with no root stated: %v", err)
 	}
@@ -70,7 +70,7 @@ func TestTheToolWritesUnderItsOwnDirectoryInTheBrandsRoot(t *testing.T) {
 		t.Errorf("the tool's home is %s, and the brand's root holding a directory named for the tool is %s", home, want)
 	}
 
-	configuration, err := state.Configuration()
+	configuration, err := state.Review.Configuration()
 	if err != nil {
 		t.Fatalf("resolving the configuration file: %v", err)
 	}
@@ -86,5 +86,32 @@ func TestTheToolWritesUnderItsOwnDirectoryInTheBrandsRoot(t *testing.T) {
 		if filepath.Dir(under) != home {
 			t.Errorf("%s is not in the tool's directory %s, so removing the tool would not be removing one directory", under, home)
 		}
+	}
+}
+
+func TestEachToolReadsAConfigurationFileInItsOwnDirectory(t *testing.T) {
+	stated := t.TempDir()
+	t.Setenv(state.HomeVariable, stated)
+
+	for tool, want := range map[state.Tool]string{
+		state.Review: filepath.Join(stated, "review", state.ConfigurationFile),
+		state.Agora:  filepath.Join(stated, "agora", state.ConfigurationFile),
+	} {
+		configuration, err := tool.Configuration()
+		if err != nil {
+			t.Fatalf("resolving the configuration file %s reads: %v", tool, err)
+		}
+		if configuration != want {
+			t.Errorf("%s reads %s, and the file in its own directory under the brand's root is %s", tool, configuration, want)
+		}
+	}
+}
+
+func TestARelativeHomeIsRefusedForAgorasConfigurationToo(t *testing.T) {
+	t.Setenv(state.HomeVariable, filepath.Join("somewhere", "below"))
+
+	configuration, err := state.Agora.Configuration()
+	if !refusal.Is(err) {
+		t.Fatalf("a relative home resolved agora's configuration to %q, want a refusal: %v", configuration, err)
 	}
 }

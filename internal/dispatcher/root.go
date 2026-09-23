@@ -7,7 +7,6 @@ import (
 	agoracommand "github.com/socrates-tools/socrates/agora/command"
 	designcommand "github.com/socrates-tools/socrates/design/command"
 	reviewcommand "github.com/socrates-tools/socrates/review/command"
-	reviewconfig "github.com/socrates-tools/socrates/review/config"
 
 	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/refusal"
@@ -34,19 +33,11 @@ func NewRootCommand(code *int) *cobra.Command {
 	})
 	root.AddCommand(
 		reviewcommand.NewRootCommand(code),
-		agoracommand.NewRootCommand(code, loadSurfaceSettings),
+		agoracommand.NewRootCommand(code),
 		designcommand.NewRootCommand(),
 		newVersionCommand(),
 	)
 	return root
-}
-
-func loadSurfaceSettings() (agoracommand.SurfaceSettings, error) {
-	loaded, err := reviewconfig.Load()
-	if err != nil {
-		return agoracommand.SurfaceSettings{}, err
-	}
-	return agoracommand.SurfaceSettings{Bind: loaded.Surface.Bind, ReachedAt: loaded.Surface.ReachedAt}, nil
 }
 
 func ReportFailure(err error) int {

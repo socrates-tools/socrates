@@ -1,6 +1,6 @@
 # 24. The loopback window is stated outside the server
 
-- Status: accepted
+- Status: superseded by ADR 42
 - Date: 2026-09-13
 - Part of: socrates-review config
 

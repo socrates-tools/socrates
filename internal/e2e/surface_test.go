@@ -82,7 +82,7 @@ func servingSurface(t *testing.T) *surfaced {
 const aPortTheOperatingSystemChooses = "127.0.0.1:0"
 
 func (s *surfaced) surfaceHome() string {
-	return filepath.Join(state.HomeUnder(s.home), "surface")
+	return filepath.Join(state.Review.HomeUnder(s.home), "surface")
 }
 
 func (s *surfaced) bindsWhatIsConfigured() {

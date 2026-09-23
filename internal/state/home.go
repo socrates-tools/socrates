@@ -10,10 +10,16 @@ import (
 const (
 	HomeVariable      = "SOCRATES_HOME"
 	brandDirectory    = ".socrates"
-	toolDirectory     = "review"
 	runsDirectory     = "runs"
 	surfaceDirectory  = "surface"
 	ConfigurationFile = "config.yaml"
+)
+
+type Tool string
+
+const (
+	Review Tool = "review"
+	Agora  Tool = "agora"
 )
 
 func Root() (string, error) {
@@ -31,20 +37,28 @@ func Root() (string, error) {
 	return filepath.Join(own, brandDirectory), nil
 }
 
-func HomeUnder(root string) string {
-	return filepath.Join(root, toolDirectory)
+func (t Tool) HomeUnder(root string) string {
+	return filepath.Join(root, string(t))
 }
 
-func Home() (string, error) {
+func (t Tool) Home() (string, error) {
 	root, err := Root()
 	if err != nil {
 		return "", err
 	}
-	return HomeUnder(root), nil
+	return t.HomeUnder(root), nil
+}
+
+func (t Tool) Configuration() (string, error) {
+	home, err := t.Home()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ConfigurationFile), nil
 }
 
 func Runs() (string, error) {
-	home, err := Home()
+	home, err := Review.Home()
 	if err != nil {
 		return "", err
 	}
@@ -52,17 +66,9 @@ func Runs() (string, error) {
 }
 
 func Surface() (string, error) {
-	home, err := Home()
+	home, err := Review.Home()
 	if err != nil {
 		return "", err
 	}
 	return filepath.Join(home, surfaceDirectory), nil
-}
-
-func Configuration() (string, error) {
-	home, err := Home()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(home, ConfigurationFile), nil
 }

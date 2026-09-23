@@ -27,6 +27,11 @@ While the major version is `0`, a minor release may change the surface half in w
 - **What socrates reads and writes moved to `~/.socrates/review`.**
   `~/.socrates` is now the brand's root, holding one directory per tool, and `SOCRATES_HOME` moves the root rather than this tool's home.
   Nothing migrates the old layout: remove `~/.socrates` and run `socrates review skill` again.
+- **The page's settings moved to a file of their own, `~/.socrates/agora/config.yaml`.**
+  v0.1.0 read the `surface` block from the same file as every review setting.
+  `~/.socrates/review/config.yaml` now holds review's settings only, and a `surface` block left in it is refused, naming the file it belongs in.
+  Move the block there as it stands; nothing moves it for you.
+  `socrates review config` and `socrates review configure` no longer list `surface.bind` and `surface.reached_at`.
 - **The skill is installed at `.claude/skills/socrates-review/`.**
   It keeps the brand-qualified name because that directory is a flat namespace with no dispatcher to route a bare word.
   Remove `.claude/skills/socrates/` yourself; nothing removes it for you.

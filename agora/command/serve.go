@@ -9,12 +9,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/socrates-tools/socrates/agora/config"
 	"github.com/socrates-tools/socrates/agora/document"
 	"github.com/socrates-tools/socrates/agora/surface"
-	"github.com/socrates-tools/socrates/internal/loopback"
 	"github.com/socrates-tools/socrates/internal/process"
 	"github.com/socrates-tools/socrates/internal/refusal"
-	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +29,7 @@ const (
 	reachDeadline = 20 * time.Second
 )
 
-func newServeCommand(loadSurfaceSettings SurfaceLoader) *cobra.Command {
+func newServeCommand() *cobra.Command {
 	var from, address, session string
 
 	command := &cobra.Command{
@@ -38,10 +37,15 @@ func newServeCommand(loadSurfaceSettings SurfaceLoader) *cobra.Command {
 		Short: serveShort,
 		Args:  cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
-			configured, err := loadSurfaceSettings()
+			file, err := config.Path()
 			if err != nil {
 				return err
 			}
+			loaded, err := config.LoadFrom(file)
+			if err != nil {
+				return err
+			}
+			configured := loaded.Surface
 			if !command.Flags().Changed(addressFlag) && configured.Bind != "" {
 				address = configured.Bind
 			}
@@ -72,16 +76,12 @@ func newServeCommand(loadSurfaceSettings SurfaceLoader) *cobra.Command {
 			if _, err := document.Read(raw); err != nil {
 				return err
 			}
-			file, err := state.Configuration()
-			if err != nil {
-				return err
-			}
 			return start(command, raw, address, stated{reachedAt: configured.ReachedAt, file: file}, session)
 		},
 	}
 
 	command.Flags().StringVar(&from, "document", "", documentUsage)
-	command.Flags().StringVar(&address, addressFlag, loopback.DefaultAddress, addressUsage)
+	command.Flags().StringVar(&address, addressFlag, surface.DefaultAddress, addressUsage)
 	command.Flags().StringVar(&session, sessionFlag, "", sessionUsage)
 	return command
 }
@@ -90,7 +90,7 @@ func inTheForeground() bool {
 	return os.Getenv(servingVariable) != ""
 }
 
-func aPortWasCommittedTo(command *cobra.Command, configured SurfaceSettings) bool {
+func aPortWasCommittedTo(command *cobra.Command, configured config.Surface) bool {
 	return command.Flags().Changed(addressFlag) || configured.Bind != "" || configured.ReachedAt != ""
 }
 
@@ -101,7 +101,7 @@ func whereToBind(committed string) (string, error) {
 		}
 		return committed, nil
 	}
-	return surface.FirstFreeIn(loopback.Addresses())
+	return surface.FirstFreeIn(surface.Addresses())
 }
 
 func readDocument(command *cobra.Command, from string) ([]byte, error) {

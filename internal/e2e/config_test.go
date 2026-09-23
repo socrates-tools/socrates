@@ -24,8 +24,6 @@ var everySettingReported = []string{
 	"agent_deadline",
 	"log_ceiling",
 	"run_retention",
-	"surface.bind",
-	"surface.reached_at",
 }
 
 func TestWithNoConfigurationFileEverySettingReportsItsDefault(t *testing.T) {
@@ -152,6 +150,54 @@ func TestAConfigurationFileThatWillNotParseIsRefusedByConfigToo(t *testing.T) {
 	}
 	if strings.Contains(printed, string(config.Default)) {
 		t.Errorf("socrates review config reported settings while the file will not parse:\n%s", printed)
+	}
+}
+
+func TestConfigReportsNothingOfAgorasSettings(t *testing.T) {
+	session := harness.Start(t)
+
+	printed, failures, code := session.Socrates("config")
+	if code != exit.NothingAsked {
+		t.Fatalf("socrates review config exited %d: %s", code, failures)
+	}
+	for key := range settingsIn(t, printed) {
+		if strings.HasPrefix(key, "surface.") {
+			t.Errorf("socrates review config reports %s, which socrates agora reads from a file of its own:\n%s", key, printed)
+		}
+	}
+}
+
+func TestASurfaceBlockLeftInReviewsFileIsRefusedByNamingAgorasFile(t *testing.T) {
+	session := harness.Start(t)
+	session.Simulator.Scenario(cleanScenario)
+	session.Repository.Write("internal/added.go", "package internal\n")
+	held := "diff_ceiling: 4096\nsurface:\n  bind: 127.0.0.1:18019\n"
+	stateConfiguration(t, session, held)
+	agoras := filepath.Join(session.Root, "agora", "config.yaml")
+
+	for _, command := range []string{"config", "begin"} {
+		printed, failures, code := session.Socrates(command)
+		if code != exit.Unusable {
+			t.Errorf("socrates review %s with a surface block in its file exited %d, want %d: %s%s", command, code, exit.Unusable, printed, failures)
+		}
+		for _, named := range []string{configurationPath(t, session), "surface", agoras} {
+			if !strings.Contains(failures, named) {
+				t.Errorf("socrates review %s refuses without naming %s: %s", command, named, failures)
+			}
+		}
+	}
+
+	if names := session.Names(); len(names) != 0 {
+		t.Errorf("a run was begun while the file carried a surface block: %v", names)
+	}
+	if invoked := session.Simulator.Invocations(); len(invoked) != 0 {
+		t.Errorf("a reviewer was spawned while the file carried a surface block: %v", invoked)
+	}
+	if after := fileAt(t, configurationPath(t, session)); after != held {
+		t.Errorf("refusing the file rewrote it to %q, and it was written as %q", after, held)
+	}
+	if _, err := os.Stat(agoras); err == nil {
+		t.Errorf("refusing the file wrote %s, and nothing moves a person's settings for them", agoras)
 	}
 }
 

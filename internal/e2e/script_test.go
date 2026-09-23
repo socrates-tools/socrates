@@ -27,7 +27,7 @@ func TestTheCommandLineBehavesAsItsScriptsSay(t *testing.T) {
 			env.Setenv("TMPDIR", env.WorkDir)
 			root := filepath.Join(env.WorkDir, "home")
 			env.Setenv(state.HomeVariable, root)
-			env.Setenv("TOOL_HOME", state.HomeUnder(root))
+			env.Setenv("TOOL_HOME", state.Review.HomeUnder(root))
 			env.Setenv(simulation.ScenarioVariable, filepath.Join(env.WorkDir, "clean.yaml"))
 			env.Setenv("GIT_CONFIG_GLOBAL", os.DevNull)
 			env.Setenv("GIT_CONFIG_SYSTEM", os.DevNull)

@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/socrates-tools/socrates/internal/loopback"
 	"github.com/socrates-tools/socrates/review/agent"
 	"github.com/socrates-tools/socrates/review/guidance"
 	"github.com/socrates-tools/socrates/review/prompt"
@@ -28,16 +27,14 @@ type Setting struct {
 }
 
 const (
-	reviewerCLIKey      = "reviewer_cli"
-	reviewerModelKey    = "roles.reviewer.model"
-	reviewerEffortKey   = "roles.reviewer.effort"
-	diffCeilingKey      = "diff_ceiling"
-	guidanceCeilingKey  = "guidance_ceiling"
-	agentDeadlineKey    = "agent_deadline"
-	logCeilingKey       = "log_ceiling"
-	runRetentionKey     = "run_retention"
-	surfaceBindKey      = "surface.bind"
-	surfaceReachedAtKey = "surface.reached_at"
+	reviewerCLIKey     = "reviewer_cli"
+	reviewerModelKey   = "roles.reviewer.model"
+	reviewerEffortKey  = "roles.reviewer.effort"
+	diffCeilingKey     = "diff_ceiling"
+	guidanceCeilingKey = "guidance_ceiling"
+	agentDeadlineKey   = "agent_deadline"
+	logCeilingKey      = "log_ceiling"
+	runRetentionKey    = "run_retention"
 )
 
 func (c Config) Settings() []Setting {
@@ -55,8 +52,6 @@ func (c Config) Settings() []Setting {
 		inForce(agentDeadlineKey, lasting(c.AgentDeadline), lasting(agent.DefaultDeadline)),
 		inForce(logCeilingKey, counted(c.LogCeiling), counted(runlog.DefaultCeiling)),
 		inForce(runRetentionKey, lasting(c.RunRetention), lasting(runstore.DefaultRetention)),
-		inForce(surfaceBindKey, c.Surface.Bind, loopback.DefaultAddress),
-		inForce(surfaceReachedAtKey, c.Surface.ReachedAt, ""),
 	}
 }
 

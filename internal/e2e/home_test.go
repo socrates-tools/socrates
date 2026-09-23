@@ -93,19 +93,20 @@ func TestARunIsFoundBesideTheConfiguration(t *testing.T) {
 	}
 }
 
-func TestOneVariableMovesEverythingBothBinariesHave(t *testing.T) {
+func TestOneVariableMovesEverythingBothToolsHave(t *testing.T) {
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	stated := aFreeLoopbackAddress(t)
-	if err := os.WriteFile(filepath.Join(session.Home, "config.yaml"), []byte("roles:\n  reviewer:\n    model: sonnet\nsurface:\n  bind: "+stated+"\n"), 0o644); err != nil {
-		t.Fatalf("writing the one configuration file under the stated home: %v", err)
+	if err := os.WriteFile(filepath.Join(session.Home, state.ConfigurationFile), []byte("roles:\n  reviewer:\n    model: sonnet\n"), 0o644); err != nil {
+		t.Fatalf("writing review's configuration file under the stated root: %v", err)
 	}
 
 	held := servingSurface(t)
 	held.home = session.Root
 	held.where = session.Repository.Root
+	stated := aFreeLoopbackAddress(t)
+	held.configure("bind: " + stated + "\n")
 	held.bindsWhatIsConfigured()
 
 	name := session.Begin()
@@ -113,21 +114,28 @@ func TestOneVariableMovesEverythingBothBinariesHave(t *testing.T) {
 
 	printed := held.serve(oneDecisionDocument)
 	if !strings.Contains(printed, stated) {
-		t.Errorf("agora serve printed %q, and the one configuration file under the stated home states the bind %s", printed, stated)
+		t.Errorf("agora serve printed %q, and agora's configuration file under the stated root states the bind %s", printed, stated)
 	}
 	if model := session.Simulator.OnlyInvocation().Model; model != "sonnet" {
-		t.Errorf("the reviewer was invoked with the model %q, so both binaries did not read the one file under %s", model, session.Home)
+		t.Errorf("the reviewer was invoked with the model %q, so review's configuration file under %s was not read", model, session.Home)
 	}
 
 	held.answer(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}, Words: "go on"}}})
 
-	under := whatIsUnder(t, session.Home)
-	if !under["runs"] || !under["surface"] || !under["config.yaml"] {
-		t.Errorf("the stated home holds %v, and the runs, what the surface writes and the one configuration file all live under it", under)
+	root := whatIsUnder(t, session.Root)
+	if !root[string(state.Review)] || !root[string(state.Agora)] {
+		t.Errorf("the stated root holds %v, and each tool keeps a directory of its own under it", root)
+	}
+	review := whatIsUnder(t, session.Home)
+	if !review["runs"] || !review["surface"] || !review[state.ConfigurationFile] {
+		t.Errorf("review's directory holds %v, and the runs, what the surface writes and review's configuration file live under it", review)
+	}
+	if agora := whatIsUnder(t, state.Agora.HomeUnder(session.Root)); !agora[state.ConfigurationFile] {
+		t.Errorf("agora's directory holds %v, and agora's configuration file lives under it", agora)
 	}
 	for _, elsewhere := range []string{".socrates", ".agora", filepath.Join(".config", "agora"), filepath.Join(".local", "state", "agora")} {
 		if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), elsewhere)); err == nil {
-			t.Errorf("%s was written under the person's own home, and one variable states where both binaries write", elsewhere)
+			t.Errorf("%s was written under the person's own home, and one variable states where both tools write", elsewhere)
 		}
 	}
 }

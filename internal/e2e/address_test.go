@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/socrates-tools/socrates/agora/surface"
-	"github.com/socrates-tools/socrates/internal/loopback"
+	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/socrates-tools/socrates/internal/testing/source"
 )
@@ -22,11 +22,21 @@ import (
 func (s *surfaced) configure(stated string) {
 	s.t.Helper()
 
-	home := state.HomeUnder(s.home)
-	if err := os.MkdirAll(home, 0o700); err != nil {
-		s.t.Fatalf("making the home the one configuration file is read from: %v", err)
+	s.writeAgorasConfiguration(asASurfaceBlock(stated))
+}
+
+func (s *surfaced) agorasConfiguration() string {
+	return filepath.Join(state.Agora.HomeUnder(s.home), state.ConfigurationFile)
+}
+
+func (s *surfaced) writeAgorasConfiguration(content string) {
+	s.t.Helper()
+
+	path := s.agorasConfiguration()
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		s.t.Fatalf("making the directory agora's configuration file is read from: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(home, "config.yaml"), []byte(asASurfaceBlock(stated)), 0o600); err != nil {
+	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
 		s.t.Fatalf("writing what an operator stated: %v", err)
 	}
 }
@@ -99,19 +109,19 @@ func untilThePortIsFree(t *testing.T, address string) {
 func requireTheFixedPortIsFree(t *testing.T) {
 	t.Helper()
 
-	listener, err := net.Listen("tcp", loopback.DefaultAddress)
+	listener, err := net.Listen("tcp", surface.DefaultAddress)
 	if err != nil {
-		t.Skipf("something else holds %s, so what the surface binds when nothing states one cannot be read here: %v", loopback.DefaultAddress, err)
+		t.Skipf("something else holds %s, so what the surface binds when nothing states one cannot be read here: %v", surface.DefaultAddress, err)
 	}
 	if err := listener.Close(); err != nil {
-		t.Fatalf("releasing %s: %v", loopback.DefaultAddress, err)
+		t.Fatalf("releasing %s: %v", surface.DefaultAddress, err)
 	}
 }
 
 func holdingTheWindowDownTo(t *testing.T, ports int) []string {
 	t.Helper()
 
-	addresses := loopback.Addresses()
+	addresses := surface.Addresses()
 	for _, address := range addresses[:ports] {
 		listener, err := net.Listen("tcp", address)
 		if err != nil {
@@ -172,7 +182,7 @@ func TestTheWindowIsWalkedFromTheTopDownRatherThanAtRandom(t *testing.T) {
 }
 
 func TestAWholeWindowHeldIsARefusalThatNamesTheWindow(t *testing.T) {
-	addresses := holdingTheWindowDownTo(t, len(loopback.Addresses()))
+	addresses := holdingTheWindowDownTo(t, len(surface.Addresses()))
 
 	held := standing(t)
 	held.bindsWhatIsConfigured()
@@ -206,7 +216,7 @@ func windowAddressesNothingHolds(t *testing.T) []string {
 	t.Helper()
 
 	var free []string
-	for _, address := range loopback.Addresses() {
+	for _, address := range surface.Addresses() {
 		listener, err := net.Listen("tcp", address)
 		if err != nil {
 			continue
@@ -297,8 +307,8 @@ func TestTheDefaultBindIsAFixedLoopbackPort(t *testing.T) {
 	held.serve(oneDecisionDocument)
 	bound := held.record().Address
 
-	if bound != loopback.DefaultAddress {
-		t.Fatalf("with nothing stated the surface bound %q, and the address it binds when nothing states one is %q", bound, loopback.DefaultAddress)
+	if bound != surface.DefaultAddress {
+		t.Fatalf("with nothing stated the surface bound %q, and the address it binds when nothing states one is %q", bound, surface.DefaultAddress)
 	}
 	host, _, err := net.SplitHostPort(bound)
 	if err != nil {
@@ -458,13 +468,13 @@ func TestAConfiguredBindThatIsNotLoopbackIsRefusedToo(t *testing.T) {
 func TestThePortAnOperatorIsToldToForwardIsTheOneTheSurfaceBinds(t *testing.T) {
 	section := documentedForwarding(t)
 
-	_, port, err := net.SplitHostPort(loopback.DefaultAddress)
+	_, port, err := net.SplitHostPort(surface.DefaultAddress)
 	if err != nil {
-		t.Fatalf("reading the port the surface binds from %q: %v", loopback.DefaultAddress, err)
+		t.Fatalf("reading the port the surface binds from %q: %v", surface.DefaultAddress, err)
 	}
 
-	if !strings.Contains(section, loopback.DefaultAddress) {
-		t.Errorf("what an operator is told to forward does not name %s, which is what the surface binds:\n%s", loopback.DefaultAddress, section)
+	if !strings.Contains(section, surface.DefaultAddress) {
+		t.Errorf("what an operator is told to forward does not name %s, which is what the surface binds:\n%s", surface.DefaultAddress, section)
 	}
 	for _, named := range regexp.MustCompile(`\b\d{4,5}\b`).FindAllString(section, -1) {
 		if named != port {
@@ -588,7 +598,7 @@ func TestAStatedAddressIsAnOperatorWhoHasAlreadyAnswered(t *testing.T) {
 	}
 }
 
-func TestWhatAnOperatorStatesAboutTheSurfaceIsReadFromTheOneFile(t *testing.T) {
+func TestWhatAnOperatorStatesAboutTheSurfaceIsReadFromAgorasOwnFile(t *testing.T) {
 	held := standing(t)
 
 	bound := aFreeLoopbackAddress(t)
@@ -599,13 +609,62 @@ func TestWhatAnOperatorStatesAboutTheSurfaceIsReadFromTheOneFile(t *testing.T) {
 	printed := strings.TrimSpace(held.serve(oneDecisionDocument))
 
 	if open := held.record(); open.Address != bound {
-		t.Errorf("the one file states the bind %q and the surface bound %q", bound, open.Address)
+		t.Errorf("%s states the bind %q and the surface bound %q", held.agorasConfiguration(), bound, open.Address)
 	}
 	if !strings.HasPrefix(printed, reachedAt+strings.TrimPrefix(surface.SessionPrefix, "/")) {
-		t.Errorf("agora serve printed %q, and the one file states the surface is reached at %q", printed, reachedAt)
+		t.Errorf("agora serve printed %q, and %s states the surface is reached at %q", printed, held.agorasConfiguration(), reachedAt)
 	}
-	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "config.yaml")); err == nil {
-		t.Errorf("the surface read a configuration file of its own under %s", held.surfaceHome())
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), state.ConfigurationFile)); err == nil {
+		t.Errorf("the surface read a configuration file under %s, where it writes about itself", held.surfaceHome())
+	}
+}
+
+func TestASurfaceBlockInReviewsFileIsNotWhatAgoraBinds(t *testing.T) {
+	held := standing(t)
+
+	inReviews := aFreeLoopbackAddress(t)
+	review := state.Review.HomeUnder(held.home)
+	if err := os.MkdirAll(review, 0o700); err != nil {
+		t.Fatalf("making review's home: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(review, state.ConfigurationFile), []byte(asASurfaceBlock("bind: "+inReviews+"\n")), 0o600); err != nil {
+		t.Fatalf("writing a surface block into review's file: %v", err)
+	}
+	held.bindsWhatIsConfigured()
+
+	held.serve(oneDecisionDocument)
+
+	if open := held.record(); open.Address == inReviews {
+		t.Errorf("the surface bound %q, which only review's file states, and agora reads %s", open.Address, held.agorasConfiguration())
+	}
+}
+
+func TestAnAgoraFileThatWillNotParseIsRefusedByName(t *testing.T) {
+	held := standing(t)
+	held.writeAgorasConfiguration("surface: [not a mapping\n")
+
+	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-")
+	if code != exit.Unusable {
+		t.Fatalf("agora serve with a file that will not parse exited %d, want %d: %s%s", code, exit.Unusable, printed, failures)
+	}
+	if !strings.Contains(failures, held.agorasConfiguration()) {
+		t.Errorf("the refusal reads %q, without naming the file that will not parse", failures)
+	}
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
+		t.Error("a refused startup left a surface behind, and it starts no server")
+	}
+}
+
+func TestAFieldAgorasFileDoesNotKnowIsRefusedByName(t *testing.T) {
+	held := standing(t)
+	held.configure("proxy: agora.example\n")
+
+	_, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-")
+	if code != exit.Unusable {
+		t.Fatalf("agora serve with a field it does not know exited %d, want %d: %s", code, exit.Unusable, failures)
+	}
+	if !strings.Contains(failures, "proxy") {
+		t.Errorf("the refusal reads %q, without naming the field", failures)
 	}
 }
 

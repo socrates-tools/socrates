@@ -7,6 +7,8 @@ import (
 	"syscall"
 	"testing"
 
+	tea "charm.land/bubbletea/v2"
+	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/socrates-tools/socrates/review/config"
 )
 
@@ -86,13 +88,13 @@ func TestSettingANestedKeyWritesTheBlocksThatHoldIt(t *testing.T) {
 		t.Fatalf("reading no file at all: %v", err)
 	}
 	document.set("roles.reviewer.model", "sonnet")
-	document.set("surface.bind", "127.0.0.1:18019")
+	document.set("roles.reviewer.effort", "low")
 
 	written, err := document.render()
 	if err != nil {
 		t.Fatalf("writing two nested settings: %v", err)
 	}
-	want := "roles:\n  reviewer:\n    model: sonnet\nsurface:\n  bind: 127.0.0.1:18019\n"
+	want := "roles:\n  reviewer:\n    model: sonnet\n    effort: low\n"
 	if string(written) != want {
 		t.Errorf("the file holds:\n%s\nwant:\n%s", written, want)
 	}
@@ -324,5 +326,55 @@ func TestAFileNoSingleSettingAccountsForIsNotGuessedAt(t *testing.T) {
 
 	if found := unreadableIn(path, []byte("diff_ceiling: 4096\ndiff_ceiling: 8192\n")); len(found) != 0 {
 		t.Errorf("a file whose settings each read on their own reports %+v, and socrates-review guesses at nothing", found)
+	}
+}
+
+func TestABlockThatIsWrongAsAWholeIsNamedRatherThanItsFirstField(t *testing.T) {
+	t.Setenv(state.HomeVariable, t.TempDir())
+	path := filepath.Join(t.TempDir(), "config.yaml")
+	held := "diff_ceiling: 4096\nsurface:\n  bind: 127.0.0.1:18019\n  reached_at: http://localhost:18019/\n"
+
+	found := unreadableIn(path, []byte(held))
+	if len(found) != 1 {
+		t.Fatalf("a file with one unreadable block reports %d unreadable settings: %+v", len(found), found)
+	}
+	if found[0].key != "surface" || found[0].line != 2 {
+		t.Errorf("the setting named is %q at line %d, and what is wrong is the surface block opening at line 2", found[0].key, found[0].line)
+	}
+
+	written, err := repaired([]byte(held), found[0])
+	if err != nil {
+		t.Fatalf("resetting it: %v", err)
+	}
+	if want := "diff_ceiling: 4096\n"; string(written) != want {
+		t.Errorf("the repaired file holds:\n%s\nwant:\n%s", written, want)
+	}
+}
+
+func TestWhatTheMenuSaysIsWrappedAtTheWidthOfTheTerminal(t *testing.T) {
+	t.Setenv(state.HomeVariable, t.TempDir())
+	path := filepath.Join(t.TempDir(), "a-directory-named-at-length-so-that-the-path-alone-is-long", "config.yaml")
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		t.Fatalf("making %s: %v", filepath.Dir(path), err)
+	}
+	if err := os.WriteFile(path, []byte("surface:\n  bind: 127.0.0.1:18019\n"), 0o600); err != nil {
+		t.Fatalf("writing %s: %v", path, err)
+	}
+
+	standing, err := opened(path)
+	if err != nil {
+		t.Fatalf("opening the menu: %v", err)
+	}
+	const width = 60
+	standing.Update(tea.WindowSizeMsg{Width: width, Height: 24})
+
+	drawn := standing.lines()
+	for _, line := range drawn {
+		if len([]rune(line)) > width {
+			t.Errorf("a line of %d characters is drawn on a terminal %d wide, so its end is cut off:\n%s", len([]rune(line)), width, line)
+		}
+	}
+	if joined := strings.Join(drawn, ""); !strings.Contains(strings.ReplaceAll(joined, indent, ""), strings.ReplaceAll(path, indent, "")) {
+		t.Errorf("what is drawn no longer carries %s once its lines are joined:\n%s", path, strings.Join(drawn, newline))
 	}
 }

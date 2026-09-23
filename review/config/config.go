@@ -23,16 +23,12 @@ type Config struct {
 	AgentDeadline   time.Duration       `yaml:"agent_deadline"`
 	LogCeiling      int64               `yaml:"log_ceiling"`
 	RunRetention    time.Duration       `yaml:"run_retention"`
-	Surface         Surface             `yaml:"surface"`
 }
 
-type Surface struct {
-	Bind      string `yaml:"bind"`
-	ReachedAt string `yaml:"reached_at"`
-}
+const agorasBlock = "surface"
 
 func Path() (string, error) {
-	return state.Configuration()
+	return state.Review.Configuration()
 }
 
 func Load() (Config, error) {
@@ -61,6 +57,14 @@ func Parse(path string, content []byte) error {
 }
 
 func read(path string, content []byte) (Config, error) {
+	if statesAgorasBlock(content) {
+		agoras, err := state.Agora.Configuration()
+		if err != nil {
+			return Config{}, err
+		}
+		return Config{}, refusal.New(agorasBlockStated, path, agorasBlock, agoras)
+	}
+
 	var stated Config
 	decoder := yaml.NewDecoder(bytes.NewReader(content))
 	decoder.KnownFields(true)
@@ -71,6 +75,15 @@ func read(path string, content []byte) (Config, error) {
 		return Config{}, refusal.New(statesSomethingUnusable, path, err)
 	}
 	return stated, nil
+}
+
+func statesAgorasBlock(content []byte) bool {
+	var top map[string]yaml.Node
+	if err := yaml.Unmarshal(content, &top); err != nil {
+		return false
+	}
+	_, stated := top[agorasBlock]
+	return stated
 }
 
 func (c Config) Vendor() string {

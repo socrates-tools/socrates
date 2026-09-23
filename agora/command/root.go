@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewRootCommand(code *int, loadSurfaceSettings SurfaceLoader) *cobra.Command {
+func NewRootCommand(code *int) *cobra.Command {
 	root := &cobra.Command{
 		Use:           toolName,
 		Short:         rootShort,
@@ -28,7 +28,7 @@ func NewRootCommand(code *int, loadSurfaceSettings SurfaceLoader) *cobra.Command
 		return refusal.New(unusableFlag, err)
 	})
 	root.AddCommand(
-		newServeCommand(loadSurfaceSettings),
+		newServeCommand(),
 		newPollCommand(code),
 		newEndCommand(),
 		newStopCommand(),

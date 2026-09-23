@@ -25,6 +25,7 @@ const (
 	nothingWasTyped   = "%s needs a value. Type one, or choose %q."
 	setTo             = "%s set to %s in %s."
 	nowTheDefault     = "%s now uses the default in %s."
+	noLongerStated    = "%s is no longer stated in %s."
 	alreadyTheDefault = "%s is already the default, and %s is unchanged."
 	readFromNowOn     = "Every command started from now on reads it, including the next round of a run already going."
 

@@ -38,6 +38,8 @@ type menu struct {
 	broken []unreadable
 	said   []string
 	failed error
+
+	width int
 }
 
 func opened(path string) (*menu, error) {
@@ -87,6 +89,10 @@ func (m *menu) View() tea.View {
 }
 
 func (m *menu) Update(message tea.Msg) (tea.Model, tea.Cmd) {
+	if resized, isResized := message.(tea.WindowSizeMsg); isResized {
+		m.width = resized.Width
+		return m, nil
+	}
 	pressed, isKey := message.(tea.KeyPressMsg)
 	if !isKey {
 		return m, nil
@@ -238,7 +244,7 @@ func (m *menu) repair() tea.Cmd {
 		return m.giveUp(err)
 	}
 	if m.stage == listing {
-		m.said = []string{fmt.Sprintf(nowTheDefault, one.key, m.path), readFromNowOn}
+		m.said = []string{fmt.Sprintf(noLongerStated, one.key, m.path), readFromNowOn}
 	}
 	return nil
 }
