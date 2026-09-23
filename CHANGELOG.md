@@ -42,6 +42,15 @@ While the major version is `0`, a minor release may change the surface half in w
 - **One archive carries one binary**, with `LICENSE` and `NOTICE` beside it.
   Extracting it gives you what installing from source gives you, as before.
 - `.socrates/review-guide.md` in a repository under review is unchanged, and a guide you already committed keeps working.
+- **The page is a form, answered with one press at the end of it.**
+  Choosing an option or typing words is answering: there is no longer a per-decision *Commit this answer* to press as well.
+  The bar after the last card carries *Send and wait for a reply* and *Send and finish*, and Enter reaches the first.
+- **The option a document recommends arrives chosen**, so agreeing with every recommendation costs one press.
+  A single-choice decision also offers *None of these*, which clears the choice and moves you to the words field.
+- **Sending over a decision you left blank asks first, in a dialog** that names each blank decision and opens on *Send anyway*.
+  *Go back and answer*, Escape and a press outside the dialog all leave the page as it was, and each name in the dialog takes you to that card.
+- **`socrates agora poll` returns your last answer.**
+  A second send before anything collected the first replaces it rather than queueing behind it, and an answer to a document that has since been replaced is never handed out as an answer to the new one.
 
 ### Added
 
@@ -56,6 +65,11 @@ While the major version is `0`, a minor release may change the surface half in w
   A document that does not parse or does not satisfy the schema fails the round either way, so `clean` still means what it meant.
 - A run records which reviewer CLI answered and how its document arrived, and `socrates review status` prints both.
 - `socrates review config` prints every setting, the value in force and whether you set it, and `socrates review configure` changes one from a menu without opening the file.
+- `socrates design`, a second workflow: a coding session interviews you over the page, one round of questions at a time, and leaves a spec and its decision records in the repository.
+  `socrates design skill` installs the `socrates-design` skill that drives it, and the namespace holds nothing else.
+  It keeps no state of its own, has no round cap, and ends at any round you choose, on the page or with `socrates agora end`.
+- A document's options may carry no command, for an answer that runs nothing.
+  A decision offers a command on every option or on none, and a decision mixing the two is refused.
 
 ### Notes
 
