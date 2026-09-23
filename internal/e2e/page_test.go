@@ -126,7 +126,7 @@ func TestMultipleChoiceCarriesEveryTick(t *testing.T) {
 
 	page.evaluate(chose("c-2", 0), nil)
 	page.evaluate(chose("c-2", 1), nil)
-	pressPastTheNotice(page, ".send")
+	pressPastTheConfirmation(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
@@ -149,7 +149,7 @@ func TestAChangedSelectionReplacesTheEarlierOneWithNoSeparateStep(t *testing.T) 
 	page.evaluate(chose("c-1", 0), nil)
 	page.evaluate(chose("c-1", 1), nil)
 	page.evaluate(chose("c-2", 2), nil)
-	pressPastTheNotice(page, ".send")
+	pressPastTheConfirmation(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
@@ -179,7 +179,7 @@ func TestADecisionWithNothingSelectedAndNothingTypedIsOmittedFromWhatTheCallerCo
 		t.Fatalf("ticking and unticking a box left %d options ticked, want none", ticked)
 	}
 
-	pressPastTheNotice(page, ".send")
+	pressPastTheConfirmation(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
@@ -443,7 +443,7 @@ func TestANewDocumentReplacesEverySelectionEveryTypedWordAndTheMessageFieldAndNo
 		t.Errorf("a new document arrived carrying the message %q a person wrote on the one before it", message)
 	}
 
-	pressPastTheNotice(page, ".send")
+	pressPastTheConfirmation(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
@@ -523,7 +523,7 @@ func TestWordsAloneOnADecisionAreACompleteAnswerAndComeBackWithTheWordsAndNoComm
 
 	page.write(within("c-1", ".words-field"), inTheirOwnWords)
 	page.evaluate(chose("c-2", 2), nil)
-	pressPastTheNotice(page, ".send")
+	pressPastTheConfirmation(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
@@ -640,7 +640,7 @@ func TestTheOptionTheCallerWouldTakeIsReadFirst(t *testing.T) {
 func TestRearrangingTheOptionsDoesNotRearrangeTheAnswer(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 
-	pressPastTheNotice(page, ".send")
+	pressPastTheConfirmation(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	printed, failures, code := held.poll()
@@ -669,7 +669,7 @@ func TestTheRecommendationArrivesChosenAndADecisionMarkedNothingDoesNot(t *testi
 		t.Errorf("what arrives chosen before anybody touches the page differs (-want +got):\n%s", diff)
 	}
 
-	pressPastTheNotice(page, ".send")
+	pressPastTheConfirmation(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
@@ -793,7 +793,7 @@ func TestChoosingNoneOfTheseAndTypingSendsTheWordsAndNoCommand(t *testing.T) {
 	page.write(within("c-1", ".words-field"), inTheirOwnWords)
 	page.evaluate(chose("c-2", 2), nil)
 
-	pressPastTheNotice(page, ".send")
+	pressPastTheConfirmation(page, ".send")
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
@@ -820,16 +820,16 @@ func TestChoosingNoneOfTheseAndTypingNothingLeavesTheDecisionBlank(t *testing.T)
 	page.evaluate(declined("c-1"), nil)
 
 	page.click(".send")
-	page.waitFor(noticeIsShowing)
+	page.waitFor(confirmationIsOpen)
 
 	if delivered, arrived := held.awaiting(shortWindow); arrived {
 		t.Fatalf("sending over a decision left blank by declining every option delivered an answer: %+v", delivered)
 	}
 
 	var said string
-	page.evaluate(`document.querySelector('.notice').textContent`, &said)
+	page.evaluate(whatTheConfirmationSays, &said)
 	if !strings.Contains(said, "c-1") {
-		t.Errorf("the notice does not name the decision declining every option left blank: %q", said)
+		t.Errorf("the confirmation does not name the decision declining every option left blank: %q", said)
 	}
 }
 
@@ -846,16 +846,16 @@ func TestAMultipleChoiceDecisionOffersNoWayToDeclineAndUntickingEveryBoxLeavesIt
 	page.evaluate(chose("c-2", 2), nil)
 
 	page.click(".send")
-	page.waitFor(noticeIsShowing)
+	page.waitFor(confirmationIsOpen)
 
 	if delivered, arrived := held.awaiting(shortWindow); arrived {
 		t.Fatalf("sending over a multiple-choice decision left blank by unticking every box delivered an answer: %+v", delivered)
 	}
 
 	var said string
-	page.evaluate(`document.querySelector('.notice').textContent`, &said)
+	page.evaluate(whatTheConfirmationSays, &said)
 	if !strings.Contains(said, "c-2") {
-		t.Errorf("the notice does not name the multiple-choice decision unticking every box left blank: %q", said)
+		t.Errorf("the confirmation does not name the multiple-choice decision unticking every box left blank: %q", said)
 	}
 }
 
@@ -891,7 +891,7 @@ func TestAnAnnotationOnADecisionThatAskedNothingComesBack(t *testing.T) {
 	page := opening(t, held.serve(askingNothingDocument))
 
 	page.write(within("c-1", ".words-field"), inTheirOwnWords)
-	pressPastTheNotice(page, ".finish")
+	pressPastTheConfirmation(page, ".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
 	printed, failures, code := held.poll()

@@ -1,10 +1,15 @@
 package e2e_test
 
 import (
+	"bytes"
+	"image/color"
+	"image/png"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/chromedp/chromedp"
+	"github.com/chromedp/chromedp/kb"
 	"github.com/google/go-cmp/cmp"
 	"github.com/socrates-tools/socrates/agora/surface"
 )
@@ -13,15 +18,25 @@ const somethingLiveOnThePage = `Array.from(document.querySelectorAll('button, .c
 
 const everythingOnThePageIsLive = `Array.from(document.querySelectorAll('button, .choice, textarea')).every((held) => !held.disabled)`
 
-const noticeIsShowing = `!document.querySelector('.notice').hidden`
+const confirmationIsOpen = `document.querySelector('dialog.confirmation').open === true`
 
-const noticeIsHidden = `document.querySelector('.notice').hidden`
+const confirmationIsClosed = `document.querySelector('dialog.confirmation').open === false`
 
-func pressPastTheNotice(page *reader, press string) {
+const confirmationIsModal = `document.querySelector('dialog.confirmation').matches(':modal')`
+
+const whatTheConfirmationSays = `document.querySelector('dialog.confirmation').textContent`
+
+const whatTheConfirmationIsHeaded = `document.querySelector('.confirmation-heading').textContent`
+
+const whatTheConfirmationNames = `Array.from(document.querySelectorAll('.confirmation-decision')).map((held) => held.dataset.decision)`
+
+const whereTheCursorRests = `document.activeElement.className`
+
+func pressPastTheConfirmation(page *reader, press string) {
 	page.t.Helper()
 	page.click(press)
-	page.waitFor(noticeIsShowing)
-	page.click(press)
+	page.waitFor(confirmationIsOpen)
+	page.click(".send-anyway")
 }
 
 func (s *surfaced) ended(t *testing.T, page *reader) {
@@ -167,7 +182,7 @@ func TestACallerWhoAsksAgainIsHandedAnAddressThatTakesTheAnswer(t *testing.T) {
 	// scenario: Serving again onto an ended exchange yields an answerable page
 	held, page := read(t, oneDecisionDocument)
 
-	pressPastTheNotice(page, ".finish")
+	pressPastTheConfirmation(page, ".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
 	finished, arrived := held.awaiting(5 * time.Second)
@@ -262,7 +277,7 @@ func TestAnAnswerChosenBeforeTheEndIsNotCarriedIntoWhatComesNext(t *testing.T) {
 	held.serveAgain(oneDecisionReply)
 	page.waitFor(reachedThePage("c-3"))
 
-	pressPastTheNotice(page, ".send")
+	pressPastTheConfirmation(page, ".send")
 
 	delivered, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
@@ -275,7 +290,7 @@ func TestAnAnswerChosenBeforeTheEndIsNotCarriedIntoWhatComesNext(t *testing.T) {
 	}
 }
 
-func TestEitherPressOverABlankDecisionNamesItAndSendsNothing(t *testing.T) {
+func TestEitherPressOverABlankDecisionRaisesTheConfirmationAndSendsNothing(t *testing.T) {
 	for _, press := range []string{".send", ".finish"} {
 		t.Run(press, func(t *testing.T) {
 			held, page := read(t, twoDecisionDocument)
@@ -283,98 +298,180 @@ func TestEitherPressOverABlankDecisionNamesItAndSendsNothing(t *testing.T) {
 			page.evaluate(chose("c-1", 0), nil)
 			page.evaluate(chose("c-2", 2), nil)
 			page.click(press)
-			page.waitFor(noticeIsShowing)
+			page.waitFor(confirmationIsOpen)
 
 			if delivered, arrived := held.awaiting(shortWindow); arrived {
 				t.Fatalf("pressing %s over a blank decision delivered an answer: %+v", press, delivered)
 			}
 
-			var said string
-			page.evaluate(`document.querySelector('.notice').textContent`, &said)
-			if !strings.Contains(said, "c-2") {
-				t.Errorf("the notice pressing %s raised reads %q, and it does not name the decision left blank", press, said)
+			var modal bool
+			page.evaluate(confirmationIsModal, &modal)
+			if !modal {
+				t.Errorf("the confirmation pressing %s raised is not modal, and the page behind it is still answerable", press)
 			}
-			if !strings.Contains(strings.ToLower(said), "again") {
-				t.Errorf("the notice pressing %s raised reads %q, and it does not say in plain words that pressing again sends", press, said)
+
+			var said string
+			page.evaluate(whatTheConfirmationSays, &said)
+			if !strings.Contains(said, "c-2") {
+				t.Errorf("the confirmation pressing %s raised reads %q, and it does not name the decision left blank", press, said)
+			}
+
+			var cursor string
+			page.evaluate(whereTheCursorRests, &cursor)
+			if cursor != "send-anyway" {
+				t.Errorf("the cursor rests on %q when the confirmation pressing %s raised opens, and it opens on Send anyway", cursor, press)
 			}
 		})
 	}
 }
 
-func TestTheNoticeNamesEveryBlankDecisionAndEachNameLinksToItsCard(t *testing.T) {
-	// scenario: An entry leads to the decision that covers it
+func TestTheConfirmationNamesEveryBlankDecisionAndOnlyThose(t *testing.T) {
 	_, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-2", 2), nil)
 	page.click(".send")
-	page.waitFor(noticeIsShowing)
+	page.waitFor(confirmationIsOpen)
 
-	var hrefs []string
-	page.evaluate(`Array.from(document.querySelectorAll('.notice-decisions a')).map((held) => held.getAttribute('href'))`, &hrefs)
-
-	want := []string{"#decision-c-1", "#decision-c-2"}
-	if diff := cmp.Diff(want, hrefs); diff != "" {
-		t.Errorf("the notice's links to the decisions left blank differ (-want +got):\n%s", diff)
+	var named []string
+	page.evaluate(whatTheConfirmationNames, &named)
+	if diff := cmp.Diff([]string{"c-1", "c-2"}, named); diff != "" {
+		t.Errorf("the decisions the confirmation names over a page holding two blanks differ (-want +got):\n%s", diff)
 	}
 
-	page.click(`.notice-decisions a`)
-	page.waitFor(`location.hash === '#decision-c-1'`)
+	var heading string
+	page.evaluate(whatTheConfirmationIsHeaded, &heading)
+	if !strings.Contains(heading, "2 of 2") {
+		t.Errorf("the confirmation over two blank decisions is headed %q, and it says how many of how many are blank", heading)
+	}
 
-	var reached string
-	page.evaluate(`document.querySelector(location.hash).dataset.decision`, &reached)
-	if reached != "c-1" {
-		t.Errorf("following the notice's first link arrived at %q, want %q", reached, "c-1")
+	page.click(".go-back")
+	page.waitFor(confirmationIsClosed)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.click(".send")
+	page.waitFor(confirmationIsOpen)
+
+	page.evaluate(whatTheConfirmationNames, &named)
+	if diff := cmp.Diff([]string{"c-2"}, named); diff != "" {
+		t.Errorf("the decisions the confirmation names after one of the two was answered differ (-want +got):\n%s", diff)
+	}
+
+	page.evaluate(whatTheConfirmationIsHeaded, &heading)
+	if !strings.Contains(heading, "1 of 2") {
+		t.Errorf("the confirmation after one of the two was answered is headed %q, and it says how many of how many are blank", heading)
 	}
 }
 
-func TestPressingAgainSendsCarryingEveryDecisionThatWasNotBlank(t *testing.T) {
+func TestSendAnywayDeliversWhatTheControlsHold(t *testing.T) {
+	for _, raising := range []struct {
+		press string
+		ends  bool
+	}{{".send", false}, {".finish", true}} {
+		t.Run(raising.press, func(t *testing.T) {
+			held, page := read(t, twoDecisionDocument)
+
+			page.evaluate(chose("c-1", 0), nil)
+			page.evaluate(chose("c-2", 2), nil)
+			page.click(raising.press)
+			page.waitFor(confirmationIsOpen)
+
+			page.click(".send-anyway")
+
+			delivered, arrived := held.awaiting(5 * time.Second)
+			if !arrived {
+				t.Fatalf("sending anyway after pressing %s delivered nothing", raising.press)
+			}
+			if len(delivered.Decisions) != 1 || delivered.Decisions[0].ID != "c-1" {
+				t.Errorf("sending anyway after pressing %s carried %+v, want only the decision that was not blank", raising.press, delivered.Decisions)
+			}
+			if delivered.Ended != raising.ends {
+				t.Errorf("sending anyway after pressing %s ended the exchange: %v, want %v", raising.press, delivered.Ended, raising.ends)
+			}
+
+			page.waitFor(confirmationIsClosed)
+		})
+	}
+}
+
+const whatTheControlsHold = `(() => ({
+  chosen: Array.from(document.querySelectorAll('.choice:checked')).map((held) => held.dataset.decision + ':' + held.value),
+  message: document.querySelector('.message-field').value,
+}))()`
+
+type holding struct {
+	Chosen  []string `json:"chosen"`
+	Message string   `json:"message"`
+}
+
+func TestEveryWayOutOfTheConfirmationSendsNothingAndLeavesThePageAsItWas(t *testing.T) {
+	const wrote = "the second one is blank on purpose"
+
+	for _, door := range []struct {
+		name  string
+		taken func(page *reader)
+	}{
+		{"go back and answer", func(page *reader) { page.click(".go-back") }},
+		{"escape", func(page *reader) { page.press(kb.Escape) }},
+		{"a press on the backdrop", func(page *reader) { page.clickAt(4, 4) }},
+	} {
+		t.Run(door.name, func(t *testing.T) {
+			held, page := read(t, twoDecisionDocument)
+
+			page.evaluate(chose("c-1", 0), nil)
+			page.evaluate(chose("c-2", 2), nil)
+			page.write(".message-field", wrote)
+
+			page.click(".finish")
+			page.waitFor(confirmationIsOpen)
+
+			door.taken(page)
+			page.waitFor(confirmationIsClosed)
+
+			if delivered, arrived := held.awaiting(shortWindow); arrived {
+				t.Fatalf("leaving the confirmation by %s delivered an answer anyway: %+v", door.name, delivered)
+			}
+
+			var read holding
+			page.evaluate(whatTheControlsHold, &read)
+			if diff := cmp.Diff([]string{"c-1:0"}, read.Chosen); diff != "" {
+				t.Errorf("leaving the confirmation by %s moved what the controls hold (-want +got):\n%s", door.name, diff)
+			}
+			if read.Message != wrote {
+				t.Errorf("leaving the confirmation by %s left the message as %q, want %q", door.name, read.Message, wrote)
+			}
+
+			var cursor string
+			page.evaluate(whereTheCursorRests, &cursor)
+			if cursor != "finish" {
+				t.Errorf("leaving the confirmation by %s rested the cursor on %q, and it returns to the button that raised it", door.name, cursor)
+			}
+
+			var accepting bool
+			page.evaluate(everythingOnThePageIsLive, &accepting)
+			if !accepting {
+				t.Errorf("leaving the confirmation by %s left the page unable to take a further answer", door.name)
+			}
+		})
+	}
+}
+
+func TestPressingTheSameButtonAgainAfterGoingBackAsksAgainRatherThanSending(t *testing.T) {
+	// scenario: no armed state survives the confirmation
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
 	page.evaluate(chose("c-2", 2), nil)
+
 	page.click(".send")
-	page.waitFor(noticeIsShowing)
+	page.waitFor(confirmationIsOpen)
+	page.click(".go-back")
+	page.waitFor(confirmationIsClosed)
+
+	page.click(".send")
+	page.waitFor(confirmationIsOpen)
 
 	if delivered, arrived := held.awaiting(shortWindow); arrived {
-		t.Fatalf("the first press over a blank decision delivered an answer: %+v", delivered)
-	}
-
-	page.click(".send")
-
-	delivered, arrived := held.awaiting(5 * time.Second)
-	if !arrived {
-		t.Fatal("pressing send again over the same blank decision delivered nothing")
-	}
-	if len(delivered.Decisions) != 1 || delivered.Decisions[0].ID != "c-1" {
-		t.Errorf("pressing send again carried %+v, want only the decision that was not blank", delivered.Decisions)
-	}
-
-	var hidden bool
-	page.evaluate(noticeIsHidden, &hidden)
-	if !hidden {
-		t.Error("sending after the notice was confirmed leaves the notice showing")
-	}
-}
-
-func TestDecliningTheNoticeLeavesTheExchangeOpenAndSendsNothing(t *testing.T) {
-	held, page := read(t, twoDecisionDocument)
-
-	page.evaluate(chose("c-1", 0), nil)
-	page.evaluate(chose("c-2", 2), nil)
-	page.click(".send")
-	page.waitFor(noticeIsShowing)
-
-	page.click(".keep-answering")
-	page.waitFor(noticeIsHidden)
-
-	if delivered, arrived := held.awaiting(shortWindow); arrived {
-		t.Fatalf("declining the notice delivered an answer anyway: %+v", delivered)
-	}
-
-	var accepting bool
-	page.evaluate(everythingOnThePageIsLive, &accepting)
-	if !accepting {
-		t.Error("declining the notice left the page unable to take a further answer")
+		t.Fatalf("pressing send a second time after going back sent rather than asking again: %+v", delivered)
 	}
 }
 
@@ -393,39 +490,178 @@ func TestAPressWithNothingBlankIsNotAskedAbout(t *testing.T) {
 		t.Errorf("sending with nothing blank carried %+v, want both decisions", delivered.Decisions)
 	}
 
-	var hidden bool
-	page.evaluate(noticeIsHidden, &hidden)
-	if !hidden {
-		t.Error("a press with nothing blank raised the notice anyway")
+	var closed bool
+	page.evaluate(confirmationIsClosed, &closed)
+	if !closed {
+		t.Error("a press with nothing blank raised the confirmation anyway")
 	}
 }
 
-func TestPressingTheOtherPressWhileTheNoticeIsShowingRaisesItForThatPressInstead(t *testing.T) {
+func TestARevisionClosesTheConfirmation(t *testing.T) {
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
 	page.evaluate(chose("c-2", 2), nil)
 	page.click(".send")
-	page.waitFor(noticeIsShowing)
+	page.waitFor(confirmationIsOpen)
 
-	page.click(".finish")
+	held.serveAgain(oneDecisionReply)
+	page.waitFor(reachedThePage("c-3"))
+	page.waitFor(confirmationIsClosed)
+
+	var open int
+	page.evaluate(`document.querySelectorAll('dialog[open]').length`, &open)
+	if open != 0 {
+		t.Errorf("a revision left %d dialogs open over cards that are no longer on the page", open)
+	}
+}
+
+const whereTheCursorLanded = `(() => {
+  const held = document.activeElement;
+  const card = held.closest('.decision');
+  const box = card ? card.getBoundingClientRect() : null;
+  return {
+    decision: card ? card.dataset.decision : '',
+    control: held.className,
+    inView: !!box && box.top < window.innerHeight && box.bottom > 0,
+    hash: location.hash,
+  };
+})()`
+
+type landed struct {
+	Decision string `json:"decision"`
+	Control  string `json:"control"`
+	InView   bool   `json:"inView"`
+	Hash     string `json:"hash"`
+}
+
+func TestABlankDecisionsNameTakesThePersonToItsCard(t *testing.T) {
+	for _, jump := range []struct {
+		named   string
+		to      string
+		control string
+	}{
+		{"a decision offering options", "q3", "choice"},
+		{"a decision offering none", "q1", "words-field"},
+	} {
+		t.Run(jump.named, func(t *testing.T) {
+			held := standing(t)
+			page := opening(t, held.serve(designRoundTwoDocument))
+
+			page.evaluate(declined("q3"), nil)
+			page.write(within("q2", ".words-field"), inTheirOwnWordsAboutTheCap)
+
+			page.click(".send")
+			page.waitFor(confirmationIsOpen)
+
+			var named []string
+			page.evaluate(whatTheConfirmationNames, &named)
+			if diff := cmp.Diff([]string{"q1", "q3"}, named); diff != "" {
+				t.Fatalf("the decisions the confirmation names differ (-want +got):\n%s", diff)
+			}
+
+			page.click(`.confirmation-decision[data-decision="` + jump.to + `"]`)
+			page.waitFor(confirmationIsClosed)
+
+			var read landed
+			page.evaluate(whereTheCursorLanded, &read)
+			if read.Decision != jump.to {
+				t.Errorf("pressing the name of %s left the cursor on the card %q, want %q", jump.named, read.Decision, jump.to)
+			}
+			if read.Control != jump.control {
+				t.Errorf("pressing the name of %s left the cursor on a %q, want the card's %q", jump.named, read.Control, jump.control)
+			}
+			if !read.InView {
+				t.Errorf("pressing the name of %s left its card out of view", jump.named)
+			}
+			if read.Hash != "" {
+				t.Errorf("pressing the name of %s left %q in the address bar", jump.named, read.Hash)
+			}
+
+			if delivered, arrived := held.awaiting(shortWindow); arrived {
+				t.Fatalf("pressing the name of %s delivered an answer: %+v", jump.named, delivered)
+			}
+
+			var still holding
+			page.evaluate(whatTheControlsHold, &still)
+			if len(still.Chosen) != 0 {
+				t.Errorf("pressing the name of %s moved what the options hold: %v", jump.named, still.Chosen)
+			}
+
+			var words string
+			page.evaluate(`document.querySelector('`+within("q2", ".words-field")+`').value`, &words)
+			if words != inTheirOwnWordsAboutTheCap {
+				t.Errorf("pressing the name of %s left the words typed on another card as %q", jump.named, words)
+			}
+		})
+	}
+}
+
+func cornerOfTheViewport(t *testing.T, page *reader) color.Color {
+	t.Helper()
+
+	var shot []byte
+	page.do(chromedp.CaptureScreenshot(&shot))
+
+	painted, err := png.Decode(bytes.NewReader(shot))
+	if err != nil {
+		t.Fatalf("reading what the page painted: %v", err)
+	}
+	return painted.At(4, 4)
+}
+
+func brightnessOf(painted color.Color) float64 {
+	red, green, blue, _ := painted.RGBA()
+	return float64(red+green+blue) / 3
+}
+
+func TestTheConfirmationDimsThePageBehindIt(t *testing.T) {
+	for _, preference := range []string{"light", "dark"} {
+		t.Run(preference, func(t *testing.T) {
+			_, page := read(t, twoDecisionDocument)
+			page.emulate(preference)
+			page.evaluate(chose("c-2", 2), nil)
+
+			before := cornerOfTheViewport(t, page)
+
+			page.click(".send")
+			page.waitFor(confirmationIsOpen)
+
+			behind := cornerOfTheViewport(t, page)
+
+			if brightnessOf(behind) >= brightnessOf(before) {
+				t.Errorf("under a %s preference the page behind the confirmation is painted %v against %v before it opened, and what is behind a modal is dimmed", preference, behind, before)
+			}
+		})
+	}
+}
+
+func TestAPressInsideTheConfirmationIsNotAPressOnTheBackdrop(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.evaluate(chose("c-2", 2), nil)
+	page.click(".send")
+	page.waitFor(confirmationIsOpen)
+
+	var padding struct {
+		X float64 `json:"x"`
+		Y float64 `json:"y"`
+	}
+	page.evaluate(`(() => {
+  const box = document.querySelector('dialog.confirmation').getBoundingClientRect();
+  return { x: box.left + 4, y: box.top + 4 };
+})()`, &padding)
+
+	page.clickAt(padding.X, padding.Y)
+
+	var open bool
+	page.evaluate(confirmationIsOpen, &open)
+	if !open {
+		t.Error("a press on the confirmation's own padding closed it, and only a press outside it is a press on the backdrop")
+	}
 
 	if delivered, arrived := held.awaiting(shortWindow); arrived {
-		t.Fatalf("pressing the other press while the notice is showing delivered an answer: %+v", delivered)
-	}
-
-	var hidden bool
-	page.evaluate(noticeIsHidden, &hidden)
-	if hidden {
-		t.Fatal("pressing the other press while the notice is showing closed the notice instead of raising it again")
-	}
-
-	page.click(".finish")
-	delivered, arrived := held.awaiting(5 * time.Second)
-	if !arrived {
-		t.Fatal("pressing finish again after it raised the notice delivered nothing")
-	}
-	if !delivered.Ended {
-		t.Error("pressing finish again does not end the exchange")
+		t.Fatalf("a press on the confirmation's own padding delivered an answer: %+v", delivered)
 	}
 }

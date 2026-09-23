@@ -621,15 +621,50 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 		"answering words-field",
 		"answering words-field",
 		"sending amend",
+		"sending confirmation",
 		"sending exchange",
 		"sending finish",
-		"sending keep-answering",
+		"sending go-back",
 		"sending message-field",
 		"sending receipt",
 		"sending send",
+		"sending send-anyway",
 	}
 	if !slices.Equal(want, parts) {
 		t.Errorf("the controls the page offers are %v, want %v", parts, want)
+	}
+}
+
+func TestTheConfirmationStandsOutsideTheFormAndSubmitsNothing(t *testing.T) {
+	page := rendered(t, citingASource())
+
+	asking := elements(page, "dialog")
+	if len(asking) != 1 {
+		t.Fatalf("the page carries %d dialogs, want the one a blank decision is confirmed in", len(asking))
+	}
+
+	for _, form := range elements(page, "form") {
+		if len(elements(form, "dialog")) != 0 {
+			t.Error("the confirmation stands inside the form, so its presses would submit it")
+		}
+	}
+
+	for _, press := range elements(asking[0], "button") {
+		if attribute(press, "type") != "button" {
+			t.Errorf("the confirmation offers a <button type=%q>, and a press inside it submits nothing", attribute(press, "type"))
+		}
+	}
+
+	submits := elements(page, "button")
+	first := ""
+	for _, press := range submits {
+		if attribute(press, "type") == "submit" {
+			first = attribute(press, "class")
+			break
+		}
+	}
+	if first != "send" {
+		t.Errorf("the first submit in document order is %q, and enter reaches the press that waits for a reply", first)
 	}
 }
 

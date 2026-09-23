@@ -62,7 +62,7 @@ func TestTheLastDesignRoundIsOneCardApprovingTheShapeAndThePath(t *testing.T) {
 		t.Error("the recommended way to write the spec does not arrive chosen on the last card")
 	}
 
-	pressPastTheNotice(page, ".finish")
+	pressPastTheConfirmation(page, ".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
 	printed, failures, code := held.poll()
@@ -125,7 +125,7 @@ func TestEndingADesignRoundEarlyDeliversOnlyWhatWasAnsweredAndClosesTheExchange(
 	page := opening(t, address)
 
 	page.evaluate(`document.querySelector('.decision[data-decision="q1"] .choice[value="0"]').click()`, nil)
-	pressPastTheNotice(page, ".finish")
+	pressPastTheConfirmation(page, ".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
 	printed, failures, code := held.poll()

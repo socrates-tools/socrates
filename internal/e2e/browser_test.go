@@ -212,6 +212,16 @@ func (r *reader) click(selector string) {
 	r.do(chromedp.Click(selector, chromedp.ByQuery, chromedp.NodeVisible))
 }
 
+func (r *reader) clickAt(x, y float64) {
+	r.t.Helper()
+	r.do(chromedp.MouseClickXY(x, y))
+}
+
+func (r *reader) press(key string) {
+	r.t.Helper()
+	r.do(chromedp.KeyEvent(key))
+}
+
 func (r *reader) write(selector, words string) {
 	r.t.Helper()
 	r.do(chromedp.SendKeys(selector, words, chromedp.ByQuery))

@@ -123,12 +123,6 @@
 <button class="finish" data-part="sending" type="submit" data-ends="yes"{{if .Over}} disabled{{end}}>Send and finish</button>
 </div>
 <p class="sends-meaning">Sending waits for a reply on this page. Finishing sends and closes the exchange.</p>
-<div class="notice" hidden role="status" aria-live="polite">
-<p class="notice-message">Left blank, and about to go as nothing:</p>
-<ul class="notice-decisions"></ul>
-<p class="notice-hint">Press the same button again to send anyway.</p>
-<button class="keep-answering" data-part="sending" type="button"{{if .Over}} disabled{{end}}>Keep answering</button>
-</div>
 <output class="receipt" data-part="sending" hidden aria-live="polite">
 <p class="receipt-heading">Sent. Here is what went:</p>
 <ul class="receipt-decisions"></ul>
@@ -138,6 +132,16 @@
 <p class="state" role="status" aria-live="polite">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
 </footer>
 </form>
+
+<dialog class="confirmation" data-part="sending" aria-labelledby="confirmation-heading">
+<h2 class="confirmation-heading" id="confirmation-heading"></h2>
+<p class="confirmation-meaning">A decision left blank goes as nothing. Whoever asked will see no answer to it.</p>
+<ul class="confirmation-decisions"></ul>
+<div class="confirmation-presses">
+<button class="send-anyway" data-part="sending" type="button" autofocus>Send anyway</button>
+<button class="go-back" data-part="sending" type="button">Go back and answer</button>
+</div>
+</dialog>
 {{else}}
 <section class="nothing">
 <p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>

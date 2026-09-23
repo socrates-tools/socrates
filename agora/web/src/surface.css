@@ -27,6 +27,7 @@
   --removed: #f4e2de;
   --removed-rule: #d7a99e;
   --shadow: 0 1px 2px rgba(27, 37, 41, 0.07), 0 6px 18px rgba(27, 37, 41, 0.06);
+  --scrim: rgba(27, 37, 41, 0.45);
 
   --token-keyword: #0f5a75;
   --token-string: #41611c;
@@ -55,6 +56,7 @@
     --removed: #2b1c19;
     --removed-rule: #6d3a2f;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 6px 18px rgba(0, 0, 0, 0.35);
+    --scrim: rgba(0, 0, 0, 0.6);
 
     --token-keyword: #9ed0e8;
     --token-string: #b6cf8a;
@@ -461,7 +463,8 @@ button:disabled {
   opacity: 0.5;
 }
 
-.send {
+.send,
+.send-anyway {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
@@ -511,39 +514,56 @@ button:disabled {
   min-height: 1.4em;
 }
 
-.notice {
-  margin: 1rem 0 0;
-  padding: 1rem 1.1rem;
-  border: 1px solid var(--accent);
-  border-radius: 8px;
-  background: var(--accent-quiet);
-}
-
-.notice[hidden] * {
-  display: none;
-}
-
-.notice-message {
-  margin: 0 0 0.5rem;
+.confirmation {
+  max-width: 34rem;
+  width: calc(100% - 2rem);
+  margin: auto;
+  padding: 1.5rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 10px;
+  background: var(--card);
   color: var(--ink);
+  box-shadow: var(--shadow), 0 0 0 100vmax var(--scrim);
 }
 
-.notice-decisions {
-  list-style: none;
+.confirmation::backdrop {
+  background: transparent;
+}
+
+.confirmation-heading {
+  margin: 0 0 0.5rem;
+  font-size: var(--text-lead);
+  font-weight: 600;
+}
+
+.confirmation-meaning {
   margin: 0 0 0.75rem;
+  color: var(--ink-soft);
+}
+
+.confirmation-decisions {
+  list-style: none;
+  margin: 0 0 1.25rem;
   padding: 0;
   display: grid;
   gap: 0.25rem;
 }
 
-.notice-decisions a {
+.confirmation-decision {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
   color: var(--accent);
   font-weight: 600;
+  text-align: left;
+  text-decoration: underline;
 }
 
-.notice-hint {
-  margin: 0 0 0.75rem;
-  color: var(--ink);
+.confirmation-presses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .receipt {
@@ -614,7 +634,8 @@ button:disabled {
 
   .decision,
   .composer,
-  .bar {
+  .bar,
+  .confirmation {
     padding: 1.1rem;
   }
 

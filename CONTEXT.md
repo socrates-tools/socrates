@@ -80,6 +80,7 @@ These are agora's words, and agora knows nothing about code review.
 - **session**: what the surface mints so that a page and its routes are served under a path holding it. Kept for the whole review.
 - **exchange**: the delivery of a document and the collection of what a person answered. It holds at most one uncollected answer, and a later one replaces it.
 - **answer**: what one submit carries: every decision the person answered, anything they wrote, and whether it ends the exchange.
+- **confirmation**: the dialog a press raises where any decision is blank, naming each one and taking the person to it. The only thing on the page standing between a press and a send.
 
 ## The suite
 

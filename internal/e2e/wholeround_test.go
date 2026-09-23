@@ -85,7 +85,7 @@ func TestTheWholeRoundIsHandedOverAsCardsInSeverityOrder(t *testing.T) {
 
 	page.evaluate(chose("f3", 0), nil)
 	page.write(within("f4", ".words-field"), inTheirOwnWords)
-	pressPastTheNotice(page, ".finish")
+	pressPastTheConfirmation(page, ".finish")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
 	answered := driven.polled()

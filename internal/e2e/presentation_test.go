@@ -253,7 +253,7 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
 
 const whatIsHidden = `(() => {
   const painted = [];
-  const held = document.querySelectorAll('[hidden]');
+  const held = document.querySelectorAll('[hidden], dialog:not([open])');
   for (const element of held) {
     const style = getComputedStyle(element);
     const box = element.getBoundingClientRect();
@@ -438,6 +438,28 @@ func TestTheReceiptMeetsTheContrastFloor(t *testing.T) {
 
 		if read.Measured < 30 {
 			t.Fatalf("under a %s preference only %d texts were measured with the receipt showing, and a check that saw almost nothing would pass forever", preference, read.Measured)
+		}
+		for _, failing := range read.Failing {
+			t.Errorf("under a %s preference %s, and the floor the page is held to is %v", preference, failing, contrastFloor)
+		}
+	}
+}
+
+func TestTheConfirmationMeetsTheContrastFloor(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-2", 2), nil)
+	page.click(".send")
+	page.waitFor(confirmationIsOpen)
+
+	for _, preference := range []string{"light", "dark"} {
+		page.emulate(preference)
+
+		var read weighed
+		page.evaluate(measuringTheContrast, &read)
+
+		if read.Measured < 30 {
+			t.Fatalf("under a %s preference only %d texts were measured with the confirmation open, and a check that saw almost nothing would pass forever", preference, read.Measured)
 		}
 		for _, failing := range read.Failing {
 			t.Errorf("under a %s preference %s, and the floor the page is held to is %v", preference, failing, contrastFloor)

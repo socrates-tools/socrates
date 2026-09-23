@@ -57,8 +57,8 @@ function nameOf(card) {
   return named ? named.textContent.trim() : card.dataset.decision
 }
 
-function notice() {
-  return document.querySelector('.notice')
+function confirmation() {
+  return document.querySelector('dialog.confirmation')
 }
 
 function clear(node) {
@@ -67,35 +67,79 @@ function clear(node) {
   }
 }
 
-let armedFor = null
+let raisedBy = null
 
-function hideNotice() {
-  armedFor = null
-  const held = notice()
-  if (held) {
-    held.hidden = true
+function closeConfirmation() {
+  raisedBy = null
+  const held = confirmation()
+  if (held && held.open) {
+    held.close()
   }
 }
 
-function showNotice(blank, ends) {
-  armedFor = ends ? 'yes' : 'no'
-  const held = notice()
+function goBackAndAnswer() {
+  const raised = raisedBy
+  closeConfirmation()
+  if (raised && raised.press) {
+    raised.press.focus()
+  }
+}
+
+function pressedOutside(held, event) {
+  const box = held.getBoundingClientRect()
+  return event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom
+}
+
+function goTo(card) {
+  closeConfirmation()
+  card.scrollIntoView({ block: 'center' })
+  const first = card.querySelector('.choice, .words-field')
+  if (first) {
+    first.focus()
+  }
+}
+
+function nameInTheConfirmation(card) {
+  const named = document.createElement('button')
+  named.type = 'button'
+  named.className = 'confirmation-decision'
+  named.dataset.decision = card.dataset.decision
+  named.textContent = nameOf(card)
+  named.addEventListener('click', () => goTo(card))
+  return named
+}
+
+function askBeforeSending(blank, press, ends) {
+  const held = confirmation()
   if (!held) {
     return
   }
-  const list = held.querySelector('.notice-decisions')
+  raisedBy = { press, ends }
+
+  const heading = held.querySelector('.confirmation-heading')
+  if (heading) {
+    heading.textContent = `Send with ${blank.length} of ${cards().length} left blank?`
+  }
+
+  const list = held.querySelector('.confirmation-decisions')
   if (list) {
     clear(list)
     blank.forEach((card) => {
       const item = document.createElement('li')
-      const link = document.createElement('a')
-      link.href = `#decision-${card.dataset.decision}`
-      link.textContent = nameOf(card)
-      item.appendChild(link)
+      item.appendChild(nameInTheConfirmation(card))
       list.appendChild(item)
     })
   }
-  held.hidden = false
+
+  held.showModal()
+}
+
+function sendAnyway() {
+  const raised = raisedBy
+  closeConfirmation()
+  if (raised) {
+    send(raised.ends)
+  }
 }
 
 function receipt() {
@@ -158,7 +202,7 @@ function hideReceipt() {
   }
 }
 
-const readOnlyWhileSent = '.choice, .decline, .words-field, .message-field, .send, .finish, .keep-answering'
+const readOnlyWhileSent = '.choice, .decline, .words-field, .message-field, .send, .finish'
 
 function lockForSending() {
   document.querySelectorAll(readOnlyWhileSent).forEach((control) => {
@@ -181,7 +225,7 @@ function amend() {
 
 function close() {
   closed = true
-  hideNotice()
+  closeConfirmation()
   document.querySelectorAll('.decision').forEach((card) => {
     card.dataset.state = 'closed'
   })
@@ -243,19 +287,35 @@ function bind() {
   if (form) {
     form.addEventListener('submit', (event) => {
       event.preventDefault()
-      const ends = event.submitter ? event.submitter.dataset.ends === 'yes' : false
+      const press = event.submitter || document.querySelector('.send')
+      const ends = press ? press.dataset.ends === 'yes' : false
       const blank = blankCards()
-      if (blank.length > 0 && armedFor !== (ends ? 'yes' : 'no')) {
-        showNotice(blank, ends)
+      if (blank.length > 0) {
+        askBeforeSending(blank, press, ends)
         return
       }
-      hideNotice()
       send(ends)
     })
   }
-  const keepAnswering = document.querySelector('.keep-answering')
-  if (keepAnswering) {
-    keepAnswering.addEventListener('click', hideNotice)
+  const asking = confirmation()
+  if (asking) {
+    asking.addEventListener('cancel', (event) => {
+      event.preventDefault()
+      goBackAndAnswer()
+    })
+    asking.addEventListener('click', (event) => {
+      if (event.target === asking && pressedOutside(asking, event)) {
+        goBackAndAnswer()
+      }
+    })
+    const anyway = asking.querySelector('.send-anyway')
+    if (anyway) {
+      anyway.addEventListener('click', sendAnyway)
+    }
+    const back = asking.querySelector('.go-back')
+    if (back) {
+      back.addEventListener('click', goBackAndAnswer)
+    }
   }
   const amendButton = document.querySelector('.amend')
   if (amendButton) {
@@ -290,11 +350,11 @@ async function take(revision) {
     return
   }
 
+  closeConfirmation()
   standing.replaceWith(replacing)
   document.body.dataset.revision = String(revision)
   document.body.dataset.over = read.body.dataset.over
   document.title = read.title
-  armedFor = null
   awaitingCollection = false
 
   bind()
