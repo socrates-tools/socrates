@@ -28,6 +28,7 @@ func TestAColourWrittenWhereItIsUsedIsReported(t *testing.T) {
 	}
 	write(t, filepath.Join(root, "styles", "held.css"), `:root {
   --ink: #1b2529;
+  --clay-950: #0e0e0d;
 }
 
 .question {
@@ -47,8 +48,8 @@ func TestAColourWrittenWhereItIsUsedIsReported(t *testing.T) {
 	}
 
 	want := []string{
-		`styles/held.css:11 states "rgb" outside the block that states the palette`,
-		`styles/held.css:7 paints "#b3bbb8" where it is used`,
+		`styles/held.css:12 states "rgb" outside the block that states the palette`,
+		`styles/held.css:8 paints "#b3bbb8" where it is used`,
 	}
 	if diff := cmp.Diff(want, read.Loose); diff != "" {
 		t.Errorf("what a stylesheet painting its own colours reports differs (-want +got):\n%s", diff)

@@ -36,12 +36,21 @@ var wordsOfTheOtherTool = []string{
 	`(?i)\brun's\b`,
 }
 
-type Ignorance struct {
-	Naming []string
+var drawnRound = regexp.MustCompile(`(?i)stroke-line(?:cap|join)\s*[:=]\s*["']?round\b`)
+
+var TheOtherToolNamedIn = map[string]string{
+	filepath.Join(ToolDirectory("agora"), "render", "audiences.go"):      "the three audiences socrates review writes, drawn as the design drew them, per ADR 47",
+	filepath.Join(ToolDirectory("agora"), "render", "audiences_test.go"): "what each of those three audiences is announced as",
 }
 
-func WordsOfTheOtherTool(root string, directories []string) (Ignorance, error) {
+type Ignorance struct {
+	Naming []string
+	Stale  []string
+}
+
+func WordsOfTheOtherTool(root string, directories []string, named map[string]string) (Ignorance, error) {
 	var read Ignorance
+	naming := map[string]bool{}
 
 	where, err := ModulePath(root)
 	if err != nil {
@@ -83,16 +92,23 @@ func WordsOfTheOtherTool(root string, directories []string) (Ignorance, error) {
 			if relErr != nil {
 				return relErr
 			}
+			_, exempt := named[relative]
 
 			for position, line := range strings.Split(string(held), "\n") {
-				vocabulary := line
+				vocabulary := drawnRound.ReplaceAllString(line, "")
 				if own != nil {
-					vocabulary = own.ReplaceAllString(line, "")
+					vocabulary = own.ReplaceAllString(vocabulary, "")
 				}
 				for _, pattern := range patterns {
-					if named := pattern.FindString(vocabulary); named != "" {
-						read.Naming = append(read.Naming, fmt.Sprintf("%s:%d names %q", relative, position+1, named))
+					found := pattern.FindString(vocabulary)
+					if found == "" {
+						continue
 					}
+					if exempt {
+						naming[relative] = true
+						continue
+					}
+					read.Naming = append(read.Naming, fmt.Sprintf("%s:%d names %q", relative, position+1, found))
 				}
 			}
 			return nil
@@ -102,7 +118,14 @@ func WordsOfTheOtherTool(root string, directories []string) (Ignorance, error) {
 		}
 	}
 
+	for relative := range named {
+		if !naming[relative] {
+			read.Stale = append(read.Stale, relative)
+		}
+	}
+
 	slices.Sort(read.Naming)
+	slices.Sort(read.Stale)
 	return read, nil
 }
 

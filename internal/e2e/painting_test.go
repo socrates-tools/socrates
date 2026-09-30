@@ -141,7 +141,7 @@ const whatTheFrameCarries = `(() => {
     '.decision', '.attribution .name', '.question', '.meaning',
     '.options legend', '.option-label', '.option-meaning', '.words-label',
     '.bar', '.choice', '.message-label', '.send', '.finish', '.sends-meaning', '.state',
-    '.evidence.code pre', '.evidence.illustration', '.hunk .line',
+    '.evidence.code pre', '.evidence .illustration', '.hunk .line',
   ];
   const painted = {};
   for (const selector of chrome) {

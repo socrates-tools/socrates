@@ -26,6 +26,8 @@ var Illustration = stylesheet.Scope{Selector: "." + PaintedClass, Prefix: NamePr
 
 var mostSevereFirst = []string{"error", "warning", "info"}
 
+const chosenJoined = " · "
+
 //go:embed page.gohtml
 var pageSource string
 
@@ -47,24 +49,34 @@ type view struct {
 	Over       bool
 	Policy     string
 	Stylesheet template.CSS
-	Source     []entryView
+	Index      []entryView
+	Settled    []settledView
 	Decisions  []decisionView
 }
 
 type entryView struct {
 	ID       string
 	Name     string
-	Severity string
-	Audience string
+	Severity *markView
 	Location string
 	Decided  bool
+	Answered bool
+}
+
+type settledView struct {
+	ID       string
+	Name     string
+	Location string
+	Question string
+	Chosen   string
+	Words    string
 }
 
 type decisionView struct {
 	ID       string
 	Name     string
-	Severity string
-	Audience string
+	Severity *markView
+	Audience *markView
 	Location string
 	Question string
 	Meaning  string
@@ -74,7 +86,9 @@ type decisionView struct {
 	Language string
 	Code     string
 	Diff     *Diff
+	Written  string
 	Fragment template.HTML
+	Answered bool
 }
 
 type optionView struct {
@@ -106,19 +120,48 @@ func viewOf(read document.Document, frame Frame) view {
 		Stylesheet: template.CSS(painted),
 	}
 
-	decided := map[string]bool{}
+	answered := map[string]bool{}
 	for _, decision := range read.Decisions {
-		decided[decision.ID] = true
+		shown.Decisions = append(shown.Decisions, decisionViewOf(decision))
+		answered[decision.ID] = arrivesAnswered(decision)
 	}
 
 	for _, entry := range read.Source {
-		shown.Source = append(shown.Source, entryViewOf(entry, decided[entry.ID]))
+		held, decided := answered[entry.ID]
+		shown.Index = append(shown.Index, entryView{
+			ID:       entry.ID,
+			Name:     nameOr(entry.Name, entry.ID),
+			Severity: quietly(severityMark(entry.Severity)),
+			Location: entry.Location,
+			Decided:  decided,
+			Answered: held,
+		})
 	}
-	for _, decision := range read.Decisions {
-		shown.Decisions = append(shown.Decisions, decisionViewOf(decision))
+	if len(read.Source) == 0 {
+		for _, decision := range shown.Decisions {
+			shown.Index = append(shown.Index, entryView{
+				ID:       decision.ID,
+				Name:     decision.Name,
+				Severity: quietly(decision.Severity),
+				Location: decision.Location,
+				Decided:  true,
+				Answered: decision.Answered,
+			})
+		}
 	}
 
-	slices.SortStableFunc(shown.Source, func(one, other entryView) int {
+	for _, answer := range read.Settled {
+		shown.Settled = append(shown.Settled, settledView{
+			ID:       answer.ID,
+			Name:     nameOr(answer.Name, answer.ID),
+			Location: answer.Location,
+			Question: answer.Question,
+			Chosen:   strings.Join(answer.Chosen, chosenJoined),
+			Words:    strings.TrimSpace(answer.Words),
+		})
+	}
+
+	slices.SortStableFunc(shown.Index, func(one, other entryView) int {
 		return rankOf(one.Severity) - rankOf(other.Severity)
 	})
 	slices.SortStableFunc(shown.Decisions, func(one, other decisionView) int {
@@ -127,26 +170,35 @@ func viewOf(read document.Document, frame Frame) view {
 	return shown
 }
 
-func rankOf(severity string) int {
-	if at := slices.Index(mostSevereFirst, severity); at >= 0 {
+func (v view) AnsweredCount() int {
+	count := 0
+	for _, decision := range v.Decisions {
+		if decision.Answered {
+			count++
+		}
+	}
+	return count
+}
+
+func arrivesAnswered(decision document.Decision) bool {
+	return slices.ContainsFunc(decision.Options, func(option document.Option) bool { return option.Recommended })
+}
+
+func rankOf(severity *markView) int {
+	if severity == nil {
+		return len(mostSevereFirst)
+	}
+	if at := slices.Index(mostSevereFirst, severity.Value); at >= 0 {
 		return at
 	}
 	return len(mostSevereFirst)
 }
 
-func entryViewOf(entry document.Entry, decided bool) entryView {
-	name := entry.Name
+func nameOr(name, identifier string) string {
 	if strings.TrimSpace(name) == "" {
-		name = entry.ID
+		return identifier
 	}
-	return entryView{
-		ID:       entry.ID,
-		Name:     name,
-		Severity: entry.Severity,
-		Audience: entry.Audience,
-		Location: entry.Location,
-		Decided:  decided,
-	}
+	return name
 }
 
 func policyAdmitting(painted string) string {
@@ -158,19 +210,12 @@ func policyAdmitting(painted string) string {
 	return fmt.Sprintf(policy, fmt.Sprintf(admittedByHash, base64.StdEncoding.EncodeToString(digest[:])))
 }
 
-func named(decision document.Decision) string {
-	if strings.TrimSpace(decision.Name) == "" {
-		return decision.ID
-	}
-	return decision.Name
-}
-
 func decisionViewOf(decision document.Decision) decisionView {
 	shown := decisionView{
 		ID:       decision.ID,
-		Name:     named(decision),
-		Severity: decision.Severity,
-		Audience: decision.Audience,
+		Name:     nameOr(decision.Name, decision.ID),
+		Severity: severityMark(decision.Severity),
+		Audience: audienceMark(decision.Audience),
 		Location: decision.Location,
 		Question: decision.Question,
 		Meaning:  decision.Meaning,
@@ -179,14 +224,31 @@ func decisionViewOf(decision document.Decision) decisionView {
 		Language: decision.Evidence.Language,
 		Code:     decision.Evidence.Code,
 		Fragment: template.HTML(sanitise.Fragment(decision.Fragment.Markup, NamePrefix)),
+		Answered: arrivesAnswered(decision),
 	}
 
 	if patched := ReadPatch(decision.Evidence.Patch); !patched.Empty() {
 		shown.Diff = &patched
+		shown.Written = writtenIn(decision.Evidence.Language, patched)
 	}
 
 	shown.Options = optionsRead(decision.Options)
 	return shown
+}
+
+func writtenIn(stated string, patched Diff) string {
+	if stated != "" {
+		return stated
+	}
+	named := patched.To
+	if named == "" || named == "/dev/null" {
+		named = patched.From
+	}
+	at := strings.LastIndex(named, ".")
+	if at < 0 || at < strings.LastIndex(named, "/") {
+		return ""
+	}
+	return strings.ToLower(named[at+1:])
 }
 
 func optionsRead(offered []document.Option) []optionView {

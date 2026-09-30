@@ -141,7 +141,7 @@ func (s Side) Numbered() string {
 func (s Side) Marker() string {
 	switch s.Kind {
 	case Removed:
-		return "-"
+		return "\u2212"
 	case Added:
 		return "+"
 	case Context:
@@ -162,4 +162,24 @@ func pathShown(named string) string {
 
 func (d Diff) Empty() bool {
 	return len(d.Hunks) == 0
+}
+
+func (d Diff) Added() int {
+	return d.counted(func(row Row) bool { return row.Right.Kind == Added })
+}
+
+func (d Diff) Removed() int {
+	return d.counted(func(row Row) bool { return row.Left.Kind == Removed })
+}
+
+func (d Diff) counted(counts func(Row) bool) int {
+	count := 0
+	for _, hunk := range d.Hunks {
+		for _, row := range hunk.Rows {
+			if counts(row) {
+				count++
+			}
+		}
+	}
+	return count
 }

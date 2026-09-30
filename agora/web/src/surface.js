@@ -5,6 +5,12 @@
 import hljs from 'highlight.js/lib/common'
 
 const exchangeIsOver = 'The exchange is over. Nothing further will be sent from this page.'
+const standing = {
+  open: 'Open',
+  sent: 'Sent, waiting for a reply',
+  over: 'Exchange over',
+}
+const offsetFromTheTop = 24
 let closed = false
 let awaitingCollection = false
 
@@ -20,14 +26,34 @@ function surface() {
   return document.querySelector('main.surface')
 }
 
+function decisionNamed(identifier) {
+  return `[data-decision="${CSS.escape(identifier)}"]`
+}
+
 function cards() {
   return Array.from(document.querySelectorAll('.decision'))
 }
 
-function say(words) {
+function say(words, tone = 'quiet') {
   const state = document.querySelector('.state')
   if (state) {
     state.textContent = words
+    state.dataset.tone = tone
+  }
+}
+
+function stand(phase) {
+  const composer = document.querySelector('.composer')
+  if (composer) {
+    composer.dataset.phase = phase
+  }
+  const status = document.querySelector('.status')
+  if (status && document.querySelector('.decision')) {
+    status.dataset.status = phase
+    const said = status.querySelector('.status-said')
+    if (said) {
+      said.textContent = standing[phase]
+    }
   }
 }
 
@@ -48,8 +74,52 @@ function decisionsHeld() {
     .filter((answered) => answered.chosen.length > 0 || answered.words.trim() !== '')
 }
 
+function answeredIn(card) {
+  return chosenIn(card).length > 0 || wordsIn(card).trim() !== ''
+}
+
 function blankCards() {
-  return cards().filter((card) => chosenIn(card).length === 0 && wordsIn(card).trim() === '')
+  return cards().filter((card) => !answeredIn(card))
+}
+
+function markAnswered(mark, answered) {
+  if (mark) {
+    mark.dataset.answered = answered ? 'yes' : 'no'
+  }
+}
+
+function countAnswered() {
+  const held = cards()
+  let answered = 0
+  held.forEach((card) => {
+    const isAnswered = answeredIn(card)
+    if (isAnswered) {
+      answered += 1
+    }
+    markAnswered(card.querySelector('.attribution .answered'), isAnswered)
+    markAnswered(document.querySelector(`.entry-link${decisionNamed(card.dataset.decision)} .answered`), isAnswered)
+  })
+  const count = document.querySelector('.answered-count')
+  if (count) {
+    count.textContent = String(answered)
+  }
+  const bar = document.querySelector('.progress-bar')
+  if (bar) {
+    bar.value = answered
+  }
+}
+
+function prefersLessMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function scrollTo(target, smoothly) {
+  const top = target.getBoundingClientRect().top + window.scrollY - offsetFromTheTop
+  window.scrollTo({ top, behavior: smoothly && !prefersLessMotion() ? 'smooth' : 'auto' })
+}
+
+function firstControlOf(card) {
+  return card.querySelector('.choice, .words-field')
 }
 
 function nameOf(card) {
@@ -93,9 +163,25 @@ function pressedOutside(held, event) {
 function goTo(card) {
   closeConfirmation()
   card.scrollIntoView({ block: 'center' })
-  const first = card.querySelector('.choice, .words-field')
+  const first = firstControlOf(card)
   if (first) {
     first.focus()
+  }
+}
+
+function leadTo(card) {
+  scrollTo(card, true)
+  const first = firstControlOf(card)
+  if (first) {
+    first.focus({ preventScroll: true })
+  }
+}
+
+function leadToWhatWasSettled() {
+  const settled = document.querySelector('.settled')
+  if (settled) {
+    settled.open = true
+    scrollTo(settled, true)
   }
 }
 
@@ -150,15 +236,22 @@ function amendControl() {
   return document.querySelector('.amend')
 }
 
+function offerToAmend(offered) {
+  const amendButton = amendControl()
+  if (amendButton) {
+    amendButton.hidden = !offered
+  }
+}
+
 function labelAt(card, position) {
-  const input = card ? card.querySelector(`.choice[value="${position}"]`) : null
+  const input = card ? card.querySelector(`.choice[value="${CSS.escape(String(position))}"]`) : null
   const option = input ? input.closest('.option') : null
   const label = option ? option.querySelector('.option-label') : null
   return label ? label.textContent.trim() : String(position)
 }
 
 function describe(decision) {
-  const card = document.querySelector(`.decision[data-decision="${decision.id}"]`)
+  const card = document.querySelector(`.decision${decisionNamed(decision.id)}`)
   const name = card ? nameOf(card) : decision.id
   const chosen = decision.chosen.map((position) => labelAt(card, position))
   const said = decision.words.trim()
@@ -187,11 +280,7 @@ function showReceipt(sent, ends) {
     message.textContent = sent.message ? `Said to whoever asked: ${sent.message}` : ''
   }
 
-  const amendButton = amendControl()
-  if (amendButton) {
-    amendButton.hidden = ends
-  }
-
+  offerToAmend(!ends)
   held.hidden = false
 }
 
@@ -200,6 +289,7 @@ function hideReceipt() {
   if (held) {
     held.hidden = true
   }
+  offerToAmend(false)
 }
 
 const readOnlyWhileSent = '.choice, .decline, .words-field, .message-field, .send, .finish'
@@ -220,6 +310,7 @@ function amend() {
   hideReceipt()
   awaitingCollection = false
   unlockControls()
+  stand('open')
   say('')
 }
 
@@ -232,10 +323,8 @@ function close() {
   document.querySelectorAll('button, .choice, .decline, textarea').forEach((control) => {
     control.disabled = true
   })
-  const amendButton = amendControl()
-  if (amendButton) {
-    amendButton.hidden = true
-  }
+  offerToAmend(false)
+  stand('over')
 }
 
 function takeUpWhetherItIsOver() {
@@ -266,7 +355,7 @@ async function send(ends) {
   })
 
   if (!answered.ok) {
-    say(`That was not accepted: ${answered.status}. Nothing was sent.`)
+    say(`That was not accepted: ${answered.status}. Nothing was sent.`, 'error')
     return
   }
 
@@ -274,12 +363,13 @@ async function send(ends) {
 
   if (ends) {
     close()
-    say(exchangeIsOver)
+    say(exchangeIsOver, 'over')
     return
   }
   lockForSending()
   awaitingCollection = true
-  say('Sent. Waiting for a reply on this page.')
+  stand('sent')
+  say('Sent. Waiting for a reply on this page.', 'waiting')
 }
 
 function bind() {
@@ -329,9 +419,43 @@ function bind() {
       }
     })
   })
+  cards().forEach((card) => {
+    card.addEventListener('change', countAnswered)
+    card.addEventListener('input', countAnswered)
+  })
+  document.querySelectorAll('a.entry-link').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      const card = document.querySelector(`.decision${decisionNamed(link.dataset.decision)}`)
+      if (card) {
+        event.preventDefault()
+        leadTo(card)
+      }
+    })
+  })
+  const settledLink = document.querySelector('.settled-link')
+  if (settledLink) {
+    settledLink.addEventListener('click', (event) => {
+      event.preventDefault()
+      leadToWhatWasSettled()
+    })
+  }
+  countAnswered()
   document.querySelectorAll('pre code[class^="language-"]').forEach((block) => {
     if (block.textContent.trim()) {
       hljs.highlightElement(block)
+    }
+  })
+  document.querySelectorAll('.evidence.diff').forEach(colourTheLines)
+}
+
+function colourTheLines(diff) {
+  const language = diff.dataset.language
+  if (!language || !hljs.getLanguage(language)) {
+    return
+  }
+  diff.querySelectorAll('.hunk .line code').forEach((line) => {
+    if (line.textContent.trim()) {
+      line.innerHTML = hljs.highlight(line.textContent, { language, ignoreIllegals: true }).value
     }
   })
 }
@@ -357,9 +481,10 @@ async function take(revision) {
   document.title = read.title
   awaitingCollection = false
 
+  hideTheTip()
   bind()
   takeUpWhetherItIsOver()
-  say(closed ? exchangeIsOver : 'A reply arrived, and this page is showing it.')
+  say(closed ? exchangeIsOver : 'A reply arrived, and this page is showing it.', closed ? 'over' : 'quiet')
 }
 
 function follow() {
@@ -372,20 +497,81 @@ function follow() {
   })
   live.addEventListener('closed', () => {
     close()
-    say(exchangeIsOver)
+    say(exchangeIsOver, 'over')
   })
   live.addEventListener('uncollected', (event) => {
     if (event.data === 'no' && awaitingCollection) {
       awaitingCollection = false
-      const amendButton = amendControl()
-      if (amendButton) {
-        amendButton.hidden = true
-      }
+      offerToAmend(false)
       say('Collected. The answer has gone.')
     }
   })
 }
 
+function tip() {
+  return document.querySelector('.tooltip')
+}
+
+let tippedMark = null
+
+function showTheTipFor(mark) {
+  const held = tip()
+  if (!held) {
+    return
+  }
+  tippedMark = mark
+  held.querySelector('.tooltip-title').textContent = mark.dataset.title || ''
+  held.querySelector('.tooltip-hint').textContent = mark.dataset.hint || ''
+  const box = mark.getBoundingClientRect()
+  held.style.left = `${box.left + box.width / 2}px`
+  held.style.top = `${box.top - 8}px`
+  held.hidden = false
+}
+
+function hideTheTip() {
+  tippedMark = null
+  const held = tip()
+  if (held) {
+    held.hidden = true
+  }
+}
+
+function followTheScroll() {
+  if (tippedMark && tippedMark === document.activeElement) {
+    showTheTipFor(tippedMark)
+    return
+  }
+  hideTheTip()
+}
+
+function followTheMarks() {
+  document.addEventListener('mouseover', (event) => {
+    const mark = event.target.closest?.('.mark')
+    if (mark) {
+      showTheTipFor(mark)
+    }
+  })
+  document.addEventListener('mouseout', (event) => {
+    const mark = event.target.closest?.('.mark')
+    if (mark && !mark.contains(event.relatedTarget)) {
+      hideTheTip()
+    }
+  })
+  document.addEventListener('focusin', (event) => {
+    const mark = event.target.closest?.('.mark')
+    if (mark) {
+      showTheTipFor(mark)
+    }
+  })
+  document.addEventListener('focusout', (event) => {
+    if (event.target.closest?.('.mark')) {
+      hideTheTip()
+    }
+  })
+  window.addEventListener('scroll', followTheScroll, true)
+}
+
 bind()
 takeUpWhetherItIsOver()
+followTheMarks()
 follow()

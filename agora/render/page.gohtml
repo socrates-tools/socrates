@@ -3,31 +3,87 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
 <meta http-equiv="Content-Security-Policy" content="{{.Policy}}">
 <title>{{.Title}}</title>
 <link rel="stylesheet" href="/assets/surface.css">
 {{if .Stylesheet}}<style>{{.Stylesheet}}</style>{{end}}
 </head>
 <body data-base="{{.Base}}" data-token="{{.Token}}" data-revision="{{.Revision}}" data-over="{{if .Over}}yes{{else}}no{{end}}">
+{{define "check"}}<svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square" aria-hidden="true" focusable="false"><polyline points="20 6 9 17 4 12"/></svg>{{end}}
+{{define "mark"}}<span class="mark {{.Kind}}"{{if eq .Kind "severity"}} data-severity="{{.Value}}"{{else}} data-audience="{{.Value}}"{{end}} data-tone="{{.Tone}}" data-title="{{.Title}}" data-hint="{{.Hint}}" role="img" aria-label="{{.Spoken}}"{{if .Focusable}} tabindex="0"{{end}}>{{.Drawn}}</span>{{end}}
+{{define "entry"}}<span class="answered" data-answered="{{if .Decided}}{{if .Answered}}yes{{else}}no{{end}}{{else}}none{{end}}" aria-hidden="true">{{template "check"}}</span>
+<span class="entry-heading"><span class="entry-name">{{.Name}}</span>{{with .Severity}}{{template "mark" .}}{{end}}</span>
+{{if .Location}}<span class="location">{{.Location}}</span>{{end}}{{end}}
 <main class="surface">
 <header class="heading">
+<div class="masthead">
+<span class="wordmark">agora</span>
+<span class="status" data-status="{{if not .Decisions}}nothing{{else if .Over}}over{{else}}open{{end}}"><span class="status-dot" aria-hidden="true"></span><span class="status-said">{{if not .Decisions}}Nothing to answer{{else if .Over}}Exchange over{{else}}Open{{end}}</span></span>
+</div>
 <h1>{{.Title}}</h1>
 {{if .Preamble}}<p class="preamble">{{.Preamble}}</p>{{end}}
 </header>
 
-{{if .Source}}
-<nav class="glance" aria-label="What was seen">
+<div class="layout">
+{{if .Index}}
+<nav class="index" aria-label="What was seen">
+<div class="progress">
+<span class="overline">{{if .Decisions}}Decisions{{else}}What was seen{{end}}</span>
+{{if .Decisions}}
+<span class="progress-said"><span class="answered-count">{{.AnsweredCount}}</span> of {{len .Decisions}} answered</span>
+<progress class="progress-bar" max="{{len .Decisions}}" value="{{.AnsweredCount}}" aria-hidden="true"></progress>
+{{end}}
+</div>
+{{if .Settled}}
+<a class="settled-link" href="#settled">
+<span class="settled-check">{{template "check"}}</span>
+<span class="settled-link-count">{{len .Settled}} settled earlier</span>
+<span class="settled-link-names">{{range $at, $answer := .Settled}}{{if $at}}, {{end}}{{$answer.Name}}{{end}}</span>
+</a>
+{{end}}
 <ol class="entries">
-{{range .Source}}
+{{range .Index}}
 <li class="entry">
-{{if .Decided}}<a class="entry-name" href="#decision-{{.ID}}">{{.Name}}</a>{{else}}<span class="entry-name">{{.Name}}</span>{{end}}
-{{if .Severity}}<span class="severity" data-severity="{{.Severity}}">{{.Severity}}</span>{{end}}
-{{if .Audience}}<span class="audience">{{.Audience}}</span>{{end}}
-{{if .Location}}<span class="location">{{.Location}}</span>{{end}}
+{{if .Decided}}<a class="entry-link" href="#decision-{{.ID}}" data-decision="{{.ID}}">{{template "entry" .}}</a>{{else}}<span class="entry-link">{{template "entry" .}}</span>{{end}}
 </li>
 {{end}}
 </ol>
 </nav>
+{{end}}
+
+<div class="column">
+{{if .Settled}}
+<details class="settled" id="settled" open>
+<summary class="settled-summary">
+<span class="settled-heading">
+<span class="settled-title">Settled earlier <span class="settled-count">· {{len .Settled}}</span></span>
+<span class="settled-note">Read-only. These will not be asked again.</span>
+</span>
+<span class="settled-toggle" aria-hidden="true"><span class="when-open">Hide</span><span class="when-closed">Show</span></span>
+</summary>
+<ol class="settled-answers">
+{{range .Settled}}
+<li class="settled-answer" data-settled="{{.ID}}">
+<span class="settled-check">{{template "check"}}</span>
+<div class="settled-attribution">
+<span class="settled-name">{{.Name}}</span>
+{{if .Location}}<span class="location">{{.Location}}</span>{{end}}
+</div>
+<p class="settled-question">{{.Question}}</p>
+<div class="settled-answered">
+<span class="overline settled-overline">Settled</span>
+<span class="settled-said">
+{{if .Chosen}}<span class="settled-chosen">{{.Chosen}}</span>{{end}}
+{{if .Words}}<span class="settled-words">“{{.Words}}”</span>{{end}}
+{{if and (not .Chosen) (not .Words)}}<span class="settled-left">Left to whoever asked</span>{{end}}
+</span>
+</div>
+</li>
+{{end}}
+</ol>
+</details>
+{{if .Decisions}}<span class="overline still-open">Still open</span>{{end}}
 {{end}}
 
 {{if .Decisions}}
@@ -35,33 +91,42 @@
 <ol class="decisions">
 {{range .Decisions}}
 <li class="decision" id="decision-{{.ID}}" data-decision="{{.ID}}" data-mode="{{.Mode}}" data-state="{{if $.Over}}closed{{else}}open{{end}}">
+<div class="seen">
 <div class="attribution">
+<span class="answered" data-answered="{{if .Answered}}yes{{else}}no{{end}}" aria-hidden="true">{{template "check"}}</span>
 <span class="name">{{.Name}}</span>
-{{if .Severity}}<span class="severity" data-severity="{{.Severity}}">{{.Severity}}</span>{{end}}
-{{if .Audience}}<span class="audience">{{.Audience}}</span>{{end}}
+{{with .Severity}}{{template "mark" .}}{{end}}
+{{with .Audience}}{{template "mark" .}}{{end}}
 {{if .Location}}<span class="location">{{.Location}}</span>{{end}}
 </div>
 <h2 class="question">{{.Question}}</h2>
 {{if .Meaning}}<p class="meaning">{{.Meaning}}</p>{{end}}
 
+{{if or .Code .Diff .Fragment}}
+<div class="evidences">
 {{if .Code}}
 <div class="evidence code">
+<div class="evidence-heading"><span class="evidence-label">{{if .Language}}{{.Language}}{{else}}code{{end}}</span></div>
 <pre><code class="language-{{.Language}}">{{.Code}}</code></pre>
 </div>
 {{end}}
 
 {{if .Diff}}
-<div class="evidence diff" data-layout="split">
-<div class="diff-heading">{{if eq .Diff.From .Diff.To}}<span class="diff-file">{{.Diff.From}}</span>{{else}}<span class="diff-from">{{.Diff.From}}</span><span class="diff-to">{{.Diff.To}}</span>{{end}}</div>
+<div class="evidence diff" data-layout="split" data-language="{{.Written}}">
+<div class="evidence-heading diff-heading">
+<span class="evidence-label">{{if eq .Diff.From .Diff.To}}<span class="diff-file">{{.Diff.From}}</span>{{else}}<span class="diff-from">{{.Diff.From}}</span> → <span class="diff-to">{{.Diff.To}}</span>{{end}}</span>
+<span class="evidence-aside"><span class="diff-added">+{{.Diff.Added}}</span>
+<span class="diff-removed">−{{.Diff.Removed}}</span></span>
+</div>
 {{range .Diff.Hunks}}
 <table class="hunk">
 {{if .Heading}}<caption>{{.Heading}}</caption>{{end}}
 <tbody>
 {{range .Rows}}
 <tr class="row">
-<td class="number" data-side="left">{{.Left.Numbered}}</td>
+<td class="number" data-side="left" data-kind="{{.Left.Kind}}">{{.Left.Numbered}}</td>
 <td class="line" data-side="left" data-kind="{{.Left.Kind}}"><span class="marker">{{.Left.Marker}}</span><code>{{.Left.Text}}</code></td>
-<td class="number" data-side="right">{{.Right.Numbered}}</td>
+<td class="number" data-side="right" data-kind="{{.Right.Kind}}">{{.Right.Numbered}}</td>
 <td class="line" data-side="right" data-kind="{{.Right.Kind}}"><span class="marker">{{.Right.Marker}}</span><code>{{.Right.Text}}</code></td>
 </tr>
 {{end}}
@@ -72,9 +137,16 @@
 {{end}}
 
 {{if .Fragment}}
-<div class="evidence illustration"><div class="painted">{{.Fragment}}</div></div>
+<div class="evidence illustrated">
+<div class="evidence-heading"><span class="evidence-label">illustration</span></div>
+<div class="illustration"><div class="painted">{{.Fragment}}</div></div>
+</div>
 {{end}}
+</div>
+{{end}}
+</div>
 
+<div class="answering">
 {{if .Options}}
 <fieldset class="options">
 <legend>{{if .Multiple}}Choose as many as apply{{else}}Choose one{{end}}</legend>
@@ -82,19 +154,15 @@
 {{range .Options}}
 <label class="option"{{if .Recommended}} data-recommended="yes"{{end}}>
 <input class="choice" data-part="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}"{{if .Recommended}} checked{{end}}{{if $.Over}} disabled{{end}}>
-<span class="option-heading">
 <span class="option-label">{{.Label}}</span>
 {{if .Recommended}}<span class="option-mark">Recommended</span>{{end}}
-</span>
 {{if .Meaning}}<span class="option-meaning">{{.Meaning}}</span>{{end}}
 </label>
 {{end}}
 {{if not .Multiple}}
 <label class="none">
 <input class="decline" data-part="answering" type="radio" name="choice-{{.ID}}" data-decision="{{.ID}}"{{if $.Over}} disabled{{end}}>
-<span class="option-heading">
 <span class="option-label">None of these</span>
-</span>
 <span class="option-meaning">Write your own answer below, or leave this to whoever asked.</span>
 </label>
 {{end}}
@@ -103,34 +171,37 @@
 
 <label class="words">
 <span class="words-label">In your own words</span>
-<textarea class="words-field" data-part="answering" name="words-{{.ID}}" data-decision="{{.ID}}" rows="3" placeholder="Answering here alone is a complete answer."{{if $.Over}} disabled{{end}}></textarea>
+<textarea class="words-field" data-part="answering" name="words-{{.ID}}" data-decision="{{.ID}}" rows="2" placeholder="Answering here alone is a complete answer."{{if $.Over}} disabled{{end}}></textarea>
 </label>
-
+</div>
 </li>
 {{end}}
 </ol>
 
-<section class="composer">
+<section class="composer" data-phase="{{if .Over}}over{{else}}open{{end}}">
 <label class="message">
 <span class="message-label">Anything to say to whoever asked</span>
 <textarea class="message-field" data-part="sending" name="message" rows="3"{{if .Over}} disabled{{end}}></textarea>
 </label>
-</section>
 
 <footer class="bar">
+<output class="receipt" data-part="sending" hidden aria-live="polite">
+<span class="notice-dot" aria-hidden="true"></span>
+<span class="notice-said">
+<span class="receipt-heading">Sent. Here is what went:</span>
+<ul class="receipt-decisions"></ul>
+<span class="receipt-message"></span>
+</span>
+</output>
 <div class="sends">
 <button class="send" data-part="sending" type="submit" data-ends="no"{{if .Over}} disabled{{end}}>Send and wait for a reply</button>
 <button class="finish" data-part="sending" type="submit" data-ends="yes"{{if .Over}} disabled{{end}}>Send and finish</button>
 </div>
 <p class="sends-meaning">Sending waits for a reply on this page. Finishing sends and closes the exchange.</p>
-<output class="receipt" data-part="sending" hidden aria-live="polite">
-<p class="receipt-heading">Sent. Here is what went:</p>
-<ul class="receipt-decisions"></ul>
-<p class="receipt-message"></p>
-<button class="amend" data-part="sending" type="button"{{if .Over}} disabled{{end}}>Amend and send again</button>
-</output>
-<p class="state" role="status" aria-live="polite">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
+<button class="amend" data-part="sending" type="button" hidden{{if .Over}} disabled{{end}}>Amend and send again</button>
+<p class="state" role="status" aria-live="polite" data-tone="{{if .Over}}over{{else}}quiet{{end}}">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
 </footer>
+</section>
 </form>
 
 <dialog class="confirmation" data-part="sending" aria-labelledby="confirmation-heading">
@@ -138,8 +209,8 @@
 <p class="confirmation-meaning">A decision left blank goes as nothing. Whoever asked will see no answer to it.</p>
 <ul class="confirmation-decisions"></ul>
 <div class="confirmation-presses">
-<button class="send-anyway" data-part="sending" type="button" autofocus>Send anyway</button>
 <button class="go-back" data-part="sending" type="button">Go back and answer</button>
+<button class="send-anyway" data-part="sending" type="button" autofocus>Send anyway</button>
 </div>
 </dialog>
 {{else}}
@@ -147,7 +218,10 @@
 <p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>
 </section>
 {{end}}
+</div>
+</div>
 </main>
+<div class="tooltip" id="tooltip" role="tooltip" hidden><span class="tooltip-title"></span><span class="tooltip-hint"></span></div>
 <script src="/assets/surface.js"></script>
 </body>
 </html>

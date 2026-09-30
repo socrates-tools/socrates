@@ -73,18 +73,18 @@ agora collects a session after 45 minutes with no reader, and because no design 
 ## What was settled
 
 Round two opens with what round one settled, above what is still open, on the page the person already has.
-Nothing carries across a revision, so a settled card is not carried over from the round before it: write it afresh, from what `socrates agora poll` last handed back.
+Nothing carries across a revision, so what was settled is not carried over from the round before it: write it afresh, from what `socrates agora poll` last handed back.
 
-A settled card states the question, the answer and the person's own words, and offers nothing:
+A settled answer goes in the document's `settled` list rather than among its decisions, and states the question, the labels the person chose and their own words:
 
-    {"id": "q2", "question": "should a design round carry a cap the way a review round does",
-     "meaning": "settled: no cap, because nothing here spawns a process for a cap to protect"}
+    "settled": [{"id": "q2", "question": "should a design round carry a cap",
+                 "chosen": ["no cap"], "words": "nothing here spawns a process for a cap to protect"}]
 
-Such a card carries no options and states no mode either: a document giving a mode to a decision that offers nothing is refused before anything is served.
-The card still carries the field a person writes in, for whoever wants to reopen it.
+The page reads what was settled ahead of every open question, as a block that offers nothing to answer.
+An identifier is either settled or still open: a document naming one in both is refused before anything is served.
 
-List every settled card ahead of the round's open questions.
-That is what keeps the block first and contiguous: nothing else about a design document reorders a card, so the position you list it in is the position it renders in.
+A settled answer offers no field of its own.
+A person reopening one names it in the message the page carries for the whole round, and the next round asks it again as a question.
 
 Carry one sentence per settled question into the preamble too, so the argument reads without scrolling past the block below it.
 The preamble is one paragraph on the page, so write it as sentences rather than as lines:

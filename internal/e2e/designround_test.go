@@ -42,17 +42,11 @@ const inTheirOwnWordsAboutTheCap = "no cap, because nothing here spawns a proces
 const designRoundTwoDocument = `{
   "title": "one question left before the spec is written",
   "preamble": "q1: the surface, matching what agora's own source already calls it. q2: no round cap, because nothing here spawns a process for one to protect.",
+  "settled": [
+    {"id": "q1", "question": "what should the loopback server be called in the glossary", "chosen": ["the surface"]},
+    {"id": "q2", "question": "should a design round carry a cap the way a review round does", "words": "no cap, because nothing here spawns a process for a cap to protect"}
+  ],
   "decisions": [
-    {
-      "id": "q1",
-      "question": "what should the loopback server be called in the glossary",
-      "meaning": "settled: the surface, matching what agora's own source already calls it"
-    },
-    {
-      "id": "q2",
-      "question": "should a design round carry a cap the way a review round does",
-      "meaning": "settled: no cap, because nothing here spawns a process for a cap to protect"
-    },
     {
       "id": "q3",
       "question": "should CONTEXT.md gain an entry for the surface today or wait until the spec is written",
@@ -133,7 +127,7 @@ func TestADesignRoundArrivesChosenAndWhatThePersonAnsweredReachesTheSession(t *t
 	nothingLeftTheMachine(t, address, page.requests.all())
 }
 
-func TestASecondDesignRoundOpensWithTheSettledBlockFirstAndContiguous(t *testing.T) {
+func TestASecondDesignRoundOpensWithWhatWasSettledAheadOfWhatIsStillOpen(t *testing.T) {
 	held := standing(t)
 	address := held.serve(designRoundDocument)
 	page := opening(t, address)
@@ -149,36 +143,47 @@ func TestASecondDesignRoundOpensWithTheSettledBlockFirstAndContiguous(t *testing
 	held.serveAgain(designRoundTwoDocument)
 	page.waitFor(reachedThePage("q3"))
 
-	var order []string
-	page.evaluate(`Array.from(document.querySelectorAll('.decision')).map((held) => held.dataset.decision)`, &order)
-	if diff := cmp.Diff([]string{"q1", "q2", "q3"}, order); diff != "" {
-		t.Errorf("the settled block does not render first and contiguous ahead of the open question (-want +got):\n%s", diff)
+	var read struct {
+		Settled   []string `json:"settled"`
+		Decisions []string `json:"decisions"`
+		First     bool     `json:"first"`
+		Controls  int      `json:"controls"`
+		Said      string   `json:"said"`
+		Shown     bool     `json:"shown"`
 	}
+	page.evaluate(`(() => {
+  const settled = document.querySelector('.settled');
+  const decisions = document.querySelector('.decisions');
+  return {
+    settled: Array.from(document.querySelectorAll('.settled-answer')).map((held) => held.dataset.settled),
+    decisions: Array.from(document.querySelectorAll('.decision')).map((held) => held.dataset.decision),
+    first: !!settled && !!decisions && !!(settled.compareDocumentPosition(decisions) & Node.DOCUMENT_POSITION_FOLLOWING),
+    controls: settled ? settled.querySelectorAll('input, textarea, button, select').length : -1,
+    said: (document.querySelector('.settled-answer[data-settled="q2"]') || { textContent: '' }).textContent,
+    shown: !!settled && settled.open && settled.getBoundingClientRect().height > 0,
+  };
+})()`, &read)
 
-	var settledModes []string
-	page.evaluate(`['q1', 'q2'].map((id) => document.querySelector('.decision[data-decision="' + id + '"]').dataset.mode)`, &settledModes)
-	for position, mode := range settledModes {
-		if mode != "" {
-			t.Errorf("the settled decision at position %d states the mode %q, and a settled card states none", position, mode)
-		}
+	if diff := cmp.Diff([]string{"q1", "q2"}, read.Settled); diff != "" {
+		t.Errorf("what was settled does not render as the document stated it (-want +got):\n%s", diff)
 	}
-
-	var settledOptions int
-	page.evaluate(`document.querySelectorAll('.decision[data-decision="q1"] .choice, .decision[data-decision="q2"] .choice').length`, &settledOptions)
-	if settledOptions != 0 {
-		t.Errorf("a settled card offers %d options, and a settled card offers nothing", settledOptions)
+	if diff := cmp.Diff([]string{"q3"}, read.Decisions); diff != "" {
+		t.Errorf("round two renders something other than the one open question as a card (-want +got):\n%s", diff)
+	}
+	if !read.First || !read.Shown {
+		t.Errorf("what was settled is not shown ahead of what is still open: %+v", read)
+	}
+	if read.Controls != 0 {
+		t.Errorf("what was settled offers %d controls, and a settled answer offers nothing to answer", read.Controls)
+	}
+	if !strings.Contains(read.Said, "no cap") || !strings.Contains(read.Said, "cap to protect") {
+		t.Errorf("the settled answer for q2 does not carry the person's own words: %q", read.Said)
 	}
 
 	var openOptions int
 	page.evaluate(`document.querySelectorAll('.decision[data-decision="q3"] .choice').length`, &openOptions)
 	if openOptions == 0 {
 		t.Error("the open question in round two offers no options at all")
-	}
-
-	var settledText string
-	page.evaluate(`document.querySelector('.decision[data-decision="q2"] .meaning').textContent`, &settledText)
-	if !strings.Contains(settledText, "no cap") || !strings.Contains(settledText, "cap to protect") {
-		t.Errorf("the settled card for q2 does not carry the answer and the person's own words: %q", settledText)
 	}
 
 	var preamble string

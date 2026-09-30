@@ -32,5 +32,5 @@ The request collides with that invariant and with the reopening story, so a fix 
 
 ## Status
 
-Not fixed, and not designed.
-Recorded so the next change to the page starts from it.
+Fixed by `docs/changes/the-kylix-page/spec.md`.
+A settled answer is carried by the document's `settled` list rather than as a card, offers no field, and is reopened through the page's message, per ADR 46.

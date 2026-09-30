@@ -14,7 +14,7 @@ func TestTheSkillStatesRoundTwoOpensWithWhatWasSettled(t *testing.T) {
 
 	for _, said := range []string{
 		"Round two opens with what round one settled, above what is still open",
-		"Nothing carries across a revision, so a settled card is not carried over from the round before it",
+		"Nothing carries across a revision, so what was settled is not carried over from the round before it",
 	} {
 		if !strings.Contains(document, said) {
 			t.Errorf("the skill does not say %q, so a session has no rule for opening a later round with what is already settled", said)
@@ -22,24 +22,43 @@ func TestTheSkillStatesRoundTwoOpensWithWhatWasSettled(t *testing.T) {
 	}
 }
 
-func TestTheSkillStatesASettledCardCarriesNoOptionsAndNoMode(t *testing.T) {
+func TestTheSkillStatesASettledAnswerGoesInTheSettledListRatherThanAmongTheDecisions(t *testing.T) {
 	settled := sectionOf(t, skill.Document(), settledHeading)
 
 	for _, said := range []string{
-		"A settled card states the question, the answer and the person's own words, and offers nothing",
-		"Such a card carries no options and states no mode either",
+		"A settled answer goes in the document's `settled` list rather than among its decisions",
+		"states the question, the labels the person chose and their own words",
+		"An identifier is either settled or still open",
 	} {
 		if !strings.Contains(settled, said) {
 			t.Errorf("the settled section does not say %q:\n%s", said, settled)
 		}
 	}
 
-	lowered := strings.ToLower(settled)
-	if strings.Contains(lowered, `"options"`) {
-		t.Errorf("the settled section's own example carries an options field, and a settled card offers nothing:\n%s", settled)
+	for _, field := range []string{`"settled":`, `"chosen":`, `"words":`} {
+		if !strings.Contains(settled, field) {
+			t.Errorf("the settled section's own example carries no %s, and it is the shape a session writes:\n%s", field, settled)
+		}
 	}
-	if strings.Contains(lowered, `"mode"`) {
-		t.Errorf("the settled section's own example states a mode, and a settled card states none:\n%s", settled)
+	lowered := strings.ToLower(settled)
+	for _, field := range []string{`"options"`, `"mode"`, `"decisions"`} {
+		if strings.Contains(lowered, field) {
+			t.Errorf("the settled section's own example carries %s, and a settled answer is not a decision:\n%s", field, settled)
+		}
+	}
+}
+
+func TestTheSkillStatesASettledAnswerIsReopenedThroughTheMessage(t *testing.T) {
+	settled := sectionOf(t, skill.Document(), settledHeading)
+
+	for _, said := range []string{
+		"A settled answer offers no field of its own",
+		"A person reopening one names it in the message the page carries for the whole round",
+		"the next round asks it again as a question",
+	} {
+		if !strings.Contains(settled, said) {
+			t.Errorf("the settled section does not say %q, so a design with no field on a settled answer would be a ratchet:\n%s", said, settled)
+		}
 	}
 }
 
@@ -68,14 +87,14 @@ func TestTheSkillStatesIdentifiersAreStableForTheLifeOfTheDesign(t *testing.T) {
 	}
 }
 
-func TestTheSkillStatesTheSettledBlockStaysFirstAndContiguousBecauseOfListOrder(t *testing.T) {
+func TestTheSkillStatesThePageReadsWhatWasSettledFirstWhereverItIsListed(t *testing.T) {
 	settled := sectionOf(t, skill.Document(), settledHeading)
 
-	if !strings.Contains(settled, "List every settled card ahead of the round's open questions") {
-		t.Error("the settled section does not say to list the settled cards ahead of the open questions")
+	if !strings.Contains(settled, "The page reads what was settled ahead of every open question, as a block that offers nothing to answer") {
+		t.Errorf("the settled section does not say the page reads what was settled first:\n%s", settled)
 	}
-	if !strings.Contains(settled, "the position you list it in is the position it renders in") {
-		t.Error("the settled section does not explain that list order is what keeps the block first and contiguous")
+	if strings.Contains(settled, "the position you list it in is the position it renders in") {
+		t.Errorf("the settled section still says list order places a settled card, and what was settled is no longer a card:\n%s", settled)
 	}
 }
 

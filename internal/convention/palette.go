@@ -16,7 +16,7 @@ var paletteSelector = ":root"
 
 var colourWritten = regexp.MustCompile(`(?i)#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(|[:\s,(](?:white|black|silver|gainsboro|whitesmoke)[;\s,)]`)
 
-var declaration = regexp.MustCompile(`^\s*([-a-zA-Z]+)\s*:`)
+var declaration = regexp.MustCompile(`^\s*([-a-zA-Z0-9_]+)\s*:`)
 
 type Palette struct {
 	Loose []string

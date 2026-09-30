@@ -535,6 +535,24 @@ type landed struct {
 	Hash     string `json:"hash"`
 }
 
+const offeringNoneBesideOfferingSome = `{
+  "title": "one question left before the spec is written",
+  "decisions": [
+    {"id": "q1", "question": "what should the loopback server be called in the glossary", "meaning": "the surface, matching what agora's own source already calls it"},
+    {"id": "q2", "question": "should a design round carry a cap the way a review round does", "meaning": "no cap, because nothing here spawns a process for a cap to protect"},
+    {
+      "id": "q3",
+      "question": "should CONTEXT.md gain an entry for the surface today or wait until the spec is written",
+      "meaning": "the glossary is maintained as terms settle",
+      "mode": "single-choice",
+      "options": [
+        {"label": "write it now", "meaning": "the term is already settled", "recommended": true},
+        {"label": "wait for the spec", "meaning": "batch every glossary change with the write"}
+      ]
+    }
+  ]
+}`
+
 func TestABlankDecisionsNameTakesThePersonToItsCard(t *testing.T) {
 	for _, jump := range []struct {
 		named   string
@@ -546,7 +564,7 @@ func TestABlankDecisionsNameTakesThePersonToItsCard(t *testing.T) {
 	} {
 		t.Run(jump.named, func(t *testing.T) {
 			held := standing(t)
-			page := opening(t, held.serve(designRoundTwoDocument))
+			page := opening(t, held.serve(offeringNoneBesideOfferingSome))
 
 			page.evaluate(declined("q3"), nil)
 			page.write(within("q2", ".words-field"), inTheirOwnWordsAboutTheCap)

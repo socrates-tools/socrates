@@ -235,8 +235,8 @@ func TestADocumentRendersWithoutTheCallerWritingMarkup(t *testing.T) {
 
 	page := rendered(t, read)
 
-	cards := elements(page, "li")
-	if len(cards) != 1 || !hasClass(cards[0], "decision") {
+	cards := cardsIn(page)
+	if len(cards) != 1 {
 		t.Fatalf("one decision rendered %d cards", len(cards))
 	}
 
@@ -250,11 +250,22 @@ func TestADocumentRendersWithoutTheCallerWritingMarkup(t *testing.T) {
 		"take the lock first",
 		"leave it",
 		"internal/cache/read.go:41",
-		"a person",
-		"error",
 	} {
 		if !strings.Contains(text(card), expected) {
 			t.Errorf("the card does not carry %q:\n%s", expected, text(card))
+		}
+	}
+	for kind, value := range map[string]string{"severity": "error", "audience": "a person"} {
+		mark := markIn(card, kind)
+		if mark == nil {
+			t.Errorf("the card carries no %s mark", kind)
+			continue
+		}
+		if held := attribute(mark, "data-"+kind); held != value {
+			t.Errorf("the card's %s mark carries %q, and the document stated %q", kind, held, value)
+		}
+		if spoken := attribute(mark, "aria-label"); !strings.Contains(strings.ToLower(spoken), value) {
+			t.Errorf("the card's %s mark is announced as %q, and a person who cannot see the icon hears %q in it", kind, spoken, value)
 		}
 	}
 
@@ -263,6 +274,15 @@ func TestADocumentRendersWithoutTheCallerWritingMarkup(t *testing.T) {
 			t.Errorf("a single-choice decision renders a %q", attribute(choice, "type"))
 		}
 	}
+}
+
+func markIn(node *html.Node, kind string) *html.Node {
+	for _, held := range elements(node, "span") {
+		if hasClass(held, "mark") && hasClass(held, kind) {
+			return held
+		}
+	}
+	return nil
 }
 
 func threeOptions() document.Document {
@@ -524,7 +544,7 @@ func TestADecisionWithNoOptionsStillCarriesTheField(t *testing.T) {
 		if !hasClass(written, "words-field") {
 			continue
 		}
-		if held := attribute(written, "rows"); held != "3" {
+		if held := attribute(written, "rows"); held != "2" {
 			t.Errorf("the field a person writes in is %q rows, and its size is the surface's", held)
 		}
 	}
@@ -842,15 +862,18 @@ func TestTheSourceIsReadBeforeTheDecisions(t *testing.T) {
 	}
 
 	for position, expected := range [][]string{
-		{"the read is unlocked", "error", "a person", "internal/cache/read.go:41"},
-		{"the write counts twice", "warning", "the author patches", "internal/cache/write.go:12"},
-		{"c-3", "info", "the author patches", "internal/cache/read.go:80"},
+		{"the read is unlocked", "internal/cache/read.go:41"},
+		{"the write counts twice", "internal/cache/write.go:12"},
+		{"c-3", "internal/cache/read.go:80"},
 	} {
 		for _, wanted := range expected {
 			if !strings.Contains(text(entries[position]), wanted) {
 				t.Errorf("entry %d does not carry %q:\n%s", position+1, wanted, text(entries[position]))
 			}
 		}
+	}
+	if got := severitiesRead(entries); !slices.Equal([]string{"error", "warning", "info"}, got) {
+		t.Errorf("the entries carry the severities %v, and each carries its own source's", got)
 	}
 
 	written, err := render.Page(citingASource(), render.Frame{Base: "/sessions/a1b2c3d4", Token: "a-token", Revision: 1})
@@ -892,7 +915,11 @@ func TestAnEntryLeadsToTheDecisionThatCoversIt(t *testing.T) {
 	leading := map[string]string{}
 	for _, entry := range entriesIn(page) {
 		for _, link := range elements(entry, "a") {
-			leading[strings.TrimSpace(text(link))] = attribute(link, "href")
+			for _, named := range elements(link, "span") {
+				if hasClass(named, "entry-name") {
+					leading[strings.TrimSpace(text(named))] = attribute(link, "href")
+				}
+			}
 		}
 	}
 
@@ -938,14 +965,21 @@ func TestTheListIsNotTheCallersProse(t *testing.T) {
 	}
 }
 
-func TestADocumentCitingNoSourceListsNothing(t *testing.T) {
-	page := rendered(t, oneDecision(document.One))
+func TestADocumentCitingNoSourceIndexesItsDecisions(t *testing.T) {
+	read := listedLeastSevereFirst()
+	read.Source = nil
 
-	if entries := entriesIn(page); len(entries) != 0 {
-		t.Errorf("a document citing no source listed %d entries", len(entries))
+	page := rendered(t, read)
+
+	entries := entriesIn(page)
+	if got := severitiesRead(entries); !slices.Equal([]string{"error", "warning", "info"}, got) {
+		t.Fatalf("a document citing no source indexes entries carrying the severities %v, want one per decision, most severe first", got)
 	}
-	for _, held := range elements(page, "nav") {
-		t.Errorf("a document citing no source rendered a <nav class=%q>", attribute(held, "class"))
+	for position, card := range cardsIn(page) {
+		links := elements(entries[position], "a")
+		if len(links) != 1 || attribute(links[0], "href") != "#"+attribute(card, "id") {
+			t.Errorf("entry %d does not lead to the card at the same place, %q", position+1, attribute(card, "id"))
+		}
 	}
 }
 

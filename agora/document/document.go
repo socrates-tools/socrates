@@ -30,6 +30,16 @@ type Document struct {
 	Stylesheet string     `json:"stylesheet"`
 	Decisions  []Decision `json:"decisions"`
 	Source     []Entry    `json:"source"`
+	Settled    []Settled  `json:"settled"`
+}
+
+type Settled struct {
+	ID       string   `json:"id"`
+	Name     string   `json:"name"`
+	Location string   `json:"location"`
+	Question string   `json:"question"`
+	Chosen   []string `json:"chosen"`
+	Words    string   `json:"words"`
 }
 
 type Entry struct {
@@ -93,7 +103,7 @@ func Validate(read Document) error {
 	if strings.TrimSpace(read.Title) == "" {
 		return fmt.Errorf(theDocumentStatesNothingFor, "title")
 	}
-	if len(read.Decisions) == 0 && len(read.Source) == 0 && strings.TrimSpace(read.Preamble) == "" {
+	if len(read.Decisions) == 0 && len(read.Source) == 0 && len(read.Settled) == 0 && strings.TrimSpace(read.Preamble) == "" {
 		return errors.New(theDocumentHoldsNothing)
 	}
 	if len(read.Stylesheet) > StylesheetCeiling {
@@ -160,6 +170,32 @@ func Validate(read Document) error {
 		}
 	}
 
+	return validateWhatWasSettled(read.Settled, seen)
+}
+
+func validateWhatWasSettled(settled []Settled, open map[string]bool) error {
+	seen := map[string]bool{}
+	for position, answered := range settled {
+		if answered.ID == "" {
+			return fmt.Errorf(settledAnswerCarriesNoIdentifier, position+1)
+		}
+		if seen[answered.ID] {
+			return fmt.Errorf(repeatedSettledIdentifier, answered.ID)
+		}
+		seen[answered.ID] = true
+
+		if open[answered.ID] {
+			return fmt.Errorf(settledAndStillOpen, answered.ID)
+		}
+		if strings.TrimSpace(answered.Question) == "" {
+			return fmt.Errorf(settledStatesNothingFor, answered.ID, "question")
+		}
+		for chosen, label := range answered.Chosen {
+			if strings.TrimSpace(label) == "" {
+				return fmt.Errorf(settledChoiceStatesNothing, answered.ID, chosen+1)
+			}
+		}
+	}
 	return nil
 }
 

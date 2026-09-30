@@ -81,7 +81,7 @@ func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
 		{
 			named:  "a document holding nothing at all",
 			broken: func(d *document.Document) { d.Decisions = nil },
-			names:  []string{"decision", "source", "preamble"},
+			names:  []string{"decision", "source", "settled", "preamble"},
 		},
 		{
 			named: "a stylesheet larger than the stated size",

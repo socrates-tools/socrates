@@ -193,8 +193,8 @@ func TestARoundThatWaitsOnAPersonIsWaitedOn(t *testing.T) {
 		for _, finding := range read.Findings {
 			var name, severity, audience, location string
 			page.evaluate(shownIn(finding.ID, ".name"), &name)
-			page.evaluate(shownIn(finding.ID, ".severity"), &severity)
-			page.evaluate(shownIn(finding.ID, ".audience"), &audience)
+			page.evaluate(markedIn(finding.ID, "severity"), &severity)
+			page.evaluate(markedIn(finding.ID, "audience"), &audience)
 			page.evaluate(shownIn(finding.ID, ".location"), &location)
 
 			if strings.TrimSpace(name) != finding.name() {
@@ -219,6 +219,10 @@ func TestARoundThatWaitsOnAPersonIsWaitedOn(t *testing.T) {
 
 func shownIn(decision, selector string) string {
 	return fmt.Sprintf(`(document.querySelector('.decision[data-decision="%s"] %s') || {textContent: ""}).textContent`, decision, selector)
+}
+
+func markedIn(decision, kind string) string {
+	return fmt.Sprintf(`(document.querySelector('.decision[data-decision="%s"] .mark.%s') || {dataset: {}}).dataset.%s || ""`, decision, kind, kind)
 }
 
 func TestADecisionMadeOnThePageIsRecordedInTheTerminal(t *testing.T) {

@@ -6,7 +6,7 @@ Everything socrates review prints names `socrates review`.
 
 `socrates agora` is a second namespace inside the same binary, not a second program.
 It serves one document as one page on a loopback address, waits for a person, and prints what they answered.
-It knows nothing about code review, and nothing review does reaches it yet.
+It knows nothing about code review but the three audiences socrates review writes and the reading of the three severities its hints carry, per ADR 47, and nothing review does reaches it yet.
 
 `socrates design` is a third namespace, and a skill rather than a tool.
 The namespace holds one operation, `socrates design skill`, which installs its two skills: `socrates-design`, which runs the interview, and `socrates-tickets`, which cuts the spec it left into tickets.
@@ -73,7 +73,7 @@ What agora is:
 - `agora/document` - what a caller writes for the surface to render, what it copies rather than accepts, and the languages the page can highlight.
 - `agora/sanitise` - a caller's HTML fragment reduced to a fixed allowlist, and every name it carries prefixed.
 - `agora/stylesheet` - a caller's stylesheet read as a parse, reduced to a fixed allowlist, and scoped to the illustration.
-- `agora/render` - a document to one HTML page, and a patch to the rows of a split diff.
+- `agora/render` - a document to one HTML page, the marks a severity and an audience are drawn as, and a patch to the rows of a split diff.
 - `agora/assets` - the built client bundle and fonts, embedded, and the stamp of their source.
 - `agora/surface` - the loopback server and its guards, the address bound where nothing states one and the window walked down from it, the sessions it holds, what it writes about itself and about each page, the exchange, and the bounds on waiting.
 - `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
@@ -202,7 +202,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 
 - `design/skill` is tested the way `review/skill` is: the rendered document is the subject, its ceiling is enforced, the committed copy must match what the package renders, and every invocation it names must exist in the binary's command surface with the flags it names, across both namespaces it covers.
 - The skill writes no severity, no `None of these` option and no command on any option it composes: a design answer runs nothing, and a design question is earlier or later in the argument rather than more or less severe.
-- A settled question renders as a card with no options and no mode, states the answer and the person's own words, and the settled block stays first and contiguous ahead of what is still open because list order is the only order a design document has.
+- A settled question is written to the document's `settled` list rather than as a decision, stating the question, the labels chosen and the person's own words, and a person reopens one through the page's message, per ADR 46.
 - The ADR criterion the skill states is a conjunction, tested as one: hard to reverse, surprising without context, and the result of a real trade-off, never any one or two of the three.
 - There is no round cap: a person can end a design at any round, on the page or with `socrates agora end`, and either way the exchange ends carrying only what was actually answered, leaving everything else for the session to record as unsettled.
 - The loop is driven end to end through the real binary: a round renders with its recommendation chosen, and what the person answers, including approving the last round's card, reaches the session through `socrates agora poll`. What the binary cannot drive, because nothing in it writes a file, is the spec and the ADRs themselves: those are the session's to write from what `socrates agora poll` handed it.
@@ -286,9 +286,11 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - It writes only under review's home, in a directory of its own beside the runs.
 - What an operator states about it is read from `~/.socrates/agora/config.yaml`, in agora's own directory under the brand's root, and from no other file, and a file it cannot read or a field the `surface` block does not have is refused, naming the file.
 - A caller writes a document rather than a page, and the name, severity, audience and location come from the source a decision cites.
-- A document may hold no decision, and one holding no decision, no source entry and no preamble is refused.
+- A document may hold no decision, and one holding no decision, no source entry, nothing settled and no preamble is refused.
 - A decision may carry no options, and such a card states something and offers no control a person could mistake for a choice; one carrying no options and stating a mode is refused.
-- Every entry of the source is rendered ahead of the decisions, and both are ordered by the severity the source carries, most severe first, informational last, an unstated severity after all of them, and ties in the order the document listed them.
+- Every entry of the source is rendered ahead of the decisions, in an index beside them that names every decision where there is no source, and both are ordered by the severity the source carries, most severe first, informational last, an unstated severity after all of them, and ties in the order the document listed them.
+- The index counts a decision answered by the rule that decides what is sent, as the person answers it, so a decision whose recommendation arrives chosen arrives counted.
+- What was settled is rendered ahead of every open question, offers no control, is counted by nothing and is never sent, and an identifier is either settled or still open, per ADR 46.
 - The order is the surface's, so no field of a document reaches it, and a page with nothing to answer offers neither control and says so.
 - Every decision carries a free-text field that no document field can remove, including one that offers no options.
 - The option a document marks arrives chosen, a decision that marks none arrives with nothing chosen, and a decision offering options also offers taking none of them, which is not an option, carries no command and leaves the decision with nothing chosen.
@@ -307,7 +309,9 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - The end of an exchange stops the page offering to answer and not the page listening, so a caller who writes again reaches the page the person is already looking at, and only the test about reloading reloads before it asserts.
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.
 - An element it hides paints nothing, every colour it paints is a token stated once, and every text meets a contrast floor under both preferences.
-- Nothing in it names review, finding, verdict, round, or run as a noun, and the module path is not part of its vocabulary.
+  The page is dark whatever the reader prefers, so both preferences are painted alike, per ADR 45.
+- A severity the surface orders by is marked by what it means, each audience socrates review writes is marked as the design drew it and any other in the caller's own words, and every mark says what it means on hover, on focus and to a screen reader, per ADR 47.
+- Nothing in it names review, finding, verdict, round, or run as a noun, and the module path is not part of its vocabulary, except the three audiences socrates review writes, stated in `agora/render/audiences.go` and exempted by name, and the severity hints, which carry review's reading of a severity in words the check does not know, per ADR 47.
 
 **The suite**
 

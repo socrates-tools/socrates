@@ -13,17 +13,20 @@ import (
 	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
-var openFontLicence = []string{
-	"SIL Open Font License, Version 1.1",
-	"SIL OPEN FONT LICENSE Version 1.1",
-	`Reserved Font Name "Plex"`,
-	`THE FONT SOFTWARE IS PROVIDED "AS IS"`,
-	"PERMISSION & CONDITIONS",
+func openFontLicence(copyright string) []string {
+	return []string{
+		copyright,
+		"SIL Open Font License, Version 1.1",
+		"SIL OPEN FONT LICENSE Version 1.1",
+		`THE FONT SOFTWARE IS PROVIDED "AS IS"`,
+		"PERMISSION & CONDITIONS",
+	}
 }
 
 var licenceOfAFontFamily = map[string][]string{
-	"IBM Plex Sans": openFontLicence,
-	"IBM Plex Mono": openFontLicence,
+	"Cinzel":         openFontLicence("Copyright 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel)"),
+	"Manrope":        openFontLicence("Copyright 2019 The Manrope Project Authors (https://github.com/sharanda/manrope)"),
+	"JetBrains Mono": openFontLicence("Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)"),
 }
 
 var licenceOfABundledLibrary = map[string][]string{

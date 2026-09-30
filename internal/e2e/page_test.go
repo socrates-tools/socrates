@@ -581,7 +581,7 @@ func TestTheBarSitsAtTheEndOfThePageRatherThanFixedToTheViewport(t *testing.T) {
   return {
     position: style.position,
     belowFold: bar.getBoundingClientRect().top > window.innerHeight,
-    last: bar.parentElement === document.querySelector('form.exchange') && bar.nextElementSibling === null,
+    last: bar.parentElement === document.querySelector('form.exchange .composer') && bar.nextElementSibling === null && bar.parentElement.nextElementSibling === null,
   }
 })()`, &positioned)
 
@@ -1149,13 +1149,16 @@ func TestAnEntryTakesThePersonToTheDecision(t *testing.T) {
 		t.Errorf("what a person sees at a glance differs (-want +got):\n%s", diff)
 	}
 
-	page.click(`.entry a.entry-name`)
-	page.waitFor(`location.hash === '#decision-c-1'`)
+	page.click(`.entry a.entry-link`)
+	page.waitFor(`!!document.activeElement.closest('.decision')`)
 
-	var reached string
-	page.evaluate(`document.querySelector(location.hash).dataset.decision`, &reached)
-	if reached != "c-1" {
-		t.Errorf("following the entry arrived at %q, and the decision covering it is %q", reached, "c-1")
+	var reached landed
+	page.evaluate(whereTheCursorLanded, &reached)
+	if reached.Decision != "c-1" {
+		t.Errorf("following the entry arrived at %q, and the decision covering it is %q", reached.Decision, "c-1")
+	}
+	if reached.Control != "choice" {
+		t.Errorf("following the entry left the cursor on a %q, and it lands on the card's first control", reached.Control)
 	}
 }
 

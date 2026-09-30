@@ -1,23 +1,24 @@
 socrates is published under the terms in LICENSE.
 This file is about what it carries that socrates did not author.
 
-Two kinds of borrowed work reach the shipped binary.
-The first is embedded as an asset by internal/assets, which is the client bundle
+Three kinds of borrowed work reach the shipped binary.
+The first is embedded as an asset by agora/assets, which is the client bundle
 built from web/ and the font faces beside it.
-The second is linked in by the Go compiler, which is the module dependencies
+The second is the drawing of six icons, which agora/render carries as the path
+data of the marks it draws on the page.
+The third is linked in by the Go compiler, which is the module dependencies
 cmd/socrates reaches.
 Each is named below with the licence it is published under and that licence's
 full text, because the licences these works are published under require the text
 to accompany the copy and a link is not the text.
 
-What internal/assets embeds, by the path it embeds it under:
+What agora/assets embeds, by the path it embeds it under:
 
   bundle/surface.js                          agora's client, carrying highlight.js
   bundle/surface.css                         agora's stylesheet
-  bundle/fonts/IBMPlexSans-400.woff2         IBM Plex Sans, upright
-  bundle/fonts/IBMPlexSans-400-italic.woff2  IBM Plex Sans, italic
-  bundle/fonts/IBMPlexMono-400.woff2         IBM Plex Mono, regular
-  bundle/fonts/IBMPlexMono-600.woff2         IBM Plex Mono, semibold
+  bundle/fonts/Cinzel-Variable.woff2         Cinzel, every weight
+  bundle/fonts/Manrope-Variable.woff2        Manrope, every weight
+  bundle/fonts/JetBrainsMono-Variable.woff2  JetBrains Mono, every weight
   bundle.sum                                 the digest of the source the bundle was built from
 
 bundle/surface.js, bundle/surface.css and bundle.sum are socrates' own work,
@@ -62,16 +63,23 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
-IBM Plex Sans and IBM Plex Mono
-Embedded as the four font faces under bundle/fonts.
+Cinzel, Manrope and JetBrains Mono
+Embedded as the three font faces under bundle/fonts.
 SIL Open Font License, Version 1.1.
 ==============================================================================
 
-Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"
+Cinzel, embedded as bundle/fonts/Cinzel-Variable.woff2:
+Copyright 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel)
 
-This Font Software is licensed under the SIL Open Font License, Version 1.1.
-This license is copied below, and is also available with a FAQ at:
-http://scripts.sil.org/OFL
+Manrope, embedded as bundle/fonts/Manrope-Variable.woff2:
+Copyright 2019 The Manrope Project Authors (https://github.com/sharanda/manrope)
+
+JetBrains Mono, embedded as bundle/fonts/JetBrainsMono-Variable.woff2:
+Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)
+
+Each of these Font Software is licensed under the SIL Open Font License,
+Version 1.1. This license is copied below, and is also available with a FAQ at:
+https://openfontlicense.org
 
 -----------------------------------------------------------
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
@@ -159,6 +167,55 @@ INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
 DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
+
+==============================================================================
+Lucide
+The path data of circle-alert, triangle-alert, info, user, wrench and eye,
+carried by agora/render as the icons of the marks it draws.
+ISC License, and the MIT License for the icons derived from Feather.
+==============================================================================
+
+ISC License
+
+Copyright (c) 2026 Lucide Icons and Contributors
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+Of the icons carried, circle-alert, triangle-alert and info are derived from
+the Feather project, as alert-circle, alert-triangle and info, and are also
+published under this licence:
+
+The MIT License (MIT)
+
+Copyright (c) 2013-present Cole Bemis
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ==============================================================================
 charm.land/bubbletea/v2 v2.0.9

@@ -66,7 +66,7 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 - **design round**: one page of questions put to a person, inside a design. Not review's round, which is a different word in a different vocabulary.
 - **frontier**: every question whose prerequisites are settled. What one design round asks, and a design ends when it is empty.
 - **question**: one thing a design needs decided, carrying the answers it offers and the one the session would take. Identified for the life of the design, so it keeps its name across rounds.
-- **settled**: a question the person has answered. It stays on every later page as a card that states the answer and offers nothing.
+- **settled**: a question the person has answered. It stays on every later page in the document's settled list, stating the answer and offering nothing.
 - **ticket**: one tracer-bullet slice of a change, a Markdown file committed under `docs/changes/<slug>/tickets/` and named `{N}-{task}.md`. It names the tickets that block it and carries no status of its own.
 - **blocker**: a ticket that must be done before another can start. Named by the ticket it blocks, and the only dependency a ticket states.
 - **wave**: the `N` in a ticket's name, one more than the highest wave among its blockers, and 1 for a ticket with none. A wave holding one ticket names it `N`, and a wave holding several names them `N.1`, `N.2`. A wave orders the folder and gates nothing: a ticket starts once its own blockers are done. A name is fixed once the tickets are written, so abandoning a ticket renames nothing.
@@ -75,11 +75,14 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 
 ## The page
 
-These are agora's words, and agora knows nothing about code review.
+These are agora's words, and agora knows nothing about code review but the three audiences socrates review writes and the reading of the three severities its hints carry, per ADR 47.
 
 - **document**: what a caller writes for the surface to render. Not a page.
 - **source**: the entries a caller cites, each carrying a name, a severity, an audience and a location.
 - **decision**: one card on the page, citing the source entry it came from.
+- **index**: the list beside the decisions naming every source entry, or every decision where there is no source, with whether each is answered and a count of how many are.
+- **mark**: the icon a severity or an audience is drawn as, saying what it means on hover, on focus and to a screen reader.
+- **settled answer**: what a document carries of a question already answered elsewhere: its question, the labels chosen and the words. Shown ahead of the decisions, read rather than answered, and never sent.
 - **option**: one answer to a decision. It carries the command it becomes, or none, and a decision does not mix the two: a person choosing between the options of one decision is choosing between things of the same kind. The surface composes a command and never runs one. The control that takes none of them is not an option: it carries no command, and leaves the decision with nothing selected.
 - **illustration**: the one fragment a decision may carry, painted by the document's own stylesheet, contained so nothing in it reaches the page's own controls.
 - **session**: what the surface mints so that a page and its routes are served under a path holding it. Kept for the whole review.

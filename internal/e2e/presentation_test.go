@@ -8,6 +8,7 @@ import (
 
 	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/kb"
+	"github.com/google/go-cmp/cmp"
 )
 
 const measuringTheText = `(() => {
@@ -38,7 +39,7 @@ func TestNothingRendersBelowTheFloor(t *testing.T) {
 	var read measured
 	page.evaluate(measuringTheText, &read)
 
-	if read.Floor < 14 {
+	if read.Floor < 12 {
 		t.Fatalf("the floor the page states is %vpx, and a floor that low is not a floor", read.Floor)
 	}
 	if read.Measured < 20 {
@@ -56,16 +57,17 @@ const painting = `(() => {
   for (const named of Array.from(root)) {
     if (named.startsWith('--')) tokens[named] = root.getPropertyValue(named).trim();
   }
-  return { background: body.backgroundColor, ink: body.color, tokens };
+  return { background: body.backgroundColor, ink: body.color, scheme: root.colorScheme, tokens };
 })()`
 
 type painted struct {
 	Background string            `json:"background"`
 	Ink        string            `json:"ink"`
+	Scheme     string            `json:"scheme"`
 	Tokens     map[string]string `json:"tokens"`
 }
 
-func TestBothPreferencesArePainted(t *testing.T) {
+func TestThePageIsPaintedDarkWhateverThePreference(t *testing.T) {
 	_, page := read(t, twoDecisionDocument)
 
 	under := map[string]painted{}
@@ -90,18 +92,13 @@ func TestBothPreferencesArePainted(t *testing.T) {
 				t.Errorf("under a %s preference %s is left undefined", preference, named)
 			}
 		}
+		if read.Scheme != "dark" {
+			t.Errorf("under a %s preference the page states the colour scheme %q, and it is dark whatever the reader prefers", preference, read.Scheme)
+		}
 	}
 
-	if under["light"].Background == under["dark"].Background {
-		t.Errorf("both preferences paint the same background %q, so the page does not follow the reader", under["light"].Background)
-	}
-	if under["light"].Ink == under["dark"].Ink {
-		t.Errorf("both preferences paint the same text colour %q", under["light"].Ink)
-	}
-	for named, value := range under["light"].Tokens {
-		if _, held := under["dark"].Tokens[named]; !held {
-			t.Errorf("%s is defined under a light preference and not under a dark one: %q", named, value)
-		}
+	if diff := cmp.Diff(under["dark"], under["light"]); diff != "" {
+		t.Errorf("a light preference paints the page differently from a dark one, and the page has one palette (-dark +light):\n%s", diff)
 	}
 }
 
@@ -222,20 +219,22 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
 
 	var read struct {
 		Face      bool `json:"face"`
+		Display   bool `json:"display"`
 		Mono      bool `json:"mono"`
 		Diff      bool `json:"diff"`
 		Drawn     bool `json:"drawn"`
 		Highlight int  `json:"highlight"`
 	}
 	page.evaluate(`({
-  face: document.fonts.check('16px "IBM Plex Sans"'),
-  mono: document.fonts.check('16px "IBM Plex Mono"'),
+  face: document.fonts.check('16px "Manrope"'),
+  display: document.fonts.check('40px "Cinzel"'),
+  mono: document.fonts.check('16px "JetBrains Mono"'),
   diff: !!document.querySelector('.hunk .line[data-kind="added"]'),
   drawn: !!document.querySelector('.illustration svg rect'),
   highlight: document.querySelectorAll('code.hljs .hljs-keyword, code.hljs .hljs-string, code.hljs .hljs-title').length,
 })`, &read)
 
-	if !read.Face || !read.Mono {
+	if !read.Face || !read.Display || !read.Mono {
 		t.Errorf("with no name resolution the fonts did not render: %+v", read)
 	}
 	if !read.Diff {
@@ -295,6 +294,7 @@ const readingTheMark = `(() => {
     size: style ? parseFloat(style.fontSize) : 0,
     shown: style ? style.display !== 'none' && style.visibility !== 'hidden' : false,
     first: option === document.querySelector('.decision[data-decision="c-2"] .option'),
+    floor: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--text-floor')),
   };
 })()`
 
@@ -305,6 +305,7 @@ type marked struct {
 	Size  float64 `json:"size"`
 	Shown bool    `json:"shown"`
 	First bool    `json:"first"`
+	Floor float64 `json:"floor"`
 }
 
 func TestTheMarkIsSaidRatherThanPainted(t *testing.T) {
@@ -334,8 +335,8 @@ func TestTheMarkIsSaidRatherThanPainted(t *testing.T) {
 	if !read.First {
 		t.Error("the marked option is not the first a person meets")
 	}
-	if read.Size < 14 {
-		t.Errorf("the mark renders at %vpx, below the floor the page states", read.Size)
+	if read.Size < read.Floor {
+		t.Errorf("the mark renders at %vpx, below the floor of %vpx the page states", read.Size, read.Floor)
 	}
 }
 
@@ -390,7 +391,7 @@ var measuringTheContrast = `(() => {
 
     const owns = Array.from(element.childNodes).some((node) => node.nodeType === 3 && node.textContent.trim());
     if (owns) weigh(element, style.color, '');
-    if (element.matches('textarea, input')) {
+    if (element.matches('textarea, input:not([type="radio"]):not([type="checkbox"])')) {
       weigh(element, getComputedStyle(element, '::placeholder').color, ' placeholder');
     }
   }
