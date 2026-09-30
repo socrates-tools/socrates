@@ -10,7 +10,8 @@ const (
 	Name    = "socrates-design"
 	Surface = "agora"
 
-	Ceiling = 11407
+	Ceiling        = 11919
+	TicketsCeiling = 8904
 )
 
 var Namespaces = map[string]string{
@@ -34,5 +35,6 @@ func assembled(parts ...string) string {
 func All() []skill.Skill {
 	return []skill.Skill{
 		{Name: Name, Document: Document, Ceiling: Ceiling},
+		{Name: TicketsName, Document: TicketsDocument, Ceiling: TicketsCeiling},
 	}
 }

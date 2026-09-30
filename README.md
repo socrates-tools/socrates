@@ -172,8 +172,14 @@ It interviews a person over agora and leaves a spec and its decisions behind.
 The namespace holds one operation, because design's machinery is agora and the session rather than a run store of its own:
 
 ```sh
-socrates design skill                    # writes the skill under ~/.claude/skills/
+socrates design skill                    # writes both skills under ~/.claude/skills/
 ```
+
+It installs two skills.
+`socrates-design` runs the interview and writes the spec.
+`socrates-tickets` cuts a spec under `docs/changes/<slug>/` into tickets: tracer-bullet slices, each naming the tickets that block it, approved by a person on a page before anything is written.
+They land as files in `docs/changes/<slug>/tickets/`, beside the spec, with `README.md` as the main ticket that introduces the change, lists every ticket and holds each one's status.
+Nothing is published to a tracker, and the tickets are left for you to commit.
 
 ## Reviewer CLIs
 

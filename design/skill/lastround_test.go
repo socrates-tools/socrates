@@ -63,3 +63,21 @@ func TestTheLastRoundSectionComesAfterTheDecisionsSection(t *testing.T) {
 		t.Error("the last round section is stated before the decisions section")
 	}
 }
+
+func TestTheLastCardOffersCuttingTheTicketsNextBesideEveryOtherChoice(t *testing.T) {
+	last := sectionOf(t, skill.Document(), lastRoundHeading)
+
+	for _, said := range []string{
+		`"label": "write it"`,
+		`"label": "write it, and open it as an issue"`,
+		`"label": "write it, and cut its tickets next"`,
+		`"label": "write it, open it as an issue, and cut its tickets next"`,
+		"Where it states none, the card offers two options: write it, and write it and cut its tickets next",
+		skill.TicketsName,
+		"in this same session and to the page the person already has",
+	} {
+		if !strings.Contains(last, said) {
+			t.Errorf("the last round section does not say %q, so publishing and cutting the tickets could exclude each other:\n%s", said, last)
+		}
+	}
+}

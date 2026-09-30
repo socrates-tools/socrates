@@ -9,12 +9,12 @@ It serves one document as one page on a loopback address, waits for a person, an
 It knows nothing about code review, and nothing review does reaches it yet.
 
 `socrates design` is a third namespace, and a skill rather than a tool.
-The namespace holds one operation, `socrates design skill`, which installs it.
+The namespace holds one operation, `socrates design skill`, which installs its two skills: `socrates-design`, which runs the interview, and `socrates-tickets`, which cuts the spec it left into tickets.
 A design interviews a person over agora and leaves a spec and its decisions behind, and it knows nothing about review, which is the other workflow sharing this binary.
 The dispatcher that routes `socrates` to a namespace holds wiring and nothing else: `internal/dispatcher` mounts review's command tree, agora's command tree and design's command tree, and is the only thing that imports all three.
 Each tool reads one configuration file of its own: review reads `~/.socrates/review/config.yaml` and agora reads `~/.socrates/agora/config.yaml`, per ADR 42.
 Both write under `~/.socrates/review`.
-design reads and writes neither: nothing about a design outlives the session that ran it beside the spec, the ADRs and the glossary entries it wrote to the repository being designed for.
+design reads and writes neither: nothing about a design outlives the session that ran it beside the spec, the ADRs, the glossary entries and the tickets it wrote to the repository being designed for.
 `~/.socrates` is the brand's root, holding one directory per tool published under it, and `SOCRATES_HOME` moves the root.
 
 `CONTEXT.md` defines the vocabulary and `docs/adr/` holds the decisions, each with what it rejected and why.
@@ -80,8 +80,8 @@ What agora is:
 
 What design is:
 
-- `design/command` - the command tree: one operation, `skill`, that installs it.
-- `design/skill` - the skill's source: the rounds, the page, what was settled, the glossary, the spec, the decisions, the last round, ending early, and installing elsewhere.
+- `design/command` - the command tree: one operation, `skill`, that installs both skills.
+- `design/skill` - the source of both skills. The design's: the rounds, the page, what was settled, the glossary, the spec, the decisions, the last round, ending early, and installing elsewhere. The tickets': the spec it starts from, slicing, blockers and waves, the breakdown on a page, the last card, the main ticket, a ticket, and leaving them to be committed.
 
 What holds them all:
 
@@ -206,6 +206,14 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - The ADR criterion the skill states is a conjunction, tested as one: hard to reverse, surprising without context, and the result of a real trade-off, never any one or two of the three.
 - There is no round cap: a person can end a design at any round, on the page or with `socrates agora end`, and either way the exchange ends carrying only what was actually answered, leaving everything else for the session to record as unsettled.
 - The loop is driven end to end through the real binary: a round renders with its recommendation chosen, and what the person answers, including approving the last round's card, reaches the session through `socrates agora poll`. What the binary cannot drive, because nothing in it writes a file, is the spec and the ADRs themselves: those are the session's to write from what `socrates agora poll` handed it.
+
+**The tickets skill**
+
+- `socrates-tickets` is a second skill of `design/skill`, installed by `socrates design skill` beside the first, held to a ceiling of its own and to the same gates: the committed copy matches its source, and every invocation it names exists.
+- It writes no severity, no `None of these` option and no command on any option, and names no `socrates review` invocation: how a ticket is implemented is the implementing session's own.
+- It cuts from a spec under `docs/changes/<slug>/` and nothing else, refuses a tickets folder that already exists by name, and leaves what it writes uncommitted.
+- A ticket names its blockers and its wave is derived from them, per ADR 44, and status is kept in the main ticket and nowhere else.
+- The breakdown is driven end to end through the real binary: every card arrives with *keep it* chosen, and a card answered in the person's own words reaches the session through `socrates agora poll`. What the binary cannot drive is the tickets themselves, which are the session's to write.
 
 **The binaries**
 

@@ -3,6 +3,7 @@ package skill_test
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -10,37 +11,41 @@ import (
 	skillkit "github.com/socrates-tools/socrates/internal/skill"
 )
 
-func TestTheSkillIsInstalledUnderItsOwnName(t *testing.T) {
+func TestEachDesignSkillIsInstalledUnderItsOwnName(t *testing.T) {
 	directory := t.TempDir()
 
 	written, err := skillkit.Install(directory, skill.All(), skillkit.Dispatcher+" design skill")
 	if err != nil {
-		t.Fatalf("installing the skill: %v", err)
-	}
-	if len(written) != 1 {
-		t.Fatalf("installing wrote %d skills, and design states one", len(written))
+		t.Fatalf("installing the skills: %v", err)
 	}
 
-	installed := written[0]
-	if installed.Name != skill.Name {
-		t.Errorf("the skill was installed as %q, want %q", installed.Name, skill.Name)
+	want := []string{skill.Name, skill.TicketsName}
+	var got []string
+	for _, installed := range written {
+		got = append(got, installed.Name)
 	}
-	if named := filepath.Base(filepath.Dir(installed.Path)); named != skill.Name {
-		t.Errorf("the skill is installed under %q", named)
-	}
-	if _, err := os.Stat(installed.Path); err != nil {
-		t.Errorf("nothing is at %s: %v", installed.Path, err)
+	if !slices.Equal(got, want) {
+		t.Fatalf("installing wrote %v, and design states %v", got, want)
 	}
 
-	declared := ""
-	for line := range strings.SplitSeq(skill.Document(), "\n") {
-		if stated, isName := strings.CutPrefix(line, "name: "); isName {
-			declared = strings.TrimSpace(stated)
-			break
+	for position, installed := range written {
+		if named := filepath.Base(filepath.Dir(installed.Path)); named != installed.Name {
+			t.Errorf("the %s skill is installed under %q", installed.Name, named)
 		}
-	}
-	if declared != skill.Name {
-		t.Errorf("the skill declares itself %q while it is installed as %q, so one of the two is a second copy of the name", declared, skill.Name)
+		if _, err := os.Stat(installed.Path); err != nil {
+			t.Errorf("nothing is at %s: %v", installed.Path, err)
+		}
+
+		declared := ""
+		for line := range strings.SplitSeq(skill.All()[position].Document(), "\n") {
+			if stated, isName := strings.CutPrefix(line, "name: "); isName {
+				declared = strings.TrimSpace(stated)
+				break
+			}
+		}
+		if declared != installed.Name {
+			t.Errorf("the skill declares itself %q while it is installed as %q, so one of the two is a second copy of the name", declared, installed.Name)
+		}
 	}
 }
 

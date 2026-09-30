@@ -2,7 +2,7 @@
 
 `socrates review` puts an independent reviewer in front of unreviewed local changes.
 `socrates agora` is a second namespace, inside the same binary, that serves one document as one page, waits for a person, and prints what they answered.
-`socrates design` is a second workflow, inside the same binary, that interviews a person over agora and leaves a spec and its decisions behind.
+`socrates design` is a second workflow, inside the same binary, that interviews a person over agora and leaves a spec and its decisions behind, and cuts that spec into tickets.
 It is a skill rather than a tool.
 
 This file is the vocabulary.
@@ -60,13 +60,18 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 
 ## The design
 
-- **change**: one unit of work, from the spec that opens it to the diff a reviewer reads. Named by a slug, and `docs/changes/<slug>/` holds its spec.
+- **change**: one unit of work, from the spec that opens it to the diff a reviewer reads. Named by a slug, and `docs/changes/<slug>/` holds its spec and its tickets.
 - **spec**: what a design leaves behind, holding the problem, the solution, the user stories and the decisions. Published as an issue, and committed to the change's own folder.
 - **design**: one interview about one change, from its first round to the spec and the decision records it writes. The interview is the session itself, so nothing runs between one round and the next.
 - **design round**: one page of questions put to a person, inside a design. Not review's round, which is a different word in a different vocabulary.
 - **frontier**: every question whose prerequisites are settled. What one design round asks, and a design ends when it is empty.
 - **question**: one thing a design needs decided, carrying the answers it offers and the one the session would take. Identified for the life of the design, so it keeps its name across rounds.
 - **settled**: a question the person has answered. It stays on every later page as a card that states the answer and offers nothing.
+- **ticket**: one tracer-bullet slice of a change, a Markdown file committed under `docs/changes/<slug>/tickets/` and named `{N}-{task}.md`. It names the tickets that block it and carries no status of its own.
+- **blocker**: a ticket that must be done before another can start. Named by the ticket it blocks, and the only dependency a ticket states.
+- **wave**: the `N` in a ticket's name, one more than the highest wave among its blockers, and 1 for a ticket with none. A wave holding one ticket names it `N`, and a wave holding several names them `N.1`, `N.2`. A wave orders the folder and gates nothing: a ticket starts once its own blockers are done. A name is fixed once the tickets are written, so abandoning a ticket renames nothing.
+- **main ticket**: `README.md` in a change's tickets folder. It introduces the change to whoever implements it, points at the spec rather than repeating it, lists every ticket with its blockers, and is the one place a ticket's status is kept: `pending`, `in progress`, `done` or `abandoned`.
+- **abandoned**: a ticket implementation found should not be built. Its row stays in the main ticket carrying a reason, so the table still says what was planned, and every ticket it blocked takes its blockers in its place. Not review's dropped, which is a different word in a different vocabulary.
 
 ## The page
 
