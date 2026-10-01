@@ -12,7 +12,7 @@ const (
 	branchNotUsable         = "default_branches holds %q for %s, and it is the name of one branch, with no whitespace"
 	notARepository          = "this directory is not inside a git repository"
 	bareRepository          = "this is a bare repository, which has no main worktree to name it by"
-	gitCannotRun            = "socrates implement could not run git: %v. Install git or put it on PATH and run the command again"
+	gitCannotRun            = "socrates implement could not run git: %v. Check that git is on PATH and run the command again"
 	savingCommand           = "socrates implement default-branch"
 
 	settingLine = "%-*s  %-*s  %s"
