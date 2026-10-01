@@ -1,10 +1,8 @@
-package configure
+package settingsmenu
 
 import (
 	"slices"
 	"strings"
-
-	"github.com/socrates-tools/socrates/review/config"
 )
 
 const (
@@ -31,7 +29,7 @@ type region struct {
 	ancestors []string
 }
 
-func unreadableIn(path string, content []byte) []unreadable {
+func (d Definition) unreadableIn(path string, content []byte) []unreadable {
 	lines := strings.Split(string(content), newline)
 
 	var found []unreadable
@@ -42,10 +40,10 @@ func unreadableIn(path string, content []byte) []unreadable {
 			continue
 		}
 
-		if one.heldByABlockThatIsWrong(path) {
+		if one.heldByABlockThatIsWrong(path, d.Parse) {
 			continue
 		}
-		err := config.Parse(path, one.inItsOwnRight(lines))
+		err := d.Parse(path, one.inItsOwnRight(lines))
 		if err == nil {
 			continue
 		}
@@ -66,11 +64,11 @@ func (r region) inItsOwnRight(lines []string) []byte {
 	return []byte(strings.Join(stated, newline) + newline)
 }
 
-func (r region) heldByABlockThatIsWrong(path string) bool {
+func (r region) heldByABlockThatIsWrong(path string, parse func(string, []byte) error) bool {
 	if len(r.ancestors) == 0 {
 		return false
 	}
-	return config.Parse(path, []byte(strings.Join(r.ancestors, newline)+newline)) != nil
+	return parse(path, []byte(strings.Join(r.ancestors, newline)+newline)) != nil
 }
 
 func regionsIn(lines []string) []region {

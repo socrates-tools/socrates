@@ -1,11 +1,10 @@
-package configure
+package settingsmenu
 
 import (
 	"fmt"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/socrates-tools/socrates/review/config"
 )
 
 type stage int
@@ -25,12 +24,13 @@ type option struct {
 }
 
 type menu struct {
-	path     string
-	settings []config.Setting
-	cursor   int
+	definition Definition
+	path       string
+	settings   []Setting
+	cursor     int
 
 	stage   stage
-	chosen  config.Setting
+	chosen  Setting
 	options []option
 	at      int
 	typed   string
@@ -42,8 +42,8 @@ type menu struct {
 	width int
 }
 
-func opened(path string) (*menu, error) {
-	standing := &menu{path: path}
+func opened(definition Definition) (*menu, error) {
+	standing := &menu{definition: definition, path: definition.Path}
 	if err := standing.reread(); err != nil {
 		return nil, err
 	}
@@ -51,13 +51,13 @@ func opened(path string) (*menu, error) {
 }
 
 func (m *menu) reread() error {
-	content, err := held(m.path)
+	content, err := m.definition.held(m.path)
 	if err != nil {
 		return err
 	}
 
-	if err := config.Parse(m.path, content); err != nil {
-		m.broken = unreadableIn(m.path, content)
+	if err := m.definition.Parse(m.path, content); err != nil {
+		m.broken = m.definition.unreadableIn(m.path, content)
 		if len(m.broken) == 0 {
 			return err
 		}
@@ -67,11 +67,11 @@ func (m *menu) reread() error {
 		return nil
 	}
 
-	loaded, err := config.LoadFrom(m.path)
+	loaded, err := m.definition.Settings(m.path)
 	if err != nil {
 		return err
 	}
-	m.settings = loaded.Settings()
+	m.settings = loaded
 	m.broken = nil
 	m.stage = listing
 	if m.cursor >= len(m.settings) {
@@ -126,7 +126,7 @@ func (m *menu) moveThroughTheSettings(pressed tea.KeyPressMsg) (tea.Model, tea.C
 	return m, nil
 }
 
-func (m *menu) choose(setting config.Setting) {
+func (m *menu) choose(setting Setting) {
 	m.stage = choosing
 	m.chosen = setting
 	m.options = optionsFor(setting)
@@ -179,7 +179,7 @@ func (m *menu) take(taken option) tea.Cmd {
 }
 
 func (m *menu) record(key, value string, removing bool) tea.Cmd {
-	written, changed, err := withSetting(m.path, key, value, removing)
+	written, changed, err := m.definition.withSetting(m.path, key, value, removing)
 	if err != nil {
 		m.said = strings.Split(err.Error(), newline)
 		return nil
@@ -189,13 +189,13 @@ func (m *menu) record(key, value string, removing bool) tea.Cmd {
 		m.stage = listing
 		return nil
 	}
-	if err := writeAtomically(m.path, written); err != nil {
+	if err := m.definition.writeAtomically(m.path, written); err != nil {
 		return m.giveUp(err)
 	}
 
-	said := []string{fmt.Sprintf(setTo, key, value, m.path), readFromNowOn}
+	said := []string{fmt.Sprintf(setTo, key, value, m.path), m.definition.Wording.ReadFromNowOn}
 	if removing {
-		said = []string{fmt.Sprintf(nowTheDefault, key, m.path), readFromNowOn}
+		said = []string{fmt.Sprintf(nowTheDefault, key, m.path), m.definition.Wording.ReadFromNowOn}
 	}
 	if err := m.reread(); err != nil {
 		return m.giveUp(err)
@@ -229,7 +229,7 @@ func (m *menu) moveThroughTheRepair(pressed tea.KeyPressMsg) (tea.Model, tea.Cmd
 func (m *menu) repair() tea.Cmd {
 	one := m.broken[0]
 
-	content, err := held(m.path)
+	content, err := m.definition.held(m.path)
 	if err != nil {
 		return m.giveUp(err)
 	}
@@ -237,19 +237,19 @@ func (m *menu) repair() tea.Cmd {
 	if err != nil {
 		return m.giveUp(err)
 	}
-	if err := writeAtomically(m.path, written); err != nil {
+	if err := m.definition.writeAtomically(m.path, written); err != nil {
 		return m.giveUp(err)
 	}
 	if err := m.reread(); err != nil {
 		return m.giveUp(err)
 	}
 	if m.stage == listing {
-		m.said = []string{fmt.Sprintf(noLongerStated, one.key, m.path), readFromNowOn}
+		m.said = []string{fmt.Sprintf(noLongerStated, one.key, m.path), m.definition.Wording.ReadFromNowOn}
 	}
 	return nil
 }
 
-func optionsFor(setting config.Setting) []option {
+func optionsFor(setting Setting) []option {
 	var offered []option
 	for _, choice := range setting.Choices {
 		offered = append(offered, option{label: choice, value: choice})
@@ -260,7 +260,7 @@ func optionsFor(setting config.Setting) []option {
 	return append(offered, option{label: theDefaultLabel(setting), defaults: true})
 }
 
-func theDefaultLabel(setting config.Setting) string {
+func theDefaultLabel(setting Setting) string {
 	if setting.Default == "" {
 		return useTheDefault
 	}

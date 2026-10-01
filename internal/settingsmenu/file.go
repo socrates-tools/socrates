@@ -1,11 +1,10 @@
-package configure
+package settingsmenu
 
 import (
 	"os"
 	"path/filepath"
 
 	"github.com/socrates-tools/socrates/internal/refusal"
-	"github.com/socrates-tools/socrates/review/config"
 )
 
 const (
@@ -14,56 +13,56 @@ const (
 	fileMode      = 0o644
 )
 
-func held(path string) ([]byte, error) {
+func (d Definition) held(path string) ([]byte, error) {
 	content, err := os.ReadFile(path)
 	if os.IsNotExist(err) {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, refusal.New(cannotBeRead, path, err)
+		return nil, refusal.New(d.Wording.CannotBeRead, path, err)
 	}
 	return content, nil
 }
 
-func writeAtomically(path string, content []byte) error {
+func (d Definition) writeAtomically(path string, content []byte) error {
 	directory := filepath.Dir(path)
 	if err := os.MkdirAll(directory, directoryMode); err != nil {
-		return refusal.New(cannotBeWritten, path, err)
+		return refusal.New(d.Wording.CannotBeWritten, path, err)
 	}
 
 	being, err := os.CreateTemp(directory, filepath.Base(path)+partialSuffix)
 	if err != nil {
-		return refusal.New(cannotBeWritten, path, err)
+		return refusal.New(d.Wording.CannotBeWritten, path, err)
 	}
 	partial := being.Name()
 	defer func() { _ = os.Remove(partial) }()
 
 	if _, err := being.Write(content); err != nil {
 		_ = being.Close()
-		return refusal.New(cannotBeWritten, path, err)
+		return refusal.New(d.Wording.CannotBeWritten, path, err)
 	}
 	if err := being.Chmod(fileMode); err != nil {
 		_ = being.Close()
-		return refusal.New(cannotBeWritten, path, err)
+		return refusal.New(d.Wording.CannotBeWritten, path, err)
 	}
 	if err := being.Close(); err != nil {
-		return refusal.New(cannotBeWritten, path, err)
+		return refusal.New(d.Wording.CannotBeWritten, path, err)
 	}
 	if err := os.Rename(partial, path); err != nil {
-		return refusal.New(cannotBeWritten, path, err)
+		return refusal.New(d.Wording.CannotBeWritten, path, err)
 	}
 	return nil
 }
 
-func withSetting(path, key, value string, removing bool) ([]byte, bool, error) {
-	content, err := held(path)
+func (d Definition) withSetting(path, key, value string, removing bool) ([]byte, bool, error) {
+	content, err := d.held(path)
 	if err != nil {
 		return nil, false, err
 	}
 
 	document, err := documentOf(content)
 	if err != nil {
-		return nil, false, refusal.New(cannotBeRead, path, err)
+		return nil, false, refusal.New(d.Wording.CannotBeRead, path, err)
 	}
 
 	if removing {
@@ -77,9 +76,9 @@ func withSetting(path, key, value string, removing bool) ([]byte, bool, error) {
 
 	written, err := document.render()
 	if err != nil {
-		return nil, false, refusal.New(cannotBeWritten, path, err)
+		return nil, false, refusal.New(d.Wording.CannotBeWritten, path, err)
 	}
-	if err := config.Parse(path, written); err != nil {
+	if err := d.Parse(path, written); err != nil {
 		return nil, false, err
 	}
 	return written, true, nil

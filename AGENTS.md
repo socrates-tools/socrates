@@ -55,7 +55,7 @@ What review is:
 - `review/agent` - the only package that starts a model process, the reviewer CLIs review drives and the basis on which one qualifies, and one file per vendor behind the seam.
 - `review/reviewer` - beginning, supervising, responding, advancing, cancelling.
 - `review/report` - what `status`, `findings` and `config` print.
-- `review/configure` - the menu a person changes one setting from: the rows, the view, and the write that leaves the rest of the file alone.
+- `review/configure` - the menu over review's settings: its labels and its refusals, built on `internal/settingsmenu`.
 - `review/presentation` - the one place an event becomes a line a person reads.
 - `review/follow` - following a run's event log live.
 - `review/terminal` - the pager, the plain fallback, and whether a stream is a terminal at all.
@@ -90,6 +90,7 @@ What holds them all:
 - `internal/e2e` - real binaries, a real repository, real git, real processes, each vendor's simulator on `PATH`, a real browser.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
 - `internal/skill` - the machinery no tool owns: the ceiling a skill is held to, installing one under a directory, and reading which invocations a document names so one the binary does not offer fails the suite.
+- `internal/settingsmenu` - the menu a settings file is changed from, for any tool: the rows, the view, the write that leaves the rest of the file alone, and the reading of a line the loader could not read.
 
 ## Verification
 
