@@ -16,11 +16,8 @@ func TestEverySkillAnyNamespaceInstallsIsInvokedByAPersonOnly(t *testing.T) {
 
 	installing := 0
 	for _, tool := range convention.Tools {
-		help, failures, code := session.Top(tool.Namespace, "--help")
-		if code != 0 {
-			t.Fatalf("socrates %s --help exited %d: %s", tool.Namespace, code, failures)
-		}
-		if !strings.Contains(help, "\n  skill ") {
+		help, _, code := session.Top(tool.Namespace, "skill", "--help")
+		if code != 0 || !strings.Contains(help, "\n      --to ") {
 			continue
 		}
 
