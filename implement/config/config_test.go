@@ -213,7 +213,7 @@ func TestOnlyTheModelAndTheEffortOfferValues(t *testing.T) {
 			t.Errorf("%s is typeable %v, and only the model also takes a full identifier", setting.Key, setting.Typeable)
 		}
 	}
-	if diff := cmp.Diff([]string{"sonnet", "opus", "haiku"}, config.ModelAliases()); diff != "" {
+	if diff := cmp.Diff([]string{"sonnet", "opus", "haiku", "fable", "inherit"}, config.ModelAliases()); diff != "" {
 		t.Errorf("the model aliases offered differ (-want +got):\n%s", diff)
 	}
 	want := []string{"low", "medium", "high", "xhigh", "max"}

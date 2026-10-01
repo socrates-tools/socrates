@@ -22,7 +22,7 @@ type Setting struct {
 	Typeable bool
 }
 
-var modelAliases = []string{"sonnet", "opus", "haiku"}
+var modelAliases = []string{"sonnet", "opus", "haiku", "fable", "inherit"}
 
 func ModelAliases() []string {
 	return slices.Clone(modelAliases)

@@ -198,7 +198,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - `internal/settingsmenu` states every label the menu draws in its own `messages.go` and `review/configure` states review's own, and the wording check reads the plain string literals of both rather than only their `fmt` call sites.
 - Everything above that is stated for `configure` holds for `socrates implement configure` too, which refuses naming `socrates implement config`, and `internal/settingsmenu` names neither tool: what differs is carried by the `Definition` a tool hands it.
 - A setting whose written key is not its displayed key carries the segments it is written at, so a `default_branch` row is written under `default_branches.<repository top level>` whatever dots the path holds, and review's rows are written at their displayed key as before.
-- `socrates implement configure` offers `sonnet`, `opus` and `haiku` for `roles.implementer.model` and also takes a full identifier typed.
+- `socrates implement configure` offers `sonnet`, `opus`, `haiku`, `fable` and `inherit` for `roles.implementer.model` and also takes a full identifier typed.
 - A confirmed model or effort rewrites the installed agent definition at once, and with none installed the menu names `socrates implement skill` as what writes it.
 - Inside a repository the menu offers that repository's `default_branch`, a branch the repository does not hold is refused before the file is touched, and `use the default` removes that repository's entry and no other.
 - `findings --json` reports each finding's recorded resolution and whether its location is inside the change, and `review/hunks` is the one place that question is answered.
