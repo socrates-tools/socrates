@@ -21,6 +21,7 @@ install:
 	go install -ldflags '$(STAMP)' ./cmd/socrates
 	$(INSTALL_DIR)/socrates review skill
 	$(INSTALL_DIR)/socrates design skill
+	$(INSTALL_DIR)/socrates implement skill
 
 release:
 	go run $(RELEASER) release --clean
@@ -55,6 +56,7 @@ help:
 skill:
 	go run ./cmd/socrates review skill --to .claude/skills
 	go run ./cmd/socrates design skill --to .claude/skills
+	home=$$(mktemp -d); trap 'rm -rf "$$home"' EXIT; SOCRATES_HOME=$$home go run ./cmd/socrates implement skill --agents-to .claude/agents
 
 assets:
 	cd agora/web && pnpm install --frozen-lockfile && node build.mjs

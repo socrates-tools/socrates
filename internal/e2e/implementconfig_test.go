@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/socrates-tools/socrates/implement/config"
+	"github.com/socrates-tools/socrates/implement/skill"
 	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 )
@@ -346,5 +347,48 @@ func TestInABareRepositoryDefaultBranchIsRefusedNamingTheMainWorktreeItLacks(t *
 	_, failures, code := session.TopIn(bare, "implement", "default-branch", "main")
 	if code != exit.Unusable || !strings.Contains(failures, "main worktree") {
 		t.Errorf("default-branch in a bare repository exited %d with %q", code, failures)
+	}
+}
+
+func TestImplementSkillWritesTheDefinitionUnderTheDefaultDirectoryAtTheDefaults(t *testing.T) {
+	session := harness.Start(t)
+
+	printed, failures, code := session.Top("implement", "skill")
+	if code != exit.NothingAsked {
+		t.Fatalf("socrates implement skill exited %d: %s", code, failures)
+	}
+
+	path := filepath.Join(os.Getenv("HOME"), ".claude", "agents", skill.AgentFileName())
+	if !strings.Contains(printed, path) {
+		t.Errorf("socrates implement skill does not say where it wrote, and %s is where it did:\n%s", path, printed)
+	}
+	if written := session.File(path); written != skill.DefaultDefinition() {
+		t.Errorf("what was installed is not the definition at the defaults:\n%s", written)
+	}
+}
+
+func TestImplementSkillWritesTheSettingsInForceUnderAgentsToAndRecordsTheLastPlace(t *testing.T) {
+	session := harness.Start(t)
+	stateImplementConfiguration(t, session, "roles:\n  implementer:\n    model: opus\n    effort: max\n")
+	first, second := t.TempDir(), t.TempDir()
+
+	for _, directory := range []string{first, second} {
+		if _, failures, code := session.Top("implement", "skill", "--agents-to", directory); code != exit.NothingAsked {
+			t.Fatalf("socrates implement skill --agents-to %s exited %d: %s", directory, code, failures)
+		}
+	}
+
+	written := session.File(filepath.Join(second, skill.AgentFileName()))
+	for _, want := range []string{"model: opus\n", "effort: max\n"} {
+		if !strings.Contains(written, want) {
+			t.Errorf("the definition does not state %q:\n%s", want, written)
+		}
+	}
+	record := session.File(filepath.Join(session.Root, "implement", skill.RecordFile))
+	if !strings.Contains(record, second) || strings.Contains(record, first) {
+		t.Errorf("the record does not name only the last directory %s:\n%s", second, record)
+	}
+	if strings.Contains(session.File(implementConfigurationPath(session)), second) {
+		t.Error("the configuration file names where the definition was installed")
 	}
 }

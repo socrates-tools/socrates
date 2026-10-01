@@ -26,6 +26,7 @@ func NewRootCommand() *cobra.Command {
 	root.AddCommand(
 		newConfigCommand(),
 		newDefaultBranchCommand(),
+		newSkillCommand(),
 	)
 	return root
 }

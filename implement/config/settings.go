@@ -58,3 +58,14 @@ func inForce(key, stated, owned string) Setting {
 	}
 	return Setting{Key: key, Value: owned, Source: Default, Default: owned}
 }
+
+func (c Config) Implementer() Role {
+	role := c.Roles.Implementer
+	if role.Model == "" {
+		role.Model = DefaultModel
+	}
+	if role.Effort == "" {
+		role.Effort = DefaultEffort
+	}
+	return role
+}
