@@ -18,8 +18,9 @@ const (
 type Tool string
 
 const (
-	Review Tool = "review"
-	Agora  Tool = "agora"
+	Review    Tool = "review"
+	Agora     Tool = "agora"
+	Implement Tool = "implement"
 )
 
 func Root() (string, error) {

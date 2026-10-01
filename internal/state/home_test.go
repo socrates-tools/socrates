@@ -115,3 +115,16 @@ func TestARelativeHomeIsRefusedForAgorasConfigurationToo(t *testing.T) {
 		t.Fatalf("a relative home resolved agora's configuration to %q, want a refusal: %v", configuration, err)
 	}
 }
+
+func TestImplementWritesUnderItsOwnDirectoryInTheBrandsRoot(t *testing.T) {
+	stated := t.TempDir()
+	t.Setenv(state.HomeVariable, stated)
+
+	configuration, err := state.Implement.Configuration()
+	if err != nil {
+		t.Fatalf("resolving implement's configuration file: %v", err)
+	}
+	if want := filepath.Join(stated, "implement", state.ConfigurationFile); configuration != want {
+		t.Errorf("implement's configuration is %s, want %s", configuration, want)
+	}
+}
