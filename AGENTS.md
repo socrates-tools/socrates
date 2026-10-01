@@ -10,11 +10,16 @@ It knows nothing about code review but the three audiences socrates review write
 
 `socrates design` is a third namespace, and a skill rather than a tool.
 The namespace holds one operation, `socrates design skill`, which installs its two skills: `socrates-design`, which runs the interview, and `socrates-tickets`, which cuts the spec it left into tickets.
-A design interviews a person over agora and leaves a spec and its decisions behind, and it knows nothing about review, which is the other workflow sharing this binary.
-The dispatcher that routes `socrates` to a namespace holds wiring and nothing else: `internal/dispatcher` mounts review's command tree, agora's command tree and design's command tree, and is the only thing that imports all three.
-Each tool reads one configuration file of its own: review reads `~/.socrates/review/config.yaml` and agora reads `~/.socrates/agora/config.yaml`, per ADR 42.
-Both write under `~/.socrates/review`.
-design reads and writes neither: nothing about a design outlives the session that ran it beside the spec, the ADRs, the glossary entries and the tickets it wrote to the repository being designed for.
+A design interviews a person over agora and leaves a spec and its decisions behind, and it knows nothing about review or implement, which are the other workflows sharing this binary.
+
+`socrates implement` is a fourth namespace, per ADR 48, and builds a change's tickets through implementers.
+It reads one configuration file of its own, `~/.socrates/implement/config.yaml`, and `socrates implement config` reports every setting in it.
+It knows nothing about review, agora or design.
+
+The dispatcher that routes `socrates` to a namespace holds wiring and nothing else: `internal/dispatcher` mounts review's command tree, agora's command tree, design's command tree and implement's command tree, and is the only thing that imports all four.
+Each tool reads one configuration file of its own: review reads `~/.socrates/review/config.yaml`, agora reads `~/.socrates/agora/config.yaml` and implement reads `~/.socrates/implement/config.yaml`, per ADR 42.
+review and agora write under `~/.socrates/review`, and implement writes under `~/.socrates/implement`.
+design reads and writes none of these: nothing about a design outlives the session that ran it beside the spec, the ADRs, the glossary entries and the tickets it wrote to the repository being designed for.
 `~/.socrates` is the brand's root, holding one directory per tool published under it, and `SOCRATES_HOME` moves the root.
 
 `CONTEXT.md` defines the vocabulary and `docs/adr/` holds the decisions, each with what it rejected and why.
@@ -36,7 +41,7 @@ Running the reviewed project's own tests is not in the core layer either, so `cl
 What the suite is:
 
 - `cmd/socrates` - the binary: builds `internal/dispatcher`'s tree, runs it, and turns an error into an exit code.
-- `internal/dispatcher` - the root command: routes `review` and `agora` to their own trees, owns the error-to-exit-code mapping and the one failure prefix, and holds the top-level `version`. It is not a tool, and nothing above the two trees it mounts names a vendor, a namespace's own flag, or anything either tree does.
+- `internal/dispatcher` - the root command: routes `review`, `agora`, `design` and `implement` to their own trees, owns the error-to-exit-code mapping and the one failure prefix, and holds the top-level `version`. It is not a tool, and nothing above the trees it mounts names a vendor, a namespace's own flag, or anything any tree does.
 
 What review is:
 
@@ -83,6 +88,11 @@ What design is:
 
 - `design/command` - the command tree: one operation, `skill`, that installs both skills.
 - `design/skill` - the source of both skills. The design's: the rounds, the page, what was settled, the glossary, the spec, the decisions, the last round, ending early, and installing elsewhere. The tickets': the spec it starts from, slicing, blockers and waves, the breakdown on a page, the last card, the main ticket, a ticket, and leaving them to be committed.
+
+What implement is:
+
+- `implement/command` - the command tree: `config`, and nothing else yet.
+- `implement/config` - the one optional configuration file implement reads, every setting it holds, the default each falls back to, and the report `socrates implement config` prints.
 
 What holds them all:
 
