@@ -32,7 +32,7 @@ func TestTheLastCardOffersNoPublishingInAnyRepository(t *testing.T) {
 			t.Errorf("the last round section names %q, so a design could publish a spec somewhere other than the change's own folder:\n%s", unsaid, last)
 		}
 	}
-	if !strings.Contains(last, "The card offers the same one option in every repository: write it") {
+	if !strings.Contains(last, "The card offers one option in every repository: write it") {
 		t.Errorf("the last round section does not say the card offers the same two options in every repository:\n%s", last)
 	}
 }

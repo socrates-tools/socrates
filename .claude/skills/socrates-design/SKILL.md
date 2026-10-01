@@ -146,7 +146,7 @@ A person approves a location rather than discovers one:
                     "mode": "single-choice",
                     "options": [{"label": "write it", "recommended": true}]}]}
 
-The card offers the same one option in every repository: write it.
+The card offers one option in every repository: write it.
 The spec lives in the change's own folder and nowhere else.
 Offer no option that starts another skill: every socrates skill is a person's to start, so once the spec is written you stop, and the person types the next skill themselves.
 A person who wants a different path takes *None of these* and writes it in the words field: the card proposes a location, and does not insist on it.
