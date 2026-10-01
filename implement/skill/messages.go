@@ -19,7 +19,7 @@ What the change rests on:
 - |docs/changes/<slug>/tickets/README.md|, the main ticket that holds the order and the status.
 - Each ADR the spec's Decisions line names, and |CONTEXT.md|.
 
-The binary offers three commands, and every other step is git, the repository's own verification and your own reading:
+The commands you run are these, and every other step is git, the repository's own verification and your own reading:
 
     socrates implement skill             install this skill and the implementer's agent definition
     socrates implement config            print every setting in force and this repository's default branch
@@ -79,9 +79,10 @@ Write no blocker into the tickets for it: they stay as the person approved them.
 
 Make each implementer's worktree and branch yourself, with git, off the change's branch:
 
-    git worktree add -b socrates-implement/<slug>-<ticket> ~/.socrates/implement/worktrees/socrates-implement-<slug>-<ticket> socrates-implement/<slug>
+    git worktree add -b socrates-implement/<slug>-<ticket> <worktrees>/socrates-implement-<slug>-<ticket> socrates-implement/<slug>
 
 |<ticket>| is the ticket's file name without |.md|.
+|<worktrees>| is the |worktrees/| directory beside the file |socrates implement config| prints on its first line, which is |~/.socrates/implement/worktrees/| by default.
 The branch is a sibling of the change's branch rather than a child, because git cannot hold a branch and a branch beneath it.
 
 Run the implementer in the background, as the |socrates-implementer| agent, so you stay free to talk to the person.
@@ -103,6 +104,7 @@ Land one ticket at a time, by fast-forward, from the person's own checkout on th
     git merge --ff-only socrates-implement/<slug>-<ticket>
 
 Then run the repository's own verification, the command its instructions name, on the change's branch.
+Run it in the background, so you stay free to talk to the person while it runs, as the implementers do.
 Run it after every landing, so two tickets that each passed alone but fail together are caught at the landing that broke them.
 A failure goes back to the implementer whose ticket landed last, which patches its own branch and reports again, and you land that the same way.
 Remove a ticket's worktree and branch once its landing has passed.

@@ -12,7 +12,7 @@ import (
 
 const (
 	Name    = "socrates-implement"
-	Ceiling = 9200
+	Ceiling = 9450
 
 	AgentName       = "socrates-implementer"
 	AgentCeiling    = 1400

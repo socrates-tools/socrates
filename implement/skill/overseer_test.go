@@ -193,7 +193,8 @@ func TestEachImplementerWorksInAWorktreeTheOverseerMadeOnABranchSheNamed(t *test
 	saysEach(t, worktreesHeading, "an implementer could work anywhere, on a branch the overseer cannot find",
 		"Make each implementer's worktree and branch yourself, with git, off the change's branch",
 		"git worktree add -b socrates-implement/<slug>-<ticket>",
-		"~/.socrates/implement/worktrees/",
+		"the `worktrees/` directory beside the file `socrates implement config` prints on its first line",
+		"`~/.socrates/implement/worktrees/` by default",
 		"a sibling of the change's branch rather than a child",
 	)
 }
@@ -223,6 +224,19 @@ func TestLandingIsAFastForwardFollowedByTheRepositorysOwnVerificationAfterEveryL
 		"Run it after every landing",
 		"A failure goes back to the implementer whose ticket landed last",
 	)
+}
+
+func TestTheVerificationAfterALandingRunsInTheBackgroundSoTheOverseerStaysFree(t *testing.T) {
+	saysEach(t, landingHeading, "a verification that takes minutes could leave the person unanswered",
+		"Run it in the background, so you stay free to talk to the person while it runs, as the implementers do",
+	)
+}
+
+func TestTheCommandsTheOverseerRunsAreNotCountedAsAllThatTheNamespaceHolds(t *testing.T) {
+	if strings.Contains(skill.Document(), "offers three commands") {
+		t.Error("the skill counts the binary's commands, which stops being true when the namespace gains one")
+	}
+	saysEach(t, "# socrates implement", "the commands the overseer runs are not stated", "The commands you run are these")
 }
 
 func TestWhereOnlyTheOverseersOwnStatusCommitsAreMissingSheMergesThemHerself(t *testing.T) {
