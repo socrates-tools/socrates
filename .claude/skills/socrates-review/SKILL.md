@@ -1,6 +1,7 @@
 ---
 name: socrates-review
 description: Have an independent reviewer read the change you just made, and drive that review to a verdict. Use after implementing anything nobody else has read.
+disable-model-invocation: true
 ---
 
 # socrates review

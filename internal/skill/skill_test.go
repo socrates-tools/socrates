@@ -98,3 +98,11 @@ func TestUserDirectorysRefusalNamesTheInvocationItWasGiven(t *testing.T) {
 		t.Errorf("the refusal does not name the invocation it was given: %v", err)
 	}
 }
+
+func TestFrontMatterCarriesThePersonOnlyFieldAndTheNameAndDescription(t *testing.T) {
+	got := skill.FrontMatter("socrates-x", "Does x.")
+	want := "---\nname: socrates-x\ndescription: Does x.\ndisable-model-invocation: true\n---"
+	if got != want {
+		t.Errorf("front matter is %q, want %q", got, want)
+	}
+}

@@ -13,8 +13,8 @@ const (
 	HandoverName = Name + "-handover"
 	Surface      = "agora"
 
-	Ceiling         = 15677
-	HandoverCeiling = 16969
+	Ceiling         = 15708
+	HandoverCeiling = 17000
 )
 
 var Namespaces = map[string]string{

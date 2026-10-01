@@ -1,11 +1,14 @@
 package skill
 
-const (
-	frontMatter = `---
-name: ` + Name + `
-description: Interview a person over a page rather than a scrollback, and leave a spec and its decisions behind. Use when a change needs a spec before it has code.
----`
+import "github.com/socrates-tools/socrates/internal/skill"
 
+var (
+	frontMatter = skill.FrontMatter(Name, "Interview a person over a page rather than a scrollback, and leave a spec and its decisions behind. Use when a change needs a spec before it has code.")
+
+	ticketsFrontMatter = skill.FrontMatter(TicketsName, "Cut a spec into tickets an implementer works through, written as files beside the spec, with one main ticket that holds the order and the status. Use when a spec under docs/changes/<slug>/ is ready to be built.")
+)
+
+const (
 	purpose = `# socrates design
 
 A design is an interview.
@@ -162,12 +165,11 @@ A person approves a location rather than discovers one:
      "decisions": [{"id": "write", "question": "write the spec now",
                     "meaning": "shape: Problem Statement, Solution, User Stories, Implementation Decisions, Testing Decisions, Out of Scope, Further Notes. path: docs/changes/<slug>/spec.md",
                     "mode": "single-choice",
-                    "options": [{"label": "write it", "recommended": true},
-                                {"label": "write it, and cut its tickets next"}]}]}
+                    "options": [{"label": "write it", "recommended": true}]}]}
 
-The card offers the same two options in every repository: write it, and write it and cut its tickets next.
+The card offers the same one option in every repository: write it.
 The spec lives in the change's own folder and nowhere else.
-Cutting the tickets next means that once the spec is written, you read |socrates-tickets| and cut it, in this same session and to the page the person already has.
+Offer no option that starts another skill: every socrates skill is a person's to start, so once the spec is written you stop, and the person types the next skill themselves.
 A person who wants a different path takes *None of these* and writes it in the words field: the card proposes a location, and does not insist on it.`
 
 	endingHeading = "## Ending early"
@@ -193,11 +195,6 @@ Write it somewhere else instead with |socrates design skill --to <directory>|.`
 )
 
 const (
-	ticketsFrontMatter = `---
-name: ` + TicketsName + `
-description: Cut a spec into tickets an implementer works through, written as files beside the spec, with one main ticket that holds the order and the status. Use when a spec under docs/changes/<slug>/ is ready to be built.
----`
-
 	ticketsPurpose = `# socrates tickets
 
 A spec says what a change is for and what was decided about it.
@@ -281,8 +278,8 @@ Each card states the ticket's title, what it delivers from the user's side and w
 A merge, a split or a different blocker is asked for in the words field of the card concerned, after taking *None of these*, which the page already renders, so never write that option yourself.
 A breakdown answer runs nothing, so no option carries a command, and no card states a severity.
 
-Where a design handed on to this skill, serve the breakdown to the design's session with |socrates agora serve --session <session>|, so the person keeps the page they have, and mint a new one only where there was none, or where that exchange ended or the session was collected.
-Keep that session: serve every revision to the page the person already has.
+Mint the session once, with the first |socrates agora serve|, so the person is given one address.
+Keep that session: serve every revision to the page the person already has with |socrates agora serve --session <session>|.
 Revise the breakdown from what they wrote and serve it again, until a round comes back with every card kept and nothing written beside it.`
 
 	lastCardHeading = "## The last card"

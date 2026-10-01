@@ -1,11 +1,14 @@
 package skill
 
-const (
-	frontMatter = `---
-name: ` + Name + `
-description: Have an independent reviewer read the change you just made, and drive that review to a verdict. Use after implementing anything nobody else has read.
----`
+import "github.com/socrates-tools/socrates/internal/skill"
 
+var (
+	frontMatter = skill.FrontMatter(Name, "Have an independent reviewer read the change you just made, and drive that review to a verdict. Use after implementing anything nobody else has read.")
+
+	handoverFrontMatter = skill.FrontMatter(HandoverName, "Have an independent reviewer read a change somebody else wrote, and decide with the person which of its findings to raise with whoever wrote it. Use for a pull request or a branch that is not yours to patch.")
+)
+
+const (
 	purpose = `# socrates review
 
 You have implemented something nobody has read.
@@ -227,11 +230,6 @@ It is not a way to make a finding go away, and a rejection without a reason is r
 )
 
 const (
-	handoverFrontMatter = `---
-name: ` + HandoverName + `
-description: Have an independent reviewer read a change somebody else wrote, and decide with the person which of its findings to raise with whoever wrote it. Use for a pull request or a branch that is not yours to patch.
----`
-
 	handoverPurpose = `# socrates review, for a change that is not yours
 
 Somebody has handed you a change nobody here wrote.

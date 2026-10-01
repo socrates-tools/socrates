@@ -1,6 +1,7 @@
 ---
 name: socrates-review-handover
 description: Have an independent reviewer read a change somebody else wrote, and decide with the person which of its findings to raise with whoever wrote it. Use for a pull request or a branch that is not yours to patch.
+disable-model-invocation: true
 ---
 
 # socrates review, for a change that is not yours

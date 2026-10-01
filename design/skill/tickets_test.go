@@ -91,11 +91,15 @@ func TestTheBreakdownIsApprovedOnAPageWithOneCardPerTicketAndKeepItChosen(t *tes
 	)
 }
 
-func TestABreakdownAfterADesignIsServedToThePageThePersonAlreadyHas(t *testing.T) {
-	ticketsSaysEach(t, breakdownHeading, "a design that handed on could cost the person a second address",
-		"Where a design handed on to this skill, serve the breakdown to the design's session",
-		"mint a new one only where there was none, or where that exchange ended or the session was collected",
+func TestTheBreakdownMintsItsOwnSessionAndNamesNoDesignHandingOn(t *testing.T) {
+	ticketsSaysEach(t, breakdownHeading, "the tickets skill could depend on a session a design left behind",
+		"Mint the session once, with the first `socrates agora serve`",
 	)
+	for _, unsaid := range []string{"handed on", "hand on", "design's session", "a design that"} {
+		if strings.Contains(skill.TicketsDocument(), unsaid) {
+			t.Errorf("the tickets skill says %q, so it could reach for the session of a skill it cannot invoke", unsaid)
+		}
+	}
 }
 
 func TestWritingIsApprovedOnOneLastCardNamingTheFolderAndEveryFile(t *testing.T) {
