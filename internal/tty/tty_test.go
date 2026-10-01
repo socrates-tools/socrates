@@ -11,8 +11,8 @@ func TestAPipeAndABufferAreNotTerminals(t *testing.T) {
 	if err != nil {
 		t.Fatalf("making a pipe: %v", err)
 	}
-	defer reader.Close()
-	defer writer.Close()
+	t.Cleanup(func() { _ = reader.Close() })
+	t.Cleanup(func() { _ = writer.Close() })
 
 	if Attached(writer) {
 		t.Error("a pipe is reported as a terminal")
