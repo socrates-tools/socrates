@@ -6,6 +6,7 @@ import (
 
 	agoracommand "github.com/socrates-tools/socrates/agora/command"
 	designcommand "github.com/socrates-tools/socrates/design/command"
+	implementcommand "github.com/socrates-tools/socrates/implement/command"
 	reviewcommand "github.com/socrates-tools/socrates/review/command"
 
 	"github.com/socrates-tools/socrates/internal/exit"
@@ -35,6 +36,7 @@ func NewRootCommand(code *int) *cobra.Command {
 		reviewcommand.NewRootCommand(code),
 		agoracommand.NewRootCommand(code),
 		designcommand.NewRootCommand(),
+		implementcommand.NewRootCommand(),
 		newVersionCommand(),
 	)
 	return root

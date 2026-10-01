@@ -9,6 +9,7 @@ var Tools = []Tool{
 	{Namespace: "review", Directory: "review"},
 	{Namespace: "agora", Directory: "agora"},
 	{Namespace: "design", Directory: "design"},
+	{Namespace: "implement", Directory: "implement"},
 }
 
 func ToolDirectory(namespace string) string {
