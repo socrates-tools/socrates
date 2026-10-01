@@ -24,4 +24,4 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 48](../../../adr/0048-socrates-i
 | [2.1: the default branch is remembered per repository](2.1-the-default-branch-is-remembered.md) | 1.3 | done |
 | [2.2: the implementer's agent definition is installed](2.2-the-implementers-agent-definition-is-installed.md) | 1.3 | done |
 | [3.1: the socrates-implement skill teaches the overseer](3.1-the-socrates-implement-skill.md) | 1.2, 2.1, 2.2 | in progress |
-| [3.2: socrates implement configure changes one setting from a menu](3.2-socrates-implement-configure.md) | 1.1, 2.1, 2.2 | in progress |
+| [3.2: socrates implement configure changes one setting from a menu](3.2-socrates-implement-configure.md) | 1.1, 2.1, 2.2 | done |
