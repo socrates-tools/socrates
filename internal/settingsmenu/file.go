@@ -54,7 +54,7 @@ func (d Definition) writeAtomically(path string, content []byte) error {
 	return nil
 }
 
-func (d Definition) withSetting(path, key, value string, removing bool) ([]byte, bool, error) {
+func (d Definition) withSetting(path string, key []string, value string, removing bool) ([]byte, bool, error) {
 	content, err := d.held(path)
 	if err != nil {
 		return nil, false, err
@@ -82,4 +82,20 @@ func (d Definition) withSetting(path, key, value string, removing bool) ([]byte,
 		return nil, false, err
 	}
 	return written, true, nil
+}
+
+func (d Definition) WriteKey(key []string, value string) error {
+	return d.changeKey(key, value, false)
+}
+
+func (d Definition) RemoveKey(key []string) error {
+	return d.changeKey(key, "", true)
+}
+
+func (d Definition) changeKey(key []string, value string, removing bool) error {
+	written, changed, err := d.withSetting(d.Path, key, value, removing)
+	if err != nil || !changed {
+		return err
+	}
+	return d.writeAtomically(d.Path, written)
 }

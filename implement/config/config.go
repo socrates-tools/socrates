@@ -7,11 +7,13 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/socrates-tools/socrates/internal/refusal"
+	"github.com/socrates-tools/socrates/internal/settingsmenu"
 	"github.com/socrates-tools/socrates/internal/state"
 	"go.yaml.in/yaml/v3"
 )
@@ -22,6 +24,8 @@ const (
 	DefaultEffort      = "high"
 )
 
+const defaultBranchesKey = "default_branches"
+
 var efforts = []string{"low", "medium", "high", "xhigh", "max"}
 
 func Efforts() []string {
@@ -31,6 +35,24 @@ func Efforts() []string {
 type Config struct {
 	Concurrency *Count `yaml:"concurrency"`
 	Roles       Roles  `yaml:"roles"`
+
+	DefaultBranches map[string]string `yaml:"default_branches"`
+}
+
+func (c Config) DefaultBranchOf(repository string) string {
+	return c.DefaultBranches[repository]
+}
+
+func RememberDefaultBranch(path, repository, branch string) error {
+	return savingTo(path).WriteKey([]string{defaultBranchesKey, repository}, branch)
+}
+
+func ForgetDefaultBranch(path, repository string) error {
+	return savingTo(path).RemoveKey([]string{defaultBranchesKey, repository})
+}
+
+func savingTo(path string) settingsmenu.Definition {
+	return settingsmenu.Definition{Path: path, Parse: Parse, MenuCommand: savingCommand}
 }
 
 type Count int
@@ -103,6 +125,14 @@ func (c Config) validate() error {
 	}
 	if effort := c.Roles.Implementer.Effort; effort != "" && !slices.Contains(efforts, effort) {
 		return fmt.Errorf(unknownEffort, effort, efforts)
+	}
+	for repository, branch := range c.DefaultBranches {
+		if !filepath.IsAbs(repository) {
+			return fmt.Errorf(repositoryNotAbsolute, repository)
+		}
+		if branch == "" || strings.ContainsAny(branch, " \t\r\n") {
+			return fmt.Errorf(branchNotUsable, repository, branch)
+		}
 	}
 	return nil
 }

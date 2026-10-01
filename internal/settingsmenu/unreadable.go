@@ -150,8 +150,8 @@ func keyOf(line string) string {
 }
 
 func repaired(content []byte, one unreadable) ([]byte, error) {
-	if document, err := documentOf(content); err == nil && document.states(one.key) {
-		document.remove(one.key)
+	if document, err := documentOf(content); err == nil && document.states(keyPath(one.key)) {
+		document.remove(keyPath(one.key))
 		return document.render()
 	}
 	return withoutTheLines(content, one), nil

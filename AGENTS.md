@@ -91,9 +91,9 @@ What design is:
 
 What implement is:
 
-- `implement/command` - the command tree: `config` and `skill`, and nothing else yet.
+- `implement/command` - the command tree: `config`, `default-branch` and `skill`, and nothing else yet.
 - `implement/skill` - the source of the implementer's agent definition, installing it, and the record of where it was installed.
-- `implement/config` - the one optional configuration file implement reads, every setting it holds, the default each falls back to, and the report `socrates implement config` prints.
+- `implement/config` - the one optional configuration file implement reads, every setting it holds, the default each falls back to, the default branch each repository's features start from and how a repository is named, by the top level of its main worktree, and the report `socrates implement config` prints.
 
 What holds them all:
 
@@ -102,7 +102,7 @@ What holds them all:
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
 - `internal/tty` - whether a stream is a terminal at all, for every tool that draws something only a person can answer.
 - `internal/skill` - the machinery no tool owns: the ceiling a skill is held to, installing one under a directory, and reading which invocations a document names so one the binary does not offer fails the suite.
-- `internal/settingsmenu` - the menu a settings file is changed from, for any tool: the rows, the view, the write that leaves the rest of the file alone, and the reading of a line the loader could not read.
+- `internal/settingsmenu` - the menu a settings file is changed from, for any tool: the rows, the view, the write that leaves the rest of the file alone, the write offered one key at a time to a writer that is not the menu, and the reading of a line the loader could not read.
 
 ## Verification
 
@@ -239,6 +239,13 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - It names no `socrates` command, read against every namespace in `convention.Tools`.
 - It is held to a ceiling of its own.
 - Where it was written is recorded in `~/.socrates/implement/installed.yaml`, a second install elsewhere replaces the record, and `config.yaml` never holds it.
+
+**The default branch**
+
+- A repository is keyed by the top level of its main worktree, so every worktree of one clone reads one entry and a second clone at another path reads none.
+- A branch the repository does not hold, local or remote-tracking, is refused by `socrates implement default-branch` and the file is untouched.
+- Outside a repository and in a bare one, `default-branch` is refused naming what it needs, and `config` reports no `default_branch`.
+- A save keeps a person's comments, key order and blank lines, through the same machinery as the menu, and a repository path holding a dot is one key.
 
 **The binaries**
 

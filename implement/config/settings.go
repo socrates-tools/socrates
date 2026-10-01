@@ -18,9 +18,10 @@ type Setting struct {
 }
 
 const (
-	concurrencyKey = "concurrency"
-	modelKey       = "roles.implementer.model"
-	effortKey      = "roles.implementer.effort"
+	concurrencyKey   = "concurrency"
+	modelKey         = "roles.implementer.model"
+	effortKey        = "roles.implementer.effort"
+	defaultBranchKey = "default_branch"
 )
 
 func (c Config) Settings() []Setting {
@@ -37,6 +38,18 @@ func (c Config) Settings() []Setting {
 		inForce(modelKey, c.Roles.Implementer.Model, DefaultModel),
 		effort,
 	}
+}
+
+func (c Config) SettingsIn(repository string) []Setting {
+	settings := c.Settings()
+	if repository == "" {
+		return settings
+	}
+	remembered := c.DefaultBranchOf(repository)
+	if remembered == "" {
+		return append(settings, Setting{Key: defaultBranchKey, Source: Default})
+	}
+	return append(settings, Setting{Key: defaultBranchKey, Value: remembered, Source: Set})
 }
 
 func inForce(key, stated, owned string) Setting {

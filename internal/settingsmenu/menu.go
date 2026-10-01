@@ -179,7 +179,7 @@ func (m *menu) take(taken option) tea.Cmd {
 }
 
 func (m *menu) record(key, value string, removing bool) tea.Cmd {
-	written, changed, err := m.definition.withSetting(m.path, key, value, removing)
+	written, changed, err := m.definition.withSetting(m.path, keyPath(key), value, removing)
 	if err != nil {
 		m.said = strings.Split(err.Error(), newline)
 		return nil
