@@ -181,6 +181,7 @@ Nothing is pushed.
 
 ```sh
 socrates implement config                    # every setting in force, and this repository's default branch
+socrates implement configure                 # change one setting from a menu
 socrates implement default-branch <branch>   # remember the branch this repository's features start from
 ```
 

@@ -92,7 +92,7 @@ What design is:
 
 What implement is:
 
-- `implement/command` - the command tree: `config`, `configure`, `default-branch` and `skill`, which installs the overseer's skill and the implementer's agent definition, and nothing else yet.
+- `implement/command` - the command tree: `config`, `configure`, `default-branch` and `skill`, which installs the overseer's skill and the implementer's agent definition.
 - `implement/configure` - the menu over implement's settings: its labels and its refusals, the model aliases it offers, the default branch row inside a repository, and rewriting the installed agent definition after a model or an effort is confirmed, built on `internal/settingsmenu`.
 - `implement/skill` - the source of the `socrates-implement` skill and of the implementer's agent definition, installing both, and the record of where the definition was installed.
 - `implement/config` - the one optional configuration file implement reads, every setting it holds, the default each falls back to, the default branch each repository's features start from and how a repository is named, by the top level of its main worktree, and the report `socrates implement config` prints.
