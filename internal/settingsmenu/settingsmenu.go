@@ -5,6 +5,8 @@ import (
 	"io"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/socrates-tools/socrates/internal/refusal"
+	"github.com/socrates-tools/socrates/internal/tty"
 )
 
 type Setting struct {
@@ -20,6 +22,7 @@ type Wording struct {
 	CannotBeWritten    string
 	CannotBeUnderstood string
 	ReadFromNowOn      string
+	NothingIsATerminal string
 }
 
 type Definition struct {
@@ -30,6 +33,10 @@ type Definition struct {
 }
 
 func Run(ctx context.Context, in io.Reader, out io.Writer, definition Definition) error {
+	if !tty.Attached(in) || !tty.Attached(out) {
+		return &refusal.Refusal{Reason: definition.Wording.NothingIsATerminal}
+	}
+
 	standing, err := opened(definition)
 	if err != nil {
 		return err
@@ -40,4 +47,22 @@ func Run(ctx context.Context, in io.Reader, out io.Writer, definition Definition
 		return err
 	}
 	return standing.failed
+}
+
+type Repair struct {
+	Key     string
+	Line    int
+	Written []byte
+}
+
+func RepairFirst(definition Definition, content []byte) (Repair, bool, error) {
+	broken := definition.unreadableIn(definition.Path, content)
+	if len(broken) == 0 {
+		return Repair{}, false, nil
+	}
+	written, err := repaired(content, broken[0])
+	if err != nil {
+		return Repair{}, false, err
+	}
+	return Repair{Key: broken[0].key, Line: broken[0].line, Written: written}, true, nil
 }

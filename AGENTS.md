@@ -89,6 +89,7 @@ What holds them all:
 - `internal/convention` - the repository's conventions as executable checks.
 - `internal/e2e` - real binaries, a real repository, real git, real processes, each vendor's simulator on `PATH`, a real browser.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
+- `internal/tty` - whether a stream is a terminal at all, for every tool that draws something only a person can answer.
 - `internal/skill` - the machinery no tool owns: the ceiling a skill is held to, installing one under a directory, and reading which invocations a document names so one the binary does not offer fails the suite.
 - `internal/settingsmenu` - the menu a settings file is changed from, for any tool: the rows, the view, the write that leaves the rest of the file alone, and the reading of a line the loader could not read.
 
@@ -182,7 +183,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
   A block that is wrong as a whole is named and reset as the block rather than by its first field, and what the menu says is wrapped at the terminal's width rather than cut off.
 - A configuration file carrying a `surface` block is refused by every review command but `configure`, naming `~/.socrates/agora/config.yaml` as where the block belongs, before a snapshot is taken and before a reviewer is spawned.
   `configure` offers to reset the block, and nothing moves it into agora's file or rewrites the file unasked.
-- `review/configure` states every label it draws in its own `messages.go`, and the wording check reads its plain string literals rather than only its `fmt` call sites.
+- `internal/settingsmenu` states every label the menu draws in its own `messages.go` and `review/configure` states review's own, and the wording check reads the plain string literals of both rather than only their `fmt` call sites.
 - `findings --json` reports each finding's recorded resolution and whether its location is inside the change, and `review/hunks` is the one place that question is answered.
 - A follower stops on the run's record or on the log, waits bounded for a log that does not exist yet, and stops on a parked round.
 - `status`, `watch` and `logs` stay three commands.

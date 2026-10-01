@@ -7,6 +7,5 @@ const (
 	cannotBeRead    = "socrates review configure cannot read %s: %s. Fix its permissions or move it aside and run the command again"
 	cannotBeWritten = "socrates review configure cannot write %s: %s. Fix its permissions and run the command again"
 
-	noPersonAtAKeyboard = "socrates review configure draws a menu and waits for a person, and nothing here is a terminal. Run %s to read what is in force, and edit the file itself to change it"
-	readingCommand      = "socrates review config"
+	noPersonAtAKeyboard = "socrates review configure draws a menu and waits for a person, and nothing here is a terminal. Run socrates review config to read what is in force, and edit the file itself to change it"
 )

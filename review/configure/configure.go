@@ -4,17 +4,11 @@ import (
 	"context"
 	"io"
 
-	"github.com/socrates-tools/socrates/internal/refusal"
 	"github.com/socrates-tools/socrates/internal/settingsmenu"
 	"github.com/socrates-tools/socrates/review/config"
-	"github.com/socrates-tools/socrates/review/terminal"
 )
 
 func Run(ctx context.Context, in io.Reader, out io.Writer) error {
-	if !terminal.Attached(in) || !terminal.Attached(out) {
-		return refusal.New(noPersonAtAKeyboard, readingCommand)
-	}
-
 	path, err := config.Path()
 	if err != nil {
 		return err
@@ -33,6 +27,7 @@ func definitionAt(path string) settingsmenu.Definition {
 			CannotBeWritten:    cannotBeWritten,
 			CannotBeUnderstood: cannotBeUnderstood,
 			ReadFromNowOn:      readFromNowOn,
+			NothingIsATerminal: noPersonAtAKeyboard,
 		},
 	}
 }

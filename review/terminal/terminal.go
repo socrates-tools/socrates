@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/socrates-tools/socrates/internal/tty"
 )
 
 type Output struct {
@@ -17,17 +19,7 @@ type Output struct {
 }
 
 func For(out, failures io.Writer) Output {
-	return Output{To: out, Failures: failures, Terminal: Attached(out), Pager: strings.Fields(os.Getenv(pagerVariable))}
-}
-
-func Attached(stream any) bool {
-	file, isFile := stream.(*os.File)
-	if !isFile {
-		return false
-	}
-
-	written, err := file.Stat()
-	return err == nil && written.Mode()&os.ModeCharDevice != 0
+	return Output{To: out, Failures: failures, Terminal: tty.Attached(out), Pager: strings.Fields(os.Getenv(pagerVariable))}
 }
 
 func (o Output) Write(ctx context.Context, lines []string) error {
