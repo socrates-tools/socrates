@@ -18,9 +18,9 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 48](../../../adr/0048-socrates-i
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1.1: the configure menu is shared machinery](1.1-the-configure-menu-is-shared.md) | None | pending |
-| [1.2: every socrates skill is invoked by a person only](1.2-every-socrates-skill-is-a-persons-only.md) | None | pending |
-| [1.3: socrates implement exists and reports its settings](1.3-socrates-implement-reports-its-settings.md) | None | pending |
+| [1.1: the configure menu is shared machinery](1.1-the-configure-menu-is-shared.md) | None | in progress |
+| [1.2: every socrates skill is invoked by a person only](1.2-every-socrates-skill-is-a-persons-only.md) | None | in progress |
+| [1.3: socrates implement exists and reports its settings](1.3-socrates-implement-reports-its-settings.md) | None | in progress |
 | [2.1: the default branch is remembered per repository](2.1-the-default-branch-is-remembered.md) | 1.3 | pending |
 | [2.2: the implementer's agent definition is installed](2.2-the-implementers-agent-definition-is-installed.md) | 1.3 | pending |
 | [3.1: the socrates-implement skill teaches the overseer](3.1-the-socrates-implement-skill.md) | 1.2, 2.1, 2.2 | pending |
