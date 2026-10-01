@@ -35,8 +35,8 @@ func newDefaultBranchCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if !config.HoldsBranch(repository, branch) {
-				return refusal.New(repositoryHoldsNoSuchBranch, repository, branch)
+			if err := config.RequireBranch(repository, branch); err != nil {
+				return err
 			}
 
 			path, err := config.Path()

@@ -1,6 +1,9 @@
 package config
 
-import "strconv"
+import (
+	"slices"
+	"strconv"
+)
 
 type Source string
 
@@ -10,11 +13,19 @@ const (
 )
 
 type Setting struct {
-	Key     string
-	Value   string
-	Source  Source
-	Default string
-	Choices []string
+	Key      string
+	Path     []string
+	Value    string
+	Source   Source
+	Default  string
+	Choices  []string
+	Typeable bool
+}
+
+var modelAliases = []string{"sonnet", "opus", "haiku", "fable", "inherit"}
+
+func ModelAliases() []string {
+	return slices.Clone(modelAliases)
 }
 
 const (
@@ -33,9 +44,13 @@ func (c Config) Settings() []Setting {
 	effort := inForce(effortKey, c.Roles.Implementer.Effort, DefaultEffort)
 	effort.Choices = Efforts()
 
+	model := inForce(modelKey, c.Roles.Implementer.Model, DefaultModel)
+	model.Choices = ModelAliases()
+	model.Typeable = true
+
 	return []Setting{
 		inForce(concurrencyKey, stated, strconv.Itoa(DefaultConcurrency)),
-		inForce(modelKey, c.Roles.Implementer.Model, DefaultModel),
+		model,
 		effort,
 	}
 }
@@ -45,11 +60,11 @@ func (c Config) SettingsIn(repository string) []Setting {
 	if repository == "" {
 		return settings
 	}
-	remembered := c.DefaultBranchOf(repository)
-	if remembered == "" {
-		return append(settings, Setting{Key: defaultBranchKey, Source: Default})
+	row := Setting{Key: defaultBranchKey, Path: []string{defaultBranchesKey, repository}, Source: Default}
+	if remembered := c.DefaultBranchOf(repository); remembered != "" {
+		row.Value, row.Source = remembered, Set
 	}
-	return append(settings, Setting{Key: defaultBranchKey, Value: remembered, Source: Set})
+	return append(settings, row)
 }
 
 func inForce(key, stated, owned string) Setting {

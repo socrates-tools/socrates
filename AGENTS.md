@@ -14,7 +14,7 @@ A design interviews a person over agora and leaves a spec and its decisions behi
 
 `socrates implement` is a fourth namespace, per ADR 48, and builds a change's tickets through implementers.
 `socrates implement skill` installs `socrates-implement`, which turns the session that a person invokes it in into the overseer, and the `socrates-implementer` agent definition the overseer spawns.
-It reads one configuration file of its own, `~/.socrates/implement/config.yaml`, and `socrates implement config` reports every setting in it.
+It reads one configuration file of its own, `~/.socrates/implement/config.yaml`, `socrates implement config` reports every setting in it, and `socrates implement configure` changes one from a menu.
 It knows nothing about review, agora or design.
 
 The dispatcher that routes `socrates` to a namespace holds wiring and nothing else: `internal/dispatcher` mounts review's command tree, agora's command tree, design's command tree and implement's command tree, and is the only thing that imports all four.
@@ -92,7 +92,8 @@ What design is:
 
 What implement is:
 
-- `implement/command` - the command tree: `config`, `default-branch` and `skill`, which installs the overseer's skill and the implementer's agent definition, and nothing else yet.
+- `implement/command` - the command tree: `config`, `configure`, `default-branch` and `skill`, which installs the overseer's skill and the implementer's agent definition, and nothing else yet.
+- `implement/configure` - the menu over implement's settings: its labels and its refusals, the model aliases it offers, the default branch row inside a repository, and rewriting the installed agent definition after a model or an effort is confirmed, built on `internal/settingsmenu`.
 - `implement/skill` - the source of the `socrates-implement` skill and of the implementer's agent definition, installing both, and the record of where the definition was installed.
 - `implement/config` - the one optional configuration file implement reads, every setting it holds, the default each falls back to, the default branch each repository's features start from and how a repository is named, by the top level of its main worktree, and the report `socrates implement config` prints.
 
@@ -196,6 +197,11 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - A configuration file carrying a `surface` block is refused by every review command but `configure`, naming `~/.socrates/agora/config.yaml` as where the block belongs, before a snapshot is taken and before a reviewer is spawned.
   `configure` offers to reset the block, and nothing moves it into agora's file or rewrites the file unasked.
 - `internal/settingsmenu` states every label the menu draws in its own `messages.go` and `review/configure` states review's own, and the wording check reads the plain string literals of both rather than only their `fmt` call sites.
+- Everything above that is stated for `configure` holds for `socrates implement configure` too, which refuses naming `socrates implement config`, and `internal/settingsmenu` names neither tool: what differs is carried by the `Definition` a tool hands it.
+- A setting whose written key is not its displayed key carries the segments it is written at, so a `default_branch` row is written under `default_branches.<repository top level>` whatever dots the path holds, and review's rows are written at their displayed key as before.
+- `socrates implement configure` offers `sonnet`, `opus`, `haiku`, `fable` and `inherit` for `roles.implementer.model` and also takes a full identifier typed.
+- A confirmed model or effort rewrites the installed agent definition at once, and with none installed the menu names `socrates implement skill` as what writes it.
+- Inside a repository the menu offers that repository's `default_branch`, a branch the repository does not hold is refused before the file is touched, and `use the default` removes that repository's entry and no other.
 - `findings --json` reports each finding's recorded resolution and whether its location is inside the change, and `review/hunks` is the one place that question is answered.
 - A follower stops on the run's record or on the log, waits bounded for a log that does not exist yet, and stops on a parked round.
 - `status`, `watch` and `logs` stay three commands.

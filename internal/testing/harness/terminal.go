@@ -51,10 +51,24 @@ func (s *Session) SocratesInATerminal(arguments ...string) *Terminal {
 
 func (s *Session) SocratesInATerminalWith(environment []string, arguments ...string) *Terminal {
 	s.t.Helper()
+	return s.startInATerminal(s.Repository.Root, environment, append([]string{"review"}, arguments...))
+}
 
-	arguments = append([]string{"review"}, arguments...)
+func (s *Session) TopInATerminal(arguments ...string) *Terminal {
+	s.t.Helper()
+	return s.TopInATerminalIn(s.Repository.Root, arguments...)
+}
+
+func (s *Session) TopInATerminalIn(directory string, arguments ...string) *Terminal {
+	s.t.Helper()
+	return s.startInATerminal(directory, nil, arguments)
+}
+
+func (s *Session) startInATerminal(directory string, environment []string, arguments []string) *Terminal {
+	s.t.Helper()
+
 	command := exec.Command(s.Binary, arguments...)
-	command.Dir = s.Repository.Root
+	command.Dir = directory
 	if len(environment) > 0 {
 		command.Env = append(os.Environ(), environment...)
 	}

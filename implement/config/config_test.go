@@ -202,12 +202,19 @@ func TestTheDefaultsAreTheOnesTheSpecStates(t *testing.T) {
 	}
 }
 
-func TestOnlyTheEffortOffersAFixedSetOfValues(t *testing.T) {
+func TestOnlyTheModelAndTheEffortOfferValues(t *testing.T) {
 	for _, setting := range (config.Config{}).Settings() {
 		offered := len(setting.Choices) > 0
-		if offered != (setting.Key == "roles.implementer.effort") {
-			t.Errorf("%s offers %v, and only the effort has a fixed set of values", setting.Key, setting.Choices)
+		wanted := setting.Key == "roles.implementer.effort" || setting.Key == "roles.implementer.model"
+		if offered != wanted {
+			t.Errorf("%s offers %v, and only the model and the effort have values to offer", setting.Key, setting.Choices)
 		}
+		if setting.Typeable != (setting.Key == "roles.implementer.model") {
+			t.Errorf("%s is typeable %v, and only the model also takes a full identifier", setting.Key, setting.Typeable)
+		}
+	}
+	if diff := cmp.Diff([]string{"sonnet", "opus", "haiku", "fable", "inherit"}, config.ModelAliases()); diff != "" {
+		t.Errorf("the model aliases offered differ (-want +got):\n%s", diff)
 	}
 	want := []string{"low", "medium", "high", "xhigh", "max"}
 	if diff := cmp.Diff(want, config.Efforts()); diff != "" {

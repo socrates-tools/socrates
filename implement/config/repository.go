@@ -63,6 +63,13 @@ func HoldsBranch(repository, branch string) bool {
 	return false
 }
 
+func RequireBranch(repository, branch string) error {
+	if !HoldsBranch(repository, branch) {
+		return refusal.New(repositoryHoldsNoSuchBranch, repository, branch)
+	}
+	return nil
+}
+
 func git(directory string, arguments ...string) (string, error) {
 	command := exec.Command("git", append([]string{"-C", directory}, arguments...)...)
 	var out bytes.Buffer
