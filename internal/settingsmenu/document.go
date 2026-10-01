@@ -34,9 +34,13 @@ func documentOf(content []byte) (*document, error) {
 	return &document{root: root}, nil
 }
 
-func (d *document) set(key, value string) {
+func keyPath(key string) []string {
+	return strings.Split(key, keySeparator)
+}
+
+func (d *document) set(key []string, value string) {
 	holder := d.holderOf(key, true)
-	leaf := lastSegment(key)
+	leaf := key[len(key)-1]
 
 	if stated := valueUnder(holder, leaf); stated != nil {
 		stated.Kind = yaml.ScalarNode
@@ -51,14 +55,13 @@ func (d *document) set(key, value string) {
 		&yaml.Node{Kind: yaml.ScalarNode, Value: value})
 }
 
-func (d *document) remove(key string) {
-	segments := strings.Split(key, keySeparator)
-	pruneFrom(d.top(), segments)
+func (d *document) remove(key []string) {
+	pruneFrom(d.top(), key)
 }
 
-func (d *document) states(key string) bool {
+func (d *document) states(key []string) bool {
 	holder := d.holderOf(key, false)
-	return holder != nil && valueUnder(holder, lastSegment(key)) != nil
+	return holder != nil && valueUnder(holder, key[len(key)-1]) != nil
 }
 
 func (d *document) render() ([]byte, error) {
@@ -105,11 +108,10 @@ func (d *document) top() *yaml.Node {
 	return d.root.Content[0]
 }
 
-func (d *document) holderOf(key string, building bool) *yaml.Node {
-	segments := strings.Split(key, keySeparator)
+func (d *document) holderOf(key []string, building bool) *yaml.Node {
 	holder := d.top()
 
-	for _, segment := range segments[:len(segments)-1] {
+	for _, segment := range key[:len(key)-1] {
 		nested := valueUnder(holder, segment)
 		if nested == nil || nested.Kind != yaml.MappingNode {
 			if !building {
@@ -166,9 +168,4 @@ func pruneFrom(holder *yaml.Node, segments []string) bool {
 		return true
 	}
 	return false
-}
-
-func lastSegment(key string) string {
-	segments := strings.Split(key, keySeparator)
-	return segments[len(segments)-1]
 }

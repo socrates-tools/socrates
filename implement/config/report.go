@@ -8,7 +8,11 @@ type Report struct {
 }
 
 func ReportAt(path string, loaded Config) Report {
-	return Report{Path: path, Settings: loaded.Settings()}
+	return ReportIn(path, loaded, "")
+}
+
+func ReportIn(path string, loaded Config, repository string) Report {
+	return Report{Path: path, Settings: loaded.SettingsIn(repository)}
 }
 
 func (r Report) Lines() []string {

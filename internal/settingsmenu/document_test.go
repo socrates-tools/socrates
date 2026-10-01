@@ -51,7 +51,7 @@ ceiling: 4096
 	if err != nil {
 		t.Fatalf("reading a file a person wrote: %v", err)
 	}
-	document.set("mode", "codex")
+	document.set(keyPath("mode"), "codex")
 
 	written, err := document.render()
 	if err != nil {
@@ -69,7 +69,7 @@ func TestSettingAKeyNoFileNamesWritesOnlyThatKey(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading no file at all: %v", err)
 	}
-	document.set("mode", "codex")
+	document.set(keyPath("mode"), "codex")
 
 	written, err := document.render()
 	if err != nil {
@@ -85,8 +85,8 @@ func TestSettingANestedKeyWritesTheBlocksThatHoldIt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading no file at all: %v", err)
 	}
-	document.set("team.member.role", "sonnet")
-	document.set("team.member.duty", "low")
+	document.set(keyPath("team.member.role"), "sonnet")
+	document.set(keyPath("team.member.duty"), "low")
 
 	written, err := document.render()
 	if err != nil {
@@ -103,7 +103,7 @@ func TestRemovingTheOnlySettingLeavesAFileNamingNothing(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading a file naming one setting: %v", err)
 	}
-	document.remove("mode")
+	document.remove(keyPath("mode"))
 
 	written, err := document.render()
 	if err != nil {
@@ -121,7 +121,7 @@ func TestRemovingTheLastSettingOfABlockTakesTheBlockWithIt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading a file naming a nested setting: %v", err)
 	}
-	document.remove("team.member.role")
+	document.remove(keyPath("team.member.role"))
 
 	written, err := document.render()
 	if err != nil {
@@ -139,7 +139,7 @@ func TestRemovingOneSettingOfABlockLeavesTheRestOfTheBlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading a file naming two nested settings: %v", err)
 	}
-	document.remove("team.member.role")
+	document.remove(keyPath("team.member.role"))
 
 	written, err := document.render()
 	if err != nil {
@@ -157,7 +157,7 @@ func TestRemovingASettingLeavesTheCommentsAroundItAlone(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading a commented file: %v", err)
 	}
-	document.remove("ceiling")
+	document.remove(keyPath("ceiling"))
 
 	written, err := document.render()
 	if err != nil {
@@ -178,10 +178,10 @@ func TestRemovingASettingNoFileNamesChangesNothing(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading a file naming one setting: %v", err)
 	}
-	if document.states("retention") {
+	if document.states(keyPath("retention")) {
 		t.Fatal("a file naming one setting reports a second one as stated")
 	}
-	document.remove("retention")
+	document.remove(keyPath("retention"))
 
 	written, err := document.render()
 	if err != nil {
@@ -372,5 +372,75 @@ func TestWhatTheMenuSaysIsWrappedAtTheWidthOfTheTerminal(t *testing.T) {
 	}
 	if joined := strings.Join(drawn, ""); !strings.Contains(strings.ReplaceAll(joined, indent, ""), strings.ReplaceAll(path, indent, "")) {
 		t.Errorf("what is drawn no longer carries %s once its lines are joined:\n%s", path, strings.Join(drawn, newline))
+	}
+}
+
+func TestAKeyHoldingDotsAndSlashesIsOneSegmentWhenTheCallerSplitsItItself(t *testing.T) {
+	held := "# mine\nmodel: opus\n\nrepositories:\n  /home/me/other.repo: main\n"
+	document, err := documentOf([]byte(held))
+	if err != nil {
+		t.Fatalf("reading a file a person wrote: %v", err)
+	}
+	document.set([]string{"repositories", "/home/me/my.repo"}, "dev")
+
+	written, err := document.render()
+	if err != nil {
+		t.Fatalf("writing it back: %v", err)
+	}
+	want := held + "  /home/me/my.repo: dev\n"
+	if string(written) != want {
+		t.Errorf("setting a key holding dots produced:\n%s\nwant:\n%s", written, want)
+	}
+
+	reread, err := documentOf(written)
+	if err != nil {
+		t.Fatalf("reading what was written: %v", err)
+	}
+	if !reread.states([]string{"repositories", "/home/me/my.repo"}) {
+		t.Errorf("the file does not state the key holding dots as one key:\n%s", written)
+	}
+	if reread.states([]string{"repositories", "/home/me/my", "repo"}) {
+		t.Errorf("the dot in a path split the key in two:\n%s", written)
+	}
+	reread.remove([]string{"repositories", "/home/me/my.repo"})
+	removed, err := reread.render()
+	if err != nil || string(removed) != held {
+		t.Errorf("removing the key holding dots left:\n%s\nwant:\n%s (%v)", removed, held, err)
+	}
+}
+
+func TestWritingOneKeyThroughTheDefinitionKeepsTheRestAndRefusesWhatItsParseRefuses(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "tool", "config.yaml")
+	held := "mode: claude\n\n# mine\nceiling: 4096\n"
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(held), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	definition := fakeDefinition(path)
+
+	if err := definition.WriteKey([]string{"team", "a.b"}, "c"); err == nil {
+		t.Errorf("a key the file's parser does not have was written")
+	}
+	if now, _ := os.ReadFile(path); string(now) != held {
+		t.Errorf("a refused write touched the file:\n%s", now)
+	}
+
+	if err := definition.WriteKey([]string{"mode"}, "codex"); err != nil {
+		t.Fatalf("writing a key the parser accepts: %v", err)
+	}
+	if now, _ := os.ReadFile(path); string(now) != strings.Replace(held, "claude", "codex", 1) {
+		t.Errorf("the file holds:\n%s", now)
+	}
+
+	if err := definition.RemoveKey([]string{"mode"}); err != nil {
+		t.Fatalf("removing a key: %v", err)
+	}
+	if now, _ := os.ReadFile(path); string(now) != "\n# mine\nceiling: 4096\n" {
+		t.Errorf("the file holds:\n%s", now)
+	}
+	if err := definition.RemoveKey([]string{"mode"}); err != nil {
+		t.Errorf("removing a key the file never stated failed: %v", err)
 	}
 }

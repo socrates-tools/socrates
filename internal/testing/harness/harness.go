@@ -145,6 +145,11 @@ func (s *Session) Top(arguments ...string) (string, string, int) {
 	return s.invoke(s.Repository.Root, nil, nil, arguments...)
 }
 
+func (s *Session) TopIn(directory string, arguments ...string) (string, string, int) {
+	s.t.Helper()
+	return s.invoke(directory, nil, nil, arguments...)
+}
+
 func (s *Session) invoke(directory string, environment []string, input io.Reader, arguments ...string) (string, string, int) {
 	s.t.Helper()
 
