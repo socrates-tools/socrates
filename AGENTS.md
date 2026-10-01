@@ -199,7 +199,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 
 **The skill**
 
-- Every skill any namespace ships carries `disable-model-invocation: true`, stated once in `internal/skill` and rendered into every skill's front matter, and `convention.SkillsAModelCouldInvoke` fails the suite over every committed `socrates-*` skill rather than a list, per ADR 49.
+- Every skill any namespace ships carries `disable-model-invocation: true`, stated once in `internal/skill` and rendered into every skill's front matter, and the suite fails over every committed `socrates-*` skill and over everything `socrates <namespace> skill` installs, for each namespace in `convention.Tools` whose tree holds `skill`, rather than over a list, per ADR 49.
 - `review/skill` is the one source of both skills, and each committed copy is generated from it.
 - The loop for a change nobody here can patch is a second skill rather than a branch inside the first, and each skill carries a ceiling of its own that the suite reads from the skill rather than from a list.
 - The second skill relays what somebody else wrote verbatim and acts on none of it, reads the change in a worktree of its own, records the head commit and refuses to post where it moved, takes a comment's placement from what review reported, and posts nothing the person did not choose.

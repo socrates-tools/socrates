@@ -29,14 +29,14 @@ func SkillsAModelCouldInvoke(root string) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		if !frontMatterCarries(string(document), skill.PersonOnlyField) {
+		if !CarriesThePersonOnlyField(string(document)) {
 			invocable = append(invocable, entry.Name())
 		}
 	}
 	return invocable, nil
 }
 
-func frontMatterCarries(document, line string) bool {
+func CarriesThePersonOnlyField(document string) bool {
 	lines := strings.Split(document, "\n")
 	if len(lines) == 0 || lines[0] != frontMatterFence {
 		return false
@@ -45,7 +45,7 @@ func frontMatterCarries(document, line string) bool {
 		if one == frontMatterFence {
 			return false
 		}
-		if one == line {
+		if one == skill.PersonOnlyField {
 			return true
 		}
 	}
