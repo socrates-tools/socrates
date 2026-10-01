@@ -28,7 +28,7 @@ const (
 	OutOfScopeHeading   = "## What socrates review does not defend against"
 
 	ReviewerCLIFloor   = "2.1.169"
-	ProposalHome       = "GitHub issue"
+	ProposalHome       = "docs/changes/<slug>/spec.md"
 	PrivateChannelPath = "security/advisories/new"
 
 	SendsNothing     = "socrates review sends nothing"

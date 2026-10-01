@@ -4,10 +4,9 @@
 
 Read this before you write anything.
 
-A change here starts as a spec, published as a GitHub issue in this repository and labelled `ready-for-agent`.
-
-The spec is committed to `docs/changes/<slug>/spec.md` and published from there.
-The tickets it is broken into are issues of their own, blocked by each other and labelled the same way.
+A change here starts as a spec, committed to `docs/changes/<slug>/spec.md`.
+The tickets it is broken into are files beside it, under `docs/changes/<slug>/tickets/`, each naming the tickets that block it.
+No spec and no ticket is an issue: issues are where somebody using socrates reports a bug or asks for something.
 
 The spec says, in the words of somebody using socrates review rather than the words of the code:
 

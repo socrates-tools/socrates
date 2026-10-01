@@ -1,6 +1,6 @@
 ## Which spec does this implement
 
-<!-- The issue holding the spec, and what it asked for. A change with no spec behind it will be turned away: see CONTRIBUTING.md. -->
+<!-- The spec under docs/changes/ this implements, and what it asked for. A change with no spec behind it will be turned away: see CONTRIBUTING.md. -->
 
 - Spec:
 - What it asked for:

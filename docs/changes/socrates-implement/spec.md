@@ -138,7 +138,7 @@ Nothing is pushed.
 
 **Somebody who has just finished a design**
 
-56. As somebody who has just finished a design, I want its last card to offer writing the spec and publishing it, and nothing that starts another skill, so that I start cutting tickets myself with `/socrates-tickets` when I choose to.
+56. As somebody who has just finished a design, I want its last card to offer writing the spec and nothing that starts another skill, so that I start cutting tickets myself with `/socrates-tickets` when I choose to.
 
 ## Implementation Decisions
 
@@ -189,7 +189,7 @@ The definition names no `socrates` command.
 **Every socrates skill is invoked by a person only, per ADR 49.**
 `socrates-review`, `socrates-review-handover`, `socrates-design`, `socrates-tickets` and `socrates-implement` each carry `disable-model-invocation: true` in their front matter.
 The rule is stated once in `internal/skill`, and every namespace's skills are rendered through it.
-`socrates-design`'s last card stops offering to cut the tickets next: it offers write it, and write it and open it as an issue where the repository states a tracker, and write it alone where it states none.
+`socrates-design`'s last card stops offering to cut the tickets next, so it offers write it and nothing else, per ADR 52.
 `socrates-tickets` stops naming a design that handed on to it, and mints its own session.
 `socrates-implement` names no other socrates skill and no `socrates review` invocation, and nothing in it tells the overseer to invoke a skill.
 

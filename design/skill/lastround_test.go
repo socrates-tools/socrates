@@ -24,17 +24,16 @@ func TestTheLastRoundIsOneCardNamingTheShapeWhatWillBeWrittenAndThePath(t *testi
 	}
 }
 
-func TestPublishingIsOfferedOnTheLastCardWhereTheRepositoryStatesATracker(t *testing.T) {
+func TestTheLastCardOffersNoPublishingInAnyRepository(t *testing.T) {
 	last := sectionOf(t, skill.Document(), lastRoundHeading)
 
-	for _, said := range []string{
-		"Offer publishing on this same card where the repository states an issue tracker",
-		"docs/agents/issue-tracker.md",
-		"State nothing about publishing where it does not",
-	} {
-		if !strings.Contains(last, said) {
-			t.Errorf("the last round section does not say %q, so publishing could be offered where nothing takes it:\n%s", said, last)
+	for _, unsaid := range []string{"issue", "tracker", "publish"} {
+		if strings.Contains(strings.ToLower(last), unsaid) {
+			t.Errorf("the last round section names %q, so a design could publish a spec somewhere other than the change's own folder:\n%s", unsaid, last)
 		}
+	}
+	if !strings.Contains(last, "The card offers the same two options in every repository: write it, and write it and cut its tickets next") {
+		t.Errorf("the last round section does not say the card offers the same two options in every repository:\n%s", last)
 	}
 }
 
@@ -64,20 +63,17 @@ func TestTheLastRoundSectionComesAfterTheDecisionsSection(t *testing.T) {
 	}
 }
 
-func TestTheLastCardOffersCuttingTheTicketsNextBesideEveryOtherChoice(t *testing.T) {
+func TestTheLastCardOffersCuttingTheTicketsNext(t *testing.T) {
 	last := sectionOf(t, skill.Document(), lastRoundHeading)
 
 	for _, said := range []string{
-		`"label": "write it"`,
-		`"label": "write it, and open it as an issue"`,
+		`"label": "write it", "recommended": true`,
 		`"label": "write it, and cut its tickets next"`,
-		`"label": "write it, open it as an issue, and cut its tickets next"`,
-		"Where it states none, the card offers two options: write it, and write it and cut its tickets next",
 		skill.TicketsName,
 		"in this same session and to the page the person already has",
 	} {
 		if !strings.Contains(last, said) {
-			t.Errorf("the last round section does not say %q, so publishing and cutting the tickets could exclude each other:\n%s", said, last)
+			t.Errorf("the last round section does not say %q, so a person could not cut the tickets straight after the spec:\n%s", said, last)
 		}
 	}
 }

@@ -143,14 +143,11 @@ A person approves a location rather than discovers one:
      "decisions": [{"id": "write", "question": "write the spec now",
                     "meaning": "shape: Problem Statement, Solution, User Stories, Implementation Decisions, Testing Decisions, Out of Scope, Further Notes. path: docs/changes/<slug>/spec.md",
                     "mode": "single-choice",
-                    "options": [{"label": "write it, and open it as an issue", "meaning": "this repository states an issue tracker", "recommended": true},
-                                {"label": "write it"},
-                                {"label": "write it, and cut its tickets next"},
-                                {"label": "write it, open it as an issue, and cut its tickets next"}]}]}
+                    "options": [{"label": "write it", "recommended": true},
+                                {"label": "write it, and cut its tickets next"}]}]}
 
-Offer publishing on this same card where the repository states an issue tracker, such as `docs/agents/issue-tracker.md`, and offer cutting its tickets next beside it, so every combination of the two is an option of its own, as above.
-State nothing about publishing where it does not.
-Where it states none, the card offers two options: write it, and write it and cut its tickets next.
+The card offers the same two options in every repository: write it, and write it and cut its tickets next.
+The spec lives in the change's own folder and nowhere else.
 Cutting the tickets next means that once the spec is written, you read `socrates-tickets` and cut it, in this same session and to the page the person already has.
 A person who wants a different path takes *None of these* and writes it in the words field: the card proposes a location, and does not insist on it.
 

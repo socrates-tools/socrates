@@ -1,6 +1,6 @@
 # 39. A change is a folder and a decision is a file
 
-- Status: accepted
+- Status: accepted, and its tracker holding the tickets superseded by ADR 43 and ADR 52
 - Date: 2026-09-17
 - Part of: socrates-design
 

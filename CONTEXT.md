@@ -62,7 +62,7 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 ## The design
 
 - **change**: one unit of work, from the spec that opens it to the diff a reviewer reads. Named by a slug, and `docs/changes/<slug>/` holds its spec and its tickets.
-- **spec**: what a design leaves behind, holding the problem, the solution, the user stories and the decisions. Published as an issue, and committed to the change's own folder.
+- **spec**: what a design leaves behind, holding the problem, the solution, the user stories and the decisions. Committed to the change's own folder, and published nowhere else.
 - **design**: one interview about one change, from its first round to the spec and the decision records it writes. The interview is the session itself, so nothing runs between one round and the next.
 - **design round**: one page of questions put to a person, inside a design. Not review's round, which is a different word in a different vocabulary.
 - **frontier**: every question whose prerequisites are settled, or every ticket whose blockers are done. In a design it is what one design round asks, and a design ends when it is empty; in an implementation it is what the overseer may hand out.

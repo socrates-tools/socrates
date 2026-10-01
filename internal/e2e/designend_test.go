@@ -30,8 +30,8 @@ const lastDesignCardDocument = `{
       "meaning": "shape: Problem Statement, Solution, User Stories, Implementation Decisions, Testing Decisions, Out of Scope, Further Notes. path: docs/changes/socrates-design/spec.md",
       "mode": "single-choice",
       "options": [
-        {"label": "write it, and open it as an issue", "meaning": "this repository states an issue tracker", "recommended": true},
-        {"label": "write it, and leave publishing for later"}
+        {"label": "write it", "recommended": true},
+        {"label": "write it, and cut its tickets next"}
       ]
     }
   ]
@@ -87,7 +87,7 @@ func TestTheLastDesignRoundIsOneCardApprovingTheShapeAndThePath(t *testing.T) {
 	if approved == nil {
 		t.Fatalf("what came back does not carry the write decision at all: %+v", answered.Decisions)
 	}
-	if diff := cmp.Diff([]string{"write it, and open it as an issue"}, approved.Chosen); diff != "" {
+	if diff := cmp.Diff([]string{"write it"}, approved.Chosen); diff != "" {
 		t.Errorf("what the person approved on the last card differs (-want +got):\n%s", diff)
 	}
 	if len(approved.Commands) != 0 {

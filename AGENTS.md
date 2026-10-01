@@ -19,7 +19,8 @@ design reads and writes neither: nothing about a design outlives the session tha
 
 `CONTEXT.md` defines the vocabulary and `docs/adr/` holds the decisions, each with what it rejected and why.
 This file is the map: the layout, the verification sequence, and the invariants the design rests on.
-A change starts as a spec, committed to `docs/changes/<slug>/spec.md` and published to this repository's issues, and `CONTRIBUTING.md` says how.
+A change starts as a spec, committed to `docs/changes/<slug>/spec.md` with its tickets as files beside it, and `CONTRIBUTING.md` says how.
+An issue is only where somebody using socrates reports a bug or asks for something.
 
 ## Scope
 
@@ -339,11 +340,6 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - **Mutate a guard you rely on.** A check nobody has broken on purpose is a check nobody knows works.
 
 ## Agent skills
-
-### Issue tracker
-
-Issues live in this repo's GitHub Issues (`socrates-tools/socrates`), read and written via the `gh` CLI.
-See `docs/agents/issue-tracker.md`.
 
 ### Domain docs
 
