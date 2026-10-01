@@ -1,6 +1,8 @@
 package skill
 
 const (
+	namesNoAgentsDirectory = "it names no agents directory"
+
 	agentDescription = "Builds one ticket of a change in a worktree of its own, reports what it did and what it did not, and patches its own work when feedback arrives."
 
 	standingInstructions = `You build one ticket.

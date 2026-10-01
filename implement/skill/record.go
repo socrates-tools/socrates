@@ -62,7 +62,7 @@ func Recorded() (string, bool, error) {
 	decoder.KnownFields(true)
 	if err := decoder.Decode(&recorded); err != nil || recorded.AgentsDirectory == "" {
 		if err == nil {
-			err = errors.New("it names no agents directory")
+			err = errors.New(namesNoAgentsDirectory)
 		}
 		return "", false, refusal.Wrapping(err, theRecordCannotBeRead, path, err)
 	}
