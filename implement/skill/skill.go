@@ -3,6 +3,7 @@ package skill
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/socrates-tools/socrates/implement/config"
 	"github.com/socrates-tools/socrates/internal/refusal"
@@ -10,6 +11,9 @@ import (
 )
 
 const (
+	Name    = "socrates-implement"
+	Ceiling = 9200
+
 	AgentName       = "socrates-implementer"
 	AgentCeiling    = 1400
 	AgentFileSuffix = ".md"
@@ -17,6 +21,23 @@ const (
 	vendorDirectory = ".claude"
 	agentsDirectory = "agents"
 )
+
+var Namespaces = map[string]string{"implement": Name}
+
+func Binaries() []string {
+	return []string{Name}
+}
+
+func Document() string {
+	parts := []string{frontMatter, purpose, theWritesNoCodeSection, theStartingSection, theDefaultBranchSection,
+		theChangesBranchSection, theFrontierSection, theWorktreesSection, theReviewSection, theLandingSection,
+		theStatusSection, theResumingSection, thePersonSection, theLastReadSection, installingElsewhere}
+	return strings.ReplaceAll(strings.Join(parts, "\n\n")+"\n", skillkit.InlineCodeMarker, skillkit.CodeMarker)
+}
+
+func All() []skillkit.Skill {
+	return []skillkit.Skill{{Name: Name, Document: Document, Ceiling: Ceiling}}
+}
 
 func AgentFileName() string {
 	return AgentName + AgentFileSuffix
@@ -55,7 +76,7 @@ func AgentsDirectoryUnder(home string) string {
 }
 
 func Ceilings() []skillkit.Skill {
-	return []skillkit.Skill{{Name: AgentName, Document: DefaultDefinition, Ceiling: AgentCeiling}}
+	return append(All(), skillkit.Skill{Name: AgentName, Document: DefaultDefinition, Ceiling: AgentCeiling})
 }
 
 func WriteDefinition(directory string, stated config.Config) (string, error) {

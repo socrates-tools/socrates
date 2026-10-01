@@ -11,6 +11,7 @@ import (
 	"github.com/socrates-tools/socrates/review/report"
 
 	designskill "github.com/socrates-tools/socrates/design/skill"
+	implementskill "github.com/socrates-tools/socrates/implement/skill"
 	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 	"github.com/socrates-tools/socrates/internal/testing/source"
@@ -18,13 +19,14 @@ import (
 )
 
 func allSkills() []skillkit.Skill {
-	return append(append([]skillkit.Skill{}, skill.All()...), designskill.All()...)
+	return slices.Concat(skill.All(), designskill.All(), implementskill.All())
 }
 
 func allNamespaces() map[string]string {
 	combined := map[string]string{}
 	maps.Copy(combined, skill.Namespaces)
 	maps.Copy(combined, designskill.Namespaces)
+	maps.Copy(combined, implementskill.Namespaces)
 	return combined
 }
 
@@ -262,32 +264,43 @@ func surfaceOfTheSurface(t *testing.T) map[string][]string {
 	return offered
 }
 
-func surfaceOfDesign(t *testing.T, session *harness.Session) map[string][]string {
+func surfaceOfNamespace(t *testing.T, session *harness.Session, namespace string) map[string][]string {
 	t.Helper()
 
-	printed, failures, code := session.Top("design", "--help")
+	printed, failures, code := session.Top(namespace, "--help")
 	if code != 0 {
-		t.Fatalf("socrates design --help exited %d: %s", code, failures)
+		t.Fatalf("socrates %s --help exited %d: %s", namespace, code, failures)
 	}
 
 	offered := map[string][]string{}
 	for _, command := range commandsIn(printed) {
-		help, refused, exit := session.Top("design", command, "--help")
+		help, refused, exit := session.Top(namespace, command, "--help")
 		if exit != 0 {
-			t.Fatalf("socrates design %s --help exited %d: %s", command, exit, refused)
+			t.Fatalf("socrates %s %s --help exited %d: %s", namespace, command, exit, refused)
 		}
 		offered[command] = flagsIn(help)
 	}
 	return offered
 }
 
+func surfaceOfDesign(t *testing.T, session *harness.Session) map[string][]string {
+	t.Helper()
+	return surfaceOfNamespace(t, session, "design")
+}
+
+func surfaceOfImplement(t *testing.T, session *harness.Session) map[string][]string {
+	t.Helper()
+	return surfaceOfNamespace(t, session, "implement")
+}
+
 func everySurface(t *testing.T, session *harness.Session) map[string]map[string][]string {
 	t.Helper()
 
 	return map[string]map[string][]string{
-		skill.Name:       surfaceOf(t, session),
-		skill.Surface:    surfaceOfTheSurface(t),
-		designskill.Name: surfaceOfDesign(t, session),
+		skill.Name:          surfaceOf(t, session),
+		skill.Surface:       surfaceOfTheSurface(t),
+		designskill.Name:    surfaceOfDesign(t, session),
+		implementskill.Name: surfaceOfImplement(t, session),
 	}
 }
 
@@ -303,7 +316,7 @@ func TestEveryCommandNamedIsReal(t *testing.T) {
 	for _, invocation := range named {
 		attributed[invocation.Binary]++
 	}
-	for _, binary := range append(append([]string{}, skill.Binaries()...), designskill.Binaries()...) {
+	for _, binary := range slices.Concat(skill.Binaries(), designskill.Binaries(), implementskill.Binaries()) {
 		if attributed[binary] == 0 {
 			t.Errorf("the skills name nothing of %s, and a binary nothing is attributed to is a binary this check never reads", binary)
 		}
@@ -349,7 +362,7 @@ func TestAFlagOfASecondBinaryIsCheckedToo(t *testing.T) {
 	session := harness.Start(t)
 	offered := everySurface(t, session)
 
-	for _, binary := range []string{skill.Surface, designskill.Name} {
+	for _, binary := range []string{skill.Surface, designskill.Name, implementskill.Name} {
 		t.Run(binary, func(t *testing.T) {
 			surfaced := 0
 			for _, named := range skillkit.Named(allSkills(), allNamespaces()) {
@@ -486,5 +499,47 @@ func TestBothDesignSkillsAreInstalled(t *testing.T) {
 	}
 	if len(designskill.All()) < 2 {
 		t.Fatal("design states one skill, and a spec is cut into tickets by a second one")
+	}
+}
+
+func TestTheOverseerSkillIsInstalledAndTheCommittedCopyIsWhatItsSourceGenerates(t *testing.T) {
+	session := harness.Start(t)
+
+	printed, failures, code := session.Top("implement", "skill")
+	if code != 0 {
+		t.Fatalf("socrates implement skill exited %d: %s\n%s", code, failures, printed)
+	}
+
+	home := os.Getenv("HOME")
+	if home == "" {
+		t.Fatal("the harness left no home directory, so this test would write into the person's own")
+	}
+	path := filepath.Join(home, ".claude", "skills", implementskill.Name, skillkit.FileName)
+
+	if !strings.Contains(printed, path) {
+		t.Errorf("socrates implement skill does not say it wrote %s:\n%s", path, printed)
+	}
+	if written := session.File(path); written != implementskill.Document() {
+		t.Errorf("what was installed at %s is not what the skill's source generates", path)
+	}
+	if committed := session.File(filepath.Join(source.Root(t), ".claude", "skills", implementskill.Name, skillkit.FileName)); committed != implementskill.Document() {
+		t.Errorf("the committed copy of %s is not what its source generates: run make skill", implementskill.Name)
+	}
+}
+
+func TestTheOverseerSkillIsInstalledBesideTheDefinitionUnderTheDirectoriesNamed(t *testing.T) {
+	session := harness.Start(t)
+	skills, agents := t.TempDir(), t.TempDir()
+
+	printed, failures, code := session.Top("implement", "skill", "--to", skills, "--agents-to", agents)
+	if code != 0 {
+		t.Fatalf("socrates implement skill exited %d: %s\n%s", code, failures, printed)
+	}
+
+	if written := session.File(filepath.Join(skills, implementskill.Name, skillkit.FileName)); written != implementskill.Document() {
+		t.Error("what was installed under --to is not what the skill's source generates")
+	}
+	if _, err := os.Stat(filepath.Join(agents, implementskill.AgentFileName())); err != nil {
+		t.Errorf("the agent definition is not beside the skill under --agents-to: %v", err)
 	}
 }

@@ -13,6 +13,7 @@ The namespace holds one operation, `socrates design skill`, which installs its t
 A design interviews a person over agora and leaves a spec and its decisions behind, and it knows nothing about review or implement, which are the other workflows sharing this binary.
 
 `socrates implement` is a fourth namespace, per ADR 48, and builds a change's tickets through implementers.
+`socrates implement skill` installs `socrates-implement`, which turns the session that a person invokes it in into the overseer, and the `socrates-implementer` agent definition the overseer spawns.
 It reads one configuration file of its own, `~/.socrates/implement/config.yaml`, and `socrates implement config` reports every setting in it.
 It knows nothing about review, agora or design.
 
@@ -91,8 +92,8 @@ What design is:
 
 What implement is:
 
-- `implement/command` - the command tree: `config`, `default-branch` and `skill`, and nothing else yet.
-- `implement/skill` - the source of the implementer's agent definition, installing it, and the record of where it was installed.
+- `implement/command` - the command tree: `config`, `default-branch` and `skill`, which installs the overseer's skill and the implementer's agent definition, and nothing else yet.
+- `implement/skill` - the source of the `socrates-implement` skill and of the implementer's agent definition, installing both, and the record of where the definition was installed.
 - `implement/config` - the one optional configuration file implement reads, every setting it holds, the default each falls back to, the default branch each repository's features start from and how a repository is named, by the top level of its main worktree, and the report `socrates implement config` prints.
 
 What holds them all:
@@ -231,6 +232,24 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - It cuts from a spec under `docs/changes/<slug>/` and nothing else, refuses a tickets folder that already exists by name, and leaves what it writes uncommitted.
 - A ticket names its blockers and its wave is derived from them, per ADR 44, and status is kept in the main ticket and nowhere else.
 - The breakdown is driven end to end through the real binary: every card arrives with *keep it* chosen, and a card answered in the person's own words reaches the session through `socrates agora poll`. What the binary cannot drive is the tickets themselves, which are the session's to write.
+
+**The implement skill**
+
+- `socrates-implement` is rendered by `implement/skill`, installed by `socrates implement skill` under the skills directory or `--to` beside the agent definition, carries `disable-model-invocation: true` through `internal/skill`'s front matter, and is held to a ceiling of its own.
+- The committed copy at `.claude/skills/socrates-implement/SKILL.md` must match what the package renders, and `make skill` writes it.
+- Every invocation it names exists in the binary with the flags it names, and it names only `socrates implement` ones.
+- It names no `socrates review` invocation and no other skill, and tells the overseer to invoke no skill, per ADR 49.
+- The overseer writes no code, edits only the main ticket's status table, and settles every coding question by her own judgement.
+- She reads the main ticket, the spec and the ADRs, and the settings from `socrates implement config`, at the start of every run.
+- A default branch that is not remembered is proposed from the branches named `main`, `master`, `dev` or `develop`, never one under a prefix such as `feature/` or `hotfix/`, asked in the terminal and saved with `socrates implement default-branch`, per ADR 51.
+- The change's branch is cut from the current `HEAD` and starts with what the design and the tickets left, and anything else uncommitted stops the run.
+- The frontier is every ticket whose blockers are done, at most `concurrency` implementers run, the longest chain goes first, then the most unblocked, then name order, and a ready ticket sharing a surface with a running one is held back without a blocker being written.
+- Each implementer is briefed with pointers, runs in the background in a worktree and on a branch the overseer made with git, and gets feedback from the overseer with no cap on the exchanges.
+- Landing is a fast-forward followed by the repository's own verification, a failure goes to the implementer whose ticket landed last, and where the only commits an implementer's branch lacks are the overseer's own status commits she merges them into its branch herself, while any other new commit goes back to the implementer to merge.
+- In progress is committed before a hand-out and done once a ticket has landed and passed, and a resumed overseer continues each in-progress ticket from its own branch with a fresh implementer.
+- What the person says mid-run is relayed at once to every implementer it concerns, and the person is reached in the terminal only about what coding cannot fix.
+- The whole change is read against the spec from the default branch's fork point, every worktree is removed, and nothing is pushed.
+- The orchestration itself is the session's to perform from what the skill says: the suite asserts each promise as a statement in the rendered document and every command the skill names against the real binary.
 
 **The implementer's agent definition**
 

@@ -3,7 +3,7 @@ package command
 const toolName = "implement"
 
 const (
-	skillShort         = "Install the agent definition an implementer runs from"
+	skillShort         = "Install the skill that teaches the overseer and the agent definition an implementer runs from"
 	rootShort          = "A fourth workflow: build a change's tickets through implementers"
 	configShort        = "Print every setting, the value in force and where that value came from"
 	defaultBranchShort = "Remember the branch this repository's features start from"
@@ -14,6 +14,9 @@ const (
 	repositoryHoldsNoSuchBranch   = "%s holds no local or remote-tracking branch named %q, and a default branch is one the repository holds, such as dev or origin/dev: run git branch --all to see which it holds"
 	defaultBranchRemembered       = "%s now starts its features from %s, remembered in %s"
 
+	skillInvocation   = "socrates implement skill"
+	toUsage           = "the skills directory to write to, instead of the one under your home directory"
+	installedTheSkill = "the %s skill is at %s, and a person invokes it"
 	agentsToUsage     = "the agents directory to write to, instead of the one under your home directory"
 	installedTheAgent = "the %s agent definition is at %s, and the overseer can spawn it from there"
 

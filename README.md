@@ -7,10 +7,11 @@ Your coding session writes a change.
 The reviewer answers with findings.
 Your session fixes what it can, brings you what only you can decide, and asks for another round.
 
-The same binary holds two more tools:
+The same binary holds three more tools:
 
 - `socrates agora` shows a person one page of decisions in the browser and hands back their answers.
 - `socrates design` is a skill that interviews you over that page and leaves a spec behind.
+- `socrates implement` is a skill that builds the tickets of that spec through implementers while you stay free to talk.
 
 ## What it needs
 
@@ -57,9 +58,10 @@ Then install the skills your coding session reads:
 ```sh
 socrates review skill     # socrates-review and socrates-review-handover
 socrates design skill     # socrates-design and socrates-tickets
+socrates implement skill  # socrates-implement, and the socrates-implementer agent
 ```
 
-Both write under `~/.claude/skills/`, or wherever `--to` says.
+They write under `~/.claude/skills/`, or wherever `--to` says, and the implementer's agent definition under `~/.claude/agents/`, or wherever `--agents-to` says.
 
 ## Reviewing a change
 
@@ -166,6 +168,25 @@ socrates agora stop                             # shuts the server down
 `socrates-design` interviews you over agora pages and writes a spec and its decisions.
 `socrates-tickets` cuts a spec under `docs/changes/<slug>/` into tickets in `docs/changes/<slug>/tickets/`, with `README.md` as the main ticket that holds the order and status.
 Nothing is published to a tracker, and nothing is committed for you.
+
+## implement
+
+`socrates implement skill` installs the `socrates-implement` skill and the `socrates-implementer` agent definition.
+You invoke the skill once the tickets are cut and committed, and the session you invoked it in becomes the overseer.
+She writes no code.
+She hands each ticket whose blockers are done to an implementer in a worktree of its own, reviews what comes back, and lands it by fast-forward on a branch named `socrates-implement/<slug>`, running the repository's own verification after every landing.
+The implementers run in the background, so you can talk to her while they build, and she brings you only what coding cannot fix.
+Once the last ticket lands she reads the whole change against the spec and tells you the branch is ready.
+Nothing is pushed.
+
+```sh
+socrates implement config                    # every setting in force, and this repository's default branch
+socrates implement default-branch <branch>   # remember the branch this repository's features start from
+```
+
+`concurrency` is how many implementers run at once, 4 by default.
+An implementer runs on Sonnet at high effort by default, and `roles.implementer.model` and `roles.implementer.effort` change that.
+The settings live in `~/.socrates/implement/config.yaml`, and the overseer asks for the default branch once per repository and remembers it there.
 
 ## Reviewer CLIs
 
