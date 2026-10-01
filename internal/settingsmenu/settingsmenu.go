@@ -3,6 +3,7 @@ package settingsmenu
 import (
 	"context"
 	"io"
+	"strings"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/socrates-tools/socrates/internal/refusal"
@@ -10,11 +11,20 @@ import (
 )
 
 type Setting struct {
-	Key     string
-	Value   string
-	Source  string
-	Default string
-	Choices []string
+	Key      string
+	Path     []string
+	Value    string
+	Source   string
+	Default  string
+	Choices  []string
+	Typeable bool
+}
+
+func (s Setting) writtenAt() []string {
+	if len(s.Path) > 0 {
+		return s.Path
+	}
+	return keyPath(s.Key)
 }
 
 type Definition struct {
@@ -25,6 +35,19 @@ type Definition struct {
 	MenuCommand    string
 	ReadingCommand string
 	ReadFromNowOn  string
+	Validate       func(setting Setting, value string) error
+	Followed       func(setting Setting) (string, error)
+}
+
+func (d Definition) afterAWriteTo(setting Setting) []string {
+	if d.Followed == nil {
+		return []string{d.ReadFromNowOn}
+	}
+	said, err := d.Followed(setting)
+	if err != nil {
+		return strings.Split(err.Error(), newline)
+	}
+	return []string{said}
 }
 
 func Run(ctx context.Context, in io.Reader, out io.Writer, definition Definition) error {

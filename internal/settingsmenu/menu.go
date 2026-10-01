@@ -134,10 +134,15 @@ func (m *menu) choose(setting Setting) {
 	m.at = 0
 	m.said = nil
 
+	matched := false
 	for position, offered := range m.options {
 		if !offered.editable && !offered.defaults && offered.value == setting.Value {
 			m.at = position
+			matched = true
 		}
+	}
+	if !matched && setting.Typeable && setting.Value != "" {
+		m.at = len(m.options) - 2
 	}
 }
 
@@ -164,7 +169,7 @@ func (m *menu) moveThroughTheOptions(pressed tea.KeyPressMsg) (tea.Model, tea.Cm
 
 func (m *menu) take(taken option) tea.Cmd {
 	if taken.defaults {
-		return m.record(m.chosen.Key, "", true)
+		return m.record("", true)
 	}
 
 	value := taken.value
@@ -175,11 +180,18 @@ func (m *menu) take(taken option) tea.Cmd {
 		m.said = []string{fmt.Sprintf(nothingWasTyped, m.chosen.Key, theDefaultLabel(m.chosen))}
 		return nil
 	}
-	return m.record(m.chosen.Key, value, false)
+	return m.record(value, false)
 }
 
-func (m *menu) record(key, value string, removing bool) tea.Cmd {
-	written, changed, err := m.definition.withSetting(m.path, keyPath(key), value, removing)
+func (m *menu) record(value string, removing bool) tea.Cmd {
+	key := m.chosen.Key
+	if !removing && m.definition.Validate != nil {
+		if err := m.definition.Validate(m.chosen, value); err != nil {
+			m.said = strings.Split(err.Error(), newline)
+			return nil
+		}
+	}
+	written, changed, err := m.definition.withSetting(m.path, m.chosen.writtenAt(), value, removing)
 	if err != nil {
 		m.said = strings.Split(err.Error(), newline)
 		return nil
@@ -193,9 +205,9 @@ func (m *menu) record(key, value string, removing bool) tea.Cmd {
 		return m.giveUp(err)
 	}
 
-	said := []string{fmt.Sprintf(setTo, key, value, m.path), m.definition.ReadFromNowOn}
+	said := append([]string{fmt.Sprintf(setTo, key, value, m.path)}, m.definition.afterAWriteTo(m.chosen)...)
 	if removing {
-		said = []string{fmt.Sprintf(nowTheDefault, key, m.path), m.definition.ReadFromNowOn}
+		said = append([]string{fmt.Sprintf(nowTheDefault, key, m.path)}, m.definition.afterAWriteTo(m.chosen)...)
 	}
 	if err := m.reread(); err != nil {
 		return m.giveUp(err)
@@ -244,7 +256,7 @@ func (m *menu) repair() tea.Cmd {
 		return m.giveUp(err)
 	}
 	if m.stage == listing {
-		m.said = []string{fmt.Sprintf(noLongerStated, one.key, m.path), m.definition.ReadFromNowOn}
+		m.said = append([]string{fmt.Sprintf(noLongerStated, one.key, m.path)}, m.definition.afterAWriteTo(Setting{Key: one.key})...)
 	}
 	return nil
 }
@@ -254,7 +266,7 @@ func optionsFor(setting Setting) []option {
 	for _, choice := range setting.Choices {
 		offered = append(offered, option{label: choice, value: choice})
 	}
-	if len(offered) == 0 {
+	if len(offered) == 0 || setting.Typeable {
 		offered = append(offered, option{editable: true})
 	}
 	return append(offered, option{label: theDefaultLabel(setting), defaults: true})
