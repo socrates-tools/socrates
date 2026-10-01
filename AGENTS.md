@@ -91,7 +91,8 @@ What design is:
 
 What implement is:
 
-- `implement/command` - the command tree: `config`, and nothing else yet.
+- `implement/command` - the command tree: `config` and `skill`, and nothing else yet.
+- `implement/skill` - the source of the implementer's agent definition, installing it, and the record of where it was installed.
 - `implement/config` - the one optional configuration file implement reads, every setting it holds, the default each falls back to, and the report `socrates implement config` prints.
 
 What holds them all:
@@ -227,6 +228,14 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - It cuts from a spec under `docs/changes/<slug>/` and nothing else, refuses a tickets folder that already exists by name, and leaves what it writes uncommitted.
 - A ticket names its blockers and its wave is derived from them, per ADR 44, and status is kept in the main ticket and nowhere else.
 - The breakdown is driven end to end through the real binary: every card arrives with *keep it* chosen, and a card answered in the person's own words reaches the session through `socrates agora poll`. What the binary cannot drive is the tickets themselves, which are the session's to write.
+
+**The implementer's agent definition**
+
+- `implement/skill` renders `socrates-implementer.md` once, and the committed copy at `.claude/agents/socrates-implementer.md` must match what it renders at the defaults.
+- Its `model` and `effort` are the settings in force, and `background` is true.
+- It names no `socrates` command, read against every namespace in `convention.Tools`.
+- It is held to a ceiling of its own.
+- Where it was written is recorded in `~/.socrates/implement/installed.yaml`, a second install elsewhere replaces the record, and `config.yaml` never holds it.
 
 **The binaries**
 

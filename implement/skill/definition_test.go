@@ -9,6 +9,7 @@ import (
 
 	"github.com/socrates-tools/socrates/implement/config"
 	"github.com/socrates-tools/socrates/implement/skill"
+	"github.com/socrates-tools/socrates/internal/convention"
 	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/socrates-tools/socrates/internal/testing/source"
@@ -95,10 +96,16 @@ func TestTheDefinitionStatesTheStandingInstructions(t *testing.T) {
 	}
 }
 
-var aSocratesCommand = regexp.MustCompile(`(?i)socrates\s+(review|agora|design|implement)\b`)
+func aSocratesCommand() *regexp.Regexp {
+	var namespaces []string
+	for _, tool := range convention.Tools {
+		namespaces = append(namespaces, regexp.QuoteMeta(tool.Namespace))
+	}
+	return regexp.MustCompile(`(?i)` + convention.Suite + `\s+(` + strings.Join(namespaces, "|") + `)\b`)
+}
 
 func TestTheDefinitionNamesNoSocratesCommand(t *testing.T) {
-	if found := aSocratesCommand.FindString(skill.DefaultDefinition()); found != "" {
+	if found := aSocratesCommand().FindString(skill.DefaultDefinition()); found != "" {
 		t.Errorf("the definition names %q, and an implementer runs no socrates command", found)
 	}
 }
