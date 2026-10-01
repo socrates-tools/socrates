@@ -8,17 +8,17 @@ Everything socrates review prints names `socrates review`.
 It serves one document as one page on a loopback address, waits for a person, and prints what they answered.
 It knows nothing about code review but the three audiences socrates review writes and the reading of the three severities its hints carry, per ADR 47, and nothing review does reaches it yet.
 
+`socrates design` is a third namespace, and a skill rather than a tool.
+The namespace holds one operation, `socrates design skill`, which installs its two skills: `socrates-design`, which runs the interview, and `socrates-tickets`, which cuts the spec it left into tickets.
+A design interviews a person over agora and leaves a spec and its decisions behind, and it knows nothing about review or implement, which are the other workflows sharing this binary.
+
 `socrates implement` is a fourth namespace, per ADR 48, and builds a change's tickets through implementers.
 It reads one configuration file of its own, `~/.socrates/implement/config.yaml`, and `socrates implement config` reports every setting in it.
 It knows nothing about review, agora or design.
-
-`socrates design` is a third namespace, and a skill rather than a tool.
-The namespace holds one operation, `socrates design skill`, which installs its two skills: `socrates-design`, which runs the interview, and `socrates-tickets`, which cuts the spec it left into tickets.
-A design interviews a person over agora and leaves a spec and its decisions behind, and it knows nothing about review, which is the other workflow sharing this binary.
 The dispatcher that routes `socrates` to a namespace holds wiring and nothing else: `internal/dispatcher` mounts review's command tree, agora's command tree, design's command tree and implement's command tree, and is the only thing that imports all four.
 Each tool reads one configuration file of its own: review reads `~/.socrates/review/config.yaml`, agora reads `~/.socrates/agora/config.yaml` and implement reads `~/.socrates/implement/config.yaml`, per ADR 42.
-Both write under `~/.socrates/review`.
-design reads and writes neither: nothing about a design outlives the session that ran it beside the spec, the ADRs, the glossary entries and the tickets it wrote to the repository being designed for.
+review and agora write under `~/.socrates/review`, and implement writes under `~/.socrates/implement`.
+design reads and writes none of these: nothing about a design outlives the session that ran it beside the spec, the ADRs, the glossary entries and the tickets it wrote to the repository being designed for.
 `~/.socrates` is the brand's root, holding one directory per tool published under it, and `SOCRATES_HOME` moves the root.
 
 `CONTEXT.md` defines the vocabulary and `docs/adr/` holds the decisions, each with what it rejected and why.
