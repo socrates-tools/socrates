@@ -193,9 +193,9 @@ func (m *menu) record(key, value string, removing bool) tea.Cmd {
 		return m.giveUp(err)
 	}
 
-	said := []string{fmt.Sprintf(setTo, key, value, m.path), m.definition.Wording.ReadFromNowOn}
+	said := []string{fmt.Sprintf(setTo, key, value, m.path), m.definition.ReadFromNowOn}
 	if removing {
-		said = []string{fmt.Sprintf(nowTheDefault, key, m.path), m.definition.Wording.ReadFromNowOn}
+		said = []string{fmt.Sprintf(nowTheDefault, key, m.path), m.definition.ReadFromNowOn}
 	}
 	if err := m.reread(); err != nil {
 		return m.giveUp(err)
@@ -244,7 +244,7 @@ func (m *menu) repair() tea.Cmd {
 		return m.giveUp(err)
 	}
 	if m.stage == listing {
-		m.said = []string{fmt.Sprintf(noLongerStated, one.key, m.path), m.definition.Wording.ReadFromNowOn}
+		m.said = []string{fmt.Sprintf(noLongerStated, one.key, m.path), m.definition.ReadFromNowOn}
 	}
 	return nil
 }

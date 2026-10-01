@@ -19,16 +19,13 @@ func Run(ctx context.Context, in io.Reader, out io.Writer) error {
 
 func definitionAt(path string) settingsmenu.Definition {
 	return settingsmenu.Definition{
-		Path:     path,
-		Parse:    config.Parse,
-		Settings: settingsIn,
-		Wording: settingsmenu.Wording{
-			CannotBeRead:       cannotBeRead,
-			CannotBeWritten:    cannotBeWritten,
-			CannotBeUnderstood: cannotBeUnderstood,
-			ReadFromNowOn:      readFromNowOn,
-			NothingIsATerminal: noPersonAtAKeyboard,
-		},
+		Path:           path,
+		Parse:          config.Parse,
+		Settings:       settingsIn,
+		Tool:           toolName,
+		MenuCommand:    menuCommand,
+		ReadingCommand: readingCommand,
+		ReadFromNowOn:  readFromNowOn,
 	}
 }
 

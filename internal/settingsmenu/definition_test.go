@@ -43,11 +43,9 @@ func fakeDefinition(path string) Definition {
 		Settings: func(string) ([]Setting, error) {
 			return []Setting{{Key: "mode", Value: "plain", Source: "default"}}, nil
 		},
-		Wording: Wording{
-			CannotBeRead:       "cannot read %s: %s",
-			CannotBeWritten:    "cannot write %s: %s",
-			CannotBeUnderstood: "%s states something unreadable.",
-			ReadFromNowOn:      "Read from now on.",
-		},
+		Tool:           "the tool",
+		MenuCommand:    "tool configure",
+		ReadingCommand: "tool config",
+		ReadFromNowOn:  "Read from now on.",
 	}
 }

@@ -29,4 +29,11 @@ const (
 	alreadyTheDefault = "%s is already the default, and %s is unchanged."
 
 	theOffendingLine = "  line %d: %s"
+
+	cannotBeUnderstood = "%s states something %s cannot read."
+
+	cannotBeRead    = "%s cannot read %s: %s. Fix its permissions or move it aside and run the command again"
+	cannotBeWritten = "%s cannot write %s: %s. Fix its permissions and run the command again"
+
+	noPersonAtAKeyboard = "%s draws a menu and waits for a person, and nothing here is a terminal. Run %s to read what is in force, and edit the file itself to change it"
 )

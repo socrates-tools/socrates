@@ -17,24 +17,19 @@ type Setting struct {
 	Choices []string
 }
 
-type Wording struct {
-	CannotBeRead       string
-	CannotBeWritten    string
-	CannotBeUnderstood string
-	ReadFromNowOn      string
-	NothingIsATerminal string
-}
-
 type Definition struct {
-	Path     string
-	Parse    func(path string, content []byte) error
-	Settings func(path string) ([]Setting, error)
-	Wording  Wording
+	Path           string
+	Parse          func(path string, content []byte) error
+	Settings       func(path string) ([]Setting, error)
+	Tool           string
+	MenuCommand    string
+	ReadingCommand string
+	ReadFromNowOn  string
 }
 
 func Run(ctx context.Context, in io.Reader, out io.Writer, definition Definition) error {
 	if !tty.Attached(in) || !tty.Attached(out) {
-		return &refusal.Refusal{Reason: definition.Wording.NothingIsATerminal}
+		return refusal.New(noPersonAtAKeyboard, definition.MenuCommand, definition.ReadingCommand)
 	}
 
 	standing, err := opened(definition)
