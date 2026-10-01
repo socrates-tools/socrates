@@ -1,4 +1,4 @@
-package configure
+package settingsmenu
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	blankMarker  = "#socrates-review:blank-line"
+	blankMarker  = "#socrates:blank-line"
 	keySeparator = "."
 	indentStep   = 2
 )

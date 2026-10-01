@@ -35,6 +35,7 @@ var packagesWithoutAMessageRegistry = []string{
 }
 
 var packagesReadForEveryLiteral = []string{
+	filepath.Join("internal", "settingsmenu"),
 	filepath.Join("review", "configure"),
 }
 

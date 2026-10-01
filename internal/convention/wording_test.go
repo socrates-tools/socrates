@@ -262,3 +262,18 @@ func TestThePatternAMenuPackageMatchesOnIsNotALabel(t *testing.T) {
 		t.Errorf("a pattern the package matches on was reported as a label: %v", wording.Inline)
 	}
 }
+
+func TestALabelTheSharedMenuDrawsFromARawStringIsReportedToo(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, filepath.Join("internal", "settingsmenu", "view.go"), "package settingsmenu\n\nfunc lines() []string {\n\treturn []string{`What do you want to configure?`}\n}\n")
+
+	wording, err := UserFacingStrings(root)
+	if err != nil {
+		t.Fatalf("reading the fabricated package: %v", err)
+	}
+
+	want := []string{filepath.Join("internal", "settingsmenu", "view.go") + ":4"}
+	if diff := cmp.Diff(want, wording.Inline); diff != "" {
+		t.Errorf("the reported labels differ (-want +got):\n%s", diff)
+	}
+}
