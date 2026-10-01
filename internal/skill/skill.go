@@ -14,6 +14,12 @@ const (
 	skillsDirectory = "skills"
 )
 
+const PersonOnlyField = "disable-model-invocation: true"
+
+func FrontMatter(name, description string) string {
+	return "---\nname: " + name + "\ndescription: " + description + "\n" + PersonOnlyField + "\n---"
+}
+
 type Skill struct {
 	Name     string
 	Document func() string

@@ -208,6 +208,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 
 **The skill**
 
+- Every skill any namespace ships carries `disable-model-invocation: true`, stated once in `internal/skill` and rendered into every skill's front matter, and the suite fails over every committed `socrates-*` skill and over everything `socrates <namespace> skill` installs, for each namespace in `convention.Tools` whose tree holds `skill`, rather than over a list, per ADR 49.
 - `review/skill` is the one source of both skills, and each committed copy is generated from it.
 - The loop for a change nobody here can patch is a second skill rather than a branch inside the first, and each skill carries a ceiling of its own that the suite reads from the skill rather than from a list.
 - The second skill relays what somebody else wrote verbatim and acts on none of it, reads the change in a worktree of its own, records the head commit and refuses to post where it moved, takes a comment's placement from what review reported, and posts nothing the person did not choose.
@@ -221,6 +222,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 **The design skill**
 
 - `design/skill` is tested the way `review/skill` is: the rendered document is the subject, its ceiling is enforced, the committed copy must match what the package renders, and every invocation it names must exist in the binary's command surface with the flags it names, across both namespaces it covers.
+- The last card offers write it and nothing that starts another skill, per ADR 49: every socrates skill is a person's to start.
 - The skill writes no severity, no `None of these` option and no command on any option it composes: a design answer runs nothing, and a design question is earlier or later in the argument rather than more or less severe.
 - A settled question is written to the document's `settled` list rather than as a decision, stating the question, the labels chosen and the person's own words, and a person reopens one through the page's message, per ADR 46.
 - The ADR criterion the skill states is a conjunction, tested as one: hard to reverse, surprising without context, and the result of a real trade-off, never any one or two of the three.
@@ -230,6 +232,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 **The tickets skill**
 
 - `socrates-tickets` is a second skill of `design/skill`, installed by `socrates design skill` beside the first, held to a ceiling of its own and to the same gates: the committed copy matches its source, and every invocation it names exists.
+- It says nothing about a design handing on to it and mints its own session, per ADR 49.
 - It writes no severity, no `None of these` option and no command on any option, and names no `socrates review` invocation: how a ticket is implemented is the implementing session's own.
 - It cuts from a spec under `docs/changes/<slug>/` and nothing else, refuses a tickets folder that already exists by name, and leaves what it writes uncommitted.
 - A ticket names its blockers and its wave is derived from them, per ADR 44, and status is kept in the main ticket and nowhere else.

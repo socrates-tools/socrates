@@ -33,6 +33,7 @@ var ContractsTestsRead = map[string]string{
 	filepath.Join("internal", "convention", "rendering_test.go"):   "the rule that one place alone turns an event into a line, which is a structural invariant of this module",
 	filepath.Join("internal", "convention", "vendors_test.go"):     "the rule that what a person reads names every reviewer CLI socrates drives and why the others are not driven, where the document is the subject of the check and not a proxy for behaviour",
 	filepath.Join("internal", "convention", "variables_test.go"):   "the rule that a message names only a variable the source reads, where the source is the subject of the check and not a proxy for anything else",
+	filepath.Join("internal", "convention", "skills_test.go"):      "the rule that no shipped skill can be started by a model, where the committed skills are the subject of the check and no Go file is read",
 	filepath.Join("internal", "convention", "supplychain_test.go"): "what this repository's workflows may do and what they pin, which is a property of its continuous integration and reads no Go file at all",
 	filepath.Join("internal", "convention", "wording_test.go"):     "the wording convention itself, where the source is the subject of the check and not a proxy for anything else",
 	filepath.Join("internal", "convention", "workflows_test.go"):   "what this repository's workflows reach, which is a property of its continuous integration and reads no Go file at all",

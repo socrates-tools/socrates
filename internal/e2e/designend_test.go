@@ -30,8 +30,7 @@ const lastDesignCardDocument = `{
       "meaning": "shape: Problem Statement, Solution, User Stories, Implementation Decisions, Testing Decisions, Out of Scope, Further Notes. path: docs/changes/socrates-design/spec.md",
       "mode": "single-choice",
       "options": [
-        {"label": "write it", "recommended": true},
-        {"label": "write it, and cut its tickets next"}
+        {"label": "write it", "recommended": true}
       ]
     }
   ]

@@ -1,6 +1,7 @@
 ---
 name: socrates-design
 description: Interview a person over a page rather than a scrollback, and leave a spec and its decisions behind. Use when a change needs a spec before it has code.
+disable-model-invocation: true
 ---
 
 # socrates design
@@ -143,12 +144,11 @@ A person approves a location rather than discovers one:
      "decisions": [{"id": "write", "question": "write the spec now",
                     "meaning": "shape: Problem Statement, Solution, User Stories, Implementation Decisions, Testing Decisions, Out of Scope, Further Notes. path: docs/changes/<slug>/spec.md",
                     "mode": "single-choice",
-                    "options": [{"label": "write it", "recommended": true},
-                                {"label": "write it, and cut its tickets next"}]}]}
+                    "options": [{"label": "write it", "recommended": true}]}]}
 
-The card offers the same two options in every repository: write it, and write it and cut its tickets next.
+The card offers the same one option in every repository: write it.
 The spec lives in the change's own folder and nowhere else.
-Cutting the tickets next means that once the spec is written, you read `socrates-tickets` and cut it, in this same session and to the page the person already has.
+Offer no option that starts another skill: every socrates skill is a person's to start, so once the spec is written you stop, and the person types the next skill themselves.
 A person who wants a different path takes *None of these* and writes it in the words field: the card proposes a location, and does not insist on it.
 
 ## Ending early

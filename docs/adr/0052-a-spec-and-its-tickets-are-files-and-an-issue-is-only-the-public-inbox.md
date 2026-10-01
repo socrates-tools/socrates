@@ -7,7 +7,7 @@
 ## Decision
 
 A spec lives at `docs/changes/<slug>/spec.md` and its tickets under `docs/changes/<slug>/tickets/`, committed, and neither is ever published as an issue.
-`socrates-design` offers no publishing in any repository: its last card offers write it, and write it and cut its tickets next, whatever a repository states about a tracker.
+`socrates-design` offers no publishing in any repository: its last card offers write it, whatever a repository states about a tracker, and nothing that starts another skill, per ADR 49.
 In this repository an issue is where somebody using socrates reports a bug or asks for something, and nothing else; a request that is taken up becomes a spec in a change folder.
 `docs/agents/issue-tracker.md` is gone, and `CONTRIBUTING.md` names the spec's path where it named a GitHub issue.
 

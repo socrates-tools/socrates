@@ -1,6 +1,7 @@
 ---
 name: socrates-tickets
 description: Cut a spec into tickets an implementer works through, written as files beside the spec, with one main ticket that holds the order and the status. Use when a spec under docs/changes/<slug>/ is ready to be built.
+disable-model-invocation: true
 ---
 
 # socrates tickets
@@ -78,8 +79,8 @@ Each card states the ticket's title, what it delivers from the user's side and w
 A merge, a split or a different blocker is asked for in the words field of the card concerned, after taking *None of these*, which the page already renders, so never write that option yourself.
 A breakdown answer runs nothing, so no option carries a command, and no card states a severity.
 
-Where a design handed on to this skill, serve the breakdown to the design's session with `socrates agora serve --session <session>`, so the person keeps the page they have, and mint a new one only where there was none, or where that exchange ended or the session was collected.
-Keep that session: serve every revision to the page the person already has.
+Mint the session once, with the first `socrates agora serve`, so the person is given one address.
+Keep that session: serve every revision to the page the person already has with `socrates agora serve --session <session>`.
 Revise the breakdown from what they wrote and serve it again, until a round comes back with every card kept and nothing written beside it.
 
 ## The last card
