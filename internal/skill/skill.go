@@ -1,6 +1,7 @@
 package skill
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -29,6 +30,10 @@ type Skill struct {
 type Installed struct {
 	Name string
 	Path string
+}
+
+func (i Installed) Announcement() string {
+	return fmt.Sprintf(installedForAPerson, i.Name, i.Path, i.Name)
 }
 
 func UserDirectory(invocation string) (string, error) {

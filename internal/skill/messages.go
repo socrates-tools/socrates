@@ -10,5 +10,7 @@ const (
 
 	theTargetCannotBeWritten = "the skill could not be written to %s: %s. Name a directory you can write with %s --to"
 
+	installedForAPerson = "the %s skill is at %s, and only a person starts it, by typing /%s"
+
 	noHomeDirectory = "the skill installs under a home directory by default, and none could be found: %s. Name a directory to write it to with %s --to"
 )

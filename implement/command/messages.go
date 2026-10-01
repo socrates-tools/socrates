@@ -16,7 +16,6 @@ const (
 
 	skillInvocation   = "socrates implement skill"
 	toUsage           = "the skills directory to write to, instead of the one under your home directory"
-	installedTheSkill = "the %s skill is at %s, and a person invokes it"
 	agentsToUsage     = "the agents directory to write to, instead of the one under your home directory"
 	installedTheAgent = "the %s agent definition is at %s, and the overseer can spawn it from there"
 

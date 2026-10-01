@@ -12,6 +12,4 @@ const (
 
 	notACommand  = "%q is not a socrates design command: run socrates design --help to see what socrates design does"
 	unusableFlag = "%s: run socrates design --help to see what socrates design accepts"
-
-	installedTheSkill = "the %s skill is at %s, and a session can read it from there"
 )

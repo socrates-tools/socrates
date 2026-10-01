@@ -49,7 +49,7 @@ func newSkillCommand() *cobra.Command {
 			}
 			out := command.OutOrStdout()
 			for _, installed := range written {
-				fmt.Fprintf(out, installedTheSkill+"\n", installed.Name, installed.Path)
+				fmt.Fprintln(out, installed.Announcement())
 			}
 			fmt.Fprintf(out, installedTheAgent+"\n", skill.AgentName, path)
 			return nil

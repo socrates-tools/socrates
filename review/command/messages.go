@@ -55,8 +55,6 @@ const (
 	roundStarted         = "round %d is under way"
 	noRoundFollows       = "round %d did not start, and the run ended instead: read what it concluded below"
 
-	installedTheSkill = "the %s skill is at %s, and a session that reads it can drive a review itself"
-
 	stillStarting = "run %s is %s, and its reviewer has written nothing yet"
 
 	followIt         = "follow it with: socrates review status %s"
