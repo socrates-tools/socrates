@@ -60,7 +60,7 @@ What review is:
 - `review/agent` - the only package that starts a model process, the reviewer CLIs review drives and the basis on which one qualifies, and one file per vendor behind the seam.
 - `review/reviewer` - beginning, supervising, responding, advancing, cancelling.
 - `review/report` - what `status`, `findings` and `config` print.
-- `review/configure` - the menu a person changes one setting from: the rows, the view, and the write that leaves the rest of the file alone.
+- `review/configure` - the menu over review's settings: its labels and its refusals, built on `internal/settingsmenu`.
 - `review/presentation` - the one place an event becomes a line a person reads.
 - `review/follow` - following a run's event log live.
 - `review/terminal` - the pager, the plain fallback, and whether a stream is a terminal at all.
@@ -91,7 +91,8 @@ What design is:
 
 What implement is:
 
-- `implement/command` - the command tree: `config`, and nothing else yet.
+- `implement/command` - the command tree: `config` and `skill`, and nothing else yet.
+- `implement/skill` - the source of the implementer's agent definition, installing it, and the record of where it was installed.
 - `implement/config` - the one optional configuration file implement reads, every setting it holds, the default each falls back to, and the report `socrates implement config` prints.
 
 What holds them all:
@@ -99,7 +100,9 @@ What holds them all:
 - `internal/convention` - the repository's conventions as executable checks.
 - `internal/e2e` - real binaries, a real repository, real git, real processes, each vendor's simulator on `PATH`, a real browser.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
+- `internal/tty` - whether a stream is a terminal at all, for every tool that draws something only a person can answer.
 - `internal/skill` - the machinery no tool owns: the ceiling a skill is held to, installing one under a directory, and reading which invocations a document names so one the binary does not offer fails the suite.
+- `internal/settingsmenu` - the menu a settings file is changed from, for any tool: the rows, the view, the write that leaves the rest of the file alone, and the reading of a line the loader could not read.
 
 ## Verification
 
@@ -191,7 +194,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
   A block that is wrong as a whole is named and reset as the block rather than by its first field, and what the menu says is wrapped at the terminal's width rather than cut off.
 - A configuration file carrying a `surface` block is refused by every review command but `configure`, naming `~/.socrates/agora/config.yaml` as where the block belongs, before a snapshot is taken and before a reviewer is spawned.
   `configure` offers to reset the block, and nothing moves it into agora's file or rewrites the file unasked.
-- `review/configure` states every label it draws in its own `messages.go`, and the wording check reads its plain string literals rather than only its `fmt` call sites.
+- `internal/settingsmenu` states every label the menu draws in its own `messages.go` and `review/configure` states review's own, and the wording check reads the plain string literals of both rather than only their `fmt` call sites.
 - `findings --json` reports each finding's recorded resolution and whether its location is inside the change, and `review/hunks` is the one place that question is answered.
 - A follower stops on the run's record or on the log, waits bounded for a log that does not exist yet, and stops on a parked round.
 - `status`, `watch` and `logs` stay three commands.
@@ -228,6 +231,14 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - It cuts from a spec under `docs/changes/<slug>/` and nothing else, refuses a tickets folder that already exists by name, and leaves what it writes uncommitted.
 - A ticket names its blockers and its wave is derived from them, per ADR 44, and status is kept in the main ticket and nowhere else.
 - The breakdown is driven end to end through the real binary: every card arrives with *keep it* chosen, and a card answered in the person's own words reaches the session through `socrates agora poll`. What the binary cannot drive is the tickets themselves, which are the session's to write.
+
+**The implementer's agent definition**
+
+- `implement/skill` renders `socrates-implementer.md` once, and the committed copy at `.claude/agents/socrates-implementer.md` must match what it renders at the defaults.
+- Its `model` and `effort` are the settings in force, and `background` is true.
+- It names no `socrates` command, read against every namespace in `convention.Tools`.
+- It is held to a ceiling of its own.
+- Where it was written is recorded in `~/.socrates/implement/installed.yaml`, a second install elsewhere replaces the record, and `config.yaml` never holds it.
 
 **The binaries**
 

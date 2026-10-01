@@ -1,4 +1,4 @@
-package configure
+package settingsmenu
 
 import (
 	"os"
@@ -8,24 +8,22 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/socrates-tools/socrates/internal/state"
-	"github.com/socrates-tools/socrates/review/config"
 )
 
 func TestAFileTheMenuNeverTouchedComesBackByteForByte(t *testing.T) {
 	held := `# my notes about this file
 
-reviewer_cli: claude
+mode: claude
 
 # the ceiling I chose
-diff_ceiling: 4096
+ceiling: 4096
 
-roles:
-  reviewer:
-    model: opus
+team:
+  member:
+    role: opus
 
-surface:
-  bind: 127.0.0.1:18018
+sealed:
+  first: one
 `
 	document, err := documentOf([]byte(held))
 	if err != nil {
@@ -44,23 +42,23 @@ surface:
 func TestSettingOneKeyLeavesEveryCommentAndBlankLineWhereItWas(t *testing.T) {
 	held := `# my notes about this file
 
-reviewer_cli: claude
+mode: claude
 
 # the ceiling I chose
-diff_ceiling: 4096
+ceiling: 4096
 `
 	document, err := documentOf([]byte(held))
 	if err != nil {
 		t.Fatalf("reading a file a person wrote: %v", err)
 	}
-	document.set("reviewer_cli", "codex")
+	document.set("mode", "codex")
 
 	written, err := document.render()
 	if err != nil {
 		t.Fatalf("writing it back: %v", err)
 	}
 
-	want := strings.Replace(held, "reviewer_cli: claude", "reviewer_cli: codex", 1)
+	want := strings.Replace(held, "mode: claude", "mode: codex", 1)
 	if string(written) != want {
 		t.Errorf("setting one key produced:\n%s\nwant:\n%s", written, want)
 	}
@@ -71,13 +69,13 @@ func TestSettingAKeyNoFileNamesWritesOnlyThatKey(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading no file at all: %v", err)
 	}
-	document.set("reviewer_cli", "codex")
+	document.set("mode", "codex")
 
 	written, err := document.render()
 	if err != nil {
 		t.Fatalf("writing the first setting a person chose: %v", err)
 	}
-	if want := "reviewer_cli: codex\n"; string(written) != want {
+	if want := "mode: codex\n"; string(written) != want {
 		t.Errorf("the file holds %q, want %q", written, want)
 	}
 }
@@ -87,25 +85,25 @@ func TestSettingANestedKeyWritesTheBlocksThatHoldIt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading no file at all: %v", err)
 	}
-	document.set("roles.reviewer.model", "sonnet")
-	document.set("roles.reviewer.effort", "low")
+	document.set("team.member.role", "sonnet")
+	document.set("team.member.duty", "low")
 
 	written, err := document.render()
 	if err != nil {
 		t.Fatalf("writing two nested settings: %v", err)
 	}
-	want := "roles:\n  reviewer:\n    model: sonnet\n    effort: low\n"
+	want := "team:\n  member:\n    role: sonnet\n    duty: low\n"
 	if string(written) != want {
 		t.Errorf("the file holds:\n%s\nwant:\n%s", written, want)
 	}
 }
 
 func TestRemovingTheOnlySettingLeavesAFileNamingNothing(t *testing.T) {
-	document, err := documentOf([]byte("reviewer_cli: codex\n"))
+	document, err := documentOf([]byte("mode: codex\n"))
 	if err != nil {
 		t.Fatalf("reading a file naming one setting: %v", err)
 	}
-	document.remove("reviewer_cli")
+	document.remove("mode")
 
 	written, err := document.render()
 	if err != nil {
@@ -117,49 +115,49 @@ func TestRemovingTheOnlySettingLeavesAFileNamingNothing(t *testing.T) {
 }
 
 func TestRemovingTheLastSettingOfABlockTakesTheBlockWithIt(t *testing.T) {
-	held := "diff_ceiling: 4096\nroles:\n  reviewer:\n    model: sonnet\n"
+	held := "ceiling: 4096\nteam:\n  member:\n    role: sonnet\n"
 
 	document, err := documentOf([]byte(held))
 	if err != nil {
 		t.Fatalf("reading a file naming a nested setting: %v", err)
 	}
-	document.remove("roles.reviewer.model")
+	document.remove("team.member.role")
 
 	written, err := document.render()
 	if err != nil {
 		t.Fatalf("writing back: %v", err)
 	}
-	if want := "diff_ceiling: 4096\n"; string(written) != want {
+	if want := "ceiling: 4096\n"; string(written) != want {
 		t.Errorf("removing the last setting of a block left:\n%s\nwant:\n%s", written, want)
 	}
 }
 
 func TestRemovingOneSettingOfABlockLeavesTheRestOfTheBlock(t *testing.T) {
-	held := "roles:\n  reviewer:\n    model: sonnet\n    effort: low\n"
+	held := "team:\n  member:\n    role: sonnet\n    duty: low\n"
 
 	document, err := documentOf([]byte(held))
 	if err != nil {
 		t.Fatalf("reading a file naming two nested settings: %v", err)
 	}
-	document.remove("roles.reviewer.model")
+	document.remove("team.member.role")
 
 	written, err := document.render()
 	if err != nil {
 		t.Fatalf("writing back: %v", err)
 	}
-	if want := "roles:\n  reviewer:\n    effort: low\n"; string(written) != want {
+	if want := "team:\n  member:\n    duty: low\n"; string(written) != want {
 		t.Errorf("removing one nested setting left:\n%s\nwant:\n%s", written, want)
 	}
 }
 
 func TestRemovingASettingLeavesTheCommentsAroundItAlone(t *testing.T) {
-	held := "# what I set and why\ndiff_ceiling: 4096\n\n# the retention I chose\nrun_retention: 72h\n"
+	held := "# what I set and why\nceiling: 4096\n\n# the retention I chose\nretention: 72h\n"
 
 	document, err := documentOf([]byte(held))
 	if err != nil {
 		t.Fatalf("reading a commented file: %v", err)
 	}
-	document.remove("diff_ceiling")
+	document.remove("ceiling")
 
 	written, err := document.render()
 	if err != nil {
@@ -168,22 +166,22 @@ func TestRemovingASettingLeavesTheCommentsAroundItAlone(t *testing.T) {
 	if !strings.Contains(string(written), "# the retention I chose") {
 		t.Errorf("removing one setting took another setting's comment with it:\n%s", written)
 	}
-	if strings.Contains(string(written), "diff_ceiling") {
+	if strings.Contains(string(written), "ceiling") {
 		t.Errorf("the setting removed is still named:\n%s", written)
 	}
 }
 
 func TestRemovingASettingNoFileNamesChangesNothing(t *testing.T) {
-	held := "diff_ceiling: 4096\n"
+	held := "ceiling: 4096\n"
 
 	document, err := documentOf([]byte(held))
 	if err != nil {
 		t.Fatalf("reading a file naming one setting: %v", err)
 	}
-	if document.states("run_retention") {
+	if document.states("retention") {
 		t.Fatal("a file naming one setting reports a second one as stated")
 	}
-	document.remove("run_retention")
+	document.remove("retention")
 
 	written, err := document.render()
 	if err != nil {
@@ -197,19 +195,19 @@ func TestRemovingASettingNoFileNamesChangesNothing(t *testing.T) {
 func TestAWriteReplacesTheFileRatherThanTruncatingItInPlace(t *testing.T) {
 	directory := t.TempDir()
 	path := filepath.Join(directory, "config.yaml")
-	if err := os.WriteFile(path, []byte("diff_ceiling: 4096\n"), 0o644); err != nil {
+	if err := os.WriteFile(path, []byte("ceiling: 4096\n"), 0o644); err != nil {
 		t.Fatalf("writing the file a person already had: %v", err)
 	}
 	before := inodeOf(t, path)
 
-	if err := writeAtomically(path, []byte("diff_ceiling: 8192\n")); err != nil {
+	if err := fakeDefinition(path).writeAtomically(path, []byte("ceiling: 8192\n")); err != nil {
 		t.Fatalf("writing the setting a person confirmed: %v", err)
 	}
 
 	if after := inodeOf(t, path); after == before {
 		t.Errorf("the file at %s is the one that was there, so the write went through the old file rather than through a rename", path)
 	}
-	if held, err := os.ReadFile(path); err != nil || string(held) != "diff_ceiling: 8192\n" {
+	if held, err := os.ReadFile(path); err != nil || string(held) != "ceiling: 8192\n" {
 		t.Errorf("the file holds %q after the write: %v", held, err)
 	}
 
@@ -223,12 +221,12 @@ func TestAWriteReplacesTheFileRatherThanTruncatingItInPlace(t *testing.T) {
 }
 
 func TestAWriteCreatesTheDirectoryTheFileLivesIn(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "socrates", "review", "config.yaml")
+	path := filepath.Join(t.TempDir(), "tool", "config.yaml")
 
-	if err := writeAtomically(path, []byte("diff_ceiling: 8192\n")); err != nil {
+	if err := fakeDefinition(path).writeAtomically(path, []byte("ceiling: 8192\n")); err != nil {
 		t.Fatalf("writing the first setting on a machine with no home yet: %v", err)
 	}
-	if held, err := os.ReadFile(path); err != nil || string(held) != "diff_ceiling: 8192\n" {
+	if held, err := os.ReadFile(path); err != nil || string(held) != "ceiling: 8192\n" {
 		t.Errorf("the file holds %q: %v", held, err)
 	}
 }
@@ -249,14 +247,14 @@ func inodeOf(t *testing.T, path string) uint64 {
 
 func TestTheSettingNamedIsTheNestedOneThatIsWrong(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "config.yaml")
-	held := "diff_ceiling: 4096\nroles:\n  reviewer:\n    model: sonnet\n    temperature: 0.5\n"
+	held := "ceiling: 4096\nteam:\n  member:\n    role: sonnet\n    unknown: 0.5\n"
 
-	found := unreadableIn(path, []byte(held))
+	found := fakeDefinition(path).unreadableIn(path, []byte(held))
 	if len(found) != 1 {
 		t.Fatalf("a file with one unreadable nested setting reports %d of them: %+v", len(found), found)
 	}
-	if found[0].key != "roles.reviewer.temperature" {
-		t.Errorf("the setting named is %q, and the one that is wrong is roles.reviewer.temperature", found[0].key)
+	if found[0].key != "team.member.unknown" {
+		t.Errorf("the setting named is %q, and the one that is wrong is team.member.unknown", found[0].key)
 	}
 	if found[0].line != 5 {
 		t.Errorf("the line named is %d, and the one that is wrong is 5", found[0].line)
@@ -266,25 +264,25 @@ func TestTheSettingNamedIsTheNestedOneThatIsWrong(t *testing.T) {
 	if err != nil {
 		t.Fatalf("resetting it: %v", err)
 	}
-	if err := config.Parse(path, written); err != nil {
+	if err := fakeDefinition(path).Parse(path, written); err != nil {
 		t.Errorf("the repaired file is one the loader refuses: %v\n%s", err, written)
 	}
-	for _, kept := range []string{"diff_ceiling: 4096", "model: sonnet"} {
+	for _, kept := range []string{"ceiling: 4096", "role: sonnet"} {
 		if !strings.Contains(string(written), kept) {
 			t.Errorf("%q was dropped along with the setting that was reset:\n%s", kept, written)
 		}
 	}
-	if strings.Contains(string(written), "temperature") {
+	if strings.Contains(string(written), "unknown") {
 		t.Errorf("the setting that was reset is still named:\n%s", written)
 	}
 }
 
 func TestResettingTheLastSettingOfANestedBlockTakesTheBlockWithIt(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "config.yaml")
-	held := "diff_ceiling: 4096\nroles:\n  reviewer:\n    temperature: 0.5\n"
+	held := "ceiling: 4096\nteam:\n  member:\n    unknown: 0.5\n"
 
-	found := unreadableIn(path, []byte(held))
-	if len(found) != 1 || found[0].key != "roles.reviewer.temperature" {
+	found := fakeDefinition(path).unreadableIn(path, []byte(held))
+	if len(found) != 1 || found[0].key != "team.member.unknown" {
 		t.Fatalf("the unreadable settings read %+v", found)
 	}
 
@@ -292,16 +290,16 @@ func TestResettingTheLastSettingOfANestedBlockTakesTheBlockWithIt(t *testing.T) 
 	if err != nil {
 		t.Fatalf("resetting it: %v", err)
 	}
-	if want := "diff_ceiling: 4096\n"; string(written) != want {
+	if want := "ceiling: 4096\n"; string(written) != want {
 		t.Errorf("the repaired file holds:\n%s\nwant:\n%s", written, want)
 	}
 }
 
 func TestAFileThatIsNotYAMLAtAllNamesTheLineThatOpenedIt(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "config.yaml")
-	held := "roles: [not a mapping\ndiff_ceiling: 4096\n"
+	held := "team: [not a mapping\nceiling: 4096\n"
 
-	found := unreadableIn(path, []byte(held))
+	found := fakeDefinition(path).unreadableIn(path, []byte(held))
 	if len(found) == 0 {
 		t.Fatalf("a file that is not YAML at all reports no unreadable setting")
 	}
@@ -313,10 +311,10 @@ func TestAFileThatIsNotYAMLAtAllNamesTheLineThatOpenedIt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("resetting it: %v", err)
 	}
-	if err := config.Parse(path, written); err != nil {
+	if err := fakeDefinition(path).Parse(path, written); err != nil {
 		t.Errorf("the repaired file is one the loader refuses: %v\n%s", err, written)
 	}
-	if !strings.Contains(string(written), "diff_ceiling: 4096") {
+	if !strings.Contains(string(written), "ceiling: 4096") {
 		t.Errorf("the setting that was readable was dropped:\n%s", written)
 	}
 }
@@ -324,44 +322,42 @@ func TestAFileThatIsNotYAMLAtAllNamesTheLineThatOpenedIt(t *testing.T) {
 func TestAFileNoSingleSettingAccountsForIsNotGuessedAt(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "config.yaml")
 
-	if found := unreadableIn(path, []byte("diff_ceiling: 4096\ndiff_ceiling: 8192\n")); len(found) != 0 {
-		t.Errorf("a file whose settings each read on their own reports %+v, and socrates-review guesses at nothing", found)
+	if found := fakeDefinition(path).unreadableIn(path, []byte("ceiling: 4096\nceiling: 8192\n")); len(found) != 0 {
+		t.Errorf("a file whose settings each read on their own reports %+v, and nothing guesses at nothing", found)
 	}
 }
 
 func TestABlockThatIsWrongAsAWholeIsNamedRatherThanItsFirstField(t *testing.T) {
-	t.Setenv(state.HomeVariable, t.TempDir())
 	path := filepath.Join(t.TempDir(), "config.yaml")
-	held := "diff_ceiling: 4096\nsurface:\n  bind: 127.0.0.1:18019\n  reached_at: http://localhost:18019/\n"
+	held := "ceiling: 4096\nsealed:\n  first: one\n  second: two\n"
 
-	found := unreadableIn(path, []byte(held))
+	found := fakeDefinition(path).unreadableIn(path, []byte(held))
 	if len(found) != 1 {
 		t.Fatalf("a file with one unreadable block reports %d unreadable settings: %+v", len(found), found)
 	}
-	if found[0].key != "surface" || found[0].line != 2 {
-		t.Errorf("the setting named is %q at line %d, and what is wrong is the surface block opening at line 2", found[0].key, found[0].line)
+	if found[0].key != "sealed" || found[0].line != 2 {
+		t.Errorf("the setting named is %q at line %d, and what is wrong is the sealed block opening at line 2", found[0].key, found[0].line)
 	}
 
 	written, err := repaired([]byte(held), found[0])
 	if err != nil {
 		t.Fatalf("resetting it: %v", err)
 	}
-	if want := "diff_ceiling: 4096\n"; string(written) != want {
+	if want := "ceiling: 4096\n"; string(written) != want {
 		t.Errorf("the repaired file holds:\n%s\nwant:\n%s", written, want)
 	}
 }
 
 func TestWhatTheMenuSaysIsWrappedAtTheWidthOfTheTerminal(t *testing.T) {
-	t.Setenv(state.HomeVariable, t.TempDir())
 	path := filepath.Join(t.TempDir(), "a-directory-named-at-length-so-that-the-path-alone-is-long", "config.yaml")
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		t.Fatalf("making %s: %v", filepath.Dir(path), err)
 	}
-	if err := os.WriteFile(path, []byte("surface:\n  bind: 127.0.0.1:18019\n"), 0o600); err != nil {
+	if err := os.WriteFile(path, []byte("sealed:\n  first: one\n  second: two\n"), 0o600); err != nil {
 		t.Fatalf("writing %s: %v", path, err)
 	}
 
-	standing, err := opened(path)
+	standing, err := opened(fakeDefinition(path))
 	if err != nil {
 		t.Fatalf("opening the menu: %v", err)
 	}

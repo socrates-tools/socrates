@@ -1,4 +1,4 @@
-package configure
+package settingsmenu
 
 import (
 	"fmt"
@@ -61,7 +61,7 @@ func (m *menu) movingThroughTheOptions() string {
 func (m *menu) repairLines() []string {
 	one := m.broken[0]
 
-	lines := m.wrapped(fmt.Sprintf(cannotBeUnderstood, m.path), "")
+	lines := m.wrapped(fmt.Sprintf(cannotBeUnderstood, m.path, m.definition.Tool), "")
 	lines = append(lines, "")
 	lines = append(lines, m.wrapped(fmt.Sprintf(theOffendingLine, one.line, one.text), indent)...)
 	for _, said := range strings.Split(one.reason, newline) {
