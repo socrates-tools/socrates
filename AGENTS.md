@@ -15,6 +15,7 @@ A design interviews a person over agora and leaves a spec and its decisions behi
 `socrates implement` is a fourth namespace, per ADR 48, and builds a change's tickets through implementers.
 It reads one configuration file of its own, `~/.socrates/implement/config.yaml`, and `socrates implement config` reports every setting in it.
 It knows nothing about review, agora or design.
+
 The dispatcher that routes `socrates` to a namespace holds wiring and nothing else: `internal/dispatcher` mounts review's command tree, agora's command tree, design's command tree and implement's command tree, and is the only thing that imports all four.
 Each tool reads one configuration file of its own: review reads `~/.socrates/review/config.yaml`, agora reads `~/.socrates/agora/config.yaml` and implement reads `~/.socrates/implement/config.yaml`, per ADR 42.
 review and agora write under `~/.socrates/review`, and implement writes under `~/.socrates/implement`.
