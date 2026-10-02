@@ -39,6 +39,7 @@ What it holds may already record work in progress or done, and a person who want
 Read the code the spec touches before slicing it.
 Cut the change into tracer-bullet tickets: each one a vertical slice, a narrow path through every layer the behaviour needs, demoable or verifiable on its own, and sized to fit one fresh context.
 Never a horizontal slice of one layer.
+A change that fits one fresh context whole is one ticket, and one ticket is a breakdown.
 
 Prefactoring comes first: where the code can be made easier to change, that is a ticket of its own, and every slice it helps names it as a blocker.
 
@@ -52,6 +53,7 @@ The exception is a snippet a prototype produced that states a decision more prec
 
 Every ticket names the tickets that block it: the ones that must be done before it can start, and no others.
 That list is the whole dependency graph.
+Name a blocker only where the ticket cannot start without its work.
 
 A ticket's wave is derived from its blockers rather than chosen: one more than the highest wave among its blockers, and 1 for a ticket with none.
 A wave holding one ticket names it `N-<task>.md`, and a wave holding several names them `N.1-<task>.md`, `N.2-<task>.md` and on, in the order the breakdown listed them.
@@ -71,13 +73,16 @@ Put it on a page: `socrates agora serve --document ./breakdown.json` prints the 
 The document is one card per proposed ticket, in the order of their waves, each identified by the file name it would be written to:
 
     {"title": "...", "preamble": "...",
-     "decisions": [{"id": "2.1-parse", "question": "2.1: ...", "meaning": "delivers: ... blocked by: 1-prefactor",
+     "decisions": [{"id": "2.1-parse", "question": "2.1: ...", "meaning": "delivers: ... stories: 3, 4. blocked by: 1-prefactor",
                     "mode": "single-choice",
                     "options": [{"label": "keep it", "meaning": "cut as proposed", "recommended": true}]}]}
 
-Each card states the ticket's title, what it delivers from the user's side and what blocks it, and offers *keep it*, marked recommended so it arrives chosen: a person who agrees with the whole breakdown presses once.
+Each card states the ticket's title, what it delivers from the user's side, the spec's user stories it delivers, what blocks it and anything it needs a person for, and offers *keep it*, marked recommended so it arrives chosen: a person who agrees with the whole breakdown presses once.
 A merge, a split or a different blocker is asked for in the words field of the card concerned, after taking *None of these*, which the page already renders, so never write that option yourself.
 A breakdown answer runs nothing, so no option carries a command, and no card states a severity.
+
+The preamble asks two things of the whole breakdown: whether it is cut too coarse or too fine, and whether every blocker gates the ticket it blocks.
+It also names every user story no card delivers.
 
 Mint the session once, with the first `socrates agora serve`, so the person is given one address.
 Keep that session: serve every revision to the page the person already has with `socrates agora serve --session <session>`.
@@ -140,13 +145,23 @@ Each task ticket is a file of its own, and holds:
 
     - [ ] <a behaviour somebody can check>
 
+    ## User stories
+
+    - 3, 4
+
+    ## Needs a person
+
+    <what building it needs that coding cannot do: a credential, an account, a permission or a manual step>
+
     ## Blocked by
 
     - 1-prefactor.md
 
+A ticket that needs nothing coding cannot do leaves out Needs a person.
 A ticket with no blockers says None under Blocked by, and can start at once.
 A ticket carries no status: its status is the main ticket's.
 Its acceptance criteria are behaviour to check and nothing more: a ticket names no test and no scenario, because a test's name is code and belongs to whoever builds it, and a repository that wants its tests named for scenarios says so in its own instructions.
+Each criterion names what somebody would observe were it false, and is false at the commit the ticket starts from: one already true there, one only another ticket's work can meet, or one that restates the title grades nothing.
 
 ## Leaving them to be committed
 

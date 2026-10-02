@@ -102,6 +102,9 @@ Read the repository, its history and what it already says of itself before a que
 No question reaches the page that reading the repository would have answered.
 A round asks a person to decide something, never to tell you something you could have looked up yourself.
 
+Look facts up in subagents, while the round goes out.
+A lookup still running is an unsettled prerequisite: only the questions downstream of it wait for it, and the rest of the frontier is served now.
+
 ## Keeping the glossary
 
 `CONTEXT.md` is maintained during the interview, not after it.
@@ -110,6 +113,28 @@ A term worth writing down is written down as soon as it settles, in the round it
 Read `CONTEXT.md` before writing an entry.
 A term that conflicts with an entry already there, or that renames something the glossary already calls something else, is never applied silently: put it on a card of its own and let the person decide.
 The value of the glossary is that the person agreed to the word.
+
+Challenge the words rather than only checking them, each on a card of its own:
+
+- a fuzzy word, offered as the things it could mean, such as whether an account is the customer or the user.
+- an invented scenario at the boundary between two terms.
+- a claim the code contradicts.
+
+An entry says what a term is rather than what it does, holds no implementation detail, and names the synonyms it gives up.
+
+## Seams and alternatives
+
+Once a round has settled what the change touches, a card asks where it is tested.
+Propose existing seams before new ones, and the highest seam that can see the behaviour, ideally one.
+What the person chooses goes into the spec's Testing Decisions.
+
+Where a question is the shape of an interface or a module, have subagents each draft one under a different constraint, such as the smallest interface, the most flexible, or the one the commonest caller wants, and offer the drafts that really differ as the card's options.
+The Rejected section is built from those options.
+
+Where a card cannot settle a question in words, build a prototype that answers that one question.
+Write it outside the repository, in a temporary directory.
+Put what it showed on the card, as an illustration where it is a shape, and remove it once the question is settled.
+The spec keeps the snippet that states the decision, trimmed to it and marked as coming from the prototype.
 
 ## Writing the spec
 
@@ -123,6 +148,8 @@ Further Notes carries anything that fits none of the six sections above it, incl
 A decision earns an ADR of its own when all three of these hold together: it is hard to reverse, it is surprising without context, and it is the result of a real trade-off.
 Not one or two of the three, all three, joined by and rather than or: with or almost every decision would qualify and the rule would stop meaning anything.
 A decision that fails even one of the three stays inside the spec's Implementation Decisions and gets no file of its own.
+All three often hold for a scope decision, for a deliberate deviation the next engineer would otherwise fix, and for a constraint the code does not show.
+Each still has to pass all three.
 
 Number the file after the highest number already in `docs/adr/`, and name it `docs/adr/NNNN-<sentence>.md`.
 Its front matter states `Status: accepted`, `Date`, and `Part of: <slug>`.

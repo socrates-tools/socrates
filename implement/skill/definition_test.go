@@ -89,6 +89,11 @@ func TestTheDefinitionStatesTheStandingInstructions(t *testing.T) {
 		"Report what you did and what you did not",
 		"When feedback arrives, patch your own work",
 		"Never invoke a socrates skill",
+		"Never use git stash: the stash is shared by every worktree of the repository",
+		"Where the repository states no way of testing, write each test before the code and watch it fail",
+		"test behaviour through the public interface",
+		"take expected values from the ticket or a worked example rather than computing them the way the code does",
+		"mock only at the system's edges",
 	} {
 		if !strings.Contains(document, promise) {
 			t.Errorf("the definition does not say %q", promise)

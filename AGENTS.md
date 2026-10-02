@@ -227,6 +227,9 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - The skill writes no severity, no `None of these` option and no command on any option it composes: a design answer runs nothing, and a design question is earlier or later in the argument rather than more or less severe.
 - A settled question is written to the document's `settled` list rather than as a decision, stating the question, the labels chosen and the person's own words, and a person reopens one through the page's message, per ADR 46.
 - The ADR criterion the skill states is a conjunction, tested as one: hard to reverse, surprising without context, and the result of a real trade-off, never any one or two of the three.
+- Facts are looked up while the round goes out, so only the questions downstream of a running lookup wait for it.
+- The glossary is challenged on cards: a fuzzy word, a scenario at the boundary between two terms, and a claim the code contradicts.
+- A card asks where the change is tested, an interface question offers drafts made under different constraints, and a prototype is written outside the repository and removed once its question settles.
 - There is no round cap: a person can end a design at any round, on the page or with `socrates agora end`, and either way the exchange ends carrying only what was actually answered, leaving everything else for the session to record as unsettled.
 - The loop is driven end to end through the real binary: a round renders with its recommendation chosen, and what the person answers, including approving the last round's card, reaches the session through `socrates agora poll`. What the binary cannot drive, because nothing in it writes a file, is the spec and the ADRs themselves: those are the session's to write from what `socrates agora poll` handed it.
 
@@ -237,6 +240,9 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - It writes no severity, no `None of these` option and no command on any option, and names no `socrates review` invocation: how a ticket is implemented is the implementing session's own.
 - It cuts from a spec under `docs/changes/<slug>/` and nothing else, refuses a tickets folder that already exists by name, and leaves what it writes uncommitted.
 - A ticket names its blockers and its wave is derived from them, per ADR 44, and status is kept in the main ticket and nowhere else.
+- A change that fits one fresh context is one ticket, and a blocker is named only where its ticket cannot start without it.
+- Every ticket names the spec's user stories it delivers, the page names any story no card delivers, and a ticket that needs a person says what for.
+- Every acceptance criterion names what would show it false and is false where its ticket starts.
 - The breakdown is driven end to end through the real binary: every card arrives with *keep it* chosen, and a card answered in the person's own words reaches the session through `socrates agora poll`. What the binary cannot drive is the tickets themselves, which are the session's to write.
 
 **The implement skill**
@@ -251,10 +257,12 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - The change's branch is cut from the current `HEAD` and starts with what the design and the tickets left, and anything else uncommitted stops the run.
 - The frontier is every ticket whose blockers are done, at most `concurrency` implementers run, the longest chain goes first, then the most unblocked, then name order, and a ready ticket sharing a surface with a running one is held back without a blocker being written.
 - Each implementer is briefed with pointers, runs in the background in a worktree and on a branch the overseer made with git, and gets feedback from the overseer with no cap on the exchanges.
+- Before the first hand-out one subagent writes notes about the code the change touches under `~/.socrates/implement/notes/`, outside the repository, every brief points at them, and the overseer writes none herself.
+- Review keeps what the ticket, the spec and the ADRs ask apart from the repository's own standards, quoting the line or citing the rule missed, and a ticket that needs a person is asked about before it is handed out.
 - Landing is a fast-forward followed by the repository's own verification, a failure goes to the implementer whose ticket landed last, and where the only commits an implementer's branch lacks are the overseer's own status commits she merges them into its branch herself, while any other new commit goes back to the implementer to merge.
 - In progress is committed before a hand-out and done once a ticket has landed and passed, and a resumed overseer continues each in-progress ticket from its own branch with a fresh implementer.
 - What the person says mid-run is relayed at once to every implementer it concerns, and the person is reached in the terminal only about what coding cannot fix.
-- The whole change is read against the spec from the default branch's fork point, every worktree is removed, and nothing is pushed.
+- The whole change is read against the spec from the default branch's fork point, story by story, every worktree is removed, and nothing is pushed.
 - The orchestration itself is the session's to perform from what the skill says: the suite asserts each promise as a statement in the rendered document and every command the skill names against the real binary.
 
 **The implementer's agent definition**
@@ -262,6 +270,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - `implement/skill` renders `socrates-implementer.md` once, and the committed copy at `.claude/agents/socrates-implementer.md` must match what it renders at the defaults.
 - Its `model` and `effort` are the settings in force, and `background` is true.
 - It names no `socrates` command, read against every namespace in `convention.Tools`.
+- It never uses `git stash`, and where the repository states no way of testing it writes each test before the code and watches it fail.
 - It is held to a ceiling of its own.
 - Where it was written is recorded in `~/.socrates/implement/installed.yaml`, a second install elsewhere replaces the record, and `config.yaml` never holds it.
 

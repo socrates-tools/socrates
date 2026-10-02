@@ -41,6 +41,10 @@ Read the settings with `socrates implement config` at the start of every run.
 An implementer's model and effort are not yours to pass, because the `socrates-implementer` agent definition carries them.
 Where `socrates-implementer` is not an agent you can start, tell the person to run `socrates implement skill` and start nothing.
 
+Before the first hand-out, have one subagent read the code the change touches and write notes to `<notes>/<slug>.md`: where things live, the names the shared surfaces will use, and how the repository verifies.
+`<notes>` is the `notes/` directory beside the file `socrates implement config` prints on its first line, `~/.socrates/implement/notes/` by default, outside the repository.
+You write no notes yourself, and a resumed run reads the notes already there.
+
 ## The default branch
 
 Where `socrates implement config` reports no `default_branch`, this repository has none remembered, and you do not guess one.
@@ -83,13 +87,15 @@ Make each implementer's worktree and branch yourself, with git, off the change's
 The branch is a sibling of the change's branch rather than a child, because git cannot hold a branch and a branch beneath it.
 
 Run the implementer in the background, as the `socrates-implementer` agent, so you stay free to talk to the person.
-Brief it with pointers rather than a paraphrase: its worktree, its branch, the change's branch, its ticket, and the spec and ADRs the ticket rests on.
+Brief it with pointers rather than a paraphrase: its worktree, its branch, the change's branch, its ticket, the notes, and the spec and ADRs the ticket rests on.
 Everything else it needs is in its definition and in the files, and a brief that restates them can drift from them.
 
 ## Review
 
 When an implementer reports done, review its diff against the ticket, the spec and the ADRs, knowing the change accumulates as more tickets land.
 Read the diff itself rather than taking the report for the work.
+Review it on two counts kept apart: what the ticket, the spec and the ADRs ask, quoting the line it falls short of, and the repository's own standards, citing the rule it breaks.
+An acceptance criterion holds only where something would fail without the work.
 Where it falls short, send feedback to the same implementer, which patches its own work and reports again.
 Set no cap on the exchanges: keep going while your own best judgement says the work is converging.
 Where a ticket has stalled, hand it to a fresh implementer briefed with what the first one got wrong.
@@ -136,6 +142,7 @@ What the person says mid-run, relay it at once to every implementer it concerns,
 
 Reach the person in the terminal, in your own reply, and only about what coding cannot fix: a security block, a credential, an account or a permission you cannot grant yourself.
 Ask while every implementer the question does not concern keeps working.
+Where a ticket names what it needs a person for, ask for it in the terminal before handing the ticket out.
 
 ## The last read
 
@@ -144,6 +151,7 @@ Once the last ticket has landed and passed, read the whole change against the sp
     git diff $(git merge-base <default branch> socrates-implement/<slug>)..socrates-implement/<slug>
 
 Tickets that each passed can add up to something the spec did not ask for.
+Go through the spec's user stories one by one, and name every story the change does not deliver.
 Hand what falls short to one implementer, in a worktree of its own made the same way, and land and verify it the same way.
 Then remove every worktree, and tell the person in the terminal that the branch `socrates-implement/<slug>` is ready.
 Push nothing, open no pull request and post nothing: publishing the change is the person's.

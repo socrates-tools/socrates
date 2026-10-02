@@ -113,7 +113,10 @@ A person reopening something they settled two rounds ago names it, and the spec 
 Facts are found rather than asked for.
 Read the repository, its history and what it already says of itself before a question is written down: a name already in use, a pattern the codebase already follows, a decision already on record.
 No question reaches the page that reading the repository would have answered.
-A round asks a person to decide something, never to tell you something you could have looked up yourself.`
+A round asks a person to decide something, never to tell you something you could have looked up yourself.
+
+Look facts up in subagents, while the round goes out.
+A lookup still running is an unsettled prerequisite: only the questions downstream of it wait for it, and the rest of the frontier is served now.`
 
 	glossaryHeading = "## Keeping the glossary"
 
@@ -124,7 +127,31 @@ A term worth writing down is written down as soon as it settles, in the round it
 
 Read |CONTEXT.md| before writing an entry.
 A term that conflicts with an entry already there, or that renames something the glossary already calls something else, is never applied silently: put it on a card of its own and let the person decide.
-The value of the glossary is that the person agreed to the word.`
+The value of the glossary is that the person agreed to the word.
+
+Challenge the words rather than only checking them, each on a card of its own:
+
+- a fuzzy word, offered as the things it could mean, such as whether an account is the customer or the user.
+- an invented scenario at the boundary between two terms.
+- a claim the code contradicts.
+
+An entry says what a term is rather than what it does, holds no implementation detail, and names the synonyms it gives up.`
+
+	seamsHeading = "## Seams and alternatives"
+
+	theSeamsSection = seamsHeading + `
+
+Once a round has settled what the change touches, a card asks where it is tested.
+Propose existing seams before new ones, and the highest seam that can see the behaviour, ideally one.
+What the person chooses goes into the spec's Testing Decisions.
+
+Where a question is the shape of an interface or a module, have subagents each draft one under a different constraint, such as the smallest interface, the most flexible, or the one the commonest caller wants, and offer the drafts that really differ as the card's options.
+The Rejected section is built from those options.
+
+Where a card cannot settle a question in words, build a prototype that answers that one question.
+Write it outside the repository, in a temporary directory.
+Put what it showed on the card, as an illustration where it is a shape, and remove it once the question is settled.
+The spec keeps the snippet that states the decision, trimmed to it and marked as coming from the prototype.`
 
 	specHeading = "## Writing the spec"
 
@@ -142,6 +169,8 @@ Further Notes carries anything that fits none of the six sections above it, incl
 A decision earns an ADR of its own when all three of these hold together: it is hard to reverse, it is surprising without context, and it is the result of a real trade-off.
 Not one or two of the three, all three, joined by and rather than or: with or almost every decision would qualify and the rule would stop meaning anything.
 A decision that fails even one of the three stays inside the spec's Implementation Decisions and gets no file of its own.
+All three often hold for a scope decision, for a deliberate deviation the next engineer would otherwise fix, and for a constraint the code does not show.
+Each still has to pass all three.
 
 Number the file after the highest number already in |docs/adr/|, and name it |docs/adr/NNNN-<sentence>.md|.
 Its front matter states |Status: accepted|, |Date|, and |Part of: <slug>|.
@@ -234,6 +263,7 @@ What it holds may already record work in progress or done, and a person who want
 Read the code the spec touches before slicing it.
 Cut the change into tracer-bullet tickets: each one a vertical slice, a narrow path through every layer the behaviour needs, demoable or verifiable on its own, and sized to fit one fresh context.
 Never a horizontal slice of one layer.
+A change that fits one fresh context whole is one ticket, and one ticket is a breakdown.
 
 Prefactoring comes first: where the code can be made easier to change, that is a ticket of its own, and every slice it helps names it as a blocker.
 
@@ -249,6 +279,7 @@ The exception is a snippet a prototype produced that states a decision more prec
 
 Every ticket names the tickets that block it: the ones that must be done before it can start, and no others.
 That list is the whole dependency graph.
+Name a blocker only where the ticket cannot start without its work.
 
 A ticket's wave is derived from its blockers rather than chosen: one more than the highest wave among its blockers, and 1 for a ticket with none.
 A wave holding one ticket names it |N-<task>.md|, and a wave holding several names them |N.1-<task>.md|, |N.2-<task>.md| and on, in the order the breakdown listed them.
@@ -270,13 +301,16 @@ Put it on a page: |socrates agora serve --document ./breakdown.json| prints the 
 The document is one card per proposed ticket, in the order of their waves, each identified by the file name it would be written to:
 
     {"title": "...", "preamble": "...",
-     "decisions": [{"id": "2.1-parse", "question": "2.1: ...", "meaning": "delivers: ... blocked by: 1-prefactor",
+     "decisions": [{"id": "2.1-parse", "question": "2.1: ...", "meaning": "delivers: ... stories: 3, 4. blocked by: 1-prefactor",
                     "mode": "single-choice",
                     "options": [{"label": "keep it", "meaning": "cut as proposed", "recommended": true}]}]}
 
-Each card states the ticket's title, what it delivers from the user's side and what blocks it, and offers *keep it*, marked recommended so it arrives chosen: a person who agrees with the whole breakdown presses once.
+Each card states the ticket's title, what it delivers from the user's side, the spec's user stories it delivers, what blocks it and anything it needs a person for, and offers *keep it*, marked recommended so it arrives chosen: a person who agrees with the whole breakdown presses once.
 A merge, a split or a different blocker is asked for in the words field of the card concerned, after taking *None of these*, which the page already renders, so never write that option yourself.
 A breakdown answer runs nothing, so no option carries a command, and no card states a severity.
+
+The preamble asks two things of the whole breakdown: whether it is cut too coarse or too fine, and whether every blocker gates the ticket it blocks.
+It also names every user story no card delivers.
 
 Mint the session once, with the first |socrates agora serve|, so the person is given one address.
 Keep that session: serve every revision to the page the person already has with |socrates agora serve --session <session>|.
@@ -345,13 +379,23 @@ Each task ticket is a file of its own, and holds:
 
     - [ ] <a behaviour somebody can check>
 
+    ## User stories
+
+    - 3, 4
+
+    ## Needs a person
+
+    <what building it needs that coding cannot do: a credential, an account, a permission or a manual step>
+
     ## Blocked by
 
     - 1-prefactor.md
 
+A ticket that needs nothing coding cannot do leaves out Needs a person.
 A ticket with no blockers says None under Blocked by, and can start at once.
 A ticket carries no status: its status is the main ticket's.
-Its acceptance criteria are behaviour to check and nothing more: a ticket names no test and no scenario, because a test's name is code and belongs to whoever builds it, and a repository that wants its tests named for scenarios says so in its own instructions.`
+Its acceptance criteria are behaviour to check and nothing more: a ticket names no test and no scenario, because a test's name is code and belongs to whoever builds it, and a repository that wants its tests named for scenarios says so in its own instructions.
+Each criterion names what somebody would observe were it false, and is false at the commit the ticket starts from: one already true there, one only another ticket's work can meet, or one that restates the title grades nothing.`
 
 	committingHeading = "## Leaving them to be committed"
 

@@ -204,7 +204,7 @@ func TestAnImplementerIsBriefedWithPointersAndRunsInTheBackground(t *testing.T) 
 		"Run the implementer in the background",
 		"so you stay free to talk to the person",
 		"Brief it with pointers rather than a paraphrase",
-		"its worktree, its branch, the change's branch, its ticket, and the spec and ADRs the ticket rests on",
+		"its worktree, its branch, the change's branch, its ticket, the notes, and the spec and ADRs the ticket rests on",
 	)
 }
 
@@ -344,5 +344,38 @@ func TestTheOverseerSkillNamesNoOtherSkill(t *testing.T) {
 func TestTheOverseerIsToldToInvokeNoSkill(t *testing.T) {
 	saysEach(t, writesNoCodeHeading, "an overseer could start another workflow underneath the person's",
 		"Invoke no skill",
+	)
+}
+
+func TestOneSubagentWritesNotesOutsideTheRepositoryBeforeTheFirstHandOut(t *testing.T) {
+	saysEach(t, startingHeading, "every implementer could explore the same code from nothing and name one thing twice",
+		"Before the first hand-out, have one subagent read the code the change touches and write notes to `<notes>/<slug>.md`",
+		"the names the shared surfaces will use",
+		"`~/.socrates/implement/notes/` by default",
+		"outside the repository",
+		"You write no notes yourself",
+		"a resumed run reads the notes already there",
+	)
+}
+
+func TestTheOverseerReviewsOnTwoCountsQuotingTheLineOrRuleMissed(t *testing.T) {
+	saysEach(t, reviewHeading, "feedback could say something falls short without saying of what",
+		"two counts kept apart",
+		"quoting the line it falls short of",
+		"citing the rule it breaks",
+		"An acceptance criterion holds only where something would fail without the work",
+	)
+}
+
+func TestATicketThatNeedsAPersonIsAskedAboutBeforeItIsHandedOut(t *testing.T) {
+	saysEach(t, personHeading, "an implementer could stall halfway through a ticket waiting on a credential",
+		"Where a ticket names what it needs a person for, ask for it in the terminal before handing the ticket out",
+	)
+}
+
+func TestTheLastReadGoesThroughTheSpecsUserStoriesOneByOne(t *testing.T) {
+	saysEach(t, lastReadHeading, "a story no ticket delivered could reach a branch called ready",
+		"Go through the spec's user stories one by one",
+		"every story the change does not deliver",
 	)
 }

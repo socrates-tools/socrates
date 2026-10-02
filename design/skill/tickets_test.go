@@ -181,3 +181,44 @@ func TestTheTicketsSkillStatesItsSectionsInTheOrderTheWorkHappens(t *testing.T) 
 		previous = at
 	}
 }
+
+func TestAChangeThatFitsOneFreshContextIsOneTicket(t *testing.T) {
+	ticketsSaysEach(t, slicingHeading, "a small change could be cut into a dozen tickets",
+		"A change that fits one fresh context whole is one ticket",
+		"one ticket is a breakdown",
+	)
+}
+
+func TestABlockerIsNamedOnlyWhereTheTicketCannotStartWithoutIt(t *testing.T) {
+	ticketsSaysEach(t, wavesHeading, "a blocker that does not gate could serialise tickets that could run side by side",
+		"Name a blocker only where the ticket cannot start without its work",
+	)
+}
+
+func TestTheBreakdownAsksAboutGranularityAndBlockersAndNamesAStoryNoCardDelivers(t *testing.T) {
+	ticketsSaysEach(t, breakdownHeading, "a cut could be too fine, gated by blockers that do not gate, or leave a story out",
+		"whether it is cut too coarse or too fine",
+		"whether every blocker gates the ticket it blocks",
+		"the spec's user stories it delivers",
+		"names every user story no card delivers",
+	)
+}
+
+func TestATicketNamesItsUserStoriesAndWhatItNeedsAPersonFor(t *testing.T) {
+	ticketsSaysEach(t, aTicketHeading, "a ticket could deliver no story anybody can trace, or stall a run on a credential",
+		"## User stories",
+		"## Needs a person",
+		"a credential, an account, a permission or a manual step",
+		"leaves out Needs a person",
+	)
+}
+
+func TestEveryAcceptanceCriterionIsFalseWhereTheTicketStarts(t *testing.T) {
+	ticketsSaysEach(t, aTicketHeading, "a criterion could be ticked without anything being built",
+		"names what somebody would observe were it false",
+		"is false at the commit the ticket starts from",
+		"already true there",
+		"only another ticket's work can meet",
+		"restates the title",
+	)
+}
