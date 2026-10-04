@@ -1,7 +1,7 @@
 import { build } from 'esbuild'
 import hljs from 'highlight.js/lib/common'
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -10,7 +10,7 @@ const bundle = join(here, '..', 'assets', 'bundle')
 const stamp = join(here, '..', 'assets', 'bundle.sum')
 const languages = join(here, '..', 'document', 'languages.json')
 
-const stamped = ['src', 'fonts', 'build.mjs', 'package.json', 'pnpm-lock.yaml']
+const stamped = ['src', 'fonts', 'brand', 'build.mjs', 'package.json', 'pnpm-lock.yaml']
 
 function within(path) {
   if (statSync(path).isFile()) {
@@ -47,6 +47,8 @@ await build({
   legalComments: 'eof',
   logLevel: 'warning',
 })
+
+copyFileSync(join(here, 'brand', 'socrates-mark.svg'), join(bundle, 'socrates-mark.svg'))
 
 writeFileSync(languages, JSON.stringify(hljs.listLanguages().sort(), null, 2) + '\n')
 writeFileSync(stamp, sum() + '\n')

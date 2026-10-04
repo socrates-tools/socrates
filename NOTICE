@@ -16,13 +16,15 @@ What agora/assets embeds, by the path it embeds it under:
 
   bundle/surface.js                          agora's client, carrying highlight.js
   bundle/surface.css                         agora's stylesheet
+  bundle/socrates-mark.svg                   the socrates mark
   bundle/fonts/Cinzel-Variable.woff2         Cinzel, every weight
   bundle/fonts/Manrope-Variable.woff2        Manrope, every weight
   bundle/fonts/JetBrainsMono-Variable.woff2  JetBrains Mono, every weight
   bundle.sum                                 the digest of the source the bundle was built from
 
-bundle/surface.js, bundle/surface.css and bundle.sum are socrates' own work,
-written by make assets, and are published under the terms in LICENSE.
+bundle/surface.js, bundle/surface.css, bundle/socrates-mark.svg and bundle.sum
+are socrates' own work, written by make assets, and are published under the
+terms in LICENSE.
 What bundle/surface.js bundles is highlight.js, whose notice is below and whose
 licence text esbuild collects at the end of the bundle itself.
 

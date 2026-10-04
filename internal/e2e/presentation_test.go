@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/chromedp/cdproto/runtime"
 	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/kb"
 	"github.com/google/go-cmp/cmp"
@@ -248,6 +249,51 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
 	}
 
 	nothingLeftTheMachine(t, address, page.requests.all())
+}
+
+func TestTheTabAndTheTopBarCarryTheSocratesMark(t *testing.T) {
+	held := standing(t)
+	address := held.serve(twoDecisionDocument)
+	page := opening(t, address)
+
+	page.waitFor(`document.querySelector('.brand-mark') && document.querySelector('.brand-mark').complete`)
+
+	var read struct {
+		Icon     string `json:"icon"`
+		Mark     string `json:"mark"`
+		Drawn    int    `json:"drawn"`
+		Shown    int    `json:"shown"`
+		Silent   bool   `json:"silent"`
+		Fetched  int    `json:"fetched"`
+		Answered string `json:"answered"`
+	}
+	page.do(chromedp.Evaluate(`(async () => {
+  const icon = document.querySelector('link[rel="icon"]');
+  const mark = document.querySelector('.topbar .brand-mark');
+  const fetched = icon ? await fetch(icon.href) : null;
+  return {
+    icon: icon ? new URL(icon.href).pathname : '',
+    mark: mark ? new URL(mark.src).pathname : '',
+    drawn: mark ? mark.naturalWidth : 0,
+    shown: mark ? Math.round(mark.getBoundingClientRect().width) : 0,
+    silent: mark ? mark.alt === '' : false,
+    fetched: fetched ? fetched.status : 0,
+    answered: fetched ? fetched.headers.get('content-type') : '',
+  };
+})()`, &read, func(asked *runtime.EvaluateParams) *runtime.EvaluateParams { return asked.WithAwaitPromise(true) }))
+
+	if read.Icon == "" || read.Icon != read.Mark {
+		t.Errorf("the tab's icon is %q and the top bar's mark is %q, want both to be the one socrates mark", read.Icon, read.Mark)
+	}
+	if read.Fetched != 200 || !strings.HasPrefix(read.Answered, "image/svg+xml") {
+		t.Errorf("the tab's icon answered %d as %q, want 200 as image/svg+xml", read.Fetched, read.Answered)
+	}
+	if read.Drawn == 0 || read.Shown == 0 {
+		t.Errorf("the top bar's mark did not draw: %+v", read)
+	}
+	if !read.Silent {
+		t.Error("the top bar's mark is announced beside the wordmark that already says socrates")
+	}
 }
 
 const whatIsHidden = `(() => {

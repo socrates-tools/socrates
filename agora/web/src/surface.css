@@ -135,7 +135,6 @@
   --size-toggle: 0.75rem;
   --size-micro: 0.75rem;
   --size-wordmark: 0.9375rem;
-  --size-tile: 0.875rem;
 
   --leading-display: 1.25;
   --leading-title: 1.35;
@@ -152,7 +151,6 @@
   --tracking-chip: 0.02em;
 
   --radius-box: 6px;
-  --radius-tile: 10px;
   --radius-entry: 10px;
   --radius-md: 12px;
   --radius-dialog: 16px;
@@ -246,19 +244,10 @@ pre,
   gap: 10px;
 }
 
-.brand-tile {
-  width: 26px;
-  height: 26px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-tile);
-  background: var(--accent);
-  color: var(--fg-on-accent);
-  font-family: var(--font-display);
-  font-size: var(--size-tile);
-  font-weight: 700;
-  line-height: 1;
+.brand-mark {
+  display: block;
+  width: 28px;
+  height: 28px;
 }
 
 .wordmark {
