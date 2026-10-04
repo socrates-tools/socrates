@@ -4,3 +4,4 @@ review/fidelity/testdata/failures/
 agora/web/node_modules/
 dist/
 .claude/worktrees/
+.DS_Store
