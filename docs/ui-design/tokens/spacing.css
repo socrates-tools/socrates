@@ -10,23 +10,24 @@
   --space-10: 40px;
   --space-12: 48px;
   --space-14: 56px;
+  --space-16: 64px;
   --space-24: 96px;
 
   /* Layout */
   --page-max: 1200px;
-  --gutter: 32px;
-  --topbar-height: 64px;
-  --rail-width: 264px;
-  --column-max: 840px;
-  --layout-gap: 48px;
-  --card-pad: 32px;
-  --stack-cards: 24px;
-  --sticky-offset: 96px;
+  --gutter: 24px;
+  --topbar-height: 56px;
+  --rail-width: 240px;
+  --column-max: 800px;
+  --layout-gap: 32px;
+  --card-pad: 24px;
+  --stack-cards: 16px;
+  --sticky-offset: 80px;
 
   /* Control sizes */
-  --control-height: 44px;
-  --chip-height: 24px;
-  --pill-height: 28px;
-  --check-size: 20px;
-  --mark-size: 20px;
+  --control-height: 36px;
+  --chip-height: 22px;
+  --pill-height: 24px;
+  --check-size: 18px;
+  --mark-size: 18px;
 }

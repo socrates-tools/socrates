@@ -24,13 +24,13 @@ export function Mark({ value, compact = false, style }) {
   if (compact) {
     return (
       <span role="img" aria-label={spoken} title={spoken} style={{ width: 'var(--mark-size)', height: 'var(--mark-size)', flex: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: bg, color: fg, ...style }}>
-        <Icon name={k.icon} size={12} strokeWidth={2.25} />
+        <Icon name={k.icon} size={11} strokeWidth={2.25} />
       </span>
     );
   }
   return (
-    <span role="img" aria-label={spoken} title={spoken} style={{ height: 'var(--chip-height)', padding: '0 10px 0 8px', flex: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 'var(--radius-pill)', background: bg, color: fg, fontSize: 'var(--text-micro)', fontWeight: 700, whiteSpace: 'nowrap', ...style }}>
-      <Icon name={k.icon} size={14} />{k.label}
+    <span role="img" aria-label={spoken} title={spoken} style={{ height: 'var(--chip-height)', padding: '0 8px 0 6px', flex: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, borderRadius: 'var(--radius-pill)', background: bg, color: fg, fontSize: 'var(--text-micro)', fontWeight: 700, whiteSpace: 'nowrap', ...style }}>
+      <Icon name={k.icon} size={12} />{k.label}
     </span>
   );
 }

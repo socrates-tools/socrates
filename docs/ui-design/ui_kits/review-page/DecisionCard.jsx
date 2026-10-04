@@ -5,7 +5,7 @@ function Evidence({ kind }) {
   );
   const sig = <><Tok kind="keyword">func</Tok> <Tok kind="call">Write</Tok>(key <Tok kind="type">string</Tok>, entry <Tok kind="type">Entry</Tok>) {'{'}</>;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       <DiffView file="internal/cache/write.go" added={3} removed={1} rows={[
         { left: { n: 10, text: sig }, right: { n: 10, text: sig } },
         { left: { n: 11, kind: 'removed', text: '    store[key] = entry' }, right: { n: 11, kind: 'added', text: <>    mu.<Tok kind="call">Lock</Tok>()</> } },
@@ -31,9 +31,9 @@ function DecisionCard({ d, index, answer, onAnswer, locked, over }) {
           <Mark value={d.severity} /><Mark value={d.audience} />
           <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-micro)', color: 'var(--fg-3)' }}>{d.location}</span>
         </div>
-        <h2 style={{ margin: '16px 0 0', fontSize: 'var(--text-title)', fontWeight: 700, lineHeight: 'var(--leading-title)', letterSpacing: 'var(--tracking-title)', textWrap: 'balance' }}>{d.question}</h2>
-        <p style={{ margin: '8px 0 0', maxWidth: '62ch', color: 'var(--fg-2)', textWrap: 'pretty' }}>{d.meaning}</p>
-        <div style={{ marginTop: 'var(--space-6)' }}><Evidence kind={d.evidence} /></div>
+        <h2 style={{ margin: '12px 0 0', fontSize: 'var(--text-title)', fontWeight: 700, lineHeight: 'var(--leading-title)', letterSpacing: 'var(--tracking-title)', textWrap: 'balance' }}>{d.question}</h2>
+        <p style={{ margin: '4px 0 0', maxWidth: '62ch', color: 'var(--fg-2)', textWrap: 'pretty' }}>{d.meaning}</p>
+        <div style={{ marginTop: 'var(--space-4)' }}><Evidence kind={d.evidence} /></div>
       </CardSection>
       <CardSection tone="sunk" divided>
         <OptionGroup legend={single ? 'Choose one' : 'Choose as many as apply'} disabled={locked} style={{ opacity: locked ? 0.55 : 1 }}>

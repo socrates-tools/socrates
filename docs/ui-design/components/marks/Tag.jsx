@@ -10,6 +10,6 @@ const TONES = {
 export function Tag({ tone = 'neutral', children, style }) {
   const [bg, fg] = TONES[tone] || TONES.neutral;
   return (
-    <span style={{ height: 'var(--chip-height)', padding: '0 10px', display: 'inline-flex', alignItems: 'center', flex: 'none', borderRadius: 'var(--radius-pill)', background: bg, color: fg, fontSize: 'var(--text-micro)', fontWeight: 700, whiteSpace: 'nowrap', ...style }}>{children}</span>
+    <span style={{ height: 'var(--chip-height)', padding: '0 8px', display: 'inline-flex', alignItems: 'center', flex: 'none', borderRadius: 'var(--radius-pill)', background: bg, color: fg, fontSize: 'var(--text-micro)', fontWeight: 700, whiteSpace: 'nowrap', ...style }}>{children}</span>
   );
 }

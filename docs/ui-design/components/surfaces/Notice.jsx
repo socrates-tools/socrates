@@ -10,8 +10,8 @@ const TONES = {
 export function Notice({ tone = 'neutral', title, children, style }) {
   const [bg, dot, bd] = TONES[tone] || TONES.neutral;
   return (
-    <div role="status" style={{ display: 'grid', gridTemplateColumns: '8px minmax(0,1fr)', columnGap: 'var(--space-4)', padding: '16px 20px', border: '1px solid ' + bd, borderRadius: 'var(--radius-md)', background: bg, ...style }}>
-      <span aria-hidden="true" style={{ width: 8, height: 8, marginTop: 8, borderRadius: '50%', background: dot }} />
+    <div role="status" style={{ display: 'grid', gridTemplateColumns: '8px minmax(0,1fr)', columnGap: 'var(--space-3)', padding: '12px 16px', border: '1px solid ' + bd, borderRadius: 'var(--radius-md)', background: bg, ...style }}>
+      <span aria-hidden="true" style={{ width: 8, height: 8, marginTop: 6, borderRadius: '50%', background: dot }} />
       <span style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
         {title && <span style={{ fontWeight: 700, color: 'var(--fg-1)' }}>{title}</span>}
         {children && <span style={{ color: 'var(--ink-700)', fontSize: 'var(--text-small)', display: 'flex', flexDirection: 'column', gap: 2, overflowWrap: 'anywhere' }}>{children}</span>}

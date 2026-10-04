@@ -1,9 +1,9 @@
 :root {
   --radius-xs: 6px;     /* checkbox */
-  --radius-sm: 10px;    /* wordmark tile */
-  --radius-md: 12px;    /* options, fields, evidence, notices, rail entries */
-  --radius-lg: 16px;    /* cards */
-  --radius-xl: 20px;    /* dialog */
+  --radius-sm: 10px;    /* wordmark tile, rail entries */
+  --radius-md: 12px;    /* cards, options, fields, evidence, notices */
+  --radius-lg: 16px;    /* dialog */
+  --radius-xl: 20px;    /* reserved */
   --radius-pill: 999px; /* buttons, chips, status */
 
   --shadow-card: 0 1px 2px rgba(20, 40, 60, 0.04), 0 12px 32px -12px rgba(20, 40, 60, 0.10);

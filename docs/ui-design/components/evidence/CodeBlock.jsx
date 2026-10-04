@@ -1,7 +1,7 @@
 import React from 'react';
 function Head({ children, aside }) {
   return (
-    <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-4)', padding: '0 16px', borderBottom: '1px solid var(--border)', background: 'var(--surface-code-head)', color: 'var(--fg-2)', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-micro)' }}>
+    <div style={{ height: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-4)', padding: '0 12px', borderBottom: '1px solid var(--border)', background: 'var(--surface-code-head)', color: 'var(--fg-2)', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-micro)' }}>
       <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{children}</span>{aside}
     </div>
   );
@@ -12,7 +12,7 @@ export function CodeBlock({ language, children, style }) {
   return (
     <div style={{ ...frame, background: 'var(--surface-sunk)', ...style }}>
       <Head>{language || 'code'}</Head>
-      <pre style={{ margin: 0, padding: 16, overflowX: 'auto', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-code)', lineHeight: 'var(--leading-code)', color: 'var(--fg-1)', tabSize: 4 }}><code>{children}</code></pre>
+      <pre style={{ margin: 0, padding: 12, overflowX: 'auto', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-code)', lineHeight: 'var(--leading-code)', color: 'var(--fg-1)', tabSize: 4 }}><code>{children}</code></pre>
     </div>
   );
 }

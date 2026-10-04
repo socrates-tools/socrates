@@ -52,27 +52,29 @@ It replaced the dark palette (warm black + gold) that ADR 45 had chosen, and ADR
   **Limestone** neutrals (`#F6F2EA` page, `#FFFFFF` cards, `#FBF9F5` sunk bands) carry the ground.
   **Ink** navy `#14283C` is all body text.
   States: olive (resolved), cinnabar (error), ochre (warning), always as ink on a pale wash.
-- **Type:** Manrope for everything, with headings at 700 and tight negative tracking (40px title, 22px question).
+- **Type:** Manrope for everything at standard web-app sizes: 14px body, 13px labels and buttons, 12px micro and code, 18px question, 28px page title.
+  Headings are 700 with slight negative tracking.
   JetBrains Mono for code, file locations and evidence headings.
   Cinzel appears only in the wordmark; it is an all-capitals face, so "socrates" renders as small capitals.
   **12px is the floor** for any text.
 - **Spacing:** 4px base.
-  The rhythm is 8 / 12 / 16 / 24 / 32 / 48.
-  Cards are 32px padded and 24px apart; options are 8px apart; the rail and column sit 48px apart.
-  Everything left-aligns to the 32px gutter shared by the top bar, title and rail.
-- **Layout:** 1200px page and a 64px sticky top bar, wordmark left and status right.
+  The rhythm is 4 / 8 / 12 / 16 / 24 / 32.
+  Cards are 24px padded and 16px apart; options are 8px apart and 12×16 padded; the rail and column sit 32px apart.
+  Controls are 36px tall.
+  Everything left-aligns to the 24px gutter shared by the top bar, title and rail.
+- **Layout:** 1200px page and a 56px sticky top bar, wordmark left and status right.
   Below it, a full-width title and preamble.
-  Then a 264px sticky rail beside a column of up to 840px.
+  Then a 240px sticky rail beside a column of up to 800px.
   The two wrap to one column when narrow.
 - **Backgrounds:** flat limestone.
   No gradients, textures, photos or illustrations.
   Cards sit on the ground with a hairline border.
-- **Cards:** white, 1px `#E5DED1` border, 16px radius, soft two-layer navy-tinted shadow.
+- **Cards:** white, 1px `#E5DED1` border, 12px radius, soft two-layer navy-tinted shadow.
   The answering band inside a decision is *sunk* (`#FBF9F5`) and divided by a hairline.
   The settled panel is sunk with no shadow.
-- **Radii:** 6 (checkbox), 10 (wordmark tile), 12 (options, fields, evidence, notices, rail rows), 16 (cards), 20 (dialog), pill (buttons, chips, status).
+- **Radii:** 6 (checkbox), 10 (wordmark tile, rail rows), 12 (cards, options, fields, evidence, notices), 16 (dialog), pill (buttons, chips, status).
 - **Selected state:** Aegean border, a 1px Aegean ring drawn as box-shadow so nothing shifts, and an `#EEF4FB` wash.
-  Radio fills to a 6px ring; checkbox fills solid with a white check.
+  Radio fills to a 5px ring; checkbox fills solid with a white check.
 - **Hover:** surfaces get a limestone wash (rail rows) or a darker border (fields, options).
   Primary darkens to `#0E4A8C`.
   Secondary turns its border and text Aegean.

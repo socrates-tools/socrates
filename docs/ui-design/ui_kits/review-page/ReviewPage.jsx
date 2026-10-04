@@ -30,11 +30,11 @@ function ReviewPage({ data, initial = 'open', showSettled = true }) {
   return (
     <div>
       <TopBar status={status} />
-      <main style={{ maxWidth: 'var(--page-max)', margin: '0 auto', padding: 'var(--space-14) var(--gutter) var(--space-24)' }}>
-        <section style={{ paddingBottom: 'var(--space-12)' }}>
+      <main style={{ maxWidth: 'var(--page-max)', margin: '0 auto', padding: 'var(--space-10) var(--gutter) var(--space-16, 64px)' }}>
+        <section style={{ paddingBottom: 'var(--space-8)' }}>
           <h1 style={{ margin: 0, fontSize: 'var(--text-display)', fontWeight: 700, lineHeight: 'var(--leading-display)', letterSpacing: 'var(--tracking-display)', textWrap: 'balance' }}>{data.title}</h1>
-          <p style={{ margin: '16px 0 0', color: 'var(--fg-2)', fontSize: 'var(--text-lead)', lineHeight: 'var(--leading-lead)', textWrap: 'pretty' }}>{data.preamble}</p>
-          {over && <Notice style={{ marginTop: 'var(--space-6)' }} title="The exchange is over. Nothing further will be sent from this page." />}
+          <p style={{ margin: '8px 0 0', color: 'var(--fg-2)', fontSize: 'var(--text-lead)', lineHeight: 'var(--leading-lead)', textWrap: 'pretty' }}>{data.preamble}</p>
+          {over && <Notice style={{ marginTop: 'var(--space-4)' }} title="The exchange is over. Nothing further will be sent from this page." />}
         </section>
         {nothing ? (
           <Card as="section" style={{ padding: 'var(--card-pad)' }}><p style={{ margin: 0, color: 'var(--fg-2)' }}>There is nothing on this page to answer, and nobody is waiting on it.</p></Card>
@@ -42,7 +42,7 @@ function ReviewPage({ data, initial = 'open', showSettled = true }) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--layout-gap)', alignItems: 'flex-start' }}>
             <Rail decisions={decisions} answers={answered} settled={settled} />
             <div style={{ flex: '1 1 560px', minWidth: 0, maxWidth: 'var(--column-max)', display: 'flex', flexDirection: 'column', gap: 'var(--stack-cards)' }}>
-              {settled.length > 0 && <><SettledPanel settled={settled} /><span style={{ paddingTop: 8, fontSize: 'var(--text-micro)', fontWeight: 700, letterSpacing: 'var(--tracking-overline)', textTransform: 'uppercase', color: 'var(--fg-3)' }}>Still open</span></>}
+              {settled.length > 0 && <><SettledPanel settled={settled} /><span style={{ paddingTop: 4, fontSize: 'var(--text-micro)', fontWeight: 700, letterSpacing: 'var(--tracking-overline)', textTransform: 'uppercase', color: 'var(--fg-3)' }}>Still open</span></>}
               {decisions.map((d, i) => <DecisionCard key={d.id} d={d} index={i} answer={answers[d.id]} locked={locked} over={over} onAnswer={a => setAnswers(s => ({ ...s, [d.id]: a }))} />)}
               {!over && <Composer phase={phase === 'confirm' ? 'open' : phase} ends={ends} receipt={decisions.map(d => said(d, answers[d.id]))} message={message} setMessage={setMessage} onSend={send} onAmend={() => setPhase('open')} />}
             </div>

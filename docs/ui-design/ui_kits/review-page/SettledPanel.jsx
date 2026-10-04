@@ -3,7 +3,7 @@ function SettledPanel({ settled }) {
   const [open, setOpen] = React.useState(true);
   return (
     <Card as="section" id="settled" tone="sunk">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', padding: '20px var(--card-pad)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', padding: '16px var(--card-pad)' }}>
         <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
           <span style={{ fontWeight: 700 }}>Settled earlier <span style={{ color: 'var(--fg-3)', fontWeight: 500 }}>· {settled.length}</span></span>
           <span style={{ fontSize: 'var(--text-small)', color: 'var(--fg-2)' }}>Read-only. These will not be asked again.</span>
@@ -11,7 +11,7 @@ function SettledPanel({ settled }) {
         <Button size="sm" variant="secondary" onClick={() => setOpen(o => !o)}>{open ? 'Hide' : 'Show'}</Button>
       </div>
       {open && settled.map(s => (
-        <div key={s.id} style={{ display: 'grid', gridTemplateColumns: 'var(--check-size) minmax(0,1fr)', columnGap: 'var(--space-4)', rowGap: 'var(--space-2)', padding: '20px var(--card-pad) 24px', borderTop: '1px solid var(--border)' }}>
+        <div key={s.id} style={{ display: 'grid', gridTemplateColumns: 'var(--check-size) minmax(0,1fr)', columnGap: 'var(--space-3)', rowGap: 'var(--space-1)', padding: '16px var(--card-pad) 20px', borderTop: '1px solid var(--border)' }}>
           <Check state="yes" tone="resolved" style={{ marginTop: 2 }} />
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, fontSize: 'var(--text-small)' }}>
             <span style={{ fontWeight: 700 }}>{s.name}</span>

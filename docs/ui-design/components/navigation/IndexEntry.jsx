@@ -5,7 +5,7 @@ function inject() {
   _inj = true;
   const s = document.createElement('style');
   s.setAttribute('data-socrates', 'index-entry');
-  s.textContent = `.so-entry{display:grid;grid-template-columns:var(--check-size) minmax(0,1fr);column-gap:12px;row-gap:2px;align-items:center;padding:12px;border-radius:var(--radius-md);border:1px solid transparent;text-decoration:none;color:var(--fg-1);transition:background var(--duration-fast),border-color var(--duration-fast);}
+  s.textContent = `.so-entry{display:grid;grid-template-columns:var(--check-size) minmax(0,1fr);column-gap:10px;row-gap:0;align-items:center;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid transparent;text-decoration:none;color:var(--fg-1);transition:background var(--duration-fast),border-color var(--duration-fast);}
 a.so-entry:hover{background:var(--surface-hover);color:var(--fg-1);}
 .so-entry--settled{border:1px dashed var(--border-control);color:var(--fg-2);}
 a.so-entry--settled:hover{background:transparent;border-color:var(--border-hover);}
