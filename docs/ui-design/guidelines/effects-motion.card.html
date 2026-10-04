@@ -1,0 +1,6 @@
+<!-- @dsCard group="Effects" viewport="700x120" name="Motion" subtitle="160ms soft ease; press scales to 0.98" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>body{margin:0;padding:24px;background:var(--bg-page);font-family:var(--font-body);color:var(--fg-1);}
+.row{display:flex;flex-wrap:wrap;gap:12px;} .sw{width:96px;display:flex;flex-direction:column;gap:6px;} .chip{height:64px;border-radius:12px;border:1px solid var(--border);}
+.n{font-size:12px;font-weight:700;} .v{font-family:var(--font-mono);font-size:12px;color:var(--fg-3);} .demo{transition:all var(--duration-fast) var(--ease);} .demo:hover{background:var(--accent-hover)!important} .demo:active{transform:scale(var(--press-scale));background:var(--accent-press)!important}</style></head><body><div style="display:flex;gap:24px;align-items:center;"><button class="demo" style="height:44px;padding:0 24px;border:0;border-radius:999px;background:var(--accent);color:#fff;font:700 14px var(--font-body);box-shadow:var(--shadow-cta);cursor:pointer;">Hover and press me</button>
+<div class="v">--ease cubic-bezier(0.2,0,0,1) · fast 160ms · base 220ms<br>hover = darker Aegean · press = darkest + scale 0.98 · no bounces</div></div></body></html>

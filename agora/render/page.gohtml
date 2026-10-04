@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="light">
 <meta http-equiv="Content-Security-Policy" content="{{.Policy}}">
 <title>{{.Title}}</title>
 <link rel="stylesheet" href="/assets/surface.css">
@@ -11,18 +11,23 @@
 </head>
 <body data-base="{{.Base}}" data-token="{{.Token}}" data-revision="{{.Revision}}" data-over="{{if .Over}}yes{{else}}no{{end}}">
 {{define "check"}}<svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square" aria-hidden="true" focusable="false"><polyline points="20 6 9 17 4 12"/></svg>{{end}}
-{{define "mark"}}<span class="mark {{.Kind}}"{{if eq .Kind "severity"}} data-severity="{{.Value}}"{{else}} data-audience="{{.Value}}"{{end}} data-tone="{{.Tone}}" data-title="{{.Title}}" data-hint="{{.Hint}}" role="img" aria-label="{{.Spoken}}"{{if .Focusable}} tabindex="0"{{end}}>{{.Drawn}}</span>{{end}}
+{{define "mark"}}<span class="mark {{.Kind}}"{{if eq .Kind "severity"}} data-severity="{{.Value}}"{{else}} data-audience="{{.Value}}"{{end}} data-tone="{{.Tone}}" data-title="{{.Title}}" data-hint="{{.Hint}}" role="img" aria-label="{{.Spoken}}"{{if .Focusable}} tabindex="0"{{end}}>{{.Drawn}}{{if .Named}}<span class="mark-name">{{.Name}}</span>{{end}}</span>{{end}}
 {{define "entry"}}<span class="answered" data-answered="{{if .Decided}}{{if .Answered}}yes{{else}}no{{end}}{{else}}none{{end}}" aria-hidden="true">{{template "check"}}</span>
 <span class="entry-heading"><span class="entry-name">{{.Name}}</span>{{with .Severity}}{{template "mark" .}}{{end}}</span>
 {{if .Location}}<span class="location">{{.Location}}</span>{{end}}{{end}}
 <main class="surface">
-<header class="heading">
-<div class="masthead">
-<span class="wordmark">agora</span>
+<header class="topbar">
+<div class="topbar-inner">
+<span class="brand"><span class="brand-tile" aria-hidden="true">S</span><span class="wordmark">socrates</span></span>
 <span class="status" data-status="{{if not .Decisions}}nothing{{else if .Over}}over{{else}}open{{end}}"><span class="status-dot" aria-hidden="true"></span><span class="status-said">{{if not .Decisions}}Nothing to answer{{else if .Over}}Exchange over{{else}}Open{{end}}</span></span>
 </div>
+</header>
+
+<div class="page">
+<header class="heading">
 <h1>{{.Title}}</h1>
 {{if .Preamble}}<p class="preamble">{{.Preamble}}</p>{{end}}
+<p class="over-notice" role="status"{{if not (and .Over .Decisions)}} hidden{{end}}><span class="notice-dot" aria-hidden="true"></span><span class="over-notice-said">The exchange is over. Nothing further will be sent from this page.</span></p>
 </header>
 
 <div class="layout">
@@ -35,13 +40,6 @@
 <progress class="progress-bar" max="{{len .Decisions}}" value="{{.AnsweredCount}}" aria-hidden="true"></progress>
 {{end}}
 </div>
-{{if .Settled}}
-<a class="settled-link" href="#settled">
-<span class="settled-check">{{template "check"}}</span>
-<span class="settled-link-count">{{len .Settled}} settled earlier</span>
-<span class="settled-link-names">{{range $at, $answer := .Settled}}{{if $at}}, {{end}}{{$answer.Name}}{{end}}</span>
-</a>
-{{end}}
 <ol class="entries">
 {{range .Index}}
 <li class="entry">
@@ -49,6 +47,13 @@
 </li>
 {{end}}
 </ol>
+{{if .Settled}}
+<a class="settled-link" href="#settled">
+<span class="settled-check">{{template "check"}}</span>
+<span class="settled-link-count">{{len .Settled}} settled earlier</span>
+<span class="settled-link-names">{{range $at, $answer := .Settled}}{{if $at}}, {{end}}{{$answer.Name}}{{end}}</span>
+</a>
+{{end}}
 </nav>
 {{end}}
 
@@ -218,6 +223,7 @@
 <p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>
 </section>
 {{end}}
+</div>
 </div>
 </div>
 </main>

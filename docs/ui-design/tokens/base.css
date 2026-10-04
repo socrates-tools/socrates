@@ -1,0 +1,8 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg-page); color: var(--fg-1); font-family: var(--font-body); font-size: var(--text-body); line-height: var(--leading-body); -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); }
+a:hover { color: var(--accent-hover); }
+::selection { background: var(--selection); color: var(--fg-1); }
+::placeholder { color: var(--fg-placeholder); opacity: 1; }
+code, pre { font-family: var(--font-mono); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; } }

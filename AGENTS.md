@@ -373,10 +373,12 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - Nothing carries across a revision: not a selection, not a typed word, not the message, not the receipt and not an open confirmation, because a decision's identifier is unique only inside the document that names it.
 - A stream is told where the exchange stands when it connects rather than only when something next changes, so a client that missed a revision catches up rather than waiting on a change that has already happened.
 - The end of an exchange stops the page offering to answer and not the page listening, so a caller who writes again reaches the page the person is already looking at, and only the test about reloading reloads before it asserts.
+  A closed exchange says so under the title and draws no field nothing will read, per ADR 53.
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.
 - An element it hides paints nothing, every colour it paints is a token stated once, and every text meets a contrast floor under both preferences.
-  The page is dark whatever the reader prefers, so both preferences are painted alike, per ADR 45.
+  The page is light whatever the reader prefers, so both preferences are painted alike, per ADR 53.
 - A severity the surface orders by is marked by what it means, each audience socrates review writes is marked as the design drew it and any other in the caller's own words, and every mark says what it means on hover, on focus and to a screen reader, per ADR 47.
+  A mark on a card also says its name in a word, and a mark in the index is its icon alone, per ADR 53.
 - Nothing in it names review, finding, verdict, round, or run as a noun, and the module path is not part of its vocabulary, except the three audiences socrates review writes, stated in `agora/render/audiences.go` and exempted by name, and the severity hints, which carry review's reading of a severity in words the check does not know, per ADR 47.
 
 **The suite**

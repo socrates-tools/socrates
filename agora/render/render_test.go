@@ -135,6 +135,73 @@ func painted(read document.Document) document.Document {
 	return read
 }
 
+func TestThePageCarriesTheBrandRatherThanTheNameOfTheServer(t *testing.T) {
+	page := rendered(t, oneDecision(document.One))
+
+	var wordmark *html.Node
+	for _, held := range elements(page, "span") {
+		if hasClass(held, "wordmark") {
+			wordmark = held
+		}
+	}
+	if wordmark == nil {
+		t.Fatal("the page carries no wordmark")
+	}
+	if said := strings.TrimSpace(text(wordmark)); said != "socrates" {
+		t.Errorf("the wordmark says %q, want socrates", said)
+	}
+
+	for _, held := range elements(page, "body") {
+		if strings.Contains(strings.ToLower(text(held)), "agora") {
+			t.Error("the page shows a person the name of the server that serves it")
+		}
+	}
+}
+
+func overNoticeIn(t *testing.T, page *html.Node) *html.Node {
+	t.Helper()
+
+	for _, held := range elements(page, "p") {
+		if hasClass(held, "over-notice") {
+			return held
+		}
+	}
+	t.Fatal("the page carries no notice that the exchange is over")
+	return nil
+}
+
+func TestAnExchangeThatIsOverSaysSoUnderTheTitle(t *testing.T) {
+	written, err := render.Page(oneDecision(document.One), render.Frame{Base: "/sessions/a1b2c3d4", Token: "a-token", Revision: 1, Over: true})
+	if err != nil {
+		t.Fatalf("rendering the page: %v", err)
+	}
+	over, err := html.Parse(strings.NewReader(written))
+	if err != nil {
+		t.Fatalf("reading back the rendered page: %v", err)
+	}
+
+	notice := overNoticeIn(t, over)
+	if hasAttribute(notice, "hidden") {
+		t.Error("a page rendered over hides the notice that says so")
+	}
+	if !strings.Contains(strings.ToLower(text(notice)), "over") {
+		t.Errorf("the notice says %q, and it says the exchange is over", text(notice))
+	}
+	var heading *html.Node
+	for _, held := range elements(over, "header") {
+		if hasClass(held, "heading") {
+			heading = held
+		}
+	}
+	if heading == nil || !slices.Contains(elements(heading, "p"), notice) {
+		t.Error("the notice that the exchange is over is not under the title")
+	}
+
+	if open := overNoticeIn(t, rendered(t, oneDecision(document.One))); !hasAttribute(open, "hidden") {
+		t.Error("a page that is open says the exchange is over")
+	}
+}
+
 func TestThePolicyStatesTheHashOfTheBytesEmbedded(t *testing.T) {
 	// scenario: The embedded stylesheet paints
 	page := rendered(t, painted(oneDecision(document.One)))

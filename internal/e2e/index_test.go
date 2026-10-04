@@ -210,3 +210,52 @@ func TestAnIdentifierHoldingAQuoteLeavesThePageWorking(t *testing.T) {
 		t.Errorf("the receipt for a decision whose identifier holds a quote says %q, and it names what was chosen", said)
 	}
 }
+
+const whereTheBarAndTheCardSit = `(() => {
+  const bar = document.querySelector('.topbar').getBoundingClientRect();
+  const status = document.querySelector('.status').getBoundingClientRect();
+  const card = document.querySelector('.decision[data-decision="c-2"]').getBoundingClientRect();
+  return { barBottom: bar.bottom, statusTop: status.top, statusBottom: status.bottom, cardTop: card.top, height: window.innerHeight, scrolled: window.scrollY };
+})()`
+
+type sitting struct {
+	BarBottom    float64 `json:"barBottom"`
+	StatusTop    float64 `json:"statusTop"`
+	StatusBottom float64 `json:"statusBottom"`
+	CardTop      float64 `json:"cardTop"`
+	Height       float64 `json:"height"`
+	Scrolled     float64 `json:"scrolled"`
+}
+
+func TestTheStatusStaysInViewAsThePageScrolls(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+
+	page.evaluate(`window.scrollTo(0, document.documentElement.scrollHeight)`, nil)
+
+	var read sitting
+	page.evaluate(whereTheBarAndTheCardSit, &read)
+	if read.Scrolled == 0 {
+		t.Fatal("the page did not scroll, and a page that cannot scroll says nothing about what stays in view")
+	}
+	if read.StatusTop < 0 || read.StatusBottom > read.Height {
+		t.Errorf("scrolled to the end, the status sits at %v to %v in a window %v high, and it stays in view", read.StatusTop, read.StatusBottom, read.Height)
+	}
+}
+
+func TestAnEntryLandsTheCardClearOfTheBar(t *testing.T) {
+	_, page := read(t, twoDecisionDocument)
+	page.do(emulation.SetEmulatedMedia().WithFeatures([]*emulation.MediaFeature{{Name: "prefers-reduced-motion", Value: "reduce"}}))
+
+	page.evaluate(`window.scrollTo(0, document.documentElement.scrollHeight)`, nil)
+	page.evaluate(`document.querySelector('a.entry-link[data-decision="c-2"]').click()`, nil)
+	page.waitFor(`document.activeElement.closest('.decision')?.dataset.decision === 'c-2'`)
+
+	var read sitting
+	page.evaluate(whereTheBarAndTheCardSit, &read)
+	if read.CardTop < read.BarBottom {
+		t.Errorf("following the entry left the card's top at %vpx, under the bar that ends at %vpx", read.CardTop, read.BarBottom)
+	}
+	if read.CardTop > read.Height/2 {
+		t.Errorf("following the entry left the card's top at %vpx in a window %v high, and it brings the card to the top", read.CardTop, read.Height)
+	}
+}

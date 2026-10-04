@@ -67,7 +67,7 @@ type painted struct {
 	Tokens     map[string]string `json:"tokens"`
 }
 
-func TestThePageIsPaintedDarkWhateverThePreference(t *testing.T) {
+func TestThePageIsPaintedLightWhateverThePreference(t *testing.T) {
 	_, page := read(t, twoDecisionDocument)
 
 	under := map[string]painted{}
@@ -92,13 +92,13 @@ func TestThePageIsPaintedDarkWhateverThePreference(t *testing.T) {
 				t.Errorf("under a %s preference %s is left undefined", preference, named)
 			}
 		}
-		if read.Scheme != "dark" {
-			t.Errorf("under a %s preference the page states the colour scheme %q, and it is dark whatever the reader prefers", preference, read.Scheme)
+		if read.Scheme != "light" {
+			t.Errorf("under a %s preference the page states the colour scheme %q, and it is light whatever the reader prefers", preference, read.Scheme)
 		}
 	}
 
-	if diff := cmp.Diff(under["dark"], under["light"]); diff != "" {
-		t.Errorf("a light preference paints the page differently from a dark one, and the page has one palette (-dark +light):\n%s", diff)
+	if diff := cmp.Diff(under["light"], under["dark"]); diff != "" {
+		t.Errorf("a dark preference paints the page differently from a light one, and the page has one palette (-light +dark):\n%s", diff)
 	}
 }
 

@@ -38,6 +38,53 @@ func TestASeverityMarkSaysWhatTheSeverityMeans(t *testing.T) {
 	}
 }
 
+func TestAMarkOnACardSaysItsNameAndAMarkInTheIndexOnlyDrawsIt(t *testing.T) {
+	for _, stated := range []struct {
+		kind  string
+		value string
+		said  string
+	}{
+		{"severity", "error", "Error"},
+		{"severity", "warning", "Warning"},
+		{"severity", "info", "Info"},
+		{"severity", "cosmetic", "cosmetic"},
+		{"audience", "needs a person", "Your call"},
+		{"audience", "can be patched", "Author can patch"},
+		{"audience", "informational", "For information"},
+		{"audience", "the author patches", "Decides: the author patches"},
+	} {
+		t.Run(stated.value, func(t *testing.T) {
+			read := oneDecision(document.One)
+			read.Decisions[0].Severity = stated.value
+			read.Decisions[0].Audience = stated.value
+
+			page := rendered(t, read)
+			mark := markIn(cardsIn(page)[0], stated.kind)
+			if mark == nil {
+				t.Fatalf("the card carries no %s mark", stated.kind)
+			}
+			if said := strings.TrimSpace(text(mark)); said != stated.said {
+				t.Errorf("the %s mark %q on a card says %q, want %q", stated.kind, stated.value, said, stated.said)
+			}
+
+			if stated.kind != "severity" {
+				return
+			}
+			entries := entriesIn(page)
+			if len(entries) == 0 {
+				t.Fatal("the page indexes nothing")
+			}
+			drawn := markIn(entries[0], "severity")
+			if drawn == nil {
+				t.Fatal("the index entry carries no severity mark")
+			}
+			if said := strings.TrimSpace(text(drawn)); said != "" {
+				t.Errorf("the severity mark in the index says %q, and the index has room only for the icon", said)
+			}
+		})
+	}
+}
+
 func TestAnUnstatedSeverityOrAudienceIsNotMarked(t *testing.T) {
 	read := oneDecision(document.One)
 	read.Decisions[0].Severity = ""

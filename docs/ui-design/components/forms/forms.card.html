@@ -1,0 +1,35 @@
+<!-- @dsCard group="Components" viewport="700x690" name="Forms" subtitle="Options, text area, progress" -->
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>body{margin:0;padding:24px;background:var(--bg-page);} .lbl{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3);margin-bottom:8px;} .row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;} .stack{display:flex;flex-direction:column;gap:20px;}</style>
+</head><body><div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="../../assets/dev/preview-fallback.js"></script>
+<script type="text/babel">
+window.__soReady.then(NS => {
+const { Option, OptionGroup, TextArea, Progress } = NS;
+function Demo() {
+  const [pick, setPick] = React.useState(0);
+  const [many, setMany] = React.useState([true, false]);
+  return (<div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 220px',gap:24,alignItems:'start'}}>
+    <div className="stack" style={{gap:24}}>
+      <OptionGroup legend="Choose one">
+        <Option label="take the lock first" meaning="correctness over the extra wait" recommended checked={pick===0} onChange={()=>setPick(0)} name="a" />
+        <Option label="leave it" meaning="the staleness is acceptable here" checked={pick===1} onChange={()=>setPick(1)} name="a" />
+        <Option type="none" meaning="Write your own answer below, or leave this to whoever asked." checked={pick===2} onChange={()=>setPick(2)} name="a" />
+      </OptionGroup>
+      <OptionGroup legend="Choose as many as apply">
+        {['the write itself','the metric'].map((l,i)=><Option key={l} type="checkbox" label={l} checked={many[i]} onChange={()=>setMany(m=>m.map((v,j)=>j===i?!v:v))} />)}
+      </OptionGroup>
+      <TextArea label="In your own words" placeholder="Answering here alone is a complete answer." />
+    </div>
+    <Progress value={1} max={2} />
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+});
+</script></body></html>

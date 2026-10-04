@@ -10,7 +10,7 @@ const standing = {
   sent: 'Sent, waiting for a reply',
   over: 'Exchange over',
 }
-const offsetFromTheTop = 24
+const clearanceBelowTheBar = 32
 let closed = false
 let awaitingCollection = false
 
@@ -113,8 +113,13 @@ function prefersLessMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+function heightOfTheBar() {
+  const bar = document.querySelector('.topbar')
+  return bar ? bar.getBoundingClientRect().height : 0
+}
+
 function scrollTo(target, smoothly) {
-  const top = target.getBoundingClientRect().top + window.scrollY - offsetFromTheTop
+  const top = target.getBoundingClientRect().top + window.scrollY - heightOfTheBar() - clearanceBelowTheBar
   window.scrollTo({ top, behavior: smoothly && !prefersLessMotion() ? 'smooth' : 'auto' })
 }
 
@@ -325,6 +330,10 @@ function close() {
   })
   offerToAmend(false)
   stand('over')
+  const notice = document.querySelector('.over-notice')
+  if (notice) {
+    notice.hidden = false
+  }
 }
 
 function takeUpWhetherItIsOver() {

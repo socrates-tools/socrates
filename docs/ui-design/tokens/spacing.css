@@ -1,0 +1,32 @@
+:root {
+  /* 4px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-24: 96px;
+
+  /* Layout */
+  --page-max: 1200px;
+  --gutter: 32px;
+  --topbar-height: 64px;
+  --rail-width: 264px;
+  --column-max: 840px;
+  --layout-gap: 48px;
+  --card-pad: 32px;
+  --stack-cards: 24px;
+  --sticky-offset: 96px;
+
+  /* Control sizes */
+  --control-height: 44px;
+  --chip-height: 24px;
+  --pill-height: 28px;
+  --check-size: 20px;
+  --mark-size: 20px;
+}

@@ -65,6 +65,12 @@ func rendersClosed(t *testing.T, page *reader, how string) {
 	if accepting {
 		t.Errorf("%s still offers a control that would send an answer", how)
 	}
+
+	var showing closedShowing
+	page.evaluate(whatAClosedPageShows, &showing)
+	if !showing.Notice || showing.Words || showing.Message {
+		t.Errorf("%s shows %+v, and it says under the title that the exchange is over and draws no field nothing will read", how, showing)
+	}
 }
 
 func TestAReloadedPageRendersClosed(t *testing.T) {
@@ -215,7 +221,14 @@ func TestAPageOpenedForTheFirstTimeAfterTheEndRendersClosed(t *testing.T) {
 
 	held.end(held.opened)
 
-	rendersClosed(t, opening(t, address), "a page opened for the first time onto an ended exchange")
+	page := opening(t, address)
+	rendersClosed(t, page, "a page opened for the first time onto an ended exchange")
+
+	var showing closedShowing
+	page.evaluate(whatAClosedPageShows, &showing)
+	if showing != (closedShowing{Notice: true}) {
+		t.Errorf("a page opened for the first time onto an ended exchange shows %+v, and with nothing sent from it there is no composer to keep", showing)
+	}
 }
 
 func TestAPageServedClosedFollowsWhatComesNext(t *testing.T) {
@@ -681,5 +694,39 @@ func TestAPressInsideTheConfirmationIsNotAPressOnTheBackdrop(t *testing.T) {
 
 	if delivered, arrived := held.awaiting(shortWindow); arrived {
 		t.Fatalf("a press on the confirmation's own padding delivered an answer: %+v", delivered)
+	}
+}
+
+const whatAClosedPageShows = `(() => ({
+  notice: document.querySelector('.over-notice').checkVisibility(),
+  words: Array.from(document.querySelectorAll('.words-field')).some((held) => held.checkVisibility()),
+  message: document.querySelector('.message-field').checkVisibility(),
+  composer: document.querySelector('.composer').checkVisibility(),
+  receipt: document.querySelector('.receipt').checkVisibility(),
+}))()`
+
+type closedShowing struct {
+	Notice   bool `json:"notice"`
+	Words    bool `json:"words"`
+	Message  bool `json:"message"`
+	Composer bool `json:"composer"`
+	Receipt  bool `json:"receipt"`
+}
+
+func TestAClosedExchangeHidesWhatCanNoLongerBeAnsweredAndSaysSoUnderTheTitle(t *testing.T) {
+	held, page := read(t, twoDecisionDocument)
+
+	var open closedShowing
+	page.evaluate(whatAClosedPageShows, &open)
+	if open != (closedShowing{Words: true, Message: true, Composer: true}) {
+		t.Errorf("an open page shows %+v, and it offers every field and says nothing of the exchange being over", open)
+	}
+
+	held.ended(t, page)
+
+	var finished closedShowing
+	page.evaluate(whatAClosedPageShows, &finished)
+	if finished != (closedShowing{Notice: true, Composer: true, Receipt: true}) {
+		t.Errorf("a page that finished shows %+v, and it keeps what went and drops every field", finished)
 	}
 }

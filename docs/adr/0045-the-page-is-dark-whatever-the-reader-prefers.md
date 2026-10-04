@@ -1,6 +1,6 @@
 # 45. The page is dark whatever the reader prefers
 
-- Status: accepted
+- Status: superseded by ADR 53
 - Date: 2026-09-30
 - Part of: the-kylix-page
 

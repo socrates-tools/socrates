@@ -1,0 +1,117 @@
+:root {
+  /* Aegean - the sea. What a person chooses or presses. */
+  --aegean-50: #EEF4FB;
+  --aegean-100: #E8F0FA;
+  --aegean-200: #D6E5F5;
+  --aegean-300: #CFE0F3;
+  --aegean-600: #1259A8;
+  --aegean-700: #0E4A8C;
+  --aegean-800: #0B3D73;
+
+  /* Clay - terracotta. Recommendation and "your call", used sparingly. */
+  --clay-50: #F8E8DF;
+  --clay-500: #B4532D;
+  --clay-600: #A3471F;
+
+  /* Limestone - whitewashed neutrals for ground, surfaces and rules. */
+  --limestone-0: #FFFFFF;
+  --limestone-50: #FBF9F5;
+  --limestone-100: #F6F2EA;
+  --limestone-150: #F3EEE4;
+  --limestone-200: #F0EBE1;
+  --limestone-250: #EDE7DB;
+  --limestone-300: #E5DED1;
+  --limestone-400: #D2C8B6;
+  --limestone-500: #C4B9A6;
+  --limestone-600: #B9AC96;
+
+  /* Ink - deep-sea navy for text. */
+  --ink-900: #14283C;
+  --ink-700: #3E4F5F;
+  --ink-600: #4B5B6B;
+  --ink-500: #5F6B78;
+  --ink-450: #66727F;
+  --ink-400: #8A939D;
+
+  /* Olive, cinnabar, ochre, sea - states and code. */
+  --olive-50: #EBF0DF;
+  --olive-75: #F0F5E8;
+  --olive-100: #E4EDD5;
+  --olive-600: #4F6B25;
+  --cinnabar-25: #FDF1EF;
+  --cinnabar-50: #FBE6E3;
+  --cinnabar-600: #B42E24;
+  --ochre-50: #FAEFD8;
+  --ochre-700: #8A5A00;
+  --sea-600: #0B6E79;
+
+  /* Semantic: ground and surfaces */
+  --bg-page: var(--limestone-100);
+  --bg-bar: rgba(246, 242, 234, 0.85);
+  --surface-card: var(--limestone-0);
+  --surface-sunk: var(--limestone-50);
+  --surface-muted: var(--limestone-200);
+  --surface-track: var(--limestone-250);
+  --surface-code-head: var(--limestone-150);
+  --surface-hover: var(--limestone-250);
+
+  /* Semantic: text */
+  --fg-1: var(--ink-900);
+  --fg-2: var(--ink-600);
+  --fg-3: var(--ink-500);
+  --fg-placeholder: var(--ink-450);
+  --fg-on-accent: var(--limestone-0);
+
+  /* Semantic: rules */
+  --border: var(--limestone-300);
+  --border-control: var(--limestone-400);
+  --border-unchosen: var(--limestone-500);
+  --border-hover: var(--limestone-600);
+  --rule-soft: var(--limestone-250);
+
+  /* Semantic: accent (Aegean) */
+  --accent: var(--aegean-600);
+  --accent-hover: var(--aegean-700);
+  --accent-press: var(--aegean-800);
+  --accent-wash: var(--aegean-100);
+  --accent-selected: var(--aegean-50);
+  --accent-ring: var(--aegean-200);
+  --selection: var(--aegean-300);
+
+  /* Semantic: clay */
+  --clay: var(--clay-500);
+  --clay-ink: var(--clay-600);
+  --clay-wash: var(--clay-50);
+
+  /* Semantic: states */
+  --state-resolved: var(--olive-600);
+  --state-resolved-wash: var(--olive-50);
+  --state-error: var(--cinnabar-600);
+  --state-error-wash: var(--cinnabar-50);
+  --state-warning: var(--ochre-700);
+  --state-warning-wash: var(--ochre-50);
+  --state-neutral: var(--ink-600);
+  --state-neutral-wash: var(--limestone-200);
+
+  /* Diff */
+  --diff-added: var(--olive-75);
+  --diff-added-gutter: var(--olive-100);
+  --diff-added-mark: var(--olive-600);
+  --diff-removed: var(--cinnabar-25);
+  --diff-removed-gutter: var(--cinnabar-50);
+  --diff-removed-mark: var(--cinnabar-600);
+  --diff-absent: var(--limestone-100);
+  --diff-number: var(--ink-400);
+
+  /* Code tokens */
+  --token-keyword: var(--aegean-600);
+  --token-call: var(--clay-500);
+  --token-type: var(--sea-600);
+  --token-string: var(--olive-600);
+  --token-number: var(--ochre-700);
+  --token-comment: var(--ink-450);
+  --token-punct: var(--ink-450);
+  --token-name: var(--ink-900);
+
+  --scrim: rgba(20, 40, 60, 0.36);
+}

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<title>socrates · design system</title>
+<style>
+html,body{margin:0;background:#F6F2EA;color:#14283C;font-family:'Manrope',ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+a{color:#1259A8;}a:hover{color:#0E4A8C;}
+@font-face{font-family:'Manrope';font-weight:200 800;font-display:swap;src:url('fonts/Manrope-Variable.woff2') format('woff2');}
+@font-face{font-family:'Cinzel';font-weight:400 900;font-display:swap;src:url('fonts/Cinzel-Variable.woff2') format('woff2');}
+</style>
+</helmet>
+<main style="max-width:1200px;margin:0 auto;padding:56px 32px 96px;display:flex;flex-direction:column;gap:56px;">
+  <header style="display:flex;flex-direction:column;gap:12px;">
+    <span style="font-family:'Cinzel',Georgia,serif;font-size:16px;font-weight:700;letter-spacing:0.12em;color:#1259A8;">socrates</span>
+    <h1 style="margin:0;font-size:40px;font-weight:700;line-height:1.15;letter-spacing:-0.02em;">Design system</h1>
+    <p style="margin:0;color:#4B5B6B;font-size:16px;line-height:1.6;">Foundations, components and the review page. Tokens live in <code style="font-family:'JetBrains Mono',monospace;font-size:13px;">styles.css</code>; the guide is <code style="font-family:'JetBrains Mono',monospace;font-size:13px;">readme.md</code>.</p>
+  </header>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <section style="display:flex;flex-direction:column;gap:20px;">
+      <h2 style="margin:0;padding-bottom:12px;border-bottom:1px solid #E5DED1;font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#5F6B78;">{{ g.name }}</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;">
+        <sc-for list="{{ g.cards }}" as="c" hint-placeholder-count="3">
+          <figure style="margin:0;flex:0 1 {{ c.w }};max-width:100%;display:flex;flex-direction:column;gap:8px;">
+            <div style="border:1px solid #E5DED1;border-radius:16px;overflow:hidden;background:#FFFFFF;box-shadow:0 1px 2px rgba(20,40,60,0.04),0 12px 32px -12px rgba(20,40,60,0.10);">
+              <iframe src="{{ c.src }}" title="{{ c.name }}" data-fit="{{ c.fit }}" style="display:block;width:100%;height:{{ c.h }};border:0;"></iframe>
+            </div>
+            <figcaption style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:14px;">
+              <span style="font-weight:700;">{{ c.name }}</span>
+              <a href="{{ c.src }}" target="_blank" style="font-size:12px;font-weight:700;">Open</a>
+            </figcaption>
+          </figure>
+        </sc-for>
+      </div>
+    </section>
+  </sc-for>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  componentDidMount() {
+    this._obs = [];
+    const fit = (f) => {
+      const b = f.contentDocument && f.contentDocument.body;
+      if (!b) return;
+      const set = () => { f.style.height = Math.ceil(b.scrollHeight) + 'px'; };
+      set();
+      const ro = new ResizeObserver(set); ro.observe(b); this._obs.push(ro);
+    };
+    const scan = () => document.querySelectorAll('iframe[data-fit="yes"]').forEach(f => {
+      if (f._fitBound) return; f._fitBound = true;
+      f.addEventListener('load', () => fit(f));
+      if (f.contentDocument && f.contentDocument.readyState === 'complete') fit(f);
+    });
+    scan();
+    this._t = setInterval(scan, 1000);
+    setTimeout(() => clearInterval(this._t), 10000);
+  }
+  componentWillUnmount() { clearInterval(this._t); (this._obs || []).forEach(o => o.disconnect()); }
+  renderVals() {
+    const c = (name, src, h, w) => ({ name, src, h: h + 'px', w: (w || 700) + 'px', fit: w ? 'no' : 'yes' });
+    return { groups: [
+      { name: 'Brand', cards: [c('Wordmark', 'guidelines/brand-wordmark.card.html', 120), c('Wordmark & icons', 'components/brand/brand.card.html', 150)] },
+      { name: 'Colors', cards: [
+        c('Aegean', 'guidelines/colors-aegean.card.html', 150), c('Clay', 'guidelines/colors-clay.card.html', 150),
+        c('Limestone', 'guidelines/colors-limestone.card.html', 250), c('Ink', 'guidelines/colors-ink.card.html', 220),
+        c('States', 'guidelines/colors-states.card.html', 150), c('Code & diff', 'guidelines/colors-code.card.html', 200)] },
+      { name: 'Type', cards: [c('Display & title', 'guidelines/type-display.card.html', 190), c('Body & labels', 'guidelines/type-body.card.html', 270), c('Mono', 'guidelines/type-mono.card.html', 140)] },
+      { name: 'Spacing & effects', cards: [
+        c('Spacing scale', 'guidelines/spacing-scale.card.html', 260), c('Layout', 'guidelines/spacing-layout.card.html', 200),
+        c('Radii', 'guidelines/effects-radii.card.html', 140), c('Shadows & rings', 'guidelines/effects-shadows.card.html', 160), c('Motion', 'guidelines/effects-motion.card.html', 120)] },
+      { name: 'Components', cards: [
+        c('Buttons', 'components/actions/actions.card.html', 150), c('Marks', 'components/marks/marks.card.html', 200),
+        c('Forms', 'components/forms/forms.card.html', 620), c('Evidence', 'components/evidence/evidence.card.html', 420),
+        c('Surfaces', 'components/surfaces/surfaces.card.html', 400), c('Navigation', 'components/navigation/navigation.card.html', 300),
+        c('Feedback', 'components/feedback/feedback.card.html', 330)] },
+      { name: 'Review page', cards: [c('Review page (interactive)', 'ui_kits/review-page/index.html', 900, 1136)] }
+    ] };
+  }
+}
+</script>
+</body>
+</html>
