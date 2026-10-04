@@ -1,5 +1,5 @@
 :root {
-  /* Aegean - the sea. What a person chooses or presses. */
+  /* Aegean — the sea. What a person chooses or presses. */
   --aegean-50: #EEF4FB;
   --aegean-100: #E8F0FA;
   --aegean-200: #D6E5F5;
@@ -8,12 +8,12 @@
   --aegean-700: #0E4A8C;
   --aegean-800: #0B3D73;
 
-  /* Clay - terracotta. Recommendation and "your call", used sparingly. */
+  /* Clay — terracotta. Recommendation and "your call", used sparingly. */
   --clay-50: #F8E8DF;
   --clay-500: #B4532D;
   --clay-600: #A3471F;
 
-  /* Limestone - whitewashed neutrals for ground, surfaces and rules. */
+  /* Limestone — whitewashed neutrals for ground, surfaces and rules. */
   --limestone-0: #FFFFFF;
   --limestone-50: #FBF9F5;
   --limestone-100: #F6F2EA;
@@ -25,7 +25,7 @@
   --limestone-500: #C4B9A6;
   --limestone-600: #B9AC96;
 
-  /* Ink - deep-sea navy for text. */
+  /* Ink — deep-sea navy for text. */
   --ink-900: #14283C;
   --ink-700: #3E4F5F;
   --ink-600: #4B5B6B;
@@ -33,7 +33,7 @@
   --ink-450: #66727F;
   --ink-400: #8A939D;
 
-  /* Olive, cinnabar, ochre, sea - states and code. */
+  /* Olive, cinnabar, ochre, sea — states and code. */
   --olive-50: #EBF0DF;
   --olive-75: #F0F5E8;
   --olive-100: #E4EDD5;

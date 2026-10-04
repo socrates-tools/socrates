@@ -8,6 +8,7 @@
 <body>
 <x-dc>
 <helmet>
+<link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
 <title>socrates · design system</title>
 <style>
 html,body{margin:0;background:#F6F2EA;color:#14283C;font-family:'Manrope',ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
@@ -66,7 +67,7 @@ class Component extends DCLogic {
   renderVals() {
     const c = (name, src, h, w) => ({ name, src, h: h + 'px', w: (w || 700) + 'px', fit: w ? 'no' : 'yes' });
     return { groups: [
-      { name: 'Brand', cards: [c('Wordmark', 'guidelines/brand-wordmark.card.html', 120), c('Wordmark & icons', 'components/brand/brand.card.html', 150)] },
+      { name: 'Brand', cards: [c('Mark & wordmark', 'guidelines/brand-wordmark.card.html', 200), c('Wordmark & icons', 'components/brand/brand.card.html', 150)] },
       { name: 'Colors', cards: [
         c('Aegean', 'guidelines/colors-aegean.card.html', 150), c('Clay', 'guidelines/colors-clay.card.html', 150),
         c('Limestone', 'guidelines/colors-limestone.card.html', 250), c('Ink', 'guidelines/colors-ink.card.html', 220),

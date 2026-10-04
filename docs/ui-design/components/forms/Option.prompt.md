@@ -1,5 +1,4 @@
-Selectable answer card - the core of every decision.
-Wrap in OptionGroup.
+Selectable answer card — the core of every decision. Wrap in OptionGroup.
 
 ```jsx
 <OptionGroup legend="Choose one">
@@ -9,5 +8,4 @@ Wrap in OptionGroup.
 </OptionGroup>
 ```
 
-Selected = Aegean border + 1px ring + selected wash (no layout shift).
-Options are 8px apart.
+Selected = Aegean border + 1px ring + selected wash (no layout shift). Options are 8px apart.

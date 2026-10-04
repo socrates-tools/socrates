@@ -1,5 +1,5 @@
-// Preview helper: resolves the compiled design-system namespace, or - before the
-// bundle has been compiled - evaluates the component sources directly with Babel.
+// Preview helper: resolves the compiled design-system namespace, or — before the
+// bundle has been compiled — evaluates the component sources directly with Babel.
 (function () {
   var here = document.currentScript && document.currentScript.src;
   var root = here ? new URL('../../', here).href : '../../';

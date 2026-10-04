@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-/** Confirmation dialog on a blurred navy scrim - e.g. "1 decision is blank". */
+/** Confirmation dialog on a blurred navy scrim — e.g. "1 decision is blank". */
 export interface DialogProps {
   /** @default true */
   open?: boolean;

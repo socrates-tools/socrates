@@ -1,4 +1,4 @@
-Pill button - one primary per surface (the send), secondary for the alternative, ghost for backing out.
+Pill button — one primary per surface (the send), secondary for the alternative, ghost for backing out.
 
 ```jsx
 <Button variant="secondary">Send and finish</Button>
@@ -6,5 +6,4 @@ Pill button - one primary per surface (the send), secondary for the alternative,
 <Button variant="ghost">Go back and answer</Button>
 ```
 
-Primary sits rightmost.
-Copy is a verb phrase in sentence case.
+Primary sits rightmost. Copy is a verb phrase in sentence case.

@@ -8,6 +8,7 @@
 <body>
 <x-dc>
 <helmet>
+<link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
 <title>Socrates · redesign</title>
 <style>
 @font-face{font-family:'Cinzel';font-weight:400 900;font-display:swap;src:url('fonts/Cinzel-Variable.woff2') format('woff2');}
@@ -26,8 +27,8 @@ button:focus-visible,a:focus-visible,label:focus-within{outline:none;}
 
 <header data-screen-label="Top bar" style="position:sticky;top:0;z-index:10;background:rgba(246,242,234,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #E5DED1;">
   <div style="max-width:1200px;margin:0 auto;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
-    <span style="display:flex;align-items:center;gap:12px;">
-      <span style="width:26px;height:26px;border-radius:8px;background:#1259A8;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font-family:'Cinzel',Georgia,serif;font-size:14px;font-weight:700;line-height:1;">S</span>
+    <span style="display:flex;align-items:center;gap:10px;">
+      <img src="assets/brand/socrates-mark.svg" width="28" height="28" alt="" style="display:block;border-radius:7px;">
       <span style="font-family:'Cinzel',Georgia,serif;font-size:15px;font-weight:700;letter-spacing:0.12em;color:#14283C;">socrates</span>
     </span>
     <span style="display:inline-flex;align-items:center;gap:8px;height:24px;padding:0 10px;border-radius:999px;background:{{ status.bg }};color:{{ status.fg }};font-size:12px;font-weight:700;letter-spacing:0.02em;white-space:nowrap;">
