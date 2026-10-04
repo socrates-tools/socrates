@@ -1,4 +1,4 @@
-Severity / audience chip on a finding — severity first, then audience.
+Severity / audience chip on a finding - severity first, then audience.
 
 ```jsx
 <Mark value="error" />

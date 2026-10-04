@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-/** Small text pill — "Recommended" (clay), "Settled" (resolved). */
+/** Small text pill - "Recommended" (clay), "Settled" (resolved). */
 export interface TagProps {
   /** @default "neutral" */
   tone?: 'clay' | 'resolved' | 'accent' | 'neutral';

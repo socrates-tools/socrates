@@ -1,4 +1,4 @@
-Pill button — one primary per surface (the send), secondary for the alternative, ghost for backing out.
+Pill button - one primary per surface (the send), secondary for the alternative, ghost for backing out.
 
 ```jsx
 <Button variant="secondary">Send and finish</Button>

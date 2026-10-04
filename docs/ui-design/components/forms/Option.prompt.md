@@ -1,4 +1,4 @@
-Selectable answer card — the core of every decision. Wrap in OptionGroup.
+Selectable answer card - the core of every decision. Wrap in OptionGroup.
 
 ```jsx
 <OptionGroup legend="Choose one">

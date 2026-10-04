@@ -1,4 +1,4 @@
-Stroke icon from the socrates set — use inside marks, chips and checks; never draw new glyphs.
+Stroke icon from the socrates set - use inside marks, chips and checks; never draw new glyphs.
 
 ```jsx
 <Icon name="circle-alert" size={14} />
