@@ -444,3 +444,29 @@ func TestWritingOneKeyThroughTheDefinitionKeepsTheRestAndRefusesWhatItsParseRefu
 		t.Errorf("removing a key the file never stated failed: %v", err)
 	}
 }
+
+func TestAKeyLongerThanTheEmitterLikesIsStillWrittenOnOneLine(t *testing.T) {
+	long := "/private/var/folders/m0/85_wf3592yn3lv6k16z62g4h0000gn/T/a-repository-whose-path-is-longer-than-a-hundred-and-twenty-eight-characters/clone"
+	held := "repositories:\n  /home/me/other.repo: main\n"
+	document, err := documentOf([]byte(held))
+	if err != nil {
+		t.Fatalf("reading a file a person wrote: %v", err)
+	}
+	document.set([]string{"repositories", long}, "dev")
+
+	written, err := document.render()
+	if err != nil {
+		t.Fatalf("writing it back: %v", err)
+	}
+	if want := held + "  " + long + ": dev\n"; string(written) != want {
+		t.Errorf("setting a key of %d characters produced:\n%s\nwant:\n%s", len(long), written, want)
+	}
+
+	reread, err := documentOf(written)
+	if err != nil {
+		t.Fatalf("reading what was written: %v", err)
+	}
+	if !reread.states([]string{"repositories", long}) {
+		t.Errorf("the long key does not read back as the key that was set:\n%s", written)
+	}
+}

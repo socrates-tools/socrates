@@ -9,15 +9,17 @@ import (
 )
 
 const (
-	blankMarker  = "#socrates:blank-line"
-	keySeparator = "."
-	indentStep   = 2
+	blankMarker        = "#socrates:blank-line"
+	keySeparator       = "."
+	indentStep         = 2
+	longestImplicitKey = 1024
 )
 
 var (
-	blankLine = regexp.MustCompile(`(?m)^[ \t]*\r?\n`)
-	blankMark = regexp.MustCompile(`(?m)^[ \t]*` + regexp.QuoteMeta(blankMarker) + `[ \t]*\r?\n`)
-	emptyOnly = regexp.MustCompile(`(?m)^\{\}\r?\n`)
+	blankLine   = regexp.MustCompile(`(?m)^[ \t]*\r?\n`)
+	blankMark   = regexp.MustCompile(`(?m)^[ \t]*` + regexp.QuoteMeta(blankMarker) + `[ \t]*\r?\n`)
+	emptyOnly   = regexp.MustCompile(`(?m)^\{\}\r?\n`)
+	explicitKey = regexp.MustCompile(`(?m)^([ \t]*)\? ([^\r\n|>][^\r\n]*)\r?\n([ \t]*):`)
 )
 
 type document struct {
@@ -80,6 +82,7 @@ func (d *document) render() ([]byte, error) {
 	}
 
 	written := blankMark.ReplaceAllString(out.String(), newline)
+	written = onOneLine(written)
 	if d.namesNothing() {
 		written = emptyOnly.ReplaceAllString(written, "")
 	}
@@ -87,6 +90,17 @@ func (d *document) render() ([]byte, error) {
 		return nil, nil
 	}
 	return []byte(written), nil
+}
+
+func onOneLine(written string) string {
+	return explicitKey.ReplaceAllStringFunc(written, func(held string) string {
+		parts := explicitKey.FindStringSubmatch(held)
+		indent, key, valueIndent := parts[1], parts[2], parts[3]
+		if indent != valueIndent || len(key) > longestImplicitKey {
+			return held
+		}
+		return indent + key + ":"
+	})
 }
 
 func (d *document) namesNothing() bool {
