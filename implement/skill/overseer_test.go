@@ -154,12 +154,25 @@ func TestWhereNoDefaultBranchIsRememberedTheOverseerProposesTheNamedCandidates(t
 
 func TestTheChangesBranchIsCutFromTheCurrentHeadAndStartsWithWhatTheDesignLeft(t *testing.T) {
 	saysEach(t, branchHeading, "the branch could start from the wrong commit or sweep up the person's own work",
-		"`socrates-implement/<slug>`",
-		"cut from the current `HEAD`",
+		"Cut it from the current `HEAD`",
 		"the change's folder, the ADRs whose Part of names its slug, and `CONTEXT.md`",
 		"Make those the first commit of the branch",
 		"Anything else uncommitted is the person's",
 		"start nothing",
+	)
+}
+
+func TestTheChangesBranchIsNamedForTheKindOfChangeTheSpecAsksFor(t *testing.T) {
+	saysEach(t, branchHeading, "the change could land on a branch whose name says nothing about what kind of change it is",
+		"The change's branch is `<type>/<slug>`",
+		"`<type>` is `feature`, `fix`, `refactor`, `docs` or `chore`, whichever the spec says the change is",
+		"or for a change that is several, what it gives somebody using the project",
+	)
+}
+
+func TestAResumedOverseerKeepsTheTypeTheChangesBranchAlreadyHas(t *testing.T) {
+	saysEach(t, branchHeading, "a resumed run could judge the type afresh and start a second branch beside the first",
+		"Where `<type>/<slug>` exists already under any type, this run is a resumed one and keeps that branch",
 	)
 }
 
@@ -192,7 +205,7 @@ func TestAReadyTicketSharingASurfaceIsHeldBackAndNoBlockerIsWritten(t *testing.T
 func TestEachImplementerWorksInAWorktreeTheOverseerMadeOnABranchSheNamed(t *testing.T) {
 	saysEach(t, worktreesHeading, "an implementer could work anywhere, on a branch the overseer cannot find",
 		"Make each implementer's worktree and branch yourself, with git, off the change's branch",
-		"git worktree add -b socrates-implement/<slug>-<ticket>",
+		"git worktree add -b <type>/<slug>-<ticket>",
 		"the `worktrees/` directory beside the file `socrates implement config` prints on its first line",
 		"`~/.socrates/implement/worktrees/` by default",
 		"a sibling of the change's branch rather than a child",
@@ -219,7 +232,7 @@ func TestTheOverseerReviewsEachDiffAndSendsFeedbackToTheSameImplementerWithNoCap
 
 func TestLandingIsAFastForwardFollowedByTheRepositorysOwnVerificationAfterEveryLanding(t *testing.T) {
 	saysEach(t, landingHeading, "the overseer could resolve a conflict herself or leave two tickets that fail together unnoticed",
-		"git merge --ff-only socrates-implement/<slug>-<ticket>",
+		"git merge --ff-only <type>/<slug>-<ticket>",
 		"run the repository's own verification",
 		"Run it after every landing",
 		"A failure goes back to the implementer whose ticket landed last",
@@ -244,7 +257,7 @@ func TestWhereOnlyTheOverseersOwnStatusCommitsAreMissingSheMergesThemHerself(t *
 		"Every status commit you make on the change's branch puts an implementer that already merged one commit behind",
 		"Implementers never touch the main ticket",
 		"the only commits its branch lacks are your own status commits",
-		"git -C <worktree> merge socrates-implement/<slug>",
+		"git -C <worktree> merge <type>/<slug>",
 		"That merge cannot conflict",
 	)
 }
@@ -290,10 +303,10 @@ func TestWhatThePersonSaysMidRunIsRelayedAtOnceToEveryImplementerItConcerns(t *t
 func TestTheWholeChangeIsReadAgainstTheSpecFromTheDefaultBranchsForkPointAndNothingIsPushed(t *testing.T) {
 	saysEach(t, lastReadHeading, "tickets that each passed could add up to something the spec did not ask for, or the change could be published unasked",
 		"read the whole change against the spec",
-		"git merge-base <default branch> socrates-implement/<slug>",
+		"git merge-base <default branch> <type>/<slug>",
 		"Hand what falls short to one implementer",
 		"remove every worktree",
-		"the branch `socrates-implement/<slug>` is ready",
+		"the branch `<type>/<slug>` is ready",
 		"Push nothing",
 	)
 }

@@ -174,7 +174,7 @@ Nothing is published to a tracker, and nothing is committed for you.
 `socrates implement skill` installs the `socrates-implement` skill and the `socrates-implementer` agent definition.
 You invoke the skill once the tickets are cut and committed, and the session you invoked it in becomes the overseer.
 She writes no code.
-She hands each ticket whose blockers are done to an implementer in a worktree of its own, reviews what comes back, and lands it by fast-forward on a branch named `socrates-implement/<slug>`, running the repository's own verification after every landing.
+She hands each ticket whose blockers are done to an implementer in a worktree of its own, reviews what comes back, and lands it by fast-forward on a branch named `<type>/<slug>`, such as `feature/<slug>` or `fix/<slug>`, running the repository's own verification after every landing.
 The implementers run in the background, so you can talk to her while they build, and she brings you only what coding cannot fix.
 Once the last ticket lands she reads the whole change against the spec and tells you the branch is ready.
 Nothing is pushed.

@@ -255,6 +255,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - She reads the main ticket, the spec and the ADRs, and the settings from `socrates implement config`, at the start of every run.
 - A default branch that is not remembered is proposed from the branches named `main`, `master`, `dev` or `develop`, never one under a prefix such as `feature/` or `hotfix/`, asked in the terminal and saved with `socrates implement default-branch`, per ADR 51.
 - The change's branch is cut from the current `HEAD` and starts with what the design and the tickets left, and anything else uncommitted stops the run.
+- The change's branch is `<type>/<slug>`, its type one of `feature`, `fix`, `refactor`, `docs` or `chore` as the spec says the change is, each ticket's branch is `<type>/<slug>-<ticket>` beside it, and a resumed run keeps the branch it finds under any type.
 - The frontier is every ticket whose blockers are done, at most `concurrency` implementers run, the longest chain goes first, then the most unblocked, then name order, and a ready ticket sharing a surface with a running one is held back without a blocker being written.
 - Each implementer is briefed with pointers, runs in the background in a worktree and on a branch the overseer made with git, and gets feedback from the overseer with no cap on the exchanges.
 - Before the first hand-out one subagent writes notes about the code the change touches under `~/.socrates/implement/notes/`, outside the repository, every brief points at them, and the overseer writes none herself.

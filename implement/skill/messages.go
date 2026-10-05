@@ -59,11 +59,12 @@ Ask once: a remembered branch is read from |socrates implement config| from then
 
 	theChangesBranchSection = `## The change's branch
 
-The change's branch is |socrates-implement/<slug>|, where |<slug>| is the folder under |docs/changes/|, cut from the current |HEAD| and checked out in the person's own checkout, so the repository's verification runs where its untracked material is present.
+The change's branch is |<type>/<slug>|, where |<slug>| is the folder under |docs/changes/| and |<type>| is |feature|, |fix|, |refactor|, |docs| or |chore|, whichever the spec says the change is, or for a change that is several, what it gives somebody using the project.
+Cut it from the current |HEAD| and check it out in the person's own checkout, so the repository's verification runs where its untracked material is present.
 Start only from a working tree whose uncommitted changes are what the design and the tickets left: the change's folder, the ADRs whose Part of names its slug, and |CONTEXT.md|.
 Make those the first commit of the branch.
 Anything else uncommitted is the person's: say so in the terminal and start nothing.
-Where the branch exists already, this run is a resumed one.`
+Where |<type>/<slug>| exists already under any type, this run is a resumed one and keeps that branch.`
 
 	theFrontierSection = `## The frontier
 
@@ -83,7 +84,7 @@ Write no blocker into the tickets for it: they stay as the person approved them.
 
 Make each implementer's worktree and branch yourself, with git, off the change's branch:
 
-    git worktree add -b socrates-implement/<slug>-<ticket> <worktrees>/socrates-implement-<slug>-<ticket> socrates-implement/<slug>
+    git worktree add -b <type>/<slug>-<ticket> <worktrees>/socrates-implement-<slug>-<ticket> <type>/<slug>
 
 |<ticket>| is the ticket's file name without |.md|.
 |<worktrees>| is the |worktrees/| directory beside the file |socrates implement config| prints on its first line, which is |~/.socrates/implement/worktrees/| by default.
@@ -107,7 +108,7 @@ Where a ticket has stalled, hand it to a fresh implementer briefed with what the
 
 Land one ticket at a time, by fast-forward, from the person's own checkout on the change's branch:
 
-    git merge --ff-only socrates-implement/<slug>-<ticket>
+    git merge --ff-only <type>/<slug>-<ticket>
 
 Then run the repository's own verification, the command its instructions name, on the change's branch.
 Run it in the background, so you stay free to talk to the person while it runs, as the implementers do.
@@ -119,7 +120,7 @@ Every status commit you make on the change's branch puts an implementer that alr
 Implementers never touch the main ticket.
 Where the only commits its branch lacks are your own status commits, every one touching the main ticket |README.md| and nothing else, merge them into its branch yourself, in its worktree, and land it:
 
-    git -C <worktree> merge socrates-implement/<slug>
+    git -C <worktree> merge <type>/<slug>
 
 That merge cannot conflict.
 Any other new commit on the change's branch goes back to the implementer to merge, because reconciling it is the implementer's work.`
@@ -151,12 +152,12 @@ Where a ticket names what it needs a person for, ask for it in the terminal befo
 
 Once the last ticket has landed and passed, read the whole change against the spec, from the fork point of the default branch:
 
-    git diff $(git merge-base <default branch> socrates-implement/<slug>)..socrates-implement/<slug>
+    git diff $(git merge-base <default branch> <type>/<slug>)..<type>/<slug>
 
 Tickets that each passed can add up to something the spec did not ask for.
 Go through the spec's user stories one by one, and name every story the change does not deliver.
 Hand what falls short to one implementer, in a worktree of its own made the same way, and land and verify it the same way.
-Then remove every worktree, and tell the person in the terminal that the branch |socrates-implement/<slug>| is ready.
+Then remove every worktree, and tell the person in the terminal that the branch |<type>/<slug>| is ready.
 Push nothing, open no pull request and post nothing: publishing the change is the person's.`
 
 	installingElsewhere = `## Installing elsewhere
