@@ -1176,3 +1176,55 @@ func TestADecisionIsShownUnderTheNameItsSourceGivesIt(t *testing.T) {
 		t.Errorf("a decision whose source names it nothing is shown as %q, and it has only its identifier to be shown under", unnamed)
 	}
 }
+
+const longPreambleDocument = `{
+  "title": "E2E for the task pane and API - round 1, settling the shape of the spec, the words, and the choices the strategy doc left open",
+  "preamble": "Taken as settled from the strategy doc: tests and fakes split by ownership, the API box and HTTP suite in the API repo and Playwright in the clients repo. Front-end auth is a build-time provider behind a flag. The fake model answers by function, recognised from its rendered output schema, with per-test fixtures. All six journeys, in the second phase's order. This round settles the shape of the spec, the words, and a few choices the doc left open, and questions on test-data isolation wait for a code check that is still running.",
+  "decisions": [
+    {
+      "id": "c-1",
+      "question": "should the cache be read before the lock is taken",
+      "mode": "single-choice",
+      "options": [
+        {"label": "take the lock first", "command": "patch c-1"},
+        {"label": "leave it", "command": "agree c-1"}
+      ]
+    }
+  ]
+}`
+
+const whereEachPartOfThePageEnds = `(() => {
+  const right = (selector) => document.querySelector(selector).getBoundingClientRect().right;
+  return { title: right('.heading h1'), preamble: right('.preamble'), status: right('.status'), index: right('.index'), cards: right('.column') };
+})()`
+
+type rightEdges struct {
+	Title    float64 `json:"title"`
+	Preamble float64 `json:"preamble"`
+	Status   float64 `json:"status"`
+	Index    float64 `json:"index"`
+	Cards    float64 `json:"cards"`
+}
+
+func TestEveryPartOfThePageEndsWhereTheCardsEnd(t *testing.T) {
+	for _, window := range []struct {
+		width   int
+		aligned []string
+	}{
+		{width: 1600, aligned: []string{"title", "preamble", "status"}},
+		{width: 900, aligned: []string{"title", "preamble", "status", "index"}},
+	} {
+		held := standing(t)
+		page := opening(t, held.serve(longPreambleDocument), chromedp.WindowSize(window.width, 1000))
+
+		var edges rightEdges
+		page.evaluate(whereEachPartOfThePageEnds, &edges)
+
+		ending := map[string]float64{"title": edges.Title, "preamble": edges.Preamble, "status": edges.Status, "index": edges.Index}
+		for _, part := range window.aligned {
+			if apart := edges.Cards - ending[part]; apart > 1 || apart < -1 {
+				t.Errorf("in a window %dpx wide the %s ends at %vpx and the cards at %vpx, and the page has one right edge", window.width, part, ending[part], edges.Cards)
+			}
+		}
+	}
+}

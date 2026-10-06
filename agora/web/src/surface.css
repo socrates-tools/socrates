@@ -156,13 +156,14 @@
   --radius-dialog: 16px;
   --radius-pill: 999px;
 
-  --page-max: 1200px;
   --column-max: 800px;
   --rail-width: 240px;
+  --layout-gap: 32px;
+  --gutter: 24px;
+  --page-max: calc(var(--rail-width) + var(--layout-gap) + var(--column-max) + 2 * var(--gutter));
   --topbar-height: 56px;
   --sticky-offset: calc(var(--topbar-height) + 24px);
   --card-pad: 24px;
-  --gutter: 24px;
   --stack: 16px;
   --control-height: 36px;
   --chip-height: 22px;
@@ -304,7 +305,6 @@ pre,
 
 .heading h1 {
   margin: 0;
-  max-width: 900px;
   font-size: var(--size-display);
   font-weight: 700;
   line-height: var(--leading-display);
@@ -314,7 +314,6 @@ pre,
 
 .preamble {
   margin: 8px 0 0;
-  max-width: 70ch;
   color: var(--fg-2);
   font-size: var(--size-lead);
   line-height: var(--leading-lead);
@@ -345,7 +344,7 @@ pre,
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 32px;
+  gap: var(--layout-gap);
 }
 
 .overline {
@@ -1603,6 +1602,10 @@ button:disabled {
   .index {
     position: static;
     flex-basis: 100%;
+  }
+
+  .column {
+    max-width: none;
   }
 }
 
