@@ -101,7 +101,6 @@ What implement is:
 What holds them all:
 
 - `internal/convention` - the repository's conventions as executable checks.
-  The tool list in it is read against the tree: every namespace the dispatcher mounts but `version` and `help` is on it, every tool on it is mounted and holds a `command` package, and every top-level directory holding one is on it.
 - `internal/e2e` - real binaries, a real repository, real git, real processes, each vendor's simulator on `PATH`, a real browser.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
 - `internal/tty` - whether a stream is a terminal at all, for every tool that draws something only a person can answer.

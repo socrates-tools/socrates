@@ -9,12 +9,12 @@ import (
 
 const commandPackage = "command"
 
-var SuiteNamespaces = []string{"version", "help"}
+var suiteNamespaces = []string{"version", "help"}
 
 func MountedWithoutATool(mounted []string, tools []Tool) []string {
 	var unlisted []string
 	for _, namespace := range mounted {
-		if slices.Contains(SuiteNamespaces, namespace) || listed(namespace, tools) {
+		if slices.Contains(suiteNamespaces, namespace) || listed(namespace, tools) {
 			continue
 		}
 		unlisted = append(unlisted, namespace)
