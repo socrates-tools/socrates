@@ -101,6 +101,7 @@ What implement is:
 What holds them all:
 
 - `internal/convention` - the repository's conventions as executable checks.
+  The tool list in it is read against the tree: every namespace the dispatcher mounts but `version` and `help` is on it, every tool on it is mounted and holds a `command` package, and every top-level directory holding one is on it.
 - `internal/e2e` - real binaries, a real repository, real git, real processes, each vendor's simulator on `PATH`, a real browser.
 - `internal/testing` - harness, temporary repository, simulator installer, source helpers.
 - `internal/tty` - whether a stream is a terminal at all, for every tool that draws something only a person can answer.
@@ -298,6 +299,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 **Verification**
 
 - One entry point runs every gate, a run invokes that entry point rather than listing the gates, and formatting fails before the suite does.
+- The tool list the cross-tool rule reads agrees with the tree: a namespace the dispatcher mounts and a top-level directory holding a `command` package are each on it, and a tool on it is mounted and holds a `command` package, so none is invisible to the rule that no tool imports another.
 - The matrix is read from the platform statement, so the suite runs on every platform the set names and on no runner it does not.
 - Every action a workflow uses is named by a commit with its version beside it, and a check fails while any is named by a tag.
 - Every workflow states a read-only token at the top and escalates only in the job that needs more, and a superseded run is cancelled rather than left to report.
