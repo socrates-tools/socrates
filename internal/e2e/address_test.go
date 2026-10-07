@@ -614,9 +614,6 @@ func TestWhatAnOperatorStatesAboutTheSurfaceIsReadFromAgorasOwnFile(t *testing.T
 	if !strings.HasPrefix(printed, reachedAt+strings.TrimPrefix(surface.SessionPrefix, "/")) {
 		t.Errorf("agora serve printed %q, and %s states the surface is reached at %q", printed, held.agorasConfiguration(), reachedAt)
 	}
-	if _, err := os.Stat(filepath.Join(held.surfaceHome(), state.ConfigurationFile)); err == nil {
-		t.Errorf("the surface read a configuration file under %s, where it writes about itself", held.surfaceHome())
-	}
 }
 
 func TestASurfaceBlockInReviewsFileIsNotWhatAgoraBinds(t *testing.T) {

@@ -14,9 +14,9 @@ func TestTheSurfacesStateSitsUnderTheDirectoryItIsGiven(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv(state.HomeVariable, home)
 
-	stated, err := state.Surface()
+	stated, err := state.Agora.Home()
 	if err != nil {
-		t.Fatalf("resolving where the surface writes: %v", err)
+		t.Fatalf("resolving agora's own directory: %v", err)
 	}
 
 	record, err := surface.RecordPath()
@@ -34,8 +34,8 @@ func TestTheSurfacesStateSitsUnderTheDirectoryItIsGiven(t *testing.T) {
 	if want := filepath.Join(stated, "sessions", "a1b2c3d4", "session.json"); page != want {
 		t.Errorf("the surface writes a session at %s, and the directory it was given is %s", page, want)
 	}
-	if !strings.HasPrefix(stated, home+string(filepath.Separator)) {
-		t.Errorf("the surface writes under %s, which is not under socrates' home at %s", stated, home)
+	if want := filepath.Join(home, "agora"); stated != want {
+		t.Errorf("agora's own directory is %s, and the stated root %s holds one named for the tool at %s", stated, home, want)
 	}
 }
 

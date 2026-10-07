@@ -308,7 +308,8 @@ surface:
 
 socrates review writes nothing in your repository except the git objects for its snapshot.
 Your index is untouched, and `git status` is the same before and after.
-Runs live in `~/.socrates/review/runs/`, one directory per run, and pages in `~/.socrates/review/surface/`.
+Runs live in `~/.socrates/review/runs/`, one directory per run.
+The pages socrates agora serves are written under `~/.socrates/agora/`, beside its own configuration file.
 `SOCRATES_HOME` moves `~/.socrates`.
 
 socrates review sends nothing anywhere: no telemetry, no update check, no network connection.

@@ -19,7 +19,7 @@ It knows nothing about review, agora or design.
 
 The dispatcher that routes `socrates` to a namespace holds wiring and nothing else: `internal/dispatcher` mounts review's command tree, agora's command tree, design's command tree and implement's command tree, and is the only thing that imports all four.
 Each tool reads one configuration file of its own: review reads `~/.socrates/review/config.yaml`, agora reads `~/.socrates/agora/config.yaml` and implement reads `~/.socrates/implement/config.yaml`, per ADR 42.
-review and agora write under `~/.socrates/review`, and implement writes under `~/.socrates/implement`.
+review writes under `~/.socrates/review`, agora under `~/.socrates/agora` and implement under `~/.socrates/implement`.
 design reads and writes none of these: nothing about a design outlives the session that ran it beside the spec, the ADRs, the glossary entries and the tickets it wrote to the repository being designed for.
 `~/.socrates` is the brand's root, holding one directory per tool published under it, and `SOCRATES_HOME` moves the root.
 
@@ -351,7 +351,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - The surface mints a session, `--session` never brings one into existence, and every page and every route of it is served under a path holding that session.
 - It turns away a request naming a host it did not bind, and every state-changing route carries a token: a session's own answers for that session and no other, and the one minted when the server started answers everywhere.
 - It composes a command and never runs one, the command it hands back is the option's own string, and no command is rendered on the page.
-- It writes only under review's home, in a directory of its own beside the runs.
+- It writes only under agora's own directory in the brand's root, beside agora's configuration file, and nothing of it lands in another tool's directory.
 - What an operator states about it is read from `~/.socrates/agora/config.yaml`, in agora's own directory under the brand's root, and from no other file, and a file it cannot read or a field the `surface` block does not have is refused, naming the file.
 - A caller writes a document rather than a page, and the name, severity, audience and location come from the source a decision cites.
 - A document may hold no decision, and one holding no decision, no source entry, nothing settled and no preamble is refused.

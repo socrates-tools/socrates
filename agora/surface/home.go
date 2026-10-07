@@ -19,7 +19,7 @@ const (
 )
 
 func Home() (string, error) {
-	return state.Surface()
+	return state.Agora.Home()
 }
 
 func CheckNoHomeOfItsOwn() error {

@@ -11,7 +11,6 @@ const (
 	HomeVariable      = "SOCRATES_HOME"
 	brandDirectory    = ".socrates"
 	runsDirectory     = "runs"
-	surfaceDirectory  = "surface"
 	ConfigurationFile = "config.yaml"
 )
 
@@ -64,12 +63,4 @@ func Runs() (string, error) {
 		return "", err
 	}
 	return filepath.Join(home, runsDirectory), nil
-}
-
-func Surface() (string, error) {
-	home, err := Review.Home()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(home, surfaceDirectory), nil
 }

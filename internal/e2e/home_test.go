@@ -127,11 +127,15 @@ func TestOneVariableMovesEverythingBothToolsHave(t *testing.T) {
 		t.Errorf("the stated root holds %v, and each tool keeps a directory of its own under it", root)
 	}
 	review := whatIsUnder(t, session.Home)
-	if !review["runs"] || !review["surface"] || !review[state.ConfigurationFile] {
-		t.Errorf("review's directory holds %v, and the runs, what the surface writes and review's configuration file live under it", review)
+	if !review["runs"] || !review[state.ConfigurationFile] {
+		t.Errorf("review's directory holds %v, and the runs and review's configuration file live under it", review)
 	}
-	if agora := whatIsUnder(t, state.Agora.HomeUnder(session.Root)); !agora[state.ConfigurationFile] {
-		t.Errorf("agora's directory holds %v, and agora's configuration file lives under it", agora)
+	if review["surface"] || review["surface.json"] || review["sessions"] {
+		t.Errorf("review's directory holds %v, and nothing the surface writes belongs in it", review)
+	}
+	agora := whatIsUnder(t, state.Agora.HomeUnder(session.Root))
+	if !agora[state.ConfigurationFile] || !agora["surface.json"] || !agora["sessions"] {
+		t.Errorf("agora's directory holds %v, and agora's configuration file and what the surface writes live under it", agora)
 	}
 	for _, elsewhere := range []string{".socrates", ".agora", filepath.Join(".config", "agora"), filepath.Join(".local", "state", "agora")} {
 		if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), elsewhere)); err == nil {
@@ -140,7 +144,7 @@ func TestOneVariableMovesEverythingBothToolsHave(t *testing.T) {
 	}
 }
 
-func TestTheSurfaceKeepsADirectoryOfItsOwnInsideThatHome(t *testing.T) {
+func TestTheSurfaceWritesInAgorasDirectoryAndNothingInReviews(t *testing.T) {
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -155,12 +159,12 @@ func TestTheSurfaceKeepsADirectoryOfItsOwnInsideThatHome(t *testing.T) {
 
 	own := whatIsUnder(t, held.surfaceHome())
 	if !own["surface.json"] || !own["sessions"] {
-		t.Fatalf("the surface's directory holds %v, without what it wrote about itself and the session it opened", own)
+		t.Fatalf("agora's directory holds %v, without what the surface wrote about itself and the session it opened", own)
 	}
 
 	beside := whatIsUnder(t, session.Home)
-	if !beside["runs"] || !beside["surface"] {
-		t.Fatalf("the home holds %v, and the surface's directory sits beside the runs", beside)
+	if !beside["runs"] || beside["surface"] || beside["surface.json"] || beside["sessions"] {
+		t.Fatalf("review's directory holds %v, and nothing the surface writes belongs beside the runs", beside)
 	}
 
 	runs := filepath.Join(session.Home, "runs")
@@ -188,6 +192,12 @@ func TestTheVariableThatMovedTheSurfacesOwnHomeIsRefused(t *testing.T) {
 	}
 	if !strings.Contains(failures, surface.RetiredHomeVariable) || !strings.Contains(failures, state.HomeVariable) {
 		t.Errorf("the refusal reads %q, and it names the variable that moved the surface's home and the one that replaced it", failures)
+	}
+	if !strings.Contains(failures, "root") {
+		t.Errorf("the refusal reads %q, and it names the brand's root %s moves", failures, state.HomeVariable)
+	}
+	if strings.Contains(failures, "both binaries") {
+		t.Errorf("the refusal reads %q, and the suite is one binary", failures)
 	}
 	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
 		t.Error("a refused startup left a surface behind, and it starts no server")

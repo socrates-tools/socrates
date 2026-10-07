@@ -1,7 +1,7 @@
 package surface
 
 const (
-	surfaceHasNoHomeOfItsOwn = "%s moved a home of the surface's own, and the surface has none: everything both binaries read and write is under one home, moved by %s. Unset %s, state that one instead, and run the command again"
+	surfaceHasNoHomeOfItsOwn = "%s moved a home of the surface's own, and the surface has none: everything it reads and writes is under its own directory in the brand's root, and %s moves that root. Unset %s, state that one instead, and run the command again"
 
 	addressIsNotHostAndPort    = "the address %q is not a host and a port: %s. Give an address such as 127.0.0.1:0 and run the command again"
 	addressNamesNoPort         = "the address %q names no port. Give an address such as 127.0.0.1:0 and run the command again"
