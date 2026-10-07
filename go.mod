@@ -2,6 +2,8 @@ module github.com/socrates-tools/socrates
 
 go 1.26
 
+toolchain go1.26.5
+
 require (
 	charm.land/bubbletea/v2 v2.0.9
 	github.com/charmbracelet/x/ansi v0.11.7

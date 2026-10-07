@@ -35,14 +35,6 @@ func TestTheRequirementsComeBeforeTheExplanation(t *testing.T) {
 	for _, missing := range front.Missing {
 		t.Error(missing)
 	}
-
-	gotchas, err := convention.Document(root, convention.GotchasFile)
-	if err != nil {
-		t.Fatalf("reading %s: %v", convention.GotchasFile, err)
-	}
-	if !strings.Contains(gotchas, convention.ReviewerCLIFloor) {
-		t.Errorf("%s names %s as the reviewer CLI's floor and %s names another, so the floor is written twice", convention.FrontDocumentFile, convention.ReviewerCLIFloor, convention.GotchasFile)
-	}
 }
 
 func TestARequirementsSectionThatArrivesLateIsRead(t *testing.T) {

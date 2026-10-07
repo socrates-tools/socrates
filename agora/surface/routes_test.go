@@ -93,3 +93,37 @@ func TestADocumentOverTheCeilingIsRefusedRatherThanTruncated(t *testing.T) {
 		t.Errorf("a document over the ceiling reached the page as %q", read.Title)
 	}
 }
+
+func TestAPageIsReachableWithAndWithoutATrailingSlash(t *testing.T) {
+	held := serving(t, twoDecisions(), 0)
+
+	for _, typed := range []string{held.under(""), held.under("/")} {
+		code, page := held.fetch(t, typed)
+		if code != http.StatusOK {
+			t.Errorf("the page at %s was answered with %d", typed, code)
+			continue
+		}
+		if !strings.Contains(page, twoDecisions().Title) {
+			t.Errorf("what %s answered does not hold the page's title %q", typed, twoDecisions().Title)
+		}
+	}
+}
+
+func TestOpeningASessionAnswersOnlyAtTheSessionsPathItself(t *testing.T) {
+	held := serving(t, twoDecisions(), 0)
+	opening := written(t, oneOtherDecision())
+
+	if code := held.posting(t, held.under(""), held.server.Control(), opening); code != http.StatusMethodNotAllowed {
+		t.Errorf("posting a document to the page of session %s was answered with %d, want %d, so something other than the page answers there", held.session, code, http.StatusMethodNotAllowed)
+	}
+	if holds := held.server.Holds(); len(holds) != 1 {
+		t.Fatalf("posting a document to a session's page left the surface holding %v", holds)
+	}
+
+	if code := held.posting(t, held.at(surface.SessionPrefix), held.server.Control(), opening); code != http.StatusOK {
+		t.Errorf("posting a document to %s was answered with %d, so no session was opened where one is", surface.SessionPrefix, code)
+	}
+	if holds := held.server.Holds(); len(holds) != 2 {
+		t.Errorf("opening a session at %s left the surface holding %v", surface.SessionPrefix, holds)
+	}
+}

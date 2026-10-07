@@ -19,7 +19,7 @@ A change that reaches into any of those is out of scope however well it is writt
 `CONTEXT.md` defines the vocabulary, `docs/adr/` holds the decisions with what each one rejected, and `AGENTS.md` states the invariants.
 A change that alters behaviour and leaves those saying the old thing has left the record wrong, and the code is not where the correction belongs.
 
-A constraint somebody would otherwise re-derive belongs in `docs/gotchas.md`.
+A constraint somebody would otherwise re-derive belongs in a test named for it.
 Reasoning about a change belongs in its commit message.
 
 ## A guard nobody has broken on purpose is a guard nobody knows works

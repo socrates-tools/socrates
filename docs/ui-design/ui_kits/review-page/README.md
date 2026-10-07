@@ -2,7 +2,7 @@
 
 The one browser surface socrates has: the decisions page served by agora (`socrates agora`, used by `socrates review` and `socrates design`).
 
-This kit shows the **proposed light redesign** (Aegean + clay on limestone). The page as shipped today is dark (warm black + gold, ADR 0045); its recreation is `/Agora Current.dc.html`.
+This kit shows the decisions page as ADR 53 adopted it: Aegean and clay on limestone.
 
 Source: `agora/render/page.gohtml`, `agora/web/src/surface.css`, `agora/web/src/surface.js`, `agora/render/{icons,marks,audiences,messages}.go`, sample content `agora/document/testdata/source.json`.
 

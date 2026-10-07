@@ -6,6 +6,8 @@ Read this before you write anything.
 
 A change here starts as a spec, committed to `docs/changes/<slug>/spec.md`.
 The tickets it is broken into are files beside it, under `docs/changes/<slug>/tickets/`, each naming the tickets that block it.
+Once the change has landed, its folder is removed in the same change that lands it: git history keeps the spec and the tickets, and `docs/changes/` holds only work still under way.
+What outlives a change is its ADRs and its glossary entries, and the invariants and tests it leaves behind.
 No spec and no ticket is an issue: issues are where somebody using socrates reports a bug or asks for something.
 
 The spec says, in the words of somebody using socrates review rather than the words of the code:
@@ -55,11 +57,30 @@ Do not add a gate to a workflow: add it to `make verify`, and a check fails whil
 
 `make help` lists every target.
 
+### What the suite cannot do on its own
+
+`TestASealThatDoesNotHoldIsARefusal` in `internal/e2e` needs a filesystem that ignores permission bits, which no test can manufacture, so it skips unless one is named:
+
+```sh
+SOCRATES_TEST_UNENFORCING_DIRECTORY=<a directory that ignores permission bits> go test ./internal/e2e/ -run TestASealThatDoesNotHoldIsARefusal
+```
+
+A FAT or NTFS volume mounted on a Unix host is one, and so is a Windows drive mounted into WSL2.
+`chmod a-w` there returns no error and `ls -l` shows the bit still set.
+The test refuses to run where the directory named does enforce permissions, rather than passing while asserting nothing.
+
+### Mutating a guard
+
+Copy a file into a scratch directory before you mutate it, and copy it back afterwards.
+`git checkout <file>` restores the last committed content rather than what you had a minute ago, and it has destroyed uncommitted work here once.
+
+A `testscript` script checks an exit code through `sh`, because `exec` fails on any non-zero status: `exec sh -c 'socrates review status; echo exit=$?'` followed by `stdout 'exit=3'`.
+
 ## Conventions
 
 Each of these is checked by a test, so it is cheaper to follow than to argue with:
 
-- **No comments in the source.** Not few, not only where necessary, none. A name that needs a sentence beside it is the wrong name. Reasoning belongs in the commit message, a constraint somebody would re-derive belongs in `docs/gotchas.md`, and a decision belongs in `docs/adr/`.
+- **No comments in the source.** Not few, not only where necessary, none. A name that needs a sentence beside it is the wrong name. Reasoning belongs in the commit message, a constraint somebody would re-derive belongs in a test named for it, and a decision belongs in `docs/adr/`.
 - **No em dash**, anywhere: prose, documents, commit messages, emitted strings.
 - **One sentence per line** in long Markdown.
 - **Every user-facing string lives in its package's `messages.go`**, names what the person can do next, and carries no em dash.

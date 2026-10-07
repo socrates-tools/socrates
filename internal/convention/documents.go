@@ -16,7 +16,6 @@ const (
 	ContributingFile       = "CONTRIBUTING.md"
 	CodeOfConductFile      = "CODE_OF_CONDUCT.md"
 	SupportFile            = "SUPPORT.md"
-	GotchasFile            = "docs/gotchas.md"
 	OwnershipFile          = ".github/CODEOWNERS"
 	PullRequestTemplate    = ".github/PULL_REQUEST_TEMPLATE.md"
 	IssueTemplateDirectory = ".github/ISSUE_TEMPLATE"

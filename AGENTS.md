@@ -26,6 +26,7 @@ design reads and writes none of these: nothing about a design outlives the sessi
 `CONTEXT.md` defines the vocabulary and `docs/adr/` holds the decisions, each with what it rejected and why.
 This file is the map: the layout, the verification sequence, and the invariants the design rests on.
 A change starts as a spec, committed to `docs/changes/<slug>/spec.md` with its tickets as files beside it, and `CONTRIBUTING.md` says how.
+Its folder is removed in the change that lands it, so `docs/changes/` holds only work still under way.
 An issue is only where somebody using socrates reports a bug or asks for something.
 
 ## Scope
@@ -406,10 +407,3 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 - **Test first.** A task is not done until a test named for the scenario failed for the right reason and then passed.
 - **A task about a live run says record it, never return this.**
 - **Mutate a guard you rely on.** A check nobody has broken on purpose is a check nobody knows works.
-
-## Agent skills
-
-### Domain docs
-
-Single-context: one `CONTEXT.md` and `docs/adr/` at the repo root.
-See `docs/agents/domain.md`.
