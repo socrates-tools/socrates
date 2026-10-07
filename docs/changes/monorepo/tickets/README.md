@@ -20,4 +20,4 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 42](../../../adr/0042-each-tool-
 | --- | --- | --- |
 | [1.1: agora writes under its own directory](1.1-agora-writes-under-its-own-directory.md) | None | in progress |
 | [1.2: a glossary and a decision directory per tool](1.2-a-glossary-and-a-decision-directory-per-tool.md) | None | pending |
-| [1.3: the tool list agrees with the tree](1.3-the-tool-list-agrees-with-the-tree.md) | None | in progress |
+| [1.3: the tool list agrees with the tree](1.3-the-tool-list-agrees-with-the-tree.md) | None | done |
