@@ -37,9 +37,11 @@ The page is served on this machine and reaches nowhere beyond it.
 The document is one decision per question in the round:
 
     {"title": "...", "preamble": "...",
-     "decisions": [{"id": "q2", "question": "...", "meaning": "...", "mode": "single-choice",
+     "decisions": [{"id": "q2", "name": "Question 2", "question": "...", "meaning": "...", "mode": "single-choice",
                     "options": [{"label": "...", "meaning": "...", "recommended": true},
                                 {"label": "...", "meaning": "..."}]}]}
+
+Number questions from 1, never 0, as they are first asked: identify each `q<N>` and name it `Question <N>`.
 
 A design answer runs nothing, so no option of it carries a command, and every option of one decision carries the same kind of thing.
 State no severity anywhere, on a decision or on a source entry: a design question is not more or less severe than another one, it is earlier or later in the argument, and the surface renders every card in the order you listed it.
@@ -78,7 +80,7 @@ Nothing carries across a revision, so what was settled is not carried over from 
 
 A settled answer goes in the document's `settled` list rather than among its decisions, and states the question, the labels the person chose and their own words:
 
-    "settled": [{"id": "q2", "question": "should a design round carry a cap",
+    "settled": [{"id": "q2", "name": "Question 2", "question": "should a design round carry a cap",
                  "chosen": ["no cap"], "words": "nothing here spawns a process for a cap to protect"}]
 
 The page reads what was settled ahead of every open question, as a block that offers nothing to answer.
@@ -90,7 +92,7 @@ A person reopening one names it in the message the page carries for the whole ro
 Carry one sentence per settled question into the preamble too, so the argument reads without scrolling past the block below it.
 The preamble is one paragraph on the page, so write it as sentences rather than as lines:
 
-    "preamble": "q1: the surface, matching what agora's own source already calls it. q2: no round cap, because nothing here spawns a process for one to protect."
+    "preamble": "Question 1: the surface, as agora's own source calls it. Question 2: no round cap, because nothing here spawns a process for one to protect."
 
 Identifiers are stable for the life of the design: q2 is q2 from the round it is first asked to the round the spec is written.
 A person reopening something they settled two rounds ago names it, and the spec and the ADR it becomes are already written against that name.

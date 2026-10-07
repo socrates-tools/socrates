@@ -121,3 +121,18 @@ func TestTheRoundsSectionComesBeforeThePageSection(t *testing.T) {
 		t.Error("the page section is stated before the rounds section explains what a round is")
 	}
 }
+
+func TestTheSkillNumbersQuestionsFromOneAndNamesEachQuestionN(t *testing.T) {
+	page := sectionOf(t, skill.Document(), pageHeading)
+
+	for _, said := range []string{
+		`{"id": "q2", "name": "Question 2",`,
+		"Number questions from 1, never 0, as they are first asked",
+		"identify each |q<N>| and name it |Question <N>|",
+	} {
+		said = strings.ReplaceAll(said, "|", "`")
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so a session titles its cards q0, q1 rather than Question 1, Question 2:\n%s", said, page)
+		}
+	}
+}

@@ -16,6 +16,7 @@ const designRoundDocument = `{
   "decisions": [
     {
       "id": "q1",
+      "name": "Question 1",
       "question": "what should the loopback server be called in the glossary",
       "meaning": "the term settles what CONTEXT.md writes down",
       "mode": "single-choice",
@@ -26,6 +27,7 @@ const designRoundDocument = `{
     },
     {
       "id": "q2",
+      "name": "Question 2",
       "question": "should a design round carry a cap the way a review round does",
       "meaning": "review caps a round because it spawns a reviewer against a frozen snapshot, and a design spawns nothing",
       "mode": "single-choice",
@@ -41,14 +43,15 @@ const inTheirOwnWordsAboutTheCap = "no cap, because nothing here spawns a proces
 
 const designRoundTwoDocument = `{
   "title": "one question left before the spec is written",
-  "preamble": "q1: the surface, matching what agora's own source already calls it. q2: no round cap, because nothing here spawns a process for one to protect.",
+  "preamble": "Question 1: the surface, matching what agora's own source already calls it. Question 2: no round cap, because nothing here spawns a process for one to protect.",
   "settled": [
-    {"id": "q1", "question": "what should the loopback server be called in the glossary", "chosen": ["the surface"]},
-    {"id": "q2", "question": "should a design round carry a cap the way a review round does", "words": "no cap, because nothing here spawns a process for a cap to protect"}
+    {"id": "q1", "name": "Question 1", "question": "what should the loopback server be called in the glossary", "chosen": ["the surface"]},
+    {"id": "q2", "name": "Question 2", "question": "should a design round carry a cap the way a review round does", "words": "no cap, because nothing here spawns a process for a cap to protect"}
   ],
   "decisions": [
     {
       "id": "q3",
+      "name": "Question 3",
       "question": "should CONTEXT.md gain an entry for the surface today or wait until the spec is written",
       "meaning": "the glossary is maintained as terms settle",
       "mode": "single-choice",
@@ -69,6 +72,12 @@ func TestADesignRoundArrivesChosenAndWhatThePersonAnsweredReachesTheSession(t *t
 	page.evaluate(`Array.from(document.querySelectorAll('.decision')).map((held) => held.dataset.decision)`, &order)
 	if diff := cmp.Diff([]string{"q1", "q2"}, order); diff != "" {
 		t.Errorf("a document stating no severity anywhere does not render in the order it listed the decisions (-want +got):\n%s", diff)
+	}
+
+	var titles []string
+	page.evaluate(`Array.from(document.querySelectorAll('.decision .name')).map((held) => held.textContent.trim())`, &titles)
+	if diff := cmp.Diff([]string{"Question 1", "Question 2"}, titles); diff != "" {
+		t.Errorf("a design round's cards are not titled by the question number counted from one (-want +got):\n%s", diff)
 	}
 
 	var noSeverityShown bool
@@ -167,6 +176,11 @@ func TestASecondDesignRoundOpensWithWhatWasSettledAheadOfWhatIsStillOpen(t *test
 	if diff := cmp.Diff([]string{"q1", "q2"}, read.Settled); diff != "" {
 		t.Errorf("what was settled does not render as the document stated it (-want +got):\n%s", diff)
 	}
+	var settledNames string
+	page.evaluate(`document.querySelector('.settled-link-names').textContent`, &settledNames)
+	if settledNames != "Question 1, Question 2" {
+		t.Errorf("what was settled is summarised as %q, want Question 1, Question 2", settledNames)
+	}
 	if diff := cmp.Diff([]string{"q3"}, read.Decisions); diff != "" {
 		t.Errorf("round two renders something other than the one open question as a card (-want +got):\n%s", diff)
 	}
@@ -188,7 +202,7 @@ func TestASecondDesignRoundOpensWithWhatWasSettledAheadOfWhatIsStillOpen(t *test
 
 	var preamble string
 	page.evaluate(`document.querySelector('.preamble').textContent`, &preamble)
-	for _, said := range []string{"q1:", "the surface", "q2:", "no round cap"} {
+	for _, said := range []string{"Question 1:", "the surface", "Question 2:", "no round cap"} {
 		if !strings.Contains(preamble, said) {
 			t.Errorf("the preamble does not carry %q, and the argument should read without scrolling past the settled block: %q", said, preamble)
 		}
