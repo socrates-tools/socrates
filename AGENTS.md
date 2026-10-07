@@ -298,6 +298,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`.
 **Verification**
 
 - One entry point runs every gate, a run invokes that entry point rather than listing the gates, and formatting fails before the suite does.
+- The tool list the cross-tool rule reads agrees with the tree: a namespace the dispatcher mounts and a top-level directory holding a `command` package are each on it, and a tool on it is mounted and holds a `command` package, so none is invisible to the rule that no tool imports another.
 - The matrix is read from the platform statement, so the suite runs on every platform the set names and on no runner it does not.
 - Every action a workflow uses is named by a commit with its version beside it, and a check fails while any is named by a tag.
 - Every workflow states a read-only token at the top and escalates only in the job that needs more, and a superseded run is cancelled rather than left to report.
