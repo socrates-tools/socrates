@@ -69,9 +69,7 @@ func (s *Session) startInATerminal(directory string, environment []string, argum
 
 	command := exec.Command(s.Binary, arguments...)
 	command.Dir = directory
-	if len(environment) > 0 {
-		command.Env = append(os.Environ(), environment...)
-	}
+	command.Env = s.Environment(environment...)
 
 	device, err := pty.StartWithSize(command, &pty.Winsize{Rows: screenRows, Cols: screenColumns})
 	if err != nil {

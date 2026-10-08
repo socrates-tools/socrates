@@ -10,36 +10,80 @@ import (
 )
 
 type Repository struct {
-	t    *testing.T
-	Root string
+	t           *testing.T
+	Root        string
+	Environment Environment
+}
+
+type Environment struct {
+	Home      string
+	Variables []string
+}
+
+func NewEnvironment(t *testing.T) Environment {
+	t.Helper()
+
+	home := t.TempDir()
+	return Environment{
+		Home: home,
+		Variables: []string{
+			"TMPDIR=" + t.TempDir(),
+			"HOME=" + home,
+			"GIT_CONFIG_GLOBAL=" + os.DevNull,
+			"GIT_CONFIG_SYSTEM=" + os.DevNull,
+			"GIT_CONFIG_NOSYSTEM=1",
+			"GIT_TERMINAL_PROMPT=0",
+			"GIT_CONFIG_COUNT=2",
+			"GIT_CONFIG_KEY_0=maintenance.auto",
+			"GIT_CONFIG_VALUE_0=false",
+			"GIT_CONFIG_KEY_1=gc.auto",
+			"GIT_CONFIG_VALUE_1=0",
+			"GIT_AUTHOR_NAME=A Person",
+			"GIT_AUTHOR_EMAIL=person@example.com",
+			"GIT_COMMITTER_NAME=A Person",
+			"GIT_COMMITTER_EMAIL=person@example.com",
+		},
+	}
+}
+
+func (e Environment) Of(inherited []string, extra ...string) []string {
+	combined := append([]string(nil), inherited...)
+	combined = append(combined, e.Variables...)
+	return append(combined, extra...)
+}
+
+func (e Environment) ApplyToThisProcess(t *testing.T) {
+	t.Helper()
+
+	for _, variable := range e.Variables {
+		name, value, _ := strings.Cut(variable, "=")
+		t.Setenv(name, value)
+	}
 }
 
 func Hermetic(t *testing.T) {
 	t.Helper()
-
-	home := t.TempDir()
-	t.Setenv("TMPDIR", t.TempDir())
-	t.Setenv("HOME", home)
-	t.Setenv("GIT_CONFIG_GLOBAL", os.DevNull)
-	t.Setenv("GIT_CONFIG_SYSTEM", os.DevNull)
-	t.Setenv("GIT_CONFIG_NOSYSTEM", "1")
-	t.Setenv("GIT_TERMINAL_PROMPT", "0")
-	t.Setenv("GIT_CONFIG_COUNT", "2")
-	t.Setenv("GIT_CONFIG_KEY_0", "maintenance.auto")
-	t.Setenv("GIT_CONFIG_VALUE_0", "false")
-	t.Setenv("GIT_CONFIG_KEY_1", "gc.auto")
-	t.Setenv("GIT_CONFIG_VALUE_1", "0")
-	t.Setenv("GIT_AUTHOR_NAME", "A Person")
-	t.Setenv("GIT_AUTHOR_EMAIL", "person@example.com")
-	t.Setenv("GIT_COMMITTER_NAME", "A Person")
-	t.Setenv("GIT_COMMITTER_EMAIL", "person@example.com")
+	NewEnvironment(t).ApplyToThisProcess(t)
 }
 
 func New(t *testing.T) *Repository {
 	t.Helper()
-	Hermetic(t)
+
+	environment := NewEnvironment(t)
+	environment.ApplyToThisProcess(t)
+	return initialised(t, environment)
+}
+
+func Isolated(t *testing.T) *Repository {
+	t.Helper()
+	return initialised(t, NewEnvironment(t))
+}
+
+func initialised(t *testing.T, environment Environment) *Repository {
+	t.Helper()
 
 	repository := At(t, t.TempDir())
+	repository.Environment = environment
 	repository.Git("-c", "init.defaultBranch=main", "init", "--quiet")
 	repository.Write("README.md", "socrates\n")
 	repository.Commit("the first commit")
@@ -48,18 +92,22 @@ func New(t *testing.T) *Repository {
 
 func Bare(t *testing.T) *Repository {
 	t.Helper()
-	Hermetic(t)
 
+	environment := NewEnvironment(t)
+	environment.ApplyToThisProcess(t)
 	repository := At(t, t.TempDir())
+	repository.Environment = environment
 	repository.Git("-c", "init.defaultBranch=main", "init", "--quiet", "--bare")
 	return repository
 }
 
 func Empty(t *testing.T) *Repository {
 	t.Helper()
-	Hermetic(t)
 
+	environment := NewEnvironment(t)
+	environment.ApplyToThisProcess(t)
 	repository := At(t, t.TempDir())
+	repository.Environment = environment
 	repository.Git("-c", "init.defaultBranch=main", "init", "--quiet")
 	return repository
 }
@@ -78,6 +126,9 @@ func (r *Repository) Git(args ...string) string {
 	r.t.Helper()
 
 	command := exec.Command("git", append([]string{"-C", r.Root}, args...)...)
+	if r.Environment.Variables != nil {
+		command.Env = r.Environment.Of(os.Environ())
+	}
 	var stdout, stderr bytes.Buffer
 	command.Stdout = &stdout
 	command.Stderr = &stderr

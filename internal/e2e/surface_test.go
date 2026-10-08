@@ -51,30 +51,29 @@ const nothingToDecideDocument = `{
 const nothingAtAllDocument = `{"title": "nothing to settle"}`
 
 type surfaced struct {
-	t      *testing.T
-	binary string
-	home   string
-	where  string
-	bind   string
-	opened string
-	also   []string
+	t           *testing.T
+	environment gitrepo.Environment
+	binary      string
+	home        string
+	where       string
+	bind        string
+	opened      string
+	also        []string
 }
 
 func standing(t *testing.T) *surfaced {
 	t.Helper()
 
-	gitrepo.Hermetic(t)
 	return servingSurface(t)
 }
 
 func servingSurface(t *testing.T) *surfaced {
 	t.Helper()
 
-	binary := filepath.Join(t.TempDir(), "socrates")
-	source.Build(t, "./cmd/socrates", binary)
+	binary := source.Shared(t, "./cmd/socrates")
 
 	home := t.TempDir()
-	held := &surfaced{t: t, binary: binary, home: home, where: t.TempDir(), bind: aPortTheOperatingSystemChooses}
+	held := &surfaced{t: t, environment: gitrepo.NewEnvironment(t), binary: binary, home: home, where: t.TempDir(), bind: aPortTheOperatingSystemChooses}
 	t.Cleanup(func() { held.run("stop") })
 	return held
 }
@@ -99,7 +98,7 @@ func (s *surfaced) reading(input string, arguments ...string) (string, string, i
 
 	command := exec.Command(s.binary, append([]string{"agora"}, arguments...)...)
 	command.Dir = s.where
-	command.Env = append(os.Environ(), state.HomeVariable+"="+s.home)
+	command.Env = s.environment.Of(os.Environ(), state.HomeVariable+"="+s.home)
 	command.Env = append(command.Env, source.Toolchain()...)
 	command.Env = append(command.Env, s.also...)
 	command.Stdin = strings.NewReader(input)
@@ -506,10 +505,7 @@ const surfaceCeiling = 32 << 20
 
 func TestTheBinaryWeighsWhatSomebodyHasSeen(t *testing.T) {
 	// scenario: A diff renders from a patch
-	gitrepo.Hermetic(t)
-
-	binary := filepath.Join(t.TempDir(), "socrates")
-	source.Build(t, "./cmd/socrates", binary)
+	binary := source.Shared(t, "./cmd/socrates")
 
 	held, err := os.Stat(binary)
 	if err != nil {

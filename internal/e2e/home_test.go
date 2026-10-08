@@ -40,7 +40,7 @@ func TestOneVariableMovesEverything(t *testing.T) {
 		t.Errorf("the run is not under the stated home: %v", err)
 	}
 	for _, elsewhere := range []string{".socrates", filepath.Join(".config", "socrates"), filepath.Join(".local", "state", "socrates")} {
-		if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), elsewhere)); err == nil {
+		if _, err := os.Stat(filepath.Join(session.UserHome, elsewhere)); err == nil {
 			t.Errorf("socrates wrote %s under the person's own home, and one variable states where it writes", elsewhere)
 		}
 	}
@@ -138,7 +138,7 @@ func TestOneVariableMovesEverythingBothToolsHave(t *testing.T) {
 		t.Errorf("agora's directory holds %v, and agora's configuration file and what the surface writes live under it", agora)
 	}
 	for _, elsewhere := range []string{".socrates", ".agora", filepath.Join(".config", "agora"), filepath.Join(".local", "state", "agora")} {
-		if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), elsewhere)); err == nil {
+		if _, err := os.Stat(filepath.Join(session.UserHome, elsewhere)); err == nil {
 			t.Errorf("%s was written under the person's own home, and one variable states where both tools write", elsewhere)
 		}
 	}

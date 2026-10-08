@@ -358,7 +358,7 @@ func TestImplementSkillWritesTheDefinitionUnderTheDefaultDirectoryAtTheDefaults(
 		t.Fatalf("socrates implement skill exited %d: %s", code, failures)
 	}
 
-	path := filepath.Join(os.Getenv("HOME"), ".claude", "agents", skill.AgentFileName())
+	path := filepath.Join(session.UserHome, ".claude", "agents", skill.AgentFileName())
 	if !strings.Contains(printed, path) {
 		t.Errorf("socrates implement skill does not say where it wrote, and %s is where it did:\n%s", path, printed)
 	}

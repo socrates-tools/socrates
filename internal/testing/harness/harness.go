@@ -41,6 +41,7 @@ type Session struct {
 	Simulator  *simulator.Simulator
 	Root       string
 	Home       string
+	UserHome   string
 	Store      runstore.Store
 }
 
@@ -52,11 +53,10 @@ func Start(t *testing.T) *Session {
 func StartFor(t *testing.T, vendor agent.Vendor) *Session {
 	t.Helper()
 
-	repository := gitrepo.New(t)
-	simulated := simulator.InstallFor(t, vendor)
+	repository := gitrepo.Isolated(t)
+	simulated := simulator.Isolated(t, vendor)
 
 	root := t.TempDir()
-	t.Setenv(state.HomeVariable, root)
 	home := state.Review.HomeUnder(root)
 	if err := os.MkdirAll(home, 0o755); err != nil {
 		t.Fatalf("making the home the tool writes under: %v", err)
@@ -70,6 +70,7 @@ func StartFor(t *testing.T, vendor agent.Vendor) *Session {
 		Simulator:  simulated,
 		Root:       root,
 		Home:       home,
+		UserHome:   repository.Environment.Home,
 		Store:      runstore.New(filepath.Join(home, "runs")),
 	}
 	if vendor.Name != agent.DefaultVendor {
@@ -110,9 +111,14 @@ func (s *Session) WhereNothingReaps() *Session {
 func buildSocrates(t *testing.T, tags ...string) string {
 	t.Helper()
 
-	binary := filepath.Join(t.TempDir(), "socrates")
-	source.BuildWithTags(t, "./cmd/socrates", binary, tags...)
-	return binary
+	return source.Shared(t, "./cmd/socrates", tags...)
+}
+
+func (s *Session) Environment(extra ...string) []string {
+	combined := s.Repository.Environment.Of(os.Environ())
+	combined = append(combined, s.Simulator.Environment()...)
+	combined = append(combined, state.HomeVariable+"="+s.Root)
+	return append(combined, extra...)
 }
 
 func (s *Session) Socrates(arguments ...string) (string, string, int) {
@@ -156,9 +162,7 @@ func (s *Session) invoke(directory string, environment []string, input io.Reader
 	command := exec.Command(s.Binary, arguments...)
 	command.Dir = directory
 	command.Stdin = input
-	if len(environment) > 0 {
-		command.Env = append(os.Environ(), environment...)
-	}
+	command.Env = s.Environment(environment...)
 
 	var out, failures bytes.Buffer
 	command.Stdout = &out
@@ -191,6 +195,7 @@ func (s *Session) Starting(arguments ...string) *Running {
 	arguments = append([]string{"review"}, arguments...)
 	command := exec.Command(s.Binary, arguments...)
 	command.Dir = s.Repository.Root
+	command.Env = s.Environment()
 
 	running := &Running{t: s.t, arguments: arguments, command: command, out: &bytes.Buffer{}, failures: &bytes.Buffer{}, finished: make(chan error, 1)}
 	command.Stdout = running.out

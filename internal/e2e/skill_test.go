@@ -35,10 +35,10 @@ func committedSkill(t *testing.T, session *harness.Session) string {
 	return session.File(filepath.Join(source.Root(t), ".claude", "skills", skill.Name, skillkit.FileName))
 }
 
-func userLevelPath(t *testing.T) string {
+func userLevelPath(t *testing.T, session *harness.Session) string {
 	t.Helper()
 
-	home := os.Getenv("HOME")
+	home := session.UserHome
 	if home == "" {
 		t.Fatal("the harness left no home directory, so this test would write into the person's own")
 	}
@@ -47,7 +47,7 @@ func userLevelPath(t *testing.T) string {
 
 func TestInstallingNamesThePath(t *testing.T) {
 	session := harness.Start(t)
-	path := userLevelPath(t)
+	path := userLevelPath(t, session)
 
 	printed, failures, code := session.Socrates("skill")
 	if code != 0 {
@@ -63,7 +63,7 @@ func TestInstallingNamesThePath(t *testing.T) {
 
 func TestInstallingTwice(t *testing.T) {
 	session := harness.Start(t)
-	path := userLevelPath(t)
+	path := userLevelPath(t, session)
 
 	first, failures, code := session.Socrates("skill")
 	if code != 0 {
@@ -98,8 +98,8 @@ func TestInstallingElsewhere(t *testing.T) {
 	if written := session.File(elsewhere); written != committedSkill(t, session) {
 		t.Errorf("what was written to the named directory is not the skill:\n%s", written)
 	}
-	if _, err := os.Stat(userLevelPath(t)); !os.IsNotExist(err) {
-		t.Errorf("socrates review skill --to also wrote %s", userLevelPath(t))
+	if _, err := os.Stat(userLevelPath(t, session)); !os.IsNotExist(err) {
+		t.Errorf("socrates review skill --to also wrote %s", userLevelPath(t, session))
 	}
 }
 
@@ -155,10 +155,10 @@ func committedDesignSkill(t *testing.T, session *harness.Session) string {
 	return session.File(filepath.Join(source.Root(t), ".claude", "skills", designskill.Name, skillkit.FileName))
 }
 
-func designUserLevelPath(t *testing.T) string {
+func designUserLevelPath(t *testing.T, session *harness.Session) string {
 	t.Helper()
 
-	home := os.Getenv("HOME")
+	home := session.UserHome
 	if home == "" {
 		t.Fatal("the harness left no home directory, so this test would write into the person's own")
 	}
@@ -167,7 +167,7 @@ func designUserLevelPath(t *testing.T) string {
 
 func TestInstallingDesignNamesThePath(t *testing.T) {
 	session := harness.Start(t)
-	path := designUserLevelPath(t)
+	path := designUserLevelPath(t, session)
 
 	printed, failures, code := session.Top("design", "skill")
 	if code != 0 {
@@ -183,7 +183,7 @@ func TestInstallingDesignNamesThePath(t *testing.T) {
 
 func TestInstallingDesignTwice(t *testing.T) {
 	session := harness.Start(t)
-	path := designUserLevelPath(t)
+	path := designUserLevelPath(t, session)
 
 	first, failures, code := session.Top("design", "skill")
 	if code != 0 {
@@ -451,7 +451,7 @@ func TestBothSkillsAreInstalled(t *testing.T) {
 		t.Fatalf("socrates review skill exited %d: %s\n%s", code, failures, printed)
 	}
 
-	home := os.Getenv("HOME")
+	home := session.UserHome
 	if home == "" {
 		t.Fatal("the harness left no home directory, so this test would write into the person's own")
 	}
@@ -479,7 +479,7 @@ func TestBothDesignSkillsAreInstalled(t *testing.T) {
 		t.Fatalf("socrates design skill exited %d: %s\n%s", code, failures, printed)
 	}
 
-	home := os.Getenv("HOME")
+	home := session.UserHome
 	if home == "" {
 		t.Fatal("the harness left no home directory, so this test would write into the person's own")
 	}
@@ -510,7 +510,7 @@ func TestTheOverseerSkillIsInstalledAndTheCommittedCopyIsWhatItsSourceGenerates(
 		t.Fatalf("socrates implement skill exited %d: %s\n%s", code, failures, printed)
 	}
 
-	home := os.Getenv("HOME")
+	home := session.UserHome
 	if home == "" {
 		t.Fatal("the harness left no home directory, so this test would write into the person's own")
 	}

@@ -2,9 +2,12 @@ package source
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -46,19 +49,99 @@ func Build(t *testing.T, target, output string) {
 func BuildWithTags(t *testing.T, target, output string, tags ...string) {
 	t.Helper()
 
+	if err := build(Root(t), target, output, tags); err != nil {
+		t.Fatalf("building %s: %v", target, err)
+	}
+}
+
+func build(root, target, output string, tags []string) error {
 	arguments := []string{"build"}
 	if len(tags) > 0 {
 		arguments = append(arguments, "-tags", strings.Join(tags, ","))
 	}
 	arguments = append(arguments, "-o", output, target)
 
-	build := exec.Command("go", arguments...)
-	build.Dir = Root(t)
-	build.Env = append(os.Environ(), toolchain...)
+	command := exec.Command("go", arguments...)
+	command.Dir = root
+	command.Env = append(os.Environ(), toolchain...)
 
 	var failures bytes.Buffer
-	build.Stderr = &failures
-	if err := build.Run(); err != nil {
-		t.Fatalf("building %s: %v: %s", target, err, failures.String())
+	command.Stderr = &failures
+	if err := command.Run(); err != nil {
+		return fmt.Errorf("%w: %s", err, failures.String())
 	}
+	return nil
+}
+
+type builtKey struct {
+	target string
+	tags   string
+}
+
+type builtBinary struct {
+	once sync.Once
+	path string
+	err  error
+}
+
+var (
+	sharedMutex     sync.Mutex
+	sharedDirectory string
+	sharedBinaries  = map[builtKey]*builtBinary{}
+)
+
+func Shared(t *testing.T, target string, tags ...string) string {
+	t.Helper()
+
+	key := builtKey{target: target, tags: strings.Join(tags, ",")}
+
+	sharedMutex.Lock()
+	built, found := sharedBinaries[key]
+	if !found {
+		built = &builtBinary{}
+		sharedBinaries[key] = built
+	}
+	sharedMutex.Unlock()
+
+	root := Root(t)
+	built.once.Do(func() {
+		directory, err := sharedBuildDirectory()
+		if err != nil {
+			built.err = err
+			return
+		}
+		built.path = filepath.Join(directory, strings.NewReplacer("/", "_", ".", "_").Replace(target)+"-"+strings.ReplaceAll(key.tags, ",", "_"))
+		built.err = build(root, target, built.path, tags)
+	})
+
+	if built.err != nil {
+		t.Fatalf("building %s: %v", target, built.err)
+	}
+	return built.path
+}
+
+func sharedBuildDirectory() (string, error) {
+	sharedMutex.Lock()
+	defer sharedMutex.Unlock()
+
+	if sharedDirectory != "" {
+		return sharedDirectory, nil
+	}
+	directory, err := os.MkdirTemp("", "socrates-shared-builds-")
+	if err != nil {
+		return "", err
+	}
+	sharedDirectory = directory
+	return directory, nil
+}
+
+func RunSharingBuilds(m *testing.M) int {
+	code := m.Run()
+
+	sharedMutex.Lock()
+	defer sharedMutex.Unlock()
+	if sharedDirectory != "" {
+		_ = os.RemoveAll(sharedDirectory)
+	}
+	return code
 }
