@@ -23,6 +23,7 @@ var mitClauses = []string{
 var copyrightLine = regexp.MustCompile(`(?m)^Copyright \(c\) (\d{4}) (\S.*\S)$`)
 
 func TestTheRootStatesTheTerms(t *testing.T) {
+	t.Parallel()
 	stated := rootDocument(t, convention.LicenceFile)
 
 	for _, clause := range mitClauses {

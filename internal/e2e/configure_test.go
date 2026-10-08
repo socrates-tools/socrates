@@ -17,6 +17,7 @@ import (
 var wrappedOnto = regexp.MustCompile(`\n *`)
 
 func TestTheMenuListsEverySettingWithTheValueInForce(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	menu := session.SocratesInATerminal("configure")
@@ -39,6 +40,7 @@ func TestTheMenuListsEverySettingWithTheValueInForce(t *testing.T) {
 }
 
 func TestTheCursorMovesUpAndDownTheSettings(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	menu := session.SocratesInATerminal("configure")
 	menu.Await(everySettingReported[len(everySettingReported)-1])
@@ -63,6 +65,7 @@ func TestTheCursorMovesUpAndDownTheSettings(t *testing.T) {
 }
 
 func TestOpeningAndQuittingTheMenuWritesNoFile(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 
@@ -79,6 +82,7 @@ func TestOpeningAndQuittingTheMenuWritesNoFile(t *testing.T) {
 }
 
 func TestTheMenuAndTheReportAgreeAboutWhatIsInForce(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	stateConfiguration(t, session, "reviewer_cli: codex\ndiff_ceiling: 4096\n")
 
@@ -105,6 +109,7 @@ func TestTheMenuAndTheReportAgreeAboutWhatIsInForce(t *testing.T) {
 }
 
 func TestChoosingAReviewerCLIWritesAFileHoldingOnlyThatSetting(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
@@ -128,6 +133,7 @@ func TestChoosingAReviewerCLIWritesAFileHoldingOnlyThatSetting(t *testing.T) {
 }
 
 func TestTheListOffersOnlyTheReviewerCLIsSocratesReviewDrives(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	menu := session.SocratesInATerminal("configure")
@@ -157,6 +163,7 @@ func TestTheListOffersOnlyTheReviewerCLIsSocratesReviewDrives(t *testing.T) {
 }
 
 func TestTheConfirmationNamesTheSettingTheValueAndThePath(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 
@@ -186,6 +193,7 @@ func TestTheConfirmationNamesTheSettingTheValueAndThePath(t *testing.T) {
 }
 
 func TestACommentAboveAKeySurvivesAnUnrelatedSetting(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	held := "# the ceiling I chose, and why\ndiff_ceiling: 4096\n\n# I keep runs for three days\nrun_retention: 72h\n"
@@ -208,6 +216,7 @@ func TestACommentAboveAKeySurvivesAnUnrelatedSetting(t *testing.T) {
 }
 
 func TestTwoSettingsInOneSittingLeaveBothAndQuittingAfterOneLeavesThatOne(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
@@ -242,6 +251,7 @@ func TestTwoSettingsInOneSittingLeaveBothAndQuittingAfterOneLeavesThatOne(t *tes
 }
 
 func TestAValueIsWrittenEvenWhereTheNamedReviewerCLIIsNotInstalled(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 
@@ -276,6 +286,7 @@ func TestAValueIsWrittenEvenWhereTheNamedReviewerCLIIsNotInstalled(t *testing.T)
 }
 
 func TestASettingWithNoFixedValuesOpensAFieldHoldingTheValueInForce(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	menu := session.SocratesInATerminal("configure")
@@ -298,6 +309,7 @@ func TestASettingWithNoFixedValuesOpensAFieldHoldingTheValueInForce(t *testing.T
 }
 
 func TestEverySettingWithNoFixedValuesOpensAFieldHoldingTheValueInForce(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates("config")
@@ -338,6 +350,7 @@ func TestEverySettingWithNoFixedValuesOpensAFieldHoldingTheValueInForce(t *testi
 }
 
 func TestAnEmptyFieldIsRefusedRatherThanTakenForTheDefault(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	held := "run_retention: 72h\n"
@@ -368,6 +381,7 @@ func TestAnEmptyFieldIsRefusedRatherThanTakenForTheDefault(t *testing.T) {
 }
 
 func TestQuittingTheMenuIsAKeyChosenForIt(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	menu := session.SocratesInATerminal("configure")
@@ -386,6 +400,7 @@ func TestQuittingTheMenuIsAKeyChosenForIt(t *testing.T) {
 }
 
 func TestASettingWithNoValueInForceOpensAnEmptyField(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	stateConfiguration(t, session, "reviewer_cli: codex\n")
 
@@ -406,6 +421,7 @@ func TestASettingWithNoValueInForceOpensAnEmptyField(t *testing.T) {
 }
 
 func TestADurationASizeAndANameAreEachTypedAndWritten(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 
@@ -450,6 +466,7 @@ func TestADurationASizeAndANameAreEachTypedAndWritten(t *testing.T) {
 }
 
 func TestNoListOfModelNamesIsOfferedAnywhere(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	shipped, _ := agent.Named(agent.DefaultVendor)
 
@@ -474,6 +491,7 @@ func TestNoListOfModelNamesIsOfferedAnywhere(t *testing.T) {
 }
 
 func TestAValueTheLoaderRefusesIsRefusedBeforeTheFileIsTouched(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	held := "diff_ceiling: 4096\n"
@@ -508,6 +526,7 @@ func TestAValueTheLoaderRefusesIsRefusedBeforeTheFileIsTouched(t *testing.T) {
 }
 
 func TestEscapingOutOfAFieldWritesNothing(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	held := "diff_ceiling: 4096\n"
@@ -531,6 +550,7 @@ func TestEscapingOutOfAFieldWritesNothing(t *testing.T) {
 }
 
 func TestEverySettingOffersTheDefaultAndNamesIt(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	menu := session.SocratesInATerminal("configure")
@@ -557,6 +577,7 @@ func TestEverySettingOffersTheDefaultAndNamesIt(t *testing.T) {
 }
 
 func TestUsingTheDefaultLeavesAFileThatNoLongerNamesTheSetting(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	stateConfiguration(t, session, "# the ceiling I chose\ndiff_ceiling: 4096\nrun_retention: 72h\n")
@@ -588,6 +609,7 @@ func TestUsingTheDefaultLeavesAFileThatNoLongerNamesTheSetting(t *testing.T) {
 }
 
 func TestUsingTheDefaultOnTheOnlySettingLeavesAFileNamingNothing(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	stateConfiguration(t, session, "roles:\n  reviewer:\n    model: sonnet\n")
@@ -614,6 +636,7 @@ func TestUsingTheDefaultOnTheOnlySettingLeavesAFileNamingNothing(t *testing.T) {
 }
 
 func TestUsingTheDefaultOnASettingAlreadyDefaultSaysSoRatherThanFailing(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	held := "diff_ceiling: 4096\n"
@@ -640,6 +663,7 @@ func TestUsingTheDefaultOnASettingAlreadyDefaultSaysSoRatherThanFailing(t *testi
 }
 
 func TestAWriteThatCannotHappenIsSaidRatherThanSwallowed(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	if err := os.Chmod(session.Home, 0o555); err != nil {
@@ -667,6 +691,7 @@ func TestAWriteThatCannotHappenIsSaidRatherThanSwallowed(t *testing.T) {
 }
 
 func TestWithNoTerminalConfigureRefusesAndWritesNothing(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
@@ -691,6 +716,7 @@ func TestWithNoTerminalConfigureRefusesAndWritesNothing(t *testing.T) {
 }
 
 func TestInputRedirectedFromAFileStillRefuses(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	_, failures, code := session.SocratesReading("q\n", "configure")
@@ -703,6 +729,7 @@ func TestInputRedirectedFromAFileStillRefuses(t *testing.T) {
 }
 
 func TestAFileThatWillNotParseOpensAndNamesTheLineThatIsWrong(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	held := "diff_ceiling: 4096\nreviewer_temperature: 0.5\nrun_retention: 72h\n"
@@ -726,6 +753,7 @@ func TestAFileThatWillNotParseOpensAndNamesTheLineThatIsWrong(t *testing.T) {
 }
 
 func TestResettingTheUnreadableSettingLeavesAFileTheLoaderAccepts(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	stateConfiguration(t, session, "# the ceiling I chose\ndiff_ceiling: 4096\n\nreviewer_temperature: 0.5\nrun_retention: 72h\n")
@@ -752,6 +780,7 @@ func TestResettingTheUnreadableSettingLeavesAFileTheLoaderAccepts(t *testing.T) 
 }
 
 func TestASurfaceBlockLeftInReviewsFileOpensNamingAgorasFile(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 	stateConfiguration(t, session, "# the ceiling I chose\ndiff_ceiling: 4096\nsurface:\n  bind: 127.0.0.1:18019\n  reached_at: http://localhost:18019/\n")
@@ -798,6 +827,7 @@ func TestASurfaceBlockLeftInReviewsFileOpensNamingAgorasFile(t *testing.T) {
 }
 
 func TestTheExceptionIsOneCommandWide(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	stateConfiguration(t, session, "reviewer_temperature: 0.5\n")
 

@@ -32,6 +32,7 @@ func (j *journey) servedNothing() {
 
 func TestTheCheckForAPageThatWasNotServedReadsWhereAPageLands(t *testing.T) {
 	// scenario: A run that ended without a result is handed over as nothing
+	t.Parallel()
 	driven := driving(t, dialogueScenario(patchableFindings, nothingFoundAgain), answeredWrongly)
 	name := driven.begin("count the characters of a document")
 
@@ -52,6 +53,7 @@ func TestTheCheckForAPageThatWasNotServedReadsWhereAPageLands(t *testing.T) {
 }
 
 func TestARoundThatCompletedAReviewIsHandedOverAsAPage(t *testing.T) {
+	t.Parallel()
 	for _, driven := range []struct {
 		named     string
 		scenario  string
@@ -139,6 +141,7 @@ func openingEither(t *testing.T, address string, answerable bool) *reader {
 }
 
 func TestARunThatEndedWithoutAResultIsHandedOverAsNothing(t *testing.T) {
+	t.Parallel()
 	t.Run("a run that failed", func(t *testing.T) {
 		driven := driving(t, "default:\n  behaviour: no-result\n", answeredWrongly)
 		name := driven.begin("count the characters of a document")
@@ -184,6 +187,7 @@ func TestARunThatEndedWithoutAResultIsHandedOverAsNothing(t *testing.T) {
 }
 
 func TestARoundThatWaitsOnNobodyIsHandedOverAndNotWaitedOn(t *testing.T) {
+	t.Parallel()
 	for _, driven := range []struct {
 		named    string
 		scenario string
@@ -218,6 +222,7 @@ func TestARoundThatWaitsOnNobodyIsHandedOverAndNotWaitedOn(t *testing.T) {
 }
 
 func TestAPageNobodyWaitsOnDoesNotStopTheLoop(t *testing.T) {
+	t.Parallel()
 	driven := driving(t, dialogueScenario(patchableFindings, nothingFoundAgain), answeredWrongly)
 	name := driven.begin("count the characters of a document")
 

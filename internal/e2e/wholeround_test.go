@@ -39,6 +39,7 @@ func theQuestionAsADecision(read reportedRound) []map[string]any {
 }
 
 func TestTheWholeRoundIsHandedOverAsCardsInSeverityOrder(t *testing.T) {
+	t.Parallel()
 	const inTheirOwnWords = "the deletion was the bug I was chasing all morning"
 
 	driven := driving(t, dialogueScenario(fourFindings, nothingFoundAgain), answeredWrongly)

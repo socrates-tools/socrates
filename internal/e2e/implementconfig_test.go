@@ -44,6 +44,7 @@ func implementSettingsIn(t *testing.T, printed string) map[string][2]string {
 }
 
 func TestImplementConfigWithNoFileReportsTheThreeSettingsAtTheirDefaults(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Top("implement", "config")
@@ -68,6 +69,7 @@ func TestImplementConfigWithNoFileReportsTheThreeSettingsAtTheirDefaults(t *test
 }
 
 func TestImplementConfigReportsWhatAPersonWroteAsSet(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	stateImplementConfiguration(t, session, "concurrency: 2\nroles:\n  implementer:\n    effort: max\n")
 
@@ -87,6 +89,7 @@ func TestImplementConfigReportsWhatAPersonWroteAsSet(t *testing.T) {
 }
 
 func TestImplementConfigRefusesAValueOutOfRangeAndAFieldItDoesNotHaveNamingTheFile(t *testing.T) {
+	t.Parallel()
 	for name, content := range map[string]string{
 		"a concurrency of zero": "concurrency: 0\n",
 		"an unknown effort":     "roles:\n  implementer:\n    effort: extreme\n",
@@ -111,6 +114,7 @@ func TestImplementConfigRefusesAValueOutOfRangeAndAFieldItDoesNotHaveNamingTheFi
 }
 
 func TestImplementReadsNothingFromReviewsFile(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	stateConfiguration(t, session, "diff_ceiling: 4096\n")
 
@@ -126,6 +130,7 @@ func TestImplementReadsNothingFromReviewsFile(t *testing.T) {
 }
 
 func TestTheTopLevelHelpListsImplementAndImplementHelpListsWhatItHolds(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	top, failures, code := session.Top("--help")
@@ -152,6 +157,7 @@ func defaultBranchReported(t *testing.T, printed string) (string, bool) {
 }
 
 func TestImplementDefaultBranchSavesTheBranchForTheRepositoryAndConfigReportsItThere(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Git("branch", "dev")
 
@@ -186,6 +192,7 @@ func lastLine(printed string) string {
 }
 
 func TestImplementDefaultBranchAcceptsARemoteTrackingBranch(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Git("branch", "dev")
 	clone := filepath.Join(t.TempDir(), "clone")
@@ -198,6 +205,7 @@ func TestImplementDefaultBranchAcceptsARemoteTrackingBranch(t *testing.T) {
 }
 
 func TestImplementDefaultBranchRefusesABranchTheRepositoryDoesNotHoldAndLeavesTheFileAlone(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Git("tag", "release")
 	held := "# mine\nconcurrency: 2\n"
@@ -218,6 +226,7 @@ func TestImplementDefaultBranchRefusesABranchTheRepositoryDoesNotHoldAndLeavesTh
 }
 
 func TestAWorktreeOfTheCloneReadsTheCloneEntryAndASecondCloneReadsNothing(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Git("branch", "dev")
 	worktree := filepath.Join(t.TempDir(), "worktree")
@@ -252,6 +261,7 @@ func TestAWorktreeOfTheCloneReadsTheCloneEntryAndASecondCloneReadsNothing(t *tes
 }
 
 func TestSavingFromAWorktreeWritesTheEntryOfTheCloneAndAPathWithADotStaysOneKey(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Git("branch", "dev")
 	worktree := filepath.Join(t.TempDir(), "my.worktree")
@@ -267,6 +277,7 @@ func TestSavingFromAWorktreeWritesTheEntryOfTheCloneAndAPathWithADotStaysOneKey(
 }
 
 func TestADefaultBranchIsKeyedByAPathHoldingADotAndASecondRepositoryAddsASecondEntry(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Git("branch", "dev")
 	dotted := filepath.Join(t.TempDir(), "my.repo")
@@ -293,6 +304,7 @@ func TestADefaultBranchIsKeyedByAPathHoldingADotAndASecondRepositoryAddsASecondE
 }
 
 func TestOutsideARepositoryDefaultBranchIsRefusedNamingWhatItNeedsAndConfigReportsNoDefaultBranch(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	outside := t.TempDir()
 
@@ -317,6 +329,7 @@ func TestOutsideARepositoryDefaultBranchIsRefusedNamingWhatItNeedsAndConfigRepor
 }
 
 func TestDefaultBranchKeepsEveryCommentKeyOrderAndBlankLineOfTheFile(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Git("branch", "dev")
 	held := "# how many at once\nconcurrency: 2\n\n# which model\nroles:\n  implementer:\n    effort: max\n    model: opus\n"
@@ -340,6 +353,7 @@ func TestDefaultBranchKeepsEveryCommentKeyOrderAndBlankLineOfTheFile(t *testing.
 }
 
 func TestInABareRepositoryDefaultBranchIsRefusedNamingTheMainWorktreeItLacks(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	bare := filepath.Join(t.TempDir(), "bare.git")
 	session.Repository.Git("clone", "--quiet", "--bare", session.Repository.Root, bare)
@@ -351,6 +365,7 @@ func TestInABareRepositoryDefaultBranchIsRefusedNamingTheMainWorktreeItLacks(t *
 }
 
 func TestImplementSkillWritesTheDefinitionUnderTheDefaultDirectoryAtTheDefaults(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Top("implement", "skill")
@@ -368,6 +383,7 @@ func TestImplementSkillWritesTheDefinitionUnderTheDefaultDirectoryAtTheDefaults(
 }
 
 func TestImplementSkillWritesTheSettingsInForceUnderAgentsToAndRecordsTheLastPlace(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	stateImplementConfiguration(t, session, "roles:\n  implementer:\n    model: opus\n    effort: max\n")
 	first, second := t.TempDir(), t.TempDir()

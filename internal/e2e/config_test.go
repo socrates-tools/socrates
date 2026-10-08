@@ -27,6 +27,7 @@ var everySettingReported = []string{
 }
 
 func TestWithNoConfigurationFileEverySettingReportsItsDefault(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates("config")
@@ -51,6 +52,7 @@ func TestWithNoConfigurationFileEverySettingReportsItsDefault(t *testing.T) {
 }
 
 func TestOnlyTheSettingsTheFileStatesReportAsSet(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	theFileStates := map[string]string{"diff_ceiling": "4096", "run_retention": "72h"}
 	stateConfiguration(t, session, "diff_ceiling: 4096\nrun_retention: 72h\n")
@@ -80,6 +82,7 @@ func TestOnlyTheSettingsTheFileStatesReportAsSet(t *testing.T) {
 }
 
 func TestTheModelAndEffortReportedAreTheConfiguredReviewerCLIs(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	stateConfiguration(t, session, "reviewer_cli: codex\n")
 
@@ -104,6 +107,7 @@ func TestTheModelAndEffortReportedAreTheConfiguredReviewerCLIs(t *testing.T) {
 }
 
 func TestAReviewerCLISocratesReviewWillNotDriveStillReports(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	unsupported := agent.Unsupported()[0].Name
 	stateConfiguration(t, session, "reviewer_cli: "+unsupported+"\n")
@@ -126,6 +130,7 @@ func TestAReviewerCLISocratesReviewWillNotDriveStillReports(t *testing.T) {
 }
 
 func TestTheFileNamedIsTheOneUnderTheStatedHome(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates("config")
@@ -138,6 +143,7 @@ func TestTheFileNamedIsTheOneUnderTheStatedHome(t *testing.T) {
 }
 
 func TestAConfigurationFileThatWillNotParseIsRefusedByConfigToo(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	stateConfiguration(t, session, "roles: [not a mapping\n")
 
@@ -154,6 +160,7 @@ func TestAConfigurationFileThatWillNotParseIsRefusedByConfigToo(t *testing.T) {
 }
 
 func TestConfigReportsNothingOfAgorasSettings(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates("config")
@@ -168,6 +175,7 @@ func TestConfigReportsNothingOfAgorasSettings(t *testing.T) {
 }
 
 func TestASurfaceBlockLeftInReviewsFileIsRefusedByNamingAgorasFile(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")

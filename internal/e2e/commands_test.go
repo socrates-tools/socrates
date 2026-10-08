@@ -16,6 +16,7 @@ import (
 )
 
 func TestTheCommandSurfaceIsWhatItSays(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates("--help")
@@ -37,6 +38,7 @@ func TestTheCommandSurfaceIsWhatItSays(t *testing.T) {
 }
 
 func TestANamespaceTypedBarePrintsHelpAndStartsNothing(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates()
@@ -52,6 +54,7 @@ func TestANamespaceTypedBarePrintsHelpAndStartsNothing(t *testing.T) {
 }
 
 func TestTheDesignNamespaceTypedBarePrintsHelpAndStartsNothing(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	before := session.Repository.Status()
 
@@ -71,6 +74,7 @@ func TestTheDesignNamespaceTypedBarePrintsHelpAndStartsNothing(t *testing.T) {
 }
 
 func TestTheTopLevelOffersNothingAWorkflowOwns(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	for _, arguments := range [][]string{
@@ -99,6 +103,7 @@ func TestTheTopLevelOffersNothingAWorkflowOwns(t *testing.T) {
 
 func TestTheOldVerbIsRefusedAsAnUnknownCommand(t *testing.T) {
 	// scenario: review is gone entirely, and is refused as an unknown command
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -143,6 +148,7 @@ func commandsIn(help string) []string {
 }
 
 func TestTheDefaultDoesNotBlock(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -169,6 +175,7 @@ func TestTheDefaultDoesNotBlock(t *testing.T) {
 }
 
 func TestWaitingReturnsTheVerdict(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -188,6 +195,7 @@ func TestWaitingReturnsTheVerdict(t *testing.T) {
 }
 
 func TestStartingIsNotAVerdict(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -204,6 +212,7 @@ func TestStartingIsNotAVerdict(t *testing.T) {
 }
 
 func TestEachVerdictHasItsOwnCodeFromTheCommand(t *testing.T) {
+	t.Parallel()
 	for _, verdict := range []struct {
 		scenario string
 		state    runstate.State
@@ -235,6 +244,7 @@ func TestEachVerdictHasItsOwnCodeFromTheCommand(t *testing.T) {
 }
 
 func TestAUsageErrorIsNotAVerdictFromTheCommand(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates("status", "20200101T000000Z-deadbeef")
@@ -252,6 +262,7 @@ func TestAUsageErrorIsNotAVerdictFromTheCommand(t *testing.T) {
 }
 
 func TestMachineReadableOnRequest(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -288,6 +299,7 @@ func TestMachineReadableOnRequest(t *testing.T) {
 }
 
 func TestFindingsAreReadableFromTheCommand(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -322,11 +334,12 @@ func TestFindingsAreReadableFromTheCommand(t *testing.T) {
 }
 
 func TestTheBareCommandFindsThisRepositorysRun(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
-	elsewhere := gitrepo.New(t)
+	elsewhere := gitrepo.Isolated(t)
 	elsewhere.Write("internal/other.go", "package internal\n")
 
 	here := session.Begin()
@@ -358,8 +371,9 @@ func mustBegin(t *testing.T, session *harness.Session, directory string) string 
 }
 
 func TestARepositoryWithNoRuns(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
-	untouched := gitrepo.New(t)
+	untouched := gitrepo.Isolated(t)
 
 	printed, failures, code := session.SocratesIn(untouched.Root, "status")
 	if code != exit.Unusable {
@@ -374,6 +388,7 @@ func TestARepositoryWithNoRuns(t *testing.T) {
 }
 
 func TestAnIdentifierWinsOverTheDefault(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -381,7 +396,7 @@ func TestAnIdentifierWinsOverTheDefault(t *testing.T) {
 	name := session.Begin()
 	session.WaitForTerminal(name)
 
-	elsewhere := gitrepo.New(t)
+	elsewhere := gitrepo.Isolated(t)
 	printed, failures, code := session.SocratesIn(elsewhere.Root, "status", name)
 	if code != exit.NothingAsked {
 		t.Fatalf("socrates review status of a named run exited %d from another repository: %s", code, failures)
@@ -392,6 +407,7 @@ func TestAnIdentifierWinsOverTheDefault(t *testing.T) {
 }
 
 func TestCancellingStopsEverything(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -419,6 +435,7 @@ func TestCancellingStopsEverything(t *testing.T) {
 }
 
 func TestCancellingATerminalRunChangesNothing(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -441,6 +458,7 @@ func TestCancellingATerminalRunChangesNothing(t *testing.T) {
 }
 
 func TestNoConfigurationFileIsCreated(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -458,6 +476,7 @@ func TestNoConfigurationFileIsCreated(t *testing.T) {
 }
 
 func TestAnUnreadableConfigurationFileIsARefusalFromTheCommand(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := configurationPath(t, session)
 
@@ -481,6 +500,7 @@ func TestAnUnreadableConfigurationFileIsARefusalFromTheCommand(t *testing.T) {
 }
 
 func TestTheReviewerModelIsWhatTheConfigurationSays(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -506,6 +526,7 @@ func TestTheReviewerModelIsWhatTheConfigurationSays(t *testing.T) {
 }
 
 func TestTheRepositoryIsNeverWrittenTo(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")

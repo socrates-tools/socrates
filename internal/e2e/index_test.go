@@ -35,6 +35,7 @@ func indexAfter(t *testing.T, page *reader) indexed {
 }
 
 func TestTheIndexCountsADecisionAsThePersonAnswersIt(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	arrived := indexAfter(t, page)
@@ -77,6 +78,7 @@ type tipped struct {
 }
 
 func TestAMarkSaysWhatItMeansWhileItHasTheCursor(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, glancedDocument)
 	page.do(emulation.SetFocusEmulationEnabled(true))
 
@@ -120,6 +122,7 @@ type standingOf struct {
 }
 
 func TestTheHeaderSaysWhereTheExchangeStands(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 	page.evaluate(chose("c-1", 0), nil)
 
@@ -162,6 +165,7 @@ const settledDocument = `{
 }`
 
 func TestWhatWasSettledFoldsAwayAndTheIndexOpensItAgain(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, settledDocument)
 
 	const answersShown = `document.querySelector('.settled-answer').checkVisibility()`
@@ -192,6 +196,7 @@ const quotedIdentifierDocument = `{
 }`
 
 func TestAnIdentifierHoldingAQuoteLeavesThePageWorking(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, quotedIdentifierDocument)
 
 	page.waitFor(`!!document.querySelector('code.hljs')`)
@@ -228,6 +233,7 @@ type sitting struct {
 }
 
 func TestTheStatusStaysInViewAsThePageScrolls(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	page.evaluate(`window.scrollTo(0, document.documentElement.scrollHeight)`, nil)
@@ -243,6 +249,7 @@ func TestTheStatusStaysInViewAsThePageScrolls(t *testing.T) {
 }
 
 func TestAnEntryLandsTheCardClearOfTheBar(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 	page.do(emulation.SetEmulatedMedia().WithFeatures([]*emulation.MediaFeature{{Name: "prefers-reduced-motion", Value: "reduce"}}))
 

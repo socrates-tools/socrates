@@ -13,6 +13,7 @@ import (
 )
 
 func TestEveryImportResolvesUnderTheOrganisation(t *testing.T) {
+	t.Parallel()
 	root := source.Root(t)
 	module := "github.com/" + convention.Organisation + "/" + convention.Suite
 
@@ -33,6 +34,7 @@ func TestEveryImportResolvesUnderTheOrganisation(t *testing.T) {
 }
 
 func TestTheBuildReadsTheModulePathRatherThanRepeatingIt(t *testing.T) {
+	t.Parallel()
 	root := requireMake(t)
 
 	declared := moduleDeclared(t, root)

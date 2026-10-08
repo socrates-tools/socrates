@@ -11,6 +11,7 @@ import (
 const goTestsDefaultTimeout = 10 * time.Minute
 
 func TestTheSuiteStatesATimeoutLongerThanGoTestsDefault(t *testing.T) {
+	t.Parallel()
 	planned, code := runMake(t, source.Root(t), "-n", "test")
 	if code != 0 {
 		t.Fatalf("make -n test exited %d: %s", code, planned)

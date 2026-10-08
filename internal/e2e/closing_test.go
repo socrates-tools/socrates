@@ -74,6 +74,7 @@ func rendersClosed(t *testing.T, page *reader, how string) {
 }
 
 func TestAReloadedPageRendersClosed(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 	held.ended(t, page)
 
@@ -106,6 +107,7 @@ func answersWhatTheCallerAskedAgain(t *testing.T, held *surfaced, page *reader, 
 }
 
 func TestANewDocumentReopensAnEndedPage(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 	held.ended(t, page)
 
@@ -116,6 +118,7 @@ func TestANewDocumentReopensAnEndedPage(t *testing.T) {
 }
 
 func TestAReloadedPageStillReopens(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 	held.ended(t, page)
 
@@ -126,6 +129,7 @@ func TestAReloadedPageStillReopens(t *testing.T) {
 }
 
 func TestServingAgainOntoAnEndedExchangeYieldsAnAnswerablePage(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	held.serve(oneDecisionDocument)
 
@@ -151,6 +155,7 @@ func TestServingAgainOntoAnEndedExchangeYieldsAnAnswerablePage(t *testing.T) {
 }
 
 func TestServingAgainWhileTheExchangeIsOpenIsUnchanged(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	first := held.serve(oneDecisionDocument)
 
@@ -174,6 +179,7 @@ func TestServingAgainWhileTheExchangeIsOpenIsUnchanged(t *testing.T) {
 }
 
 func TestAPollOverAnEndedExchangeLeavesItEnded(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 	held.ended(t, page)
 
@@ -186,6 +192,7 @@ func TestAPollOverAnEndedExchangeLeavesItEnded(t *testing.T) {
 
 func TestACallerWhoAsksAgainIsHandedAnAddressThatTakesTheAnswer(t *testing.T) {
 	// scenario: Serving again onto an ended exchange yields an answerable page
+	t.Parallel()
 	held, page := read(t, oneDecisionDocument)
 
 	pressPastTheConfirmation(page, ".finish")
@@ -216,6 +223,7 @@ func TestACallerWhoAsksAgainIsHandedAnAddressThatTakesTheAnswer(t *testing.T) {
 }
 
 func TestAPageOpenedForTheFirstTimeAfterTheEndRendersClosed(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	address := held.serve(twoDecisionDocument)
 
@@ -233,6 +241,7 @@ func TestAPageOpenedForTheFirstTimeAfterTheEndRendersClosed(t *testing.T) {
 
 func TestAPageServedClosedFollowsWhatComesNext(t *testing.T) {
 	// scenario: A new document reopens an ended page
+	t.Parallel()
 	held := standing(t)
 	address := held.serve(twoDecisionDocument)
 
@@ -256,6 +265,7 @@ func TestAPageServedClosedFollowsWhatComesNext(t *testing.T) {
 }
 
 func TestThePageStopsSayingTheExchangeIsOver(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 	held.ended(t, page)
 	rendersClosed(t, page, "a page whose exchange the person ended")
@@ -278,6 +288,7 @@ func TestThePageStopsSayingTheExchangeIsOver(t *testing.T) {
 
 func TestAnAnswerChosenBeforeTheEndIsNotCarriedIntoWhatComesNext(t *testing.T) {
 	// scenario: A new document reopens an ended page
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -304,6 +315,7 @@ func TestAnAnswerChosenBeforeTheEndIsNotCarriedIntoWhatComesNext(t *testing.T) {
 }
 
 func TestEitherPressOverABlankDecisionRaisesTheConfirmationAndSendsNothing(t *testing.T) {
+	t.Parallel()
 	for _, press := range []string{".send", ".finish"} {
 		t.Run(press, func(t *testing.T) {
 			held, page := read(t, twoDecisionDocument)
@@ -339,6 +351,7 @@ func TestEitherPressOverABlankDecisionRaisesTheConfirmationAndSendsNothing(t *te
 }
 
 func TestTheConfirmationNamesEveryBlankDecisionAndOnlyThose(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-2", 2), nil)
@@ -376,6 +389,7 @@ func TestTheConfirmationNamesEveryBlankDecisionAndOnlyThose(t *testing.T) {
 }
 
 func TestSendAnywayDeliversWhatTheControlsHold(t *testing.T) {
+	t.Parallel()
 	for _, raising := range []struct {
 		press string
 		ends  bool
@@ -417,6 +431,7 @@ type holding struct {
 }
 
 func TestEveryWayOutOfTheConfirmationSendsNothingAndLeavesThePageAsItWas(t *testing.T) {
+	t.Parallel()
 	const wrote = "the second one is blank on purpose"
 
 	for _, door := range []struct {
@@ -470,6 +485,7 @@ func TestEveryWayOutOfTheConfirmationSendsNothingAndLeavesThePageAsItWas(t *test
 
 func TestPressingTheSameButtonAgainAfterGoingBackAsksAgainRatherThanSending(t *testing.T) {
 	// scenario: no armed state survives the confirmation
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -489,6 +505,7 @@ func TestPressingTheSameButtonAgainAfterGoingBackAsksAgainRatherThanSending(t *t
 }
 
 func TestAPressWithNothingBlankIsNotAskedAbout(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -511,6 +528,7 @@ func TestAPressWithNothingBlankIsNotAskedAbout(t *testing.T) {
 }
 
 func TestARevisionClosesTheConfirmation(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -567,6 +585,7 @@ const offeringNoneBesideOfferingSome = `{
 }`
 
 func TestABlankDecisionsNameTakesThePersonToItsCard(t *testing.T) {
+	t.Parallel()
 	for _, jump := range []struct {
 		named   string
 		to      string
@@ -647,6 +666,7 @@ func brightnessOf(painted color.Color) float64 {
 }
 
 func TestTheConfirmationDimsThePageBehindIt(t *testing.T) {
+	t.Parallel()
 	for _, preference := range []string{"light", "dark"} {
 		t.Run(preference, func(t *testing.T) {
 			_, page := read(t, twoDecisionDocument)
@@ -668,6 +688,7 @@ func TestTheConfirmationDimsThePageBehindIt(t *testing.T) {
 }
 
 func TestAPressInsideTheConfirmationIsNotAPressOnTheBackdrop(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -714,6 +735,7 @@ type closedShowing struct {
 }
 
 func TestAClosedExchangeHidesWhatCanNoLongerBeAnsweredAndSaysSoUnderTheTitle(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	var open closedShowing

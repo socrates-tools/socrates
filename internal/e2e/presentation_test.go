@@ -35,6 +35,7 @@ type measured struct {
 }
 
 func TestNothingRendersBelowTheFloor(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	var read measured
@@ -69,6 +70,7 @@ type painted struct {
 }
 
 func TestThePageIsPaintedLightWhateverThePreference(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	under := map[string]painted{}
@@ -118,6 +120,7 @@ type reached struct {
 }
 
 func TestADecisionCanBeAnsweredWithoutAPointer(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	seen := map[string]bool{}
@@ -177,6 +180,7 @@ type narrowed struct {
 }
 
 func TestTheNarrowCaseDoesNotShrinkTheEvidenceToNothing(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	page.narrow(360, 780)
@@ -199,6 +203,7 @@ func TestTheNarrowCaseDoesNotShrinkTheEvidenceToNothing(t *testing.T) {
 }
 
 func TestThePageReachesNothing(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	address := held.serve(twoDecisionDocument)
 	page := opening(t, address)
@@ -210,6 +215,7 @@ func TestThePageReachesNothing(t *testing.T) {
 }
 
 func TestRenderingNeedsNoNetwork(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	address := held.serve(twoDecisionDocument)
 
@@ -252,6 +258,7 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
 }
 
 func TestTheTabAndTheTopBarCarryTheSocratesMark(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	address := held.serve(twoDecisionDocument)
 	page := opening(t, address)
@@ -315,6 +322,7 @@ type hiding struct {
 }
 
 func TestNothingHiddenIsPainted(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	var read hiding
@@ -355,6 +363,7 @@ type marked struct {
 }
 
 func TestTheMarkIsSaidRatherThanPainted(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	page.do(chromedp.Evaluate(`(() => {
@@ -450,6 +459,7 @@ type weighed struct {
 }
 
 func TestEveryTextMeetsTheContrastFloor(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -470,6 +480,7 @@ func TestEveryTextMeetsTheContrastFloor(t *testing.T) {
 }
 
 func TestTheReceiptMeetsTheContrastFloor(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -493,6 +504,7 @@ func TestTheReceiptMeetsTheContrastFloor(t *testing.T) {
 }
 
 func TestTheConfirmationMeetsTheContrastFloor(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-2", 2), nil)

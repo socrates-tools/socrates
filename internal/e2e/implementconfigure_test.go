@@ -41,6 +41,7 @@ func repositoryTopLevel(t *testing.T, session *harness.Session) string {
 }
 
 func TestImplementConfigureWritesAConfirmedConcurrencyAndConfigReportsItAsSet(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := implementConfigurationPath(session)
 
@@ -68,6 +69,7 @@ func TestImplementConfigureWritesAConfirmedConcurrencyAndConfigReportsItAsSet(t 
 }
 
 func TestImplementConfigureDrawsTheSameSettingsConfigReports(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	stateImplementConfiguration(t, session, "concurrency: 2\nroles:\n  implementer:\n    effort: max\n")
 
@@ -89,6 +91,7 @@ func TestImplementConfigureDrawsTheSameSettingsConfigReports(t *testing.T) {
 }
 
 func TestImplementConfigureOffersTheModelAliasesAndTakesAFullIdentifierToo(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := implementConfigurationPath(session)
 
@@ -115,6 +118,7 @@ func TestImplementConfigureOffersTheModelAliasesAndTakesAFullIdentifierToo(t *te
 }
 
 func TestImplementConfigureRewritesTheInstalledDefinitionAtOnceForAModelAndAnEffort(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := implementConfigurationPath(session)
 	definition := installedDefinitionIn(t, session)
@@ -152,6 +156,7 @@ func TestImplementConfigureRewritesTheInstalledDefinitionAtOnceForAModelAndAnEff
 }
 
 func TestImplementConfigureWithNoDefinitionInstalledWritesTheSettingAndSaysHowTheDefinitionIsWritten(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := implementConfigurationPath(session)
 
@@ -176,6 +181,7 @@ func TestImplementConfigureWithNoDefinitionInstalledWritesTheSettingAndSaysHowTh
 }
 
 func TestImplementConfigureUsingTheDefaultRemovesTheLineAndAnEmptiedBlockGoesWithItsLastSetting(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := implementConfigurationPath(session)
 	stateImplementConfiguration(t, session, "# kept\nconcurrency: 2\nroles:\n  implementer:\n    effort: max\n")
@@ -195,6 +201,7 @@ func TestImplementConfigureUsingTheDefaultRemovesTheLineAndAnEmptiedBlockGoesWit
 }
 
 func TestImplementConfigureRefusesAValueTheLoaderRefusesBeforeTheFileIsTouched(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := implementConfigurationPath(session)
 	held := "concurrency: 2\n"
@@ -217,6 +224,7 @@ func TestImplementConfigureRefusesAValueTheLoaderRefusesBeforeTheFileIsTouched(t
 }
 
 func TestImplementConfigureOutsideARepositoryOffersNoDefaultBranch(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	menu := session.TopInATerminalIn(t.TempDir(), "implement", "configure")
@@ -230,6 +238,7 @@ func TestImplementConfigureOutsideARepositoryOffersNoDefaultBranch(t *testing.T)
 }
 
 func TestImplementConfigureInsideARepositoryRemembersItsDefaultBranchAndRemovingItLeavesOtherRepositoriesAlone(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := implementConfigurationPath(session)
 	session.Repository.Git("branch", "dev")
@@ -266,6 +275,7 @@ func TestImplementConfigureInsideARepositoryRemembersItsDefaultBranchAndRemoving
 }
 
 func TestImplementConfigureRefusesABranchTheRepositoryDoesNotHoldBeforeTheFileIsTouched(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := implementConfigurationPath(session)
 
@@ -290,6 +300,7 @@ func TestImplementConfigureRefusesABranchTheRepositoryDoesNotHoldBeforeTheFileIs
 }
 
 func TestImplementConfigureWithNoTerminalRefusesNamingImplementConfigAndWritesNothing(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := implementConfigurationPath(session)
 
@@ -306,6 +317,7 @@ func TestImplementConfigureWithNoTerminalRefusesNamingImplementConfigAndWritesNo
 }
 
 func TestImplementConfigureTakesNoArguments(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	_, failures, code := session.Top("implement", "configure", "extra")

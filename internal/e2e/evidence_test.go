@@ -13,6 +13,7 @@ import (
 )
 
 func TestAMissingFindingsDocumentIsAFailure(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  behaviour: no-structured-output\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -32,6 +33,7 @@ func TestAMissingFindingsDocumentIsAFailure(t *testing.T) {
 }
 
 func TestAnUnparseableFindingsDocumentIsAFailure(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  behaviour: schema-violation\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -57,6 +59,7 @@ func TestAnUnparseableFindingsDocumentIsAFailure(t *testing.T) {
 }
 
 func TestAnEmptyFindingsArrayWithEvidenceIsClean(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(`
 default:
@@ -84,6 +87,7 @@ default:
 }
 
 func TestADeadReviewerIsAFailure(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 5m\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -108,6 +112,7 @@ func TestADeadReviewerIsAFailure(t *testing.T) {
 }
 
 func TestAKilledReviewerStopsTheRun(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 5m\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -129,6 +134,7 @@ func TestAKilledReviewerStopsTheRun(t *testing.T) {
 }
 
 func TestALiveReviewerIsStillWorking(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  events: 30\n  interval: 100ms\n")
 	session.Repository.Write("internal/added.go", "package internal\n")

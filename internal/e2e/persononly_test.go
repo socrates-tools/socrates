@@ -12,6 +12,7 @@ import (
 )
 
 func TestEverySkillAnyNamespaceInstallsIsInvokedByAPersonOnly(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	installing := 0
@@ -53,6 +54,7 @@ func TestEverySkillAnyNamespaceInstallsIsInvokedByAPersonOnly(t *testing.T) {
 }
 
 func TestEveryInstallSaysAPersonStartsTheSkillAndNoSessionDoes(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	announced := 0

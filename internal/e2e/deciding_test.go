@@ -155,6 +155,7 @@ func everyFindingAsADecision(read reportedRound) []map[string]any {
 }
 
 func TestARoundThatWaitsOnAPersonIsWaitedOn(t *testing.T) {
+	t.Parallel()
 	driven := driving(t, dialogueScenario(unanswerableFinding, nothingFoundAgain), answeredWrongly)
 	name := driven.begin("count the characters of a document")
 
@@ -226,6 +227,7 @@ func markedIn(decision, kind string) string {
 }
 
 func TestADecisionMadeOnThePageIsRecordedInTheTerminal(t *testing.T) {
+	t.Parallel()
 	const inTheirOwnWords = "the function stays, because the importer reads it every morning"
 
 	driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)

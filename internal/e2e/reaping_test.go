@@ -18,6 +18,7 @@ const (
 )
 
 func TestAChildThatOutlivesTheAgentIsKilled(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  child_command: [sleep, \"120\"]\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -32,6 +33,7 @@ func TestAChildThatOutlivesTheAgentIsKilled(t *testing.T) {
 }
 
 func TestReapingHappensOnErrorToo(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  behaviour: no-result\n  child_command: [sleep, \"120\"]\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -46,6 +48,7 @@ func TestReapingHappensOnErrorToo(t *testing.T) {
 }
 
 func TestReapingHappensOnCancellation(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 5m\n  child_command: [sleep, \"120\"]\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -69,6 +72,7 @@ func TestReapingHappensOnCancellation(t *testing.T) {
 }
 
 func TestTheWorktreeCanBeRemovedAfterTheRound(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  child_command: [sleep, \"120\"]\n")
 	session.Repository.Write("internal/added.go", "package internal\n")

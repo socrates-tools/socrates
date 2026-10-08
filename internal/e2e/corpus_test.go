@@ -12,6 +12,7 @@ import (
 )
 
 func TestAnAnswerIsRecordedFromTheRunThatProducedIt(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("go.mod", "module "+corpus.ModulePath+"\n\ngo 1.24\n")

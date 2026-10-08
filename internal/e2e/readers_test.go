@@ -12,6 +12,7 @@ import (
 const loudScenario = "default:\n  events: 60\n  interval: 1ms\n"
 
 func TestStatusStaysSmallWhenTheReviewerIsLoud(t *testing.T) {
+	t.Parallel()
 	quiet := lineCountOfStatus(t, cleanScenario)
 	loud := lineCountOfStatus(t, loudScenario)
 
@@ -41,6 +42,7 @@ func lineCountOfStatus(t *testing.T, scenario string) int {
 }
 
 func TestNeitherCommandGrowsTheOthersFlag(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	for command, want := range map[string][]string{
@@ -86,6 +88,7 @@ func flagsIn(help string) []string {
 }
 
 func TestAllThreeAgreeAboutTheRun(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")

@@ -11,6 +11,7 @@ import (
 const theGuaranteeThatIsMissing = "process group"
 
 func TestAnUnsupportedPlatformRefusesTheReviewBeforeAnythingStarts(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t).WhereNothingReaps()
 	session.Repository.Write("internal/added.go", "package internal\n")
 
@@ -50,6 +51,7 @@ func TestAnUnsupportedPlatformRefusesTheReviewBeforeAnythingStarts(t *testing.T)
 }
 
 func TestReadingARunIsNotRefusedOnAnUnsupportedPlatform(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(sealScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")

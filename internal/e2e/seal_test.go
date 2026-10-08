@@ -17,6 +17,7 @@ import (
 const unenforcingDirectory = "SOCRATES_TEST_UNENFORCING_DIRECTORY"
 
 func TestASealThatDoesNotHoldIsARefusal(t *testing.T) {
+	t.Parallel()
 	stated := os.Getenv(unenforcingDirectory)
 	if stated == "" {
 		t.Skipf("set %s to a directory on a filesystem that ignores permission bits to run this", unenforcingDirectory)
@@ -61,6 +62,7 @@ func TestASealThatDoesNotHoldIsARefusal(t *testing.T) {
 
 func TestCancellingARunWhoseReviewerWentAwayLiftsTheSeal(t *testing.T) {
 	// scenario: The seal is lifted when the round ends
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 5m\n")
 	session.Repository.Write("internal/added.go", "package internal\n")

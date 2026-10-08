@@ -24,6 +24,7 @@ var everyGate = []string{
 }
 
 func TestOneCommandRunsEveryGate(t *testing.T) {
+	t.Parallel()
 	planned, code := runMake(t, source.Root(t), "-n", theEntryPoint)
 	if code != 0 {
 		t.Fatalf("make -n %s exited %d: %s", theEntryPoint, code, planned)
@@ -45,6 +46,7 @@ func TestOneCommandRunsEveryGate(t *testing.T) {
 }
 
 func TestFormattingFailsBeforeTheSuiteDoes(t *testing.T) {
+	t.Parallel()
 	unformatted := t.TempDir()
 
 	copyInto(t, filepath.Join(source.Root(t), "Makefile"), filepath.Join(unformatted, "Makefile"))
@@ -64,6 +66,7 @@ func TestFormattingFailsBeforeTheSuiteDoes(t *testing.T) {
 }
 
 func TestAnUncheckedErrorReturnFailsTheLinter(t *testing.T) {
+	t.Parallel()
 	unchecked := t.TempDir()
 
 	copyInto(t, filepath.Join(source.Root(t), "Makefile"), filepath.Join(unchecked, "Makefile"))

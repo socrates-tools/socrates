@@ -21,6 +21,7 @@ const (
 var aSemanticVersion = regexp.MustCompile(`v[0-9]+\.[0-9]+\.[0-9]+`)
 
 func TestTheBuildSaysWhichCommitItCameFrom(t *testing.T) {
+	t.Parallel()
 	root := requireMake(t)
 
 	commit := gitSaid(t, root, "rev-parse", "--short=7", "HEAD")
@@ -39,6 +40,7 @@ func TestTheBuildSaysWhichCommitItCameFrom(t *testing.T) {
 }
 
 func TestABuildFromATreeWithUncommittedChangesSaysSo(t *testing.T) {
+	t.Parallel()
 	root := requireMake(t)
 
 	commit := gitSaid(t, root, "rev-parse", "--short=7", "HEAD")
@@ -53,6 +55,7 @@ func TestABuildFromATreeWithUncommittedChangesSaysSo(t *testing.T) {
 }
 
 func TestABuildThatRecordedNoCommitSaysSo(t *testing.T) {
+	t.Parallel()
 	root := requireMake(t)
 
 	printed := versionOf(t, made(t, root, "COMMIT="))
@@ -68,6 +71,7 @@ func TestABuildThatRecordedNoCommitSaysSo(t *testing.T) {
 }
 
 func TestATaggedBuildReportsItsVersion(t *testing.T) {
+	t.Parallel()
 	root := requireMake(t)
 	tagged := aCopyOfTheSource(t, root)
 	gitSaid(t, tagged, "tag", aReleaseTag)
@@ -85,6 +89,7 @@ func TestATaggedBuildReportsItsVersion(t *testing.T) {
 }
 
 func TestAnUntaggedBuildDoesNotClaimAVersion(t *testing.T) {
+	t.Parallel()
 	root := requireMake(t)
 	untagged := aCopyOfTheSource(t, root)
 	gitSaid(t, untagged, "tag", aReleaseTag)
@@ -106,6 +111,7 @@ func TestAnUntaggedBuildDoesNotClaimAVersion(t *testing.T) {
 }
 
 func TestSocratesVersionTakesNoArguments(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Top("version", "the one I installed on Tuesday")

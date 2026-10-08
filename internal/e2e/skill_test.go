@@ -46,6 +46,7 @@ func userLevelPath(t *testing.T, session *harness.Session) string {
 }
 
 func TestInstallingNamesThePath(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := userLevelPath(t, session)
 
@@ -62,6 +63,7 @@ func TestInstallingNamesThePath(t *testing.T) {
 }
 
 func TestInstallingTwice(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := userLevelPath(t, session)
 
@@ -83,6 +85,7 @@ func TestInstallingTwice(t *testing.T) {
 }
 
 func TestInstallingElsewhere(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	target := t.TempDir()
 
@@ -104,6 +107,7 @@ func TestInstallingElsewhere(t *testing.T) {
 }
 
 func TestInstallingTheSkillWritesNothingInTheRepository(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
@@ -127,6 +131,7 @@ func TestInstallingTheSkillWritesNothingInTheRepository(t *testing.T) {
 }
 
 func TestADirectoryThatCannotBeWritten(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	sealed := filepath.Join(t.TempDir(), "skills")
@@ -166,6 +171,7 @@ func designUserLevelPath(t *testing.T, session *harness.Session) string {
 }
 
 func TestInstallingDesignNamesThePath(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := designUserLevelPath(t, session)
 
@@ -182,6 +188,7 @@ func TestInstallingDesignNamesThePath(t *testing.T) {
 }
 
 func TestInstallingDesignTwice(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	path := designUserLevelPath(t, session)
 
@@ -203,6 +210,7 @@ func TestInstallingDesignTwice(t *testing.T) {
 }
 
 func TestInstallingDesignWritesNothingInTheRepository(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
@@ -305,6 +313,7 @@ func everySurface(t *testing.T, session *harness.Session) map[string]map[string]
 }
 
 func TestEveryCommandNamedIsReal(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	named := skillkit.Named(allSkills(), allNamespaces())
@@ -328,6 +337,7 @@ func TestEveryCommandNamedIsReal(t *testing.T) {
 }
 
 func TestARemovedFlagFailsTheSuite(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	offered := everySurface(t, session)
 
@@ -359,6 +369,7 @@ func TestARemovedFlagFailsTheSuite(t *testing.T) {
 }
 
 func TestAFlagOfASecondBinaryIsCheckedToo(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	offered := everySurface(t, session)
 
@@ -409,6 +420,7 @@ func withoutTheFlag(offered map[string]map[string][]string, named skillkit.Invoc
 }
 
 func TestOneSourceTwoSurfaces(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -429,6 +441,7 @@ func TestOneSourceTwoSurfaces(t *testing.T) {
 }
 
 func TestRegeneratingIsOneCommand(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	target := t.TempDir()
 
@@ -444,6 +457,7 @@ func TestRegeneratingIsOneCommand(t *testing.T) {
 }
 
 func TestBothSkillsAreInstalled(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Socrates("skill")
@@ -472,6 +486,7 @@ func TestBothSkillsAreInstalled(t *testing.T) {
 }
 
 func TestBothDesignSkillsAreInstalled(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Top("design", "skill")
@@ -503,6 +518,7 @@ func TestBothDesignSkillsAreInstalled(t *testing.T) {
 }
 
 func TestTheOverseerSkillIsInstalledAndTheCommittedCopyIsWhatItsSourceGenerates(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := session.Top("implement", "skill")
@@ -528,6 +544,7 @@ func TestTheOverseerSkillIsInstalledAndTheCommittedCopyIsWhatItsSourceGenerates(
 }
 
 func TestTheOverseerSkillIsInstalledBesideTheDefinitionUnderTheDirectoriesNamed(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	skills, agents := t.TempDir(), t.TempDir()
 

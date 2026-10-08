@@ -11,6 +11,7 @@ import (
 )
 
 func TestOutputIsVisibleWhileTheReviewIsRunning(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  events: 40\n  interval: 60ms\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -39,6 +40,7 @@ func TestOutputIsVisibleWhileTheReviewIsRunning(t *testing.T) {
 }
 
 func TestAFailedRoundKeepsWhatItGot(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  behaviour: truncated-stream\n  events: 3\n")
 	session.Repository.Write("internal/added.go", "package internal\n")

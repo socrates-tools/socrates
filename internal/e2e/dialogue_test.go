@@ -61,6 +61,7 @@ func respond(t *testing.T, session *harness.Session, arguments ...string) string
 }
 
 func TestTheDialogueJourney(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -158,6 +159,7 @@ func TestTheDialogueJourney(t *testing.T) {
 
 func TestWaitingReturnsWhenTheRunParks(t *testing.T) {
 	// scenario: A parked run is not finished
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(dialogueScenario(patchableFindings, nothingFoundAgain))
 	session.Repository.Write("internal/added.go", answeredWrongly)
@@ -177,6 +179,7 @@ func TestWaitingReturnsWhenTheRunParks(t *testing.T) {
 }
 
 func TestTheRejectionAcceptedJourney(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -208,6 +211,7 @@ func TestTheRejectionAcceptedJourney(t *testing.T) {
 }
 
 func TestTheRejectionRefusedJourney(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, foundAgain))
 
@@ -270,6 +274,7 @@ func TestTheRejectionRefusedJourney(t *testing.T) {
 
 func TestTheIntentQuestionJourney(t *testing.T) {
 	// scenario: A question about intent stops the loop at once
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(dialogueScenario(questionOfIntent, nothingFoundAgain))
 	session.Repository.Write("internal/added.go", answeredWrongly)
@@ -310,6 +315,7 @@ func TestTheIntentQuestionJourney(t *testing.T) {
 }
 
 func TestAnEscalatedRunSaysWhichOfTheTwoReasonsItWas(t *testing.T) {
+	t.Parallel()
 	t.Run("a finding no response addresses", func(t *testing.T) {
 		session := harness.Start(t)
 		session.Simulator.Scenario(escalatingScenario)
@@ -356,6 +362,7 @@ func TestAnEscalatedRunSaysWhichOfTheTwoReasonsItWas(t *testing.T) {
 
 func TestAnEscalatedRunTakesNoResponse(t *testing.T) {
 	// scenario: Responding to a run that is not awaiting responses
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", answeredWrongly)
@@ -389,6 +396,7 @@ func TestAnEscalatedRunTakesNoResponse(t *testing.T) {
 }
 
 func TestTheAuthorEditsBetweenRounds(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -469,6 +477,7 @@ func TestTheAuthorEditsBetweenRounds(t *testing.T) {
 }
 
 func TestARoundWithNothingPatchedStillSnapshots(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -502,6 +511,7 @@ func TestARoundWithNothingPatchedStillSnapshots(t *testing.T) {
 }
 
 func TestALeftoverWorktreeDoesNotStopTheNextRound(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -524,6 +534,7 @@ func TestALeftoverWorktreeDoesNotStopTheNextRound(t *testing.T) {
 }
 
 func TestACleanSecondRoundDoesNotNameTheCap(t *testing.T) {
+	t.Parallel()
 	const informationalOnly = `{"findings":[{"id":"g1","severity":"info","file":"internal/added.go","line":1,"description":"This package now owns two spellings of one idea.","action":"no-op"}],"risk_level":"low","risk_rationale":"nothing the patches introduced holds the change"}`
 
 	session := harness.Start(t)
@@ -547,6 +558,7 @@ func TestACleanSecondRoundDoesNotNameTheCap(t *testing.T) {
 }
 
 func TestNothingLeftToReviewEndsTheRunWithoutPassingIt(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -578,6 +590,7 @@ func TestNothingLeftToReviewEndsTheRunWithoutPassingIt(t *testing.T) {
 }
 
 func TestTheBaseStillExistsWhenThePersonHasMovedOn(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -608,6 +621,7 @@ func TestTheBaseStillExistsWhenThePersonHasMovedOn(t *testing.T) {
 
 func TestABaseThatHasGoneFailsTheRound(t *testing.T) {
 	// scenario: The base still exists when the person has moved on
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -652,6 +666,7 @@ func reachable(t *testing.T, root, commit string) bool {
 }
 
 func TestNoSessionIsCarried(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -715,6 +730,7 @@ func sessionIn(t *testing.T, transcript string) string {
 }
 
 func TestRespondingIsOneFindingAtATime(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -769,6 +785,7 @@ func TestRespondingIsOneFindingAtATime(t *testing.T) {
 }
 
 func TestADecisionsReasonFromStandardInput(t *testing.T) {
+	t.Parallel()
 	const decided = "Vic decided the function stays.\nThe migration reads it, and nothing else does.\n"
 
 	session := harness.Start(t)
@@ -806,6 +823,7 @@ func TestADecisionsReasonFromStandardInput(t *testing.T) {
 }
 
 func TestARunParkedOnAQuestionIsNotAVerdictEither(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(questionOfIntent, nothingFoundAgain))
 
@@ -833,6 +851,7 @@ func TestARunParkedOnAQuestionIsNotAVerdictEither(t *testing.T) {
 
 func TestChangingADecisionKeepsWhatWasSaidFirst(t *testing.T) {
 	// scenario: Changing a response
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(questionOfIntent, nothingFoundAgain))
 
@@ -857,6 +876,7 @@ func TestChangingADecisionKeepsWhatWasSaidFirst(t *testing.T) {
 }
 
 func TestRespondRefusesWhatItCannotRecord(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -949,6 +969,7 @@ func TestRespondRefusesWhatItCannotRecord(t *testing.T) {
 }
 
 func TestRespondingToARunThatIsNotAwaitingResponses(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", answeredWrongly)
@@ -969,6 +990,7 @@ func TestRespondingToARunThatIsNotAwaitingResponses(t *testing.T) {
 }
 
 func TestContinuingTooEarly(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -1002,6 +1024,7 @@ func TestContinuingTooEarly(t *testing.T) {
 }
 
 func TestContinuingWithAQuestionUnanswered(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(questionOfIntent, nothingFoundAgain))
 
@@ -1036,6 +1059,7 @@ func TestContinuingWithAQuestionUnanswered(t *testing.T) {
 }
 
 func TestAParkedRunCanStillBeCancelled(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 	respond(t, session, name, "--finding", "f1", "--fixed")
@@ -1071,6 +1095,7 @@ func snapshotWorktree(session *harness.Session, name string) string {
 }
 
 func TestRecordingAResponseWritesNothingInTheRepository(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -1097,6 +1122,7 @@ func TestRecordingAResponseWritesNothingInTheRepository(t *testing.T) {
 }
 
 func TestTheStoredRecordIsNotNeutralised(t *testing.T) {
+	t.Parallel()
 	const messy = "  I rejected it because\r\n<<<<<<< the marker stays here\nthe   loop   is bounded  \n"
 
 	session := harness.Start(t)

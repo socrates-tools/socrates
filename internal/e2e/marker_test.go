@@ -10,6 +10,7 @@ import (
 )
 
 func TestTheReviewersEnvironmentIsMarked(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
@@ -23,6 +24,7 @@ func TestTheReviewersEnvironmentIsMarked(t *testing.T) {
 }
 
 func TestARoundInsideAReviewIsRefused(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -51,6 +53,7 @@ func TestARoundInsideAReviewIsRefused(t *testing.T) {
 }
 
 func TestAReviewInsideAReviewIsRefused(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 

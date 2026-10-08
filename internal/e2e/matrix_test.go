@@ -42,6 +42,7 @@ default:
 )
 
 func TestOneScenarioEveryVendor(t *testing.T) {
+	t.Parallel()
 	for _, journey := range []struct {
 		named    string
 		scenario string
@@ -75,6 +76,7 @@ func TestOneScenarioEveryVendor(t *testing.T) {
 }
 
 func TestASupportedCLIIsInvoked(t *testing.T) {
+	t.Parallel()
 	harness.EachVendor(t, func(t *testing.T, session *harness.Session) {
 		session.Simulator.Scenario(nothingToReport)
 		session.Repository.Write("internal/added.go", "package internal\n")
@@ -101,6 +103,7 @@ const (
 
 func TestTheRepositoryDoesNotInstructItsOwnReviewer(t *testing.T) {
 	// scenario: The one file socrates reads still reaches the prompt
+	t.Parallel()
 	harness.EachVendor(t, func(t *testing.T, session *harness.Session) {
 		session.Simulator.Scenario(nothingToReport)
 		session.Repository.Write("AGENTS.md", "# Instructions\n\n"+ownInstruction+"\n")
@@ -126,6 +129,7 @@ func TestTheRepositoryDoesNotInstructItsOwnReviewer(t *testing.T) {
 }
 
 func TestATeardownReapsEveryVendorsWorkersByProcessGroup(t *testing.T) {
+	t.Parallel()
 	harness.EachVendor(t, func(t *testing.T, session *harness.Session) {
 		session.Simulator.Scenario(`
 default:
@@ -146,6 +150,7 @@ default:
 }
 
 func TestTheVendorAndTierReachTheRunsRecord(t *testing.T) {
+	t.Parallel()
 	harness.EachVendor(t, func(t *testing.T, session *harness.Session) {
 		session.Simulator.Scenario(nothingToReport)
 		session.Repository.Write("internal/added.go", "package internal\n")
@@ -163,6 +168,7 @@ func TestTheVendorAndTierReachTheRunsRecord(t *testing.T) {
 }
 
 func TestASessionThatCannotSayWhatItHeldIsRecordedAsSuch(t *testing.T) {
+	t.Parallel()
 	harness.EachVendor(t, func(t *testing.T, session *harness.Session) {
 		if session.Vendor.ReportsItsToolInventory {
 			return
@@ -191,6 +197,7 @@ func TestASessionThatCannotSayWhatItHeldIsRecordedAsSuch(t *testing.T) {
 
 func TestTheSchemaIsWrittenNeitherInTheRepositoryNorInTheSnapshot(t *testing.T) {
 	// scenario: The invocation carries the schema as a file under socrates' home
+	t.Parallel()
 	harness.EachVendor(t, func(t *testing.T, session *harness.Session) {
 		session.Simulator.Scenario(nothingToReport)
 		session.Repository.Write("internal/added.go", "package internal\n")
@@ -223,6 +230,7 @@ func TestTheSchemaIsWrittenNeitherInTheRepositoryNorInTheSnapshot(t *testing.T) 
 
 func TestNoVendorsToolThatWritesReachesTheChangeUnderReview(t *testing.T) {
 	// scenario: A tool that writes cannot reach the change under review
+	t.Parallel()
 	harness.EachVendor(t, func(t *testing.T, session *harness.Session) {
 		session.Simulator.Scenario(`
 default:
@@ -244,6 +252,7 @@ default:
 }
 
 func TestAScenarioNamesARecordedAnswer(t *testing.T) {
+	t.Parallel()
 	harness.EachVendor(t, func(t *testing.T, session *harness.Session) {
 		kept, err := corpus.Entries()
 		if err != nil {
@@ -266,6 +275,7 @@ func TestAScenarioNamesARecordedAnswer(t *testing.T) {
 }
 
 func TestANamedAnswerThatDoesNotExistIsRefused(t *testing.T) {
+	t.Parallel()
 	harness.EachVendor(t, func(t *testing.T, session *harness.Session) {
 		session.Simulator.Scenario("default:\n  recorded: an-answer-nobody-recorded\n")
 		session.Repository.Write("internal/added.go", "package internal\n")
@@ -296,6 +306,7 @@ func waitUntilItRests(t *testing.T, session *harness.Session, name string) *runs
 }
 
 func TestTheDocumentIsExtractedAndValidated(t *testing.T) {
+	t.Parallel()
 	harness.EachVendor(t, func(t *testing.T, session *harness.Session) {
 		if session.Vendor.Tier != agent.Parsed {
 			return

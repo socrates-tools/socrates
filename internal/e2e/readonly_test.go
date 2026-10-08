@@ -11,6 +11,7 @@ import (
 )
 
 func TestAReviewerThatWroteFailsTheRound(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  writes:\n    - path: README.md\n      content: \"the reviewer helped itself\\n\"\n      defeats_the_seal: true\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -55,6 +56,7 @@ func TestAReviewerThatWroteFailsTheRound(t *testing.T) {
 }
 
 func TestAReviewerThatCreatedAFileFailsTheRound(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  writes:\n    - path: internal/reviewer-notes.md\n      content: \"some thoughts\\n\"\n      defeats_the_seal: true\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -86,6 +88,7 @@ func eventNaming(t *testing.T, session *harness.Session, name, said string) stri
 }
 
 func TestACleanReviewerPassesTheCheck(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(sealScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -105,6 +108,7 @@ func TestACleanReviewerPassesTheCheck(t *testing.T) {
 }
 
 func TestAWriteTheSealRefusedIsNotAFindingAgainstTheReviewer(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(sealScenario + `  writes:
     - path: .serena/project.yml

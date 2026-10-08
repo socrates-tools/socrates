@@ -41,6 +41,7 @@ var licenceOfABundledLibrary = map[string][]string{
 var declaredFamily = regexp.MustCompile(`@font-face\s*\{[^}]*font-family\s*:\s*['"]?([^;'"}]+)`)
 
 func TestAnEmbeddedFontsLicenceTravelsWithTheWork(t *testing.T) {
+	t.Parallel()
 	notice := rootDocument(t, convention.NoticeFile)
 
 	faces, err := fs.Glob(assets.Files(), filepath.ToSlash(filepath.Join("fonts", "*.woff2")))
@@ -76,6 +77,7 @@ func TestAnEmbeddedFontsLicenceTravelsWithTheWork(t *testing.T) {
 }
 
 func TestAnEmbeddedLibrarysLicenceTravelsWithTheWork(t *testing.T) {
+	t.Parallel()
 	notice := rootDocument(t, convention.NoticeFile)
 
 	for _, library := range librariesTheClientBundles(t) {

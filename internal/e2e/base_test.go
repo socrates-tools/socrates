@@ -36,6 +36,7 @@ func aBranchAndATrunkThatMoved(t *testing.T, session *harness.Session) string {
 }
 
 func TestANamedBaseReviewsTheBranchesOwnWork(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 
@@ -78,6 +79,7 @@ func TestANamedBaseReviewsTheBranchesOwnWork(t *testing.T) {
 }
 
 func TestTheStatusPrintsTheBaseItResolved(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 
@@ -97,6 +99,7 @@ func TestTheStatusPrintsTheBaseItResolved(t *testing.T) {
 }
 
 func TestANamedBaseIsPinnedForTheWholeRun(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -130,6 +133,7 @@ func TestANamedBaseIsPinnedForTheWholeRun(t *testing.T) {
 }
 
 func TestABranchWithNothingAheadOfItsBaseIsNotCalledClean(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 
@@ -156,6 +160,7 @@ func TestABranchWithNothingAheadOfItsBaseIsNotCalledClean(t *testing.T) {
 }
 
 func TestAWorkingTreeWithNothingInItIsNotCalledCleanEither(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 
@@ -169,6 +174,7 @@ func TestAWorkingTreeWithNothingInItIsNotCalledCleanEither(t *testing.T) {
 }
 
 func TestABaseNothingResolvesIsRefusedBeforeAnythingHappens(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", theBranchesOwnWork)
@@ -189,6 +195,7 @@ func TestABaseNothingResolvesIsRefusedBeforeAnythingHappens(t *testing.T) {
 }
 
 func TestABaseWithNoCommonAncestorIsRefusedAndNamed(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 
@@ -210,6 +217,7 @@ func TestABaseWithNoCommonAncestorIsRefusedAndNamed(t *testing.T) {
 }
 
 func TestReviewingUncommittedWorkNamesNoBase(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", theBranchesOwnWork)
@@ -225,6 +233,7 @@ func TestReviewingUncommittedWorkNamesNoBase(t *testing.T) {
 
 func TestSocratesReachesNoRemoteToResolveABase(t *testing.T) {
 	// scenario: socrates review neither fetches nor rebases
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 
@@ -253,6 +262,7 @@ func TestSocratesReachesNoRemoteToResolveABase(t *testing.T) {
 }
 
 func TestAReviewFromAWorktreeOfAnotherBranchIsOfThatBranchAlone(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 

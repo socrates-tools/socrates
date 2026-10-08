@@ -86,6 +86,7 @@ func EachVendor(t *testing.T, exercised func(*testing.T, *Session)) {
 
 	for _, vendor := range agent.Supported() {
 		t.Run(vendor.Name, func(t *testing.T) {
+			t.Parallel()
 			exercised(t, StartFor(t, vendor))
 		})
 	}

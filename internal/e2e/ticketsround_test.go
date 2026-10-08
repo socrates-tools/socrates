@@ -33,6 +33,7 @@ const breakdownDocument = `{
 const askingForASplit = "split this: the main ticket and the task tickets are two slices"
 
 func TestABreakdownArrivesKeptAndWhatThePersonAskedToChangeReachesTheSession(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	address := held.serve(breakdownDocument)
 	page := opening(t, address)

@@ -91,6 +91,7 @@ func read(t *testing.T, document string) (*surfaced, *reader) {
 }
 
 func TestAnAnswerLeftInAControlIsSentWithoutAnyFurtherPress(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -122,6 +123,7 @@ func TestAnAnswerLeftInAControlIsSentWithoutAnyFurtherPress(t *testing.T) {
 }
 
 func TestMultipleChoiceCarriesEveryTick(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-2", 0), nil)
@@ -144,6 +146,7 @@ func TestMultipleChoiceCarriesEveryTick(t *testing.T) {
 }
 
 func TestAChangedSelectionReplacesTheEarlierOneWithNoSeparateStep(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -167,6 +170,7 @@ func TestAChangedSelectionReplacesTheEarlierOneWithNoSeparateStep(t *testing.T) 
 }
 
 func TestADecisionWithNothingSelectedAndNothingTypedIsOmittedFromWhatTheCallerCollects(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-2", 2), nil)
@@ -192,6 +196,7 @@ func TestADecisionWithNothingSelectedAndNothingTypedIsOmittedFromWhatTheCallerCo
 }
 
 func TestSendingWithoutEndingKeepsThePageOpen(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -233,6 +238,7 @@ func TestSendingWithoutEndingKeepsThePageOpen(t *testing.T) {
 }
 
 func TestSendingShowsAReceiptAndPutsEveryControlReadOnly(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -261,6 +267,7 @@ func TestSendingShowsAReceiptAndPutsEveryControlReadOnly(t *testing.T) {
 }
 
 func TestAmendingReturnsTheControlsAndASecondSendReplacesTheFirst(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -297,6 +304,7 @@ func TestAmendingReturnsTheControlsAndASecondSendReplacesTheFirst(t *testing.T) 
 }
 
 func TestTheWayBackIsWithdrawnOnceTheCallerCollectsAndThePageSaysSo(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -332,6 +340,7 @@ func TestTheWayBackIsWithdrawnOnceTheCallerCollectsAndThePageSaysSo(t *testing.T
 }
 
 func TestAConnectTimeUncollectedIsNotMistakenForACollection(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 	time.Sleep(150 * time.Millisecond)
 
@@ -349,6 +358,7 @@ func TestAConnectTimeUncollectedIsNotMistakenForACollection(t *testing.T) {
 }
 
 func TestANewDocumentReplacesTheReceiptToo(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -372,6 +382,7 @@ func TestANewDocumentReplacesTheReceiptToo(t *testing.T) {
 }
 
 func TestFinishingShowsAReceiptThatOffersNoWayBack(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -396,6 +407,7 @@ func TestFinishingShowsAReceiptThatOffersNoWayBack(t *testing.T) {
 }
 
 func TestARerenderReachesAnOpenPage(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	var loads int
@@ -418,6 +430,7 @@ func TestARerenderReachesAnOpenPage(t *testing.T) {
 }
 
 func TestANewDocumentReplacesEverySelectionEveryTypedWordAndTheMessageFieldAndNothingIsRestoredByIdentifier(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -456,6 +469,7 @@ func TestANewDocumentReplacesEverySelectionEveryTypedWordAndTheMessageFieldAndNo
 }
 
 func TestEndingClosesTheExchange(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -492,6 +506,7 @@ var everyCommandTheDocumentCarries = []string{
 }
 
 func TestNoCommandReachesThePage(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -517,6 +532,7 @@ func TestNoCommandReachesThePage(t *testing.T) {
 }
 
 func TestWordsAloneOnADecisionAreACompleteAnswerAndComeBackWithTheWordsAndNoCommand(t *testing.T) {
+	t.Parallel()
 	const inTheirOwnWords = "leave it to whoever asked"
 
 	held, page := read(t, twoDecisionDocument)
@@ -547,6 +563,7 @@ func TestWordsAloneOnADecisionAreACompleteAnswerAndComeBackWithTheWordsAndNoComm
 }
 
 func TestEnterSubmitsTheForm(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, oneDecisionDocument)
 
 	page.do(chromedp.Click(within("c-1", ".choice"), chromedp.ByQuery, chromedp.NodeVisible))
@@ -567,6 +584,7 @@ func TestEnterSubmitsTheForm(t *testing.T) {
 }
 
 func TestTheBarSitsAtTheEndOfThePageRatherThanFixedToTheViewport(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 	page.narrow(360, 480)
 
@@ -597,6 +615,7 @@ func TestTheBarSitsAtTheEndOfThePageRatherThanFixedToTheViewport(t *testing.T) {
 }
 
 func TestAPageWhoseEveryDecisionAsksNothingShowsTheSameBarWithNoCounter(t *testing.T) {
+	t.Parallel()
 	normal := standing(t)
 	normalPage := opening(t, normal.serve(twoDecisionDocument))
 
@@ -620,6 +639,7 @@ func TestAPageWhoseEveryDecisionAsksNothingShowsTheSameBarWithNoCounter(t *testi
 const optionsRead = `Array.from(document.querySelectorAll('.decision[data-decision="c-2"] .option .option-label')).map((held) => held.textContent.trim())`
 
 func TestTheOptionTheCallerWouldTakeIsReadFirst(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	var offered []string
@@ -638,6 +658,7 @@ func TestTheOptionTheCallerWouldTakeIsReadFirst(t *testing.T) {
 }
 
 func TestRearrangingTheOptionsDoesNotRearrangeTheAnswer(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	pressPastTheConfirmation(page, ".send")
@@ -661,6 +682,7 @@ func TestRearrangingTheOptionsDoesNotRearrangeTheAnswer(t *testing.T) {
 }
 
 func TestTheRecommendationArrivesChosenAndADecisionMarkedNothingDoesNot(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	var ticked []string
@@ -724,6 +746,7 @@ const variedSeverityDocument = `{
 }`
 
 func TestARecommendationArrivesChosenWhateverItsSeverityOrAudience(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, variedSeverityDocument)
 
 	var ticked []string
@@ -750,6 +773,7 @@ const noSeverityAnywhereDocument = `{
 }`
 
 func TestADocumentStatingNoSeverityAnywhereRendersCardsInTheOrderItListedThem(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, noSeverityAnywhereDocument)
 
 	var cards, listed []string
@@ -765,6 +789,7 @@ func TestADocumentStatingNoSeverityAnywhereRendersCardsInTheOrderItListedThem(t 
 }
 
 func TestChoosingNoneOfTheseClearsTheSelectionAndMovesToTheField(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -784,6 +809,7 @@ func TestChoosingNoneOfTheseClearsTheSelectionAndMovesToTheField(t *testing.T) {
 }
 
 func TestChoosingNoneOfTheseAndTypingSendsTheWordsAndNoCommand(t *testing.T) {
+	t.Parallel()
 	const inTheirOwnWords = "I would rather write my own answer here"
 
 	held, page := read(t, twoDecisionDocument)
@@ -814,6 +840,7 @@ func TestChoosingNoneOfTheseAndTypingSendsTheWordsAndNoCommand(t *testing.T) {
 }
 
 func TestChoosingNoneOfTheseAndTypingNothingLeavesTheDecisionBlank(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	page.evaluate(chose("c-1", 0), nil)
@@ -834,6 +861,7 @@ func TestChoosingNoneOfTheseAndTypingNothingLeavesTheDecisionBlank(t *testing.T)
 }
 
 func TestAMultipleChoiceDecisionOffersNoWayToDeclineAndUntickingEveryBoxLeavesItBlank(t *testing.T) {
+	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
 	var none int
@@ -885,6 +913,7 @@ const askingNothingDocument = `{
 }`
 
 func TestAnAnnotationOnADecisionThatAskedNothingComesBack(t *testing.T) {
+	t.Parallel()
 	const inTheirOwnWords = "the second one reads better than the finding did"
 
 	held := standing(t)
@@ -923,6 +952,7 @@ func TestAnAnnotationOnADecisionThatAskedNothingComesBack(t *testing.T) {
 }
 
 func TestAPageOfCardsThatAskNothingOffersNoControls(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	page := opening(t, held.serve(askingNothingDocument))
 
@@ -962,6 +992,7 @@ const optionsWithNoCommandDocument = `{
 }`
 
 func TestADecisionWhoseOptionsAllCarryNoCommandIsServedAndRendered(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	page := opening(t, held.serve(optionsWithNoCommandDocument))
 
@@ -1087,6 +1118,7 @@ type framed struct {
 }
 
 func TestThePageSaysNobodyIsWaiting(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	page := openingNothingToAnswer(t, held.serve(nothingToAnswerDocument))
 
@@ -1106,6 +1138,7 @@ func TestThePageSaysNobodyIsWaiting(t *testing.T) {
 }
 
 func TestTheFrameIsTheSameFrame(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	asking := opening(t, held.serve(glancedDocument))
 
@@ -1138,6 +1171,7 @@ func TestTheFrameIsTheSameFrame(t *testing.T) {
 
 func TestAnEntryTakesThePersonToTheDecision(t *testing.T) {
 	// scenario: An entry leads to the decision that covers it
+	t.Parallel()
 	held := standing(t)
 	page := opening(t, held.serve(glancedDocument))
 
@@ -1163,6 +1197,7 @@ func TestAnEntryTakesThePersonToTheDecision(t *testing.T) {
 }
 
 func TestADecisionIsShownUnderTheNameItsSourceGivesIt(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, namedAndUnnamed)
 
 	var named, unnamed string
@@ -1207,6 +1242,7 @@ type rightEdges struct {
 }
 
 func TestEveryPartOfThePageEndsWhereTheCardsEnd(t *testing.T) {
+	t.Parallel()
 	for _, window := range []struct {
 		width   int
 		aligned []string

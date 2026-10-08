@@ -18,6 +18,7 @@ const talkativeScenario = "default:\n  events: 60\n  interval: 100ms\n"
 
 func TestCancellingStopsTheReviewerThatIsAnswering(t *testing.T) {
 	// scenario: Cancelling stops everything
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(talkativeScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -52,6 +53,7 @@ func TestCancellingStopsTheReviewerThatIsAnswering(t *testing.T) {
 
 func TestAMachineThatHandsTheReviewerMoreIsRecorded(t *testing.T) {
 	// scenario: A machine that hands the reviewer more than it asked for
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  extra_tools: [Bash, browser_run_code_unsafe]\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -80,6 +82,7 @@ func TestAMachineThatHandsTheReviewerMoreIsRecorded(t *testing.T) {
 
 func TestAToolThatWritesCannotReachTheChangeUnderReview(t *testing.T) {
 	// scenario: A tool that writes cannot reach the change under review
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  extra_tools: [Bash]\n  writes:\n    - path: .serena/project.yml\n      content: \"a tool writing its own bookkeeping as it starts\\n\"\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -123,6 +126,7 @@ func waitForTheReviewerToAnswer(t *testing.T, session *harness.Session) simulati
 }
 
 func TestAReviewThatReallyFailedStillReadsAsOne(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  behaviour: no-result\n")
 	session.Repository.Write("internal/added.go", "package internal\n")

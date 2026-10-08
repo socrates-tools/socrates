@@ -15,6 +15,7 @@ import (
 const awaitsAPerson = "awaits a person"
 
 func TestSocratesSaysWhichRoundsWaitOnAPersonAndOnlyThose(t *testing.T) {
+	t.Parallel()
 	for _, driven := range []struct {
 		named    string
 		scenario string
@@ -52,6 +53,7 @@ func TestSocratesSaysWhichRoundsWaitOnAPersonAndOnlyThose(t *testing.T) {
 }
 
 func TestTheSurfaceDoesNotGrow(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	for command, flags := range surfaceOf(t, session) {
@@ -87,6 +89,7 @@ func TestTheSurfaceDoesNotGrow(t *testing.T) {
 
 func TestNoRoleSocratesSpawnsWritesForAReader(t *testing.T) {
 	// scenario: Nothing socrates spawns drafts a page
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(dialogueScenario(questionOfIntent, nothingFoundAgain))
 	session.Repository.Write("internal/added.go", answeredWrongly)

@@ -141,6 +141,7 @@ func (j *journey) namedNothingTheSkillDoesNot() {
 }
 
 func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
+	t.Parallel()
 	t.Run(string(runstate.Escalated), func(t *testing.T) {
 		driven := driving(t, dialogueScenario(unanswerableFinding, nothingFoundAgain), answeredWrongly)
 		name := driven.begin("count the characters of a document")
@@ -202,6 +203,7 @@ func TestTheLoopStopsWhereTheSkillSaysToStop(t *testing.T) {
 }
 
 func TestTheLoopAnswersAQuestionAndReachesAVerdict(t *testing.T) {
+	t.Parallel()
 	driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)
 	name := driven.begin("count the characters of a document")
 
@@ -256,6 +258,7 @@ func TestTheLoopAnswersAQuestionAndReachesAVerdict(t *testing.T) {
 }
 
 func TestAParkedRoundWaitsOnAQuestionAndOnAPatch(t *testing.T) {
+	t.Parallel()
 	driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)
 	name := driven.begin("count the characters of a document")
 
@@ -306,6 +309,7 @@ func TestAParkedRoundWaitsOnAQuestionAndOnAPatch(t *testing.T) {
 }
 
 func TestAQuestionThatReachesTheCapEscalatesWithEverythingKept(t *testing.T) {
+	t.Parallel()
 	driven := driving(t, dialogueScenario(patchableFindings, questionAtTheCap), answeredWrongly)
 	name := driven.begin("count the characters of a document")
 
@@ -365,6 +369,7 @@ func TestAQuestionThatReachesTheCapEscalatesWithEverythingKept(t *testing.T) {
 }
 
 func TestTheLoopTheSkillDescribesReachesAVerdict(t *testing.T) {
+	t.Parallel()
 	driven := driving(t, dialogueScenario(patchableFindings, nothingFoundAgain), answeredWrongly)
 	name := driven.begin("count the characters of a document")
 
@@ -402,6 +407,7 @@ func TestTheLoopTheSkillDescribesReachesAVerdict(t *testing.T) {
 }
 
 func TestTheLoopCarriesTheSessionFromServeToPollAndReachesAVerdict(t *testing.T) {
+	t.Parallel()
 	const inTheirOwnWords = "the function stays, because the importer reads it every morning"
 
 	driven := driving(t, dialogueScenario(questionOfIntent, nothingFoundAgain), answeredWrongly)
@@ -478,6 +484,7 @@ func TestTheLoopCarriesTheSessionFromServeToPollAndReachesAVerdict(t *testing.T)
 }
 
 func TestALaterRoundIsWrittenToThePageThePersonAlreadyHas(t *testing.T) {
+	t.Parallel()
 	driven := driving(t, dialogueScenario(questionOfIntent, questionAtTheCap), answeredWrongly)
 	name := driven.begin("count the characters of a document")
 

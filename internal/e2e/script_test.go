@@ -12,6 +12,7 @@ import (
 )
 
 func TestTheCommandLineBehavesAsItsScriptsSay(t *testing.T) {
+	t.Parallel()
 	binaries := t.TempDir()
 	if err := os.Symlink(source.Shared(t, "./cmd/socrates"), filepath.Join(binaries, "socrates")); err != nil {
 		t.Fatalf("linking socrates: %v", err)

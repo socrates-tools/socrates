@@ -19,6 +19,7 @@ type moduleFile struct {
 }
 
 func TestTheReleaserBuildsUnderTheToolchainAVerificationRunInstallsFromGoMod(t *testing.T) {
+	t.Parallel()
 	root := source.Root(t)
 
 	pinned := releaserPinnedBy(t, root)

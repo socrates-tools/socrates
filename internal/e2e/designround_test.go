@@ -64,6 +64,7 @@ const designRoundTwoDocument = `{
 }`
 
 func TestADesignRoundArrivesChosenAndWhatThePersonAnsweredReachesTheSession(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	address := held.serve(designRoundDocument)
 	page := opening(t, address)
@@ -137,6 +138,7 @@ func TestADesignRoundArrivesChosenAndWhatThePersonAnsweredReachesTheSession(t *t
 }
 
 func TestASecondDesignRoundOpensWithWhatWasSettledAheadOfWhatIsStillOpen(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	address := held.serve(designRoundDocument)
 	page := opening(t, address)

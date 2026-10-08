@@ -18,6 +18,7 @@ import (
 )
 
 func TestOneNameIsInstalledAndNothingIsPutBesideIt(t *testing.T) {
+	t.Parallel()
 	root := requireMake(t)
 	directory, home := installed(t, root)
 
@@ -59,6 +60,7 @@ func TestOneNameIsInstalledAndNothingIsPutBesideIt(t *testing.T) {
 }
 
 func TestWhatItPrintsNamesTheTool(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	printed, failures, code := invoked(t, session.Binary, "kaboom")

@@ -97,6 +97,7 @@ type wasPainted struct {
 }
 
 func TestTheEmbeddedStylesheetPaints(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	address := held.serve(illustrated(t, callersPalette))
 	page := opening(t, address)
@@ -179,6 +180,7 @@ func frameOf(t *testing.T, stylesheet string) map[string]string {
 
 func TestACallerCannotPaintTheFrame(t *testing.T) {
 	// scenario: A selector naming the page is confined to the illustration
+	t.Parallel()
 	unpainted := frameOf(t, "")
 	overreached := frameOf(t, overreachingPalette)
 
@@ -232,6 +234,7 @@ type covering struct {
 }
 
 func TestAPaintedIllustrationCannotCoverThePage(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	page := opening(t, held.serve(illustrated(t, overreachingPalette)))
 
@@ -289,6 +292,7 @@ type boxed struct {
 }
 
 func TestAPaintedIllustrationRendersInTheSameBoxAsOneThatPaintsItself(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	page := opening(t, held.serve(illustrated(t, callersPalette)))
 
@@ -307,6 +311,7 @@ func TestAPaintedIllustrationRendersInTheSameBoxAsOneThatPaintsItself(t *testing
 }
 
 func TestAPaintedIllustrationIsLegibleAtANarrowWidth(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	page := opening(t, held.serve(illustrated(t, callersPalette)))
 
@@ -390,6 +395,7 @@ const measuringInsideTheIllustration = `(() => {
 })()`
 
 func TestACallersColoursDoNotReachTheDecision(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	page := opening(t, held.serve(illustrated(t, callersPalette)))
 
@@ -420,6 +426,7 @@ func TestACallersColoursDoNotReachTheDecision(t *testing.T) {
 }
 
 func TestAnOversizedStylesheetIsRefusedBeforeServing(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	oversized := illustrated(t, strings.Repeat(callersPalette, 1+document.StylesheetCeiling/len(callersPalette)))

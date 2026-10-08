@@ -16,6 +16,7 @@ import (
 	"github.com/socrates-tools/socrates/agora/surface"
 	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/state"
+	"github.com/socrates-tools/socrates/internal/testing/exclusive"
 	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
@@ -68,6 +69,7 @@ func thePageAt(reached, session string) string {
 }
 
 func TestTheSurfaceReportsThePortItWasGivenRatherThanTheOneItAskedFor(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	printed := held.serve(oneDecisionDocument)
@@ -106,8 +108,14 @@ func untilThePortIsFree(t *testing.T, address string) {
 	}
 }
 
+func lockingTheWindow(t *testing.T) {
+	t.Helper()
+	exclusive.Machine(t, "agora-default-window")
+}
+
 func requireTheFixedPortIsFree(t *testing.T) {
 	t.Helper()
+	lockingTheWindow(t)
 
 	listener, err := net.Listen("tcp", surface.DefaultAddress)
 	if err != nil {
@@ -120,6 +128,7 @@ func requireTheFixedPortIsFree(t *testing.T) {
 
 func holdingTheWindowDownTo(t *testing.T, ports int) []string {
 	t.Helper()
+	lockingTheWindow(t)
 
 	addresses := surface.Addresses()
 	for _, address := range addresses[:ports] {
@@ -134,6 +143,7 @@ func holdingTheWindowDownTo(t *testing.T, ports int) []string {
 
 func holdingTheWindowDownToWithTheNextOneFree(t *testing.T, ports int) []string {
 	t.Helper()
+	lockingTheWindow(t)
 
 	addresses := surface.Addresses()
 	next, err := net.Listen("tcp", addresses[ports])
@@ -147,6 +157,7 @@ func holdingTheWindowDownToWithTheNextOneFree(t *testing.T, ports int) []string 
 }
 
 func TestAHeldDefaultIsTheNextPortDownRatherThanARefusal(t *testing.T) {
+	t.Parallel()
 	addresses := holdingTheWindowDownToWithTheNextOneFree(t, 1)
 
 	held := standing(t)
@@ -172,6 +183,7 @@ func TestAHeldDefaultIsTheNextPortDownRatherThanARefusal(t *testing.T) {
 }
 
 func TestTheWindowIsWalkedFromTheTopDownRatherThanAtRandom(t *testing.T) {
+	t.Parallel()
 	addresses := holdingTheWindowDownToWithTheNextOneFree(t, 3)
 
 	held := standing(t)
@@ -196,6 +208,7 @@ func TestTheWindowIsWalkedFromTheTopDownRatherThanAtRandom(t *testing.T) {
 }
 
 func TestAWholeWindowHeldIsARefusalThatNamesTheWindow(t *testing.T) {
+	t.Parallel()
 	addresses := holdingTheWindowDownTo(t, len(surface.Addresses()))
 
 	held := standing(t)
@@ -228,6 +241,7 @@ func aHeldLoopbackAddress(t *testing.T) string {
 
 func windowAddressesNothingHolds(t *testing.T) []string {
 	t.Helper()
+	lockingTheWindow(t)
 
 	var free []string
 	for _, address := range surface.Addresses() {
@@ -261,6 +275,7 @@ func (s *surfaced) boundNothing(named string, free []string) {
 }
 
 func TestAStatedAddressThatIsHeldIsRefusedRatherThanWalked(t *testing.T) {
+	t.Parallel()
 	taken := aHeldLoopbackAddress(t)
 
 	held := standing(t)
@@ -277,6 +292,7 @@ func TestAStatedAddressThatIsHeldIsRefusedRatherThanWalked(t *testing.T) {
 }
 
 func TestAConfiguredBindThatIsHeldIsRefusedRatherThanWalked(t *testing.T) {
+	t.Parallel()
 	taken := aHeldLoopbackAddress(t)
 
 	held := standing(t)
@@ -295,6 +311,7 @@ func TestAConfiguredBindThatIsHeldIsRefusedRatherThanWalked(t *testing.T) {
 }
 
 func TestAStatedReachedAtAddressPinsThePortToo(t *testing.T) {
+	t.Parallel()
 	addresses := holdingTheWindowDownTo(t, 1)
 
 	held := standing(t)
@@ -313,6 +330,7 @@ func TestAStatedReachedAtAddressPinsThePortToo(t *testing.T) {
 }
 
 func TestTheDefaultBindIsAFixedLoopbackPort(t *testing.T) {
+	t.Parallel()
 	requireTheFixedPortIsFree(t)
 
 	held := standing(t)
@@ -346,6 +364,7 @@ func TestTheDefaultBindIsAFixedLoopbackPort(t *testing.T) {
 const reachedAt = "https://agora.example:8443/"
 
 func TestServePrintsTheAddressStatedOverTheAddressBound(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	held.configure("reached_at: " + reachedAt + "\n")
 
@@ -362,6 +381,7 @@ func TestServePrintsTheAddressStatedOverTheAddressBound(t *testing.T) {
 
 func TestASurfaceThatWasRevisedPrintsTheAddressStatedToo(t *testing.T) {
 	// scenario: serve prints the address stated over the address bound
+	t.Parallel()
 	held := standing(t)
 	held.configure("reached_at: " + reachedAt + "\n")
 
@@ -378,6 +398,7 @@ func TestASurfaceThatWasRevisedPrintsTheAddressStatedToo(t *testing.T) {
 
 func TestWithNoAddressToReachAtStatedBothExitsPrintTheAddressBound(t *testing.T) {
 	// scenario: serve returns before the person has read anything
+	t.Parallel()
 	held := standing(t)
 
 	started := held.serve(oneDecisionDocument)
@@ -394,6 +415,7 @@ func TestWithNoAddressToReachAtStatedBothExitsPrintTheAddressBound(t *testing.T)
 }
 
 func TestAnAddressAPersonCouldNotOpenIsRefused(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	held.configure("reached_at: agora.example:8443\n")
 
@@ -410,6 +432,7 @@ func TestAnAddressAPersonCouldNotOpenIsRefused(t *testing.T) {
 }
 
 func TestAnAddressNothingAnswersOnIsStillServed(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	unserved := "http://" + aFreeLoopbackAddress(t) + "/"
@@ -431,6 +454,7 @@ func TestAnAddressNothingAnswersOnIsStillServed(t *testing.T) {
 }
 
 func TestTheAddressTheSurfaceIsReachedAtIsNotAHostItAdmits(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	held.configure("reached_at: " + reachedAt + "\n")
 
@@ -464,6 +488,7 @@ func TestTheAddressTheSurfaceIsReachedAtIsNotAHostItAdmits(t *testing.T) {
 }
 
 func TestAConfiguredBindThatIsNotLoopbackIsRefusedToo(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	held.configure("bind: 0.0.0.0:8080\n")
 
@@ -480,6 +505,7 @@ func TestAConfiguredBindThatIsNotLoopbackIsRefusedToo(t *testing.T) {
 }
 
 func TestThePortAnOperatorIsToldToForwardIsTheOneTheSurfaceBinds(t *testing.T) {
+	t.Parallel()
 	section := documentedForwarding(t)
 
 	_, port, err := net.SplitHostPort(surface.DefaultAddress)
@@ -498,6 +524,7 @@ func TestThePortAnOperatorIsToldToForwardIsTheOneTheSurfaceBinds(t *testing.T) {
 }
 
 func TestTheAddressAPersonOpensNamesTheToolTheyInstalled(t *testing.T) {
+	t.Parallel()
 	section := documentedForwarding(t)
 
 	for _, line := range strings.Split(section, "\n") {
@@ -532,6 +559,7 @@ func documentedForwarding(t *testing.T) string {
 }
 
 func TestAPageServedWithNothingStatedSaysWhereItCanBeOpenedFrom(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", aPortTheOperatingSystemChooses)
@@ -558,6 +586,7 @@ func TestAPageServedWithNothingStatedSaysWhereItCanBeOpenedFrom(t *testing.T) {
 
 func TestWhatAPersonIsToldToForwardIsThePortTheWindowWalkedDownTo(t *testing.T) {
 	// scenario: A page served with nothing stated says where it can be opened from
+	t.Parallel()
 	addresses := holdingTheWindowDownToWithTheNextOneFree(t, 1)
 
 	held := standing(t)
@@ -583,6 +612,7 @@ func TestWhatAPersonIsToldToForwardIsThePortTheWindowWalkedDownTo(t *testing.T) 
 }
 
 func TestWhatACallerReadsIsTheAddressAndNothingElse(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", aPortTheOperatingSystemChooses)
@@ -600,6 +630,7 @@ func TestWhatACallerReadsIsTheAddressAndNothingElse(t *testing.T) {
 }
 
 func TestAStatedAddressIsAnOperatorWhoHasAlreadyAnswered(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	held.configure("reached_at: http://socrates.example:8443/\n")
 
@@ -613,6 +644,7 @@ func TestAStatedAddressIsAnOperatorWhoHasAlreadyAnswered(t *testing.T) {
 }
 
 func TestWhatAnOperatorStatesAboutTheSurfaceIsReadFromAgorasOwnFile(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	bound := aFreeLoopbackAddress(t)
@@ -631,6 +663,7 @@ func TestWhatAnOperatorStatesAboutTheSurfaceIsReadFromAgorasOwnFile(t *testing.T
 }
 
 func TestASurfaceBlockInReviewsFileIsNotWhatAgoraBinds(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	inReviews := aFreeLoopbackAddress(t)
@@ -657,6 +690,7 @@ func TestASurfaceBlockInReviewsFileIsNotWhatAgoraBinds(t *testing.T) {
 }
 
 func TestAnAgoraFileThatWillNotParseIsRefusedByName(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	held.writeAgorasConfiguration("surface: [not a mapping\n")
 
@@ -673,6 +707,7 @@ func TestAnAgoraFileThatWillNotParseIsRefusedByName(t *testing.T) {
 }
 
 func TestAFieldAgorasFileDoesNotKnowIsRefusedByName(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	held.configure("proxy: agora.example\n")
 
@@ -686,6 +721,7 @@ func TestAFieldAgorasFileDoesNotKnowIsRefusedByName(t *testing.T) {
 }
 
 func TestAStatedFlagBeatsAConfiguredBind(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	configured := aFreeLoopbackAddress(t)
@@ -707,6 +743,7 @@ func TestAStatedFlagBeatsAConfiguredBind(t *testing.T) {
 }
 
 func TestAConfiguredBindIsWhatTheSurfaceBinds(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	wanted := aFreeLoopbackAddress(t)
@@ -751,6 +788,7 @@ func inFrontOf(t *testing.T, bound string) string {
 }
 
 func TestAPersonAnswersThroughSomethingStandingInFrontOfTheSurface(t *testing.T) {
+	t.Parallel()
 	const inTheirOwnWords = "the lock goes first, and the cache reads under it"
 
 	held := standing(t)

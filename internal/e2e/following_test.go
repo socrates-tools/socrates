@@ -10,6 +10,7 @@ import (
 )
 
 func TestFollowingAReviewToACleanVerdict(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -27,6 +28,7 @@ func TestFollowingAReviewToACleanVerdict(t *testing.T) {
 }
 
 func TestFollowingAReviewToAnEscalation(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -44,6 +46,7 @@ func TestFollowingAReviewToAnEscalation(t *testing.T) {
 }
 
 func TestEveryVerdictIsFollowedToItsOwnCode(t *testing.T) {
+	t.Parallel()
 	for _, verdict := range []struct {
 		state    runstate.State
 		scenario string
@@ -78,6 +81,7 @@ func TestEveryVerdictIsFollowedToItsOwnCode(t *testing.T) {
 }
 
 func TestAFollowerDoesNotOutliveTheRun(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -98,6 +102,7 @@ func TestAFollowerDoesNotOutliveTheRun(t *testing.T) {
 }
 
 func TestWatchingImmediatelyAfterStartingARun(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -115,6 +120,7 @@ func TestWatchingImmediatelyAfterStartingARun(t *testing.T) {
 }
 
 func TestCancellingWhileFollowing(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -137,6 +143,7 @@ func TestCancellingWhileFollowing(t *testing.T) {
 }
 
 func TestAFollowerStopsWhereTheRoundStops(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
 
@@ -164,6 +171,7 @@ func lineSaying(printed, said string) string {
 }
 
 func TestAFollowerSaysAQuestionIsWhatTheRoundWaitsOn(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	name := parkedRun(t, session, dialogueScenario(questionOnly, nothingFoundAgain))
 
@@ -181,6 +189,7 @@ func TestAFollowerSaysAQuestionIsWhatTheRoundWaitsOn(t *testing.T) {
 }
 
 func TestReadingAFinishedRun(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -206,6 +215,7 @@ func TestReadingAFinishedRun(t *testing.T) {
 }
 
 func TestReadingARunStillInProgress(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")

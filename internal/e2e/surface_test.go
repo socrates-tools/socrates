@@ -85,6 +85,7 @@ func (s *surfaced) surfaceHome() string {
 }
 
 func (s *surfaced) bindsWhatIsConfigured() {
+	lockingTheWindow(s.t)
 	s.bind = ""
 }
 
@@ -223,6 +224,7 @@ func (s *surfaced) answerOn(session string, sent surface.Sent) {
 }
 
 func TestTheSurfaceOffersNothingBeyondTheFour(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	printed, failures, code := held.run("--help")
@@ -246,6 +248,7 @@ func TestTheSurfaceOffersNothingBeyondTheFour(t *testing.T) {
 }
 
 func TestAgoraTypedBarePrintsHelpAndStartsNothing(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	printed, failures, code := held.run()
@@ -261,6 +264,7 @@ func TestAgoraTypedBarePrintsHelpAndStartsNothing(t *testing.T) {
 }
 
 func TestServeReturnsBeforeThePersonHasReadAnything(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	started := time.Now()
@@ -293,6 +297,7 @@ func TestServeReturnsBeforeThePersonHasReadAnything(t *testing.T) {
 }
 
 func TestADocumentWithNothingToDecideIsServed(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	address := held.serve(nothingToDecideDocument)
@@ -318,6 +323,7 @@ func TestADocumentWithNothingToDecideIsServed(t *testing.T) {
 }
 
 func TestADocumentWithNothingAtAllIsRefused(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	printed, failures, code := held.reading(nothingAtAllDocument, "serve", "--document", "-")
@@ -334,6 +340,7 @@ func TestADocumentWithNothingAtAllIsRefused(t *testing.T) {
 
 func TestAWildcardBindIsRefusedByTheBinary(t *testing.T) {
 	// scenario: A wildcard bind is refused rather than quietly narrowed
+	t.Parallel()
 	held := standing(t)
 
 	printed, failures, code := held.reading(oneDecisionDocument, "serve", "--document", "-", "--address", "0.0.0.0:0")
@@ -350,6 +357,7 @@ func TestAWildcardBindIsRefusedByTheBinary(t *testing.T) {
 
 func TestAFragmentOutsideTheAllowlistStillServes(t *testing.T) {
 	// scenario: A fragment outside the allowlist is stripped
+	t.Parallel()
 	held := standing(t)
 
 	var written map[string]any
@@ -408,6 +416,7 @@ const twoRecommendedDocument = `{
 
 func TestServeRefusesADocumentMarkingTwoOptions(t *testing.T) {
 	// scenario: A document marking two options is refused before serving
+	t.Parallel()
 	held := standing(t)
 
 	printed, failures, code := held.reading(twoRecommendedDocument, "serve", "--document", "-")
@@ -424,6 +433,7 @@ func TestServeRefusesADocumentMarkingTwoOptions(t *testing.T) {
 
 func TestADocumentWrittenBeforeTheMarkStillServes(t *testing.T) {
 	// scenario: A document that marks nothing is unaffected
+	t.Parallel()
 	held := standing(t)
 
 	address := held.serve(oneDecisionDocument)
@@ -453,9 +463,10 @@ func TestADocumentWrittenBeforeTheMarkStillServes(t *testing.T) {
 }
 
 func TestTheRepositoryIsUntouched(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
-	repository := gitrepo.New(t)
+	repository := gitrepo.Isolated(t)
 	held.where = repository.Root
 	before := repository.Status()
 	beforeTree := workingTree(t, repository.Root)
@@ -505,6 +516,7 @@ const surfaceCeiling = 32 << 20
 
 func TestTheBinaryWeighsWhatSomebodyHasSeen(t *testing.T) {
 	// scenario: A diff renders from a patch
+	t.Parallel()
 	binary := source.Shared(t, "./cmd/socrates")
 
 	held, err := os.Stat(binary)

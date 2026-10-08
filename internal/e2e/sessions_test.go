@@ -48,6 +48,7 @@ func fetched(t *testing.T, address string) (int, string) {
 }
 
 func TestASessionIsMintedAndTheAddressHoldsIt(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 
 	address := held.serve(oneDecisionDocument)
@@ -70,6 +71,7 @@ func TestASessionIsMintedAndTheAddressHoldsIt(t *testing.T) {
 }
 
 func TestASessionIsNamedToPollIt(t *testing.T) {
+	t.Parallel()
 	const onTheSecondPage = "this one is the second page"
 
 	held := standing(t)
@@ -94,6 +96,7 @@ func TestASessionIsNamedToPollIt(t *testing.T) {
 
 func TestAPageNobodyAnsweredExitsTheCodeForSomethingAsked(t *testing.T) {
 	// scenario: A session is named to poll it, and nobody has answered it
+	t.Parallel()
 	held := servingSurface(t)
 
 	const session = "a-page-nobody-answered"
@@ -133,6 +136,7 @@ func TestAPageNobodyAnsweredExitsTheCodeForSomethingAsked(t *testing.T) {
 
 func TestAPollNamingNoSessionIsRefused(t *testing.T) {
 	// scenario: A session is named to poll it
+	t.Parallel()
 	held := standing(t)
 	held.serve(oneDecisionDocument)
 
@@ -150,6 +154,7 @@ func TestAPollNamingNoSessionIsRefused(t *testing.T) {
 }
 
 func TestANewDocumentReachesTheSessionItNamedAndNoOther(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	firstAddress, _, secondAddress, second := held.twoPages()
 
@@ -165,6 +170,7 @@ func TestANewDocumentReachesTheSessionItNamedAndNoOther(t *testing.T) {
 
 func TestASessionTheSurfaceNeverMintedIsRefusedByTheBinary(t *testing.T) {
 	// scenario: A session the surface never minted is refused
+	t.Parallel()
 	const neverMinted = "fedcba9876543210"
 
 	held := standing(t)
@@ -188,6 +194,7 @@ func TestASessionTheSurfaceNeverMintedIsRefusedByTheBinary(t *testing.T) {
 }
 
 func TestEndingOneSessionLeavesTheOthersBeingRead(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	_, first, secondAddress, second := held.twoPages()
 
@@ -209,6 +216,7 @@ func TestEndingOneSessionLeavesTheOthersBeingRead(t *testing.T) {
 }
 
 func TestStoppingIsTheServerNotASession(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	firstAddress, _, secondAddress, _ := held.twoPages()
 	bound := held.record().Address
@@ -229,6 +237,7 @@ func TestStoppingIsTheServerNotASession(t *testing.T) {
 
 func TestStopNamesNoSession(t *testing.T) {
 	// scenario: Stopping is the server, not a session
+	t.Parallel()
 	held := standing(t)
 	held.serve(oneDecisionDocument)
 
@@ -243,6 +252,7 @@ func TestStopNamesNoSession(t *testing.T) {
 
 func TestAServeWhosePortSomethingElseHoldsIsRefused(t *testing.T) {
 	// scenario: The default bind is a fixed loopback port
+	t.Parallel()
 	held := standing(t)
 
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
@@ -269,6 +279,7 @@ func TestAServeWhosePortSomethingElseHoldsIsRefused(t *testing.T) {
 
 func TestEachSessionIsWrittenUnderADirectoryOfItsOwn(t *testing.T) {
 	// scenario: Neither program writes in the other's home
+	t.Parallel()
 	held := standing(t)
 	_, first, _, second := held.twoPages()
 
@@ -283,6 +294,7 @@ func TestEachSessionIsWrittenUnderADirectoryOfItsOwn(t *testing.T) {
 }
 
 func TestTwoSessionsAreServedAtOnceAndNeitherDisturbsTheOther(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	firstAddress, first, secondAddress, second := held.twoPages()
 
@@ -325,6 +337,7 @@ func TestTwoSessionsAreServedAtOnceAndNeitherDisturbsTheOther(t *testing.T) {
 
 func TestAStrangerOnThePortIsNotMistakenForTheSurface(t *testing.T) {
 	// scenario: The default bind is a fixed loopback port
+	t.Parallel()
 	held := standing(t)
 	held.serve(oneDecisionDocument)
 
@@ -384,6 +397,7 @@ func aStrangerAnsweringOn(t *testing.T, address string) *http.Server {
 
 func TestAnotherAgorasSurfaceIsNotMistakenForThisOne(t *testing.T) {
 	// scenario: The default bind is a fixed loopback port
+	t.Parallel()
 	shared := aFreeLoopbackAddress(t)
 
 	foreign := standing(t)

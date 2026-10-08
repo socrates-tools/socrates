@@ -16,6 +16,7 @@ import (
 )
 
 func TestAStartedRunIsOnDiskImmediately(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(slowScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -42,6 +43,7 @@ func TestAStartedRunIsOnDiskImmediately(t *testing.T) {
 }
 
 func TestRoundOutputIsUnderTheRound(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -66,6 +68,7 @@ func TestRoundOutputIsUnderTheRound(t *testing.T) {
 }
 
 func TestEventsAreOneJSONObjectPerLineThroughARun(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -101,6 +104,7 @@ func TestEventsAreOneJSONObjectPerLineThroughARun(t *testing.T) {
 }
 
 func TestWhatTheAgentCostIsRecordedInTheLog(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  input_tokens: 1234\n  output_tokens: 567\n" + strings.TrimPrefix(cleanScenario, "\ndefault:\n"))
 	session.Repository.Write("internal/added.go", "package internal\n")

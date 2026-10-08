@@ -37,6 +37,7 @@ const lastDesignCardDocument = `{
 }`
 
 func TestTheLastDesignRoundIsOneCardApprovingTheShapeAndThePath(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	address := held.serve(lastDesignCardDocument)
 	page := opening(t, address)
@@ -119,6 +120,7 @@ const twoOpenDesignQuestionsDocument = `{
 }`
 
 func TestEndingADesignRoundEarlyDeliversOnlyWhatWasAnsweredAndClosesTheExchange(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	address := held.serve(twoOpenDesignQuestionsDocument)
 	page := opening(t, address)
@@ -147,6 +149,7 @@ func TestEndingADesignRoundEarlyDeliversOnlyWhatWasAnsweredAndClosesTheExchange(
 }
 
 func TestEndingADesignSessionFromTheCommandLineLeavesNothingForTheSessionToPoll(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	address := held.serve(twoOpenDesignQuestionsDocument)
 

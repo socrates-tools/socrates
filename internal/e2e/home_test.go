@@ -15,6 +15,7 @@ import (
 )
 
 func TestOneVariableMovesEverything(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -47,6 +48,7 @@ func TestOneVariableMovesEverything(t *testing.T) {
 }
 
 func TestARelativeHomeIsRefused(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
@@ -68,6 +70,7 @@ func TestARelativeHomeIsRefused(t *testing.T) {
 }
 
 func TestARunIsFoundBesideTheConfiguration(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -94,6 +97,7 @@ func TestARunIsFoundBesideTheConfiguration(t *testing.T) {
 }
 
 func TestOneVariableMovesEverythingBothToolsHave(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -145,6 +149,7 @@ func TestOneVariableMovesEverythingBothToolsHave(t *testing.T) {
 }
 
 func TestTheSurfaceWritesInAgorasDirectoryAndNothingInReviews(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -182,6 +187,7 @@ func TestTheSurfaceWritesInAgorasDirectoryAndNothingInReviews(t *testing.T) {
 }
 
 func TestTheVariableThatMovedTheSurfacesOwnHomeIsRefused(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	moved := t.TempDir()
 	held.also = []string{surface.RetiredHomeVariable + "=" + moved}
@@ -214,6 +220,7 @@ func TestTheVariableThatMovedTheSurfacesOwnHomeIsRefused(t *testing.T) {
 
 func TestARelativeHomeIsRefusedByTheSurfaceToo(t *testing.T) {
 	// scenario: A relative home is refused
+	t.Parallel()
 	held := standing(t)
 	relative := filepath.Join("somewhere", "below")
 	held.home = relative

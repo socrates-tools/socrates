@@ -20,6 +20,7 @@ import (
 )
 
 func TestAReleaseArchiveGivesWhatInstallingFromSourceGives(t *testing.T) {
+	t.Parallel()
 	extracted := aReleaseArchiveExtracted(t)
 
 	t.Run("An archive carries the terms and the notices", func(t *testing.T) {

@@ -38,6 +38,7 @@ const highlightedBlocks = `Object.fromEntries(Array.from(document.querySelectorA
 ]))`
 
 func TestTheLanguagesACallerActuallyPassesAreHighlighted(t *testing.T) {
+	t.Parallel()
 	held := standing(t)
 	page := opening(t, held.serve(inTwoLanguagesDocument))
 
@@ -62,6 +63,7 @@ const colouredDiffDocument = `{
 }`
 
 func TestTheLinesOfADiffAreColouredLikeCodeAndStillMeetTheFloor(t *testing.T) {
+	t.Parallel()
 	_, page := read(t, colouredDiffDocument)
 
 	page.waitFor(`!!document.querySelector('.hunk .line .hljs-keyword')`)

@@ -13,6 +13,7 @@ import (
 )
 
 func TestTheCleanJourney(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(cleanScenario)
 
@@ -54,6 +55,7 @@ func TestTheCleanJourney(t *testing.T) {
 }
 
 func TestTheEscalatedJourney(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario(escalatingScenario)
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -91,6 +93,7 @@ func TestTheEscalatedJourney(t *testing.T) {
 }
 
 func TestTheJourneyOnARecordedAnswer(t *testing.T) {
+	t.Parallel()
 	entry, err := corpus.Named("dialogue-layer-first-look")
 	if err != nil {
 		t.Fatalf("reading the recorded answer: %v", err)
@@ -126,6 +129,7 @@ func TestTheJourneyOnARecordedAnswer(t *testing.T) {
 }
 
 func TestNoFailureJourneyReportsClean(t *testing.T) {
+	t.Parallel()
 	for _, failure := range []struct {
 		behaviour string
 		names     string
@@ -164,6 +168,7 @@ func TestNoFailureJourneyReportsClean(t *testing.T) {
 }
 
 func TestNothingBranchesOnWhatTheAgentSaidWentWrong(t *testing.T) {
+	t.Parallel()
 	accounts := []string{
 		"API Error: 529 Overloaded",
 		"Prompt is too long for the context window",
@@ -199,6 +204,7 @@ func TestNothingBranchesOnWhatTheAgentSaidWentWrong(t *testing.T) {
 }
 
 func TestASilentReviewerIsAFailureJourney(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 30s\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -224,6 +230,7 @@ func TestASilentReviewerIsAFailureJourney(t *testing.T) {
 }
 
 func TestTheConcurrentEditingJourney(t *testing.T) {
+	t.Parallel()
 	const reviewed = "package internal\n\nfunc Answer() int {\n\treturn 1\n}\n"
 	const edited = "package internal\n\nfunc Answer() int {\n\treturn 2\n}\n"
 

@@ -14,6 +14,7 @@ import (
 )
 
 func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  events: 40\n  interval: 60ms\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -57,6 +58,7 @@ func TestTheCommandReturnsWhileTheReviewRuns(t *testing.T) {
 }
 
 func TestTheReviewerSurvivesItsCaller(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Simulator.Scenario("default:\n  events: 6\n  interval: 80ms\n")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -77,6 +79,7 @@ func TestTheReviewerSurvivesItsCaller(t *testing.T) {
 }
 
 func TestTheRunDirectoryHoldsTheRound(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 

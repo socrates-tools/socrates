@@ -12,6 +12,7 @@ import (
 )
 
 func TestHelpNamesEveryTargetAContributorIsToldToRun(t *testing.T) {
+	t.Parallel()
 	root := requireMake(t)
 
 	told, err := convention.TargetsDocumentsTell(root)

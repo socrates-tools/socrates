@@ -14,6 +14,7 @@ import (
 )
 
 func TestThePromptIsOnDisk(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
 
@@ -33,6 +34,7 @@ func TestThePromptIsOnDisk(t *testing.T) {
 
 func TestEveryRuleReachesTheReviewer(t *testing.T) {
 	// scenario: Assertions are made on the delivered prompt
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
 
@@ -66,6 +68,7 @@ func TestEveryRuleReachesTheReviewer(t *testing.T) {
 }
 
 func TestTheReviewerIsToldToReportWhatTheRuleForbids(t *testing.T) {
+	t.Parallel()
 	instruction := testQualityInstruction(t)
 
 	for _, required := range []string{"Report every test this change adds", "implementation source"} {
@@ -76,6 +79,7 @@ func TestTheReviewerIsToldToReportWhatTheRuleForbids(t *testing.T) {
 }
 
 func TestTheReportingDutyIsBoundedToTheChange(t *testing.T) {
+	t.Parallel()
 	instruction := testQualityInstruction(t)
 
 	for _, required := range []string{"already in the repository", "where this change touches it", "repository-wide cleanup"} {
@@ -113,6 +117,7 @@ func testQualityInstruction(t *testing.T) string {
 }
 
 func TestIntentReachesTheReviewer(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
@@ -131,6 +136,7 @@ func TestIntentReachesTheReviewer(t *testing.T) {
 }
 
 func TestAContradictionIsReportedAndLeftToAPerson(t *testing.T) {
+	t.Parallel()
 	obligation := intentObligation(t)
 
 	for _, required := range []string{
@@ -151,6 +157,7 @@ func TestAContradictionIsReportedAndLeftToAPerson(t *testing.T) {
 }
 
 func TestAnOtherwiseCleanChangeIsNotAnExemption(t *testing.T) {
+	t.Parallel()
 	obligation := intentObligation(t)
 
 	if !strings.Contains(obligation, "even where nothing else about the change is wrong") {
@@ -159,6 +166,7 @@ func TestAnOtherwiseCleanChangeIsNotAnExemption(t *testing.T) {
 }
 
 func TestAnUnstatedThingIsNotAContradiction(t *testing.T) {
+	t.Parallel()
 	obligation := intentObligation(t)
 
 	for _, required := range []string{"What the intent does not mention is not something it ruled out", "not a contradiction"} {
@@ -169,6 +177,7 @@ func TestAnUnstatedThingIsNotAContradiction(t *testing.T) {
 }
 
 func TestNoIntentNoObligation(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
@@ -223,6 +232,7 @@ func actionNeedingAPerson(t *testing.T) findings.Action {
 }
 
 func TestNoIntentIsStated(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n")
 
@@ -239,6 +249,7 @@ func TestNoIntentIsStated(t *testing.T) {
 }
 
 func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	documented, _, code := session.Socrates("begin", "--help")
@@ -303,6 +314,7 @@ func flagsTakingAValue(documented string) []string {
 }
 
 func TestTheReviewerIsAskedWhichClaimTheFixMakes(t *testing.T) {
+	t.Parallel()
 	rule := durableFixRule(t)
 
 	for _, required := range []string{"durable fix", "containment the author stated as a containment"} {
@@ -313,6 +325,7 @@ func TestTheReviewerIsAskedWhichClaimTheFixMakes(t *testing.T) {
 }
 
 func TestADurableFixIsTracedPastTheSymptom(t *testing.T) {
+	t.Parallel()
 	rule := durableFixRule(t)
 
 	for _, required := range []string{"failing sequence", "invariant", "sibling paths", "shared state", "still reachable"} {
@@ -323,6 +336,7 @@ func TestADurableFixIsTracedPastTheSymptom(t *testing.T) {
 }
 
 func TestTheEvidenceBarIsTheOneTheRestOfThePromptSets(t *testing.T) {
+	t.Parallel()
 	rule := durableFixRule(t)
 
 	for _, required := range []string{"the source shows", "not a defect for being a containment"} {
@@ -334,6 +348,7 @@ func TestTheEvidenceBarIsTheOneTheRestOfThePromptSets(t *testing.T) {
 
 func TestTheClampIsReadFirst(t *testing.T) {
 	// scenario: Every rule reaches the reviewer
+	t.Parallel()
 	rules := reviewingRules(t)
 
 	const clamp = "Do not infer a systemic flaw from code shape, duplication or architectural preference alone. Report a design problem only where you can name a concrete reachable path, a violated invariant, or an immediately competing owner of the same meaning."
@@ -385,6 +400,7 @@ func reviewingRules(t *testing.T) []string {
 }
 
 func TestASmallChangeCarriesItsDiff(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
 
@@ -404,6 +420,7 @@ func TestASmallChangeCarriesItsDiff(t *testing.T) {
 }
 
 func TestALargeChangeIsRead(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 
 	var generated strings.Builder
@@ -438,6 +455,7 @@ func TestALargeChangeIsRead(t *testing.T) {
 }
 
 func TestTheCeilingIsOneSetting(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("socrates.yaml", "inlined_diff_ceiling: 1\n")
 	session.Repository.Write(".socrates.yaml", "inlined_diff_ceiling: 1\n")
@@ -456,6 +474,7 @@ func TestTheCeilingIsOneSetting(t *testing.T) {
 }
 
 func TestOrderIsStableAcrossTwoReviews(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	session.Repository.Write("internal/added.go", "package internal\n\nfunc Added() int {\n\treturn 1\n}\n")
 

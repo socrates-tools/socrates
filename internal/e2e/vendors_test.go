@@ -11,6 +11,7 @@ import (
 )
 
 func TestAnUnsupportedCLIIsRefusedBeforeAnythingHappens(t *testing.T) {
+	t.Parallel()
 	unsupported := agent.Unsupported()
 	if len(unsupported) == 0 {
 		t.Fatal("every stated reviewer CLI is supported, so nothing exercises the refusal")
@@ -55,6 +56,7 @@ func TestAnUnsupportedCLIIsRefusedBeforeAnythingHappens(t *testing.T) {
 }
 
 func TestAReviewerCLISocratesDoesNotKnowIsRefusedByName(t *testing.T) {
+	t.Parallel()
 	session := harness.Start(t)
 	nameTheReviewerCLI(t, session, "a-cli-nobody-wrote")
 	session.Repository.Write("internal/added.go", "package internal\n")
@@ -78,6 +80,7 @@ func TestAReviewerCLISocratesDoesNotKnowIsRefusedByName(t *testing.T) {
 }
 
 func TestAFinishedRunStaysReadableUnderAnyConfiguration(t *testing.T) {
+	t.Parallel()
 	unsupported := agent.Unsupported()
 	if len(unsupported) == 0 {
 		t.Fatal("every stated reviewer CLI is supported, so nothing exercises the refusal")
