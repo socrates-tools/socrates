@@ -15,7 +15,7 @@ What it leaves behind:
 - `docs/adr/NNNN-<sentence>.md`, one per decision that is hard to reverse, surprising without context, and the result of a real trade-off.
 - `CONTEXT.md`, maintained as terms settle.
 
-The interview is put to a person on a page, the same way socrates review hands a finding to one, rather than as prose in a terminal:
+The interview is put to a person on a page rather than as prose in a terminal:
 
     socrates design skill          install this skill and socrates-tickets
     socrates agora serve           put a round of questions in front of a person
@@ -32,6 +32,7 @@ A question whose answer depends on one still open belongs to a later round, once
 
 Never interview a person in the terminal.
 Put the round on a page: `socrates agora serve --document ./round.json` prints the loopback address of its page.
+The page is served on this machine and reaches nowhere beyond it.
 
 The document is one decision per question in the round:
 
@@ -60,17 +61,17 @@ A decision may also carry one illustration, painted by the document's own styles
 State the look once for the whole document in `"stylesheet"`.
 The surface reduces both the markup and the stylesheet to an allowlist and scopes every selector it keeps to the illustration.
 
-Draw one where the choice is a shape: a layout, an arrangement of panels, a screen the person already recognises by its structure rather than by a description of it.
+Draw one where the choice is a shape: a layout, an arrangement of panels, a screen recognised by its structure rather than by a description of it.
 Skip it where the choice is a name, a threshold or a policy, anything a sentence already carries in full.
 An illustration that only repeats what the words already said costs the person attention and costs the skill its ceiling for nothing.
 
 The person answers on the page.
 `socrates agora poll --session <session>` hands back what they chose and anything they wrote, in their own words.
-Their words are not a record you carry to somebody else to judge: here the person is deciding the design itself, so what they write is the decision, taken into the spec and the ADR it becomes exactly as they wrote it.
+Their words are not a record you carry to somebody else to judge: the person is deciding the design itself, so what they write is the decision, taken into the spec and the ADR it becomes exactly as written.
 
 Mint the session once, with the first `socrates agora serve`, so the person is given one address.
 Keep that session for the whole design: serve every later round to the page they already have with `socrates agora serve --session <session>`, so a further round costs them no second address.
-agora collects a session after 45 minutes with no reader, and because no design state lives outside the session, losing one costs an address and no work: serve the accumulated document again and the person is handed a new one to replace it.
+agora collects a session after 45 minutes with no reader, and no design state lives outside it, so losing one costs an address and no work: serve the accumulated document again and the person is handed a new one to replace it.
 
 ## What was settled
 
@@ -99,9 +100,8 @@ A person reopening something they settled two rounds ago names it, and the spec 
 ## Facts
 
 Facts are found rather than asked for.
-Read the repository, its history and what it already says of itself before a question is written down: a name already in use, a pattern the codebase already follows, a decision already on record.
-No question reaches the page that reading the repository would have answered.
-A round asks a person to decide something, never to tell you something you could have looked up yourself.
+Read the repository, its history and what it says of itself before a question is written down: a name already in use, a pattern the codebase already follows, a decision already on record.
+No question reaches the page that reading the repository would have answered: a round asks a person to decide something, never to tell you something you could have looked up.
 
 Look facts up in subagents, while the round goes out.
 A lookup still running is an unsettled prerequisite: only the questions downstream of it wait for it, and the rest of the frontier is served now.
@@ -111,7 +111,7 @@ A lookup still running is an unsettled prerequisite: only the questions downstre
 `CONTEXT.md` is maintained during the interview, not after it.
 A term worth writing down is written down as soon as it settles, in the round it settled in.
 
-Read `CONTEXT.md` before writing an entry.
+Read `CONTEXT.md`, or the glossaries a `CONTEXT-MAP.md` names, before writing an entry, and write a new one in the glossary of its context.
 A term that conflicts with an entry already there, or that renames something the glossary already calls something else, is never applied silently: put it on a card of its own and let the person decide.
 The value of the glossary is that the person agreed to the word.
 
@@ -141,8 +141,8 @@ The spec keeps the snippet that states the decision, trimmed to it and marked as
 
 The spec goes to `docs/changes/<slug>/spec.md`, on this repository's own template.
 Title it, state the ADRs it produced on the line beneath the title, and write these sections in this order and no other: Problem Statement, Solution, User Stories, Implementation Decisions, Testing Decisions, Out of Scope, Further Notes.
-Write the user stories at length rather than in summary, and write the implementation and testing decisions in enough detail to say which modules change, how their interfaces change and which seams the tests use.
-Further Notes carries anything that fits none of the six sections above it, including, where a design ends early, what it left open.
+Write the user stories at length, and the implementation and testing decisions in enough detail to say which modules change, how their interfaces change and which seams the tests use.
+Further Notes carries anything that fits none of the six above it, including, where a design ends early, what it left open.
 
 ## Writing the decisions
 
@@ -152,7 +152,7 @@ A decision that fails even one of the three stays inside the spec's Implementati
 All three often hold for a scope decision, for a deliberate deviation the next engineer would otherwise fix, and for a constraint the code does not show.
 Each still has to pass all three.
 
-Number the file after the highest number already in `docs/adr/`, or in any tool's `docs/adr/` where a `CONTEXT-MAP.md` names them, and name it `docs/adr/NNNN-<sentence>.md`, beside the tool it is about.
+Number the file after the highest number already in `docs/adr/`, or in any `docs/adr/` a `CONTEXT-MAP.md` names, and name it `docs/adr/NNNN-<sentence>.md`, in the context it is about or at the root.
 Its front matter states `Status: accepted`, `Date`, and `Part of: <slug>`.
 Its Decision section says what was decided and why.
 

@@ -27,7 +27,7 @@ The breakdown is put to a person on a page, the way a design's questions are, ra
 ## The spec it starts from
 
 Start from a spec at `docs/changes/<slug>/spec.md`, and nothing else.
-Read it whole, the ADRs its Decisions line names, and `CONTEXT.md`, whose words every ticket uses.
+Read it whole, the ADRs its Decisions line names, and `CONTEXT.md`, or the glossaries a `CONTEXT-MAP.md` names, whose words every ticket uses.
 A plan, an issue or a conversation is not a spec: tell the person to run a design first, and cut nothing.
 The slug comes from the spec's own path, and the tickets go to `docs/changes/<slug>/tickets/`.
 

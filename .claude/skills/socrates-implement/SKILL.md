@@ -8,13 +8,13 @@ disable-model-invocation: true
 
 You are the overseer.
 A person invoked this skill to have a change's tickets built, and implementers build them rather than you.
-You read, brief, review and land, you talk to the person, and you run the repository's own verification.
+You read, brief, review and land, talk to the person, and run the repository's own verification.
 
 What the change rests on:
 
 - `docs/changes/<slug>/spec.md`, the spec.
 - `docs/changes/<slug>/tickets/README.md`, the main ticket that holds the order and the status.
-- Each ADR the spec's Decisions line names, and `CONTEXT.md`.
+- Each ADR the spec's Decisions line names, and `CONTEXT.md`, or the glossaries a `CONTEXT-MAP.md` names.
 
 The commands you run are these, and every other step is git, the repository's own verification and your own reading:
 
@@ -33,8 +33,8 @@ Settle everything a capable engineer would decide by your own best judgement, an
 
 ## Starting a run
 
-Start every run by reading the main ticket, the spec, every ADR the spec names and `CONTEXT.md`, before anything is handed out.
-You review each ticket against that argument, so read it rather than each ticket's text alone.
+Start every run by reading the main ticket, the spec, every ADR the spec names and the glossaries, before anything is handed out.
+You review each ticket against that argument, so read it, not each ticket alone.
 
 Read the settings with `socrates implement config` at the start of every run.
 `concurrency` is the most implementers running at once.
@@ -58,7 +58,7 @@ Ask once: a remembered branch is read from `socrates implement config` from then
 
 The change's branch is `<type>/<slug>`, where `<slug>` is the folder under `docs/changes/` and `<type>` is `feature`, `fix`, `refactor`, `docs` or `chore`, whichever the spec says the change is, or for a change that is several, what it gives somebody using the project.
 Cut it from the current `HEAD` and check it out in the person's own checkout, so the repository's verification runs where its untracked material is present.
-Start only from a working tree whose uncommitted changes are what the design and the tickets left: the change's folder, the ADRs whose Part of names its slug, and `CONTEXT.md`.
+Start only from a working tree whose uncommitted changes are what the design and the tickets left: the change's folder, the ADRs whose Part of names its slug, and the glossaries.
 Make those the first commit of the branch.
 Anything else uncommitted is the person's: say so in the terminal and start nothing.
 Where `<type>/<slug>` exists already under any type, this run is a resumed one and keeps that branch.
@@ -67,7 +67,7 @@ Where `<type>/<slug>` exists already under any type, this run is a resumed one a
 
 The frontier is every ticket whose blockers are done, and a ticket starts the moment it is on it.
 Run at most `concurrency` implementers at once.
-Where the frontier holds more tickets than `concurrency` leaves free, hand out in this order:
+Where the frontier outgrows what `concurrency` leaves free, hand out in this order:
 
 1. the ticket with the longest chain of tickets waiting behind it,
 2. then the ticket that unblocks the most tickets,
@@ -89,7 +89,7 @@ The branch is a sibling of the change's branch rather than a child, because git 
 
 Run the implementer in the background, as the `socrates-implementer` agent, so you stay free to talk to the person.
 Brief it with pointers rather than a paraphrase: its worktree, its branch, the change's branch, its ticket, the notes, and the spec and ADRs the ticket rests on.
-Everything else it needs is in its definition and in the files, and a brief that restates them can drift from them.
+Everything else it needs is in its definition and the files, and a brief restating them can drift from them.
 
 ## Review
 

@@ -21,4 +21,4 @@ Decision records share one number space across the root and every tool's directo
 A number names one document wherever it sits, so a reference to an ADR by number resolves without knowing where it was filed.
 A record keeps its number when it moves, and a new record continues from the highest number across every directory.
 
-A record sits with the tool it is about, and at the root where it is about the suite: the one binary, the command surface, one configuration file per tool, how a change and its tickets are filed, and who may start a skill.
+A record sits with the tool it is about, and at the root where it is about the suite: the one binary, the command surface, one configuration file per tool, the settings menu every tool shares, how a change and its tickets are filed, and who may start a skill.

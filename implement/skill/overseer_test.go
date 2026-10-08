@@ -129,7 +129,7 @@ func TestTheOverseerWritesNoCode(t *testing.T) {
 
 func TestTheOverseerReadsTheMainTicketTheSpecAndTheADRsBeforeHandingOutAnything(t *testing.T) {
 	saysEach(t, startingHeading, "tickets would be reviewed against their own text alone",
-		"reading the main ticket, the spec, every ADR the spec names and `CONTEXT.md`, before anything is handed out",
+		"reading the main ticket, the spec, every ADR the spec names and the glossaries, before anything is handed out",
 	)
 }
 
@@ -155,7 +155,7 @@ func TestWhereNoDefaultBranchIsRememberedTheOverseerProposesTheNamedCandidates(t
 func TestTheChangesBranchIsCutFromTheCurrentHeadAndStartsWithWhatTheDesignLeft(t *testing.T) {
 	saysEach(t, branchHeading, "the branch could start from the wrong commit or sweep up the person's own work",
 		"Cut it from the current `HEAD`",
-		"the change's folder, the ADRs whose Part of names its slug, and `CONTEXT.md`",
+		"the change's folder, the ADRs whose Part of names its slug, and the glossaries",
 		"Make those the first commit of the branch",
 		"Anything else uncommitted is the person's",
 		"start nothing",
