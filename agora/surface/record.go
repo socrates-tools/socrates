@@ -94,6 +94,13 @@ func ForgetRecord() error {
 	return nil
 }
 
+func ForgetRecordOf(token string) error {
+	if recorded, err := ReadRecord(); err == nil && recorded.Token != token {
+		return nil
+	}
+	return ForgetRecord()
+}
+
 func WritePage(open Page, raw []byte) error {
 	within, err := SessionPath(open.Session)
 	if err != nil {

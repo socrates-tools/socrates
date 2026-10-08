@@ -32,6 +32,9 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - `serve`, `poll`, `end` and `stop` find the surface by asking the port who stands there, never by `surface.json` alone: the surface answers `/identity` with no token, that it is agora, the root it writes under and the build it was linked from, and a surface is trusted only when it answers as agora under this root.
   Where a committed bind names port 0 there is no port to ask, so the address `surface.json` records is asked instead and trusted on the same terms.
   A port held by an agora surface of another root is a refusal naming that root.
+- A surface of this root linked from another build, by any difference in the version, the commit stamp or whether it was built uncommitted, is reused while it holds a session still being answered and replaced once every session it holds is over, per ADR 58.
+  Replacing stops it through its control token on a route that answers only when no session is open and refuses new ones from then on, waits a bounded time for the port, and starts this build's surface on it, and a port that is never let go is the refusal for a port held by something else.
+  A `serve` naming a session never replaces the surface holding it, and nothing without a token learns whether the surface holds a session.
 - A port an operator committed to, by flag or by either field of the `surface` block, is bound or refused and never walked past.
 - The surface mints a session, `--session` never brings one into existence, and every page and every route of it is served under a path holding that session.
 - It turns away a request naming a host it did not bind, and every state-changing route carries a token: a session's own answers for that session and no other, and the one minted when the server started answers everywhere.

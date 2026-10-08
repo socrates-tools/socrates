@@ -14,6 +14,10 @@ While the major version is `0`, a minor release may change the surface half in w
   v0.1.0 bound port 18018 and, where that was taken, counted down through ten ports and took the first free one, so the page could end up where nothing you forwarded reached it.
   Now `socrates agora serve` binds `127.0.0.1:24672` and nothing else, and where something else holds it, it refuses and names `surface.bind` and `--address`, which still move the page.
   Whoever forwarded 18018 forwards 24672 instead.
+- **After an upgrade, the next page is drawn by the build you installed.**
+  v0.1.0 kept serving the page of whichever build started the surface until nobody had touched it for 45 minutes.
+  Now `socrates agora serve` replaces a surface of another build once every session on it has been ended, and leaves it alone while a page on it is still being answered.
+  A page that was already ended goes with the old surface, and a `serve` naming a session never replaces the surface holding it.
 - **The suite publishes one binary, `socrates`, and every workflow is reached through it.**
   v0.1.0 put `socrates`, `scrat` and `agora` on your `PATH`.
   This puts one name there, and `socrates review` and `socrates agora` are namespaces inside it rather than programs of their own.

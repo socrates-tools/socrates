@@ -26,6 +26,7 @@ const (
 	PollDeadline = 6 * time.Hour
 
 	SessionPrefix = "/sessions/"
+	RetireRoute   = "/retire"
 
 	BodyCeiling = 1 << 20
 
@@ -112,20 +113,21 @@ func (s *Server) Open(read document.Document, raw []byte) (Opened, error) {
 		return Opened{}, err
 	}
 
-	s.sessions.Open(name, token, read, time.Now())
+	if !s.sessions.Open(name, token, read, time.Now()) {
+		_ = ForgetPage(name)
+		return Opened{}, refusal.New(surfaceIsBeingReplaced)
+	}
 	return Opened{Session: name, Token: token}, nil
 }
 
 func (s *Server) Revise(session string, read document.Document, raw []byte) error {
-	one, standing := s.sessions.Exchange(session)
-	if !standing {
+	if _, standing := s.sessions.Exchange(session); !standing {
 		return refusal.New(surfaceHoldsNoSuchSession, session)
 	}
 	if err := WriteDocument(session, raw); err != nil {
 		return err
 	}
-	one.Revise(read)
-	return nil
+	return s.sessions.Revise(session, read)
 }
 
 func (s *Server) Exchange(session string) (*Exchange, bool) {
@@ -198,6 +200,7 @@ func (s *Server) routes() http.Handler {
 	routed.HandleFunc("GET "+assetPrefix, s.asset)
 	routed.HandleFunc("POST "+SessionPrefix+"{$}", s.controlled(s.opening))
 	routed.HandleFunc("POST /stop", s.controlled(s.stop))
+	routed.HandleFunc("POST "+RetireRoute, s.controlled(s.retire))
 	routed.HandleFunc("GET "+SessionPrefix+"{session}", s.page)
 	routed.HandleFunc("GET "+SessionPrefix+"{session}/{$}", s.page)
 	routed.HandleFunc("GET "+SessionPrefix+"{session}/live", s.live)
@@ -423,7 +426,10 @@ func (s *Server) revise(writer http.ResponseWriter, request *http.Request, one *
 		return
 	}
 
-	one.exchange.Revise(read)
+	if err := s.sessions.Revise(request.PathValue("session"), read); err != nil {
+		http.Error(writer, err.Error(), http.StatusConflict)
+		return
+	}
 	writer.WriteHeader(http.StatusNoContent)
 }
 
@@ -433,6 +439,15 @@ func (s *Server) close(writer http.ResponseWriter, request *http.Request, one *h
 }
 
 func (s *Server) stop(writer http.ResponseWriter, request *http.Request) {
+	writer.WriteHeader(http.StatusNoContent)
+	go s.Stop()
+}
+
+func (s *Server) retire(writer http.ResponseWriter, request *http.Request) {
+	if !s.sessions.Retire() {
+		http.Error(writer, surfaceHoldsASession, http.StatusConflict)
+		return
+	}
 	writer.WriteHeader(http.StatusNoContent)
 	go s.Stop()
 }

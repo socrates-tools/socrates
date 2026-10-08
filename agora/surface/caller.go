@@ -93,6 +93,30 @@ func (c *Caller) Stop(ctx context.Context) error {
 	return c.post(ctx, "", c.at("/stop"), nil)
 }
 
+func (c *Caller) Retire(ctx context.Context) (bool, error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.at(RetireRoute), nil)
+	if err != nil {
+		return false, err
+	}
+	request.Header.Set(TokenHeader, c.open.Token)
+
+	answered, err := c.reading.Do(request)
+	if err != nil {
+		return false, fmt.Errorf(reachingTheSurface, err)
+	}
+	defer func() { _ = answered.Body.Close() }()
+
+	switch answered.StatusCode {
+	case http.StatusNoContent:
+		return true, nil
+	case http.StatusConflict:
+		return false, nil
+	default:
+		said, _ := io.ReadAll(io.LimitReader(answered.Body, BodyCeiling))
+		return false, fmt.Errorf(surfaceRefused, answered.StatusCode, bytes.TrimSpace(said))
+	}
+}
+
 func (c *Caller) post(ctx context.Context, session, address string, body []byte) error {
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, address, bytes.NewReader(body))
 	if err != nil {

@@ -31,6 +31,10 @@ type Identity struct {
 	Uncommitted bool   `json:"uncommitted"`
 }
 
+func (i Identity) SameBuild(other Identity) bool {
+	return i.Version == other.Version && i.Commit == other.Commit && i.Uncommitted == other.Uncommitted
+}
+
 func thisSurface() (Identity, error) {
 	root, err := state.Root()
 	if err != nil {
@@ -83,10 +87,12 @@ type Whereabouts struct {
 	Record      Record
 	AnotherRoot string
 	AnotherAt   string
+
+	OfAnotherBuild bool
 }
 
 func Locate(ctx context.Context, committed string) (Whereabouts, error) {
-	root, err := state.Root()
+	own, err := thisSurface()
 	if err != nil {
 		return Whereabouts{}, err
 	}
@@ -96,16 +102,17 @@ func Locate(ctx context.Context, committed string) (Whereabouts, error) {
 	if port := portToAsk(committed); port != "" {
 		asked = port
 		if told, err := Ask(port).Identify(ctx); err == nil && told.Tool == IdentityTool {
-			if told.Root == root {
-				return standingAt(port), nil
+			if told.Root == own.Root {
+				return standingAt(port, told, own), nil
 			}
 			found.AnotherRoot, found.AnotherAt = told.Root, port
 		}
 	}
 
 	if recorded, err := ReadRecord(); err == nil && recorded.Address != asked {
-		if told, err := Ask(recorded.Address).Identify(ctx); err == nil && told.Tool == IdentityTool && told.Root == root {
+		if told, err := Ask(recorded.Address).Identify(ctx); err == nil && told.Tool == IdentityTool && told.Root == own.Root {
 			found.Standing, found.Recorded, found.Record = true, true, recorded
+			found.OfAnotherBuild = !own.SameBuild(told)
 		}
 	}
 	return found, nil
@@ -121,13 +128,15 @@ func portToAsk(committed string) string {
 	return committed
 }
 
-func standingAt(address string) Whereabouts {
+func standingAt(address string, told, own Identity) Whereabouts {
+	of := Whereabouts{Standing: true, OfAnotherBuild: !own.SameBuild(told)}
 	recorded, err := ReadRecord()
 	if err != nil {
-		return Whereabouts{Standing: true}
+		return of
 	}
 	recorded.Address = address
-	return Whereabouts{Standing: true, Recorded: true, Record: recorded}
+	of.Recorded, of.Record = true, recorded
+	return of
 }
 
 func (w Whereabouts) Reached() (Record, error) {

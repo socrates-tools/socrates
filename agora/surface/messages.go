@@ -39,6 +39,9 @@ const (
 	openingTheSession    = "opening a session on the surface: %w"
 	noSurfaceIsOpen      = "no surface is open. Run agora serve with a document and try again"
 
+	surfaceIsBeingReplaced = "the surface is being replaced by a newer build of socrates, and takes nothing more. Run the command again"
+	surfaceHoldsASession   = "the surface holds a session still being answered, and is not replaced until every session it holds is over"
+
 	exchangeIsOver                 = "the exchange is over, and a closed exchange does not reopen"
 	answerNamesNoDecision          = "an answer names the decision %q, which this document does not hold"
 	answerNamesNoOption            = "an answer names option %d of decision %q, which that decision does not offer"

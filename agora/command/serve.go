@@ -27,6 +27,9 @@ const (
 
 	reachInterval = 20 * time.Millisecond
 	reachDeadline = 20 * time.Second
+
+	releaseInterval = 20 * time.Millisecond
+	releaseDeadline = 5 * time.Second
 )
 
 func newServeCommand() *cobra.Command {
@@ -136,7 +139,7 @@ func hold(address string) error {
 	}
 
 	server.Wait()
-	return surface.ForgetRecord()
+	return surface.ForgetRecordOf(server.Control())
 }
 
 func start(command *cobra.Command, raw []byte, address string, said stated, session string) error {
@@ -146,6 +149,15 @@ func start(command *cobra.Command, raw []byte, address string, said stated, sess
 	}
 	if err := surface.CheckNotHeldByAnotherRoot(found, said.file); err != nil {
 		return err
+	}
+	if found.Standing && found.OfAnotherBuild && session == "" {
+		replaced, err := replaceWhileIdle(command.Context(), found, said.file)
+		if err != nil {
+			return err
+		}
+		if replaced {
+			found = surface.Whereabouts{}
+		}
 	}
 	if found.Standing {
 		open, err := found.Reached()
@@ -205,6 +217,39 @@ func start(command *cobra.Command, raw []byte, address string, said stated, sess
 	}
 	handOver(command, open, said, opened.Session)
 	return nil
+}
+
+func replaceWhileIdle(ctx context.Context, found surface.Whereabouts, file string) (bool, error) {
+	open, err := found.Reached()
+	if err != nil {
+		return false, err
+	}
+
+	retiring, cancel := context.WithTimeout(ctx, reachTimeout())
+	defer cancel()
+	retired, err := surface.Reach(open).Retire(retiring)
+	if err != nil || !retired {
+		return false, err
+	}
+	return true, waitUntilReleased(ctx, open.Address, file)
+}
+
+func waitUntilReleased(ctx context.Context, address, file string) error {
+	waiting, cancel := context.WithTimeout(ctx, releaseDeadline)
+	defer cancel()
+
+	for {
+		err := surface.CheckFree(address, file)
+		if err == nil {
+			return nil
+		}
+
+		select {
+		case <-waiting.Done():
+			return err
+		case <-time.After(releaseInterval):
+		}
+	}
 }
 
 type stated struct {

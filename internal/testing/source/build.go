@@ -2,6 +2,7 @@ package source
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"fmt"
 	"os"
 	"os/exec"
@@ -49,13 +50,16 @@ func Build(t *testing.T, target, output string) {
 func BuildWithTags(t *testing.T, target, output string, tags ...string) {
 	t.Helper()
 
-	if err := build(Root(t), target, output, tags); err != nil {
+	if err := build(Root(t), target, output, tags, ""); err != nil {
 		t.Fatalf("building %s: %v", target, err)
 	}
 }
 
-func build(root, target, output string, tags []string) error {
+func build(root, target, output string, tags []string, linkerFlags string) error {
 	arguments := []string{"build"}
+	if linkerFlags != "" {
+		arguments = append(arguments, "-ldflags", linkerFlags)
+	}
 	if len(tags) > 0 {
 		arguments = append(arguments, "-tags", strings.Join(tags, ","))
 	}
@@ -74,8 +78,9 @@ func build(root, target, output string, tags []string) error {
 }
 
 type builtKey struct {
-	target string
-	tags   string
+	target      string
+	tags        string
+	linkerFlags string
 }
 
 type builtBinary struct {
@@ -92,8 +97,16 @@ var (
 
 func Shared(t *testing.T, target string, tags ...string) string {
 	t.Helper()
+	return shared(t, builtKey{target: target, tags: strings.Join(tags, ",")})
+}
 
-	key := builtKey{target: target, tags: strings.Join(tags, ",")}
+func SharedLinkedWith(t *testing.T, target, linkerFlags string) string {
+	t.Helper()
+	return shared(t, builtKey{target: target, linkerFlags: linkerFlags})
+}
+
+func shared(t *testing.T, key builtKey) string {
+	t.Helper()
 
 	sharedMutex.Lock()
 	built, found := sharedBinaries[key]
@@ -110,12 +123,12 @@ func Shared(t *testing.T, target string, tags ...string) string {
 			built.err = err
 			return
 		}
-		built.path = filepath.Join(directory, strings.NewReplacer("/", "_", ".", "_").Replace(target)+"-"+strings.ReplaceAll(key.tags, ",", "_"))
-		built.err = build(root, target, built.path, tags)
+		built.path = filepath.Join(directory, strings.NewReplacer("/", "_", ".", "_").Replace(key.target)+"-"+strings.ReplaceAll(key.tags, ",", "_")+fmt.Sprintf("-%x", sha256.Sum256([]byte(key.linkerFlags))))
+		built.err = build(root, key.target, built.path, strings.FieldsFunc(key.tags, func(r rune) bool { return r == ',' }), key.linkerFlags)
 	})
 
 	if built.err != nil {
-		t.Fatalf("building %s: %v", target, built.err)
+		t.Fatalf("building %s: %v", key.target, built.err)
 	}
 	return built.path
 }

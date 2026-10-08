@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/socrates-tools/socrates/agora/document"
+	"github.com/socrates-tools/socrates/internal/refusal"
 )
 
 type held struct {
@@ -17,18 +18,51 @@ type Sessions struct {
 	mu       sync.Mutex
 	standing map[string]*held
 	emptied  time.Time
+	retired  bool
 }
 
 func NewSessions(at time.Time) *Sessions {
 	return &Sessions{standing: map[string]*held{}, emptied: at}
 }
 
-func (s *Sessions) Open(name, token string, read document.Document, at time.Time) {
+func (s *Sessions) Open(name, token string, read document.Document, at time.Time) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	if s.retired {
+		return false
+	}
 	s.standing[name] = &held{token: token, exchange: NewExchange(read, at)}
 	s.emptied = time.Time{}
+	return true
+}
+
+func (s *Sessions) Revise(name string, read document.Document) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.retired {
+		return refusal.New(surfaceIsBeingReplaced)
+	}
+	one, standing := s.standing[name]
+	if !standing {
+		return refusal.New(surfaceHoldsNoSuchSession, name)
+	}
+	one.exchange.Revise(read)
+	return nil
+}
+
+func (s *Sessions) Retire() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for _, one := range s.standing {
+		if !one.exchange.Over() {
+			return false
+		}
+	}
+	s.retired = true
+	return true
 }
 
 func (s *Sessions) Exchange(name string) (*Exchange, bool) {
