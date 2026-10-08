@@ -23,29 +23,6 @@ func Reach(open Record) *Caller {
 	return &Caller{open: open, reading: &http.Client{}}
 }
 
-func (c *Caller) Reachable(ctx context.Context) error {
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, c.at("/"), nil)
-	if err != nil {
-		return err
-	}
-	request.Header.Set(TokenHeader, c.open.Token)
-
-	answered, err := c.reading.Do(request)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = answered.Body.Close() }()
-	_, _ = io.Copy(io.Discard, answered.Body)
-
-	if answered.StatusCode >= http.StatusBadRequest {
-		return fmt.Errorf(surfaceAnsweredWith, answered.StatusCode)
-	}
-	if answered.Header.Get(SurfaceHeader) != c.open.Address {
-		return fmt.Errorf(addressIsNotTheSurface, c.open.Address)
-	}
-	return nil
-}
-
 func (c *Caller) Open(ctx context.Context, raw []byte) (Opened, error) {
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.at(SessionPrefix), bytes.NewReader(raw))
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/socrates-tools/socrates/agora/config"
 	"github.com/socrates-tools/socrates/agora/surface"
 	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/refusal"
@@ -23,7 +24,7 @@ func newPollCommand(code *int) *cobra.Command {
 				return refusal.New(nameTheSession, "poll")
 			}
 
-			open, err := surface.ReadRecord()
+			open, err := whereTheSurfaceStands(command)
 			if err != nil {
 				return err
 			}
@@ -63,7 +64,7 @@ func newEndCommand() *cobra.Command {
 				return refusal.New(nameTheSession, "end")
 			}
 
-			open, err := surface.ReadRecord()
+			open, err := whereTheSurfaceStands(command)
 			if err != nil {
 				return err
 			}
@@ -81,7 +82,7 @@ func newStopCommand() *cobra.Command {
 		Short: stopShort,
 		Args:  cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
-			open, err := surface.ReadRecord()
+			open, err := whereTheSurfaceStands(command)
 			if err != nil {
 				return err
 			}
@@ -91,4 +92,21 @@ func newStopCommand() *cobra.Command {
 			return surface.ForgetRecord()
 		},
 	}
+}
+
+func whereTheSurfaceStands(command *cobra.Command) (surface.Record, error) {
+	file, err := config.Path()
+	if err != nil {
+		return surface.Record{}, err
+	}
+	loaded, err := config.LoadFrom(file)
+	if err != nil {
+		return surface.Record{}, err
+	}
+
+	found, err := surface.Locate(command.Context(), loaded.Surface.Bind)
+	if err != nil {
+		return surface.Record{}, err
+	}
+	return found.Reached()
 }

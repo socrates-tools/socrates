@@ -20,8 +20,7 @@ import (
 )
 
 const (
-	TokenHeader   = "x-agora-token"
-	SurfaceHeader = "x-agora-surface"
+	TokenHeader = "x-agora-token"
 
 	IdlePeriod   = 45 * time.Minute
 	PollDeadline = 6 * time.Hour
@@ -43,6 +42,7 @@ type Server struct {
 	serving  *http.Server
 	control  string
 	address  string
+	identity Identity
 	idle     time.Duration
 	stopping chan struct{}
 	stopped  chan struct{}
@@ -62,6 +62,11 @@ func Serve(address string, idle time.Duration) (*Server, error) {
 		return nil, err
 	}
 
+	identity, err := thisSurface()
+	if err != nil {
+		return nil, err
+	}
+
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		return nil, fmt.Errorf(bindingTheAddress, address, err)
@@ -71,6 +76,7 @@ func Serve(address string, idle time.Duration) (*Server, error) {
 		listener: listener,
 		control:  control,
 		address:  listener.Addr().String(),
+		identity: identity,
 		idle:     idle,
 		stopping: make(chan struct{}),
 		stopped:  make(chan struct{}),
@@ -188,7 +194,7 @@ func (s *Server) Stopping() <-chan struct{} {
 
 func (s *Server) routes() http.Handler {
 	routed := http.NewServeMux()
-	routed.HandleFunc("GET /{$}", s.controlled(s.reachable))
+	routed.HandleFunc("GET "+IdentityRoute, s.identify)
 	routed.HandleFunc("GET "+assetPrefix, s.asset)
 	routed.HandleFunc("POST "+SessionPrefix+"{$}", s.controlled(s.opening))
 	routed.HandleFunc("POST /stop", s.controlled(s.stop))
@@ -246,9 +252,10 @@ func (s *Server) guarded(next func(http.ResponseWriter, *http.Request, *held)) h
 	}
 }
 
-func (s *Server) reachable(writer http.ResponseWriter, request *http.Request) {
-	writer.Header().Set(SurfaceHeader, s.address)
-	writer.WriteHeader(http.StatusNoContent)
+func (s *Server) identify(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("content-type", "application/json")
+	writer.Header().Set("cache-control", "no-store")
+	_ = json.NewEncoder(writer).Encode(s.identity)
 }
 
 func (s *Server) opening(writer http.ResponseWriter, request *http.Request) {

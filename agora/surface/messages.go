@@ -21,6 +21,8 @@ const (
 	requestCarriesNoControl = "this is asked of the surface itself, and it is asked by whoever started it"
 
 	surfaceHoldsNoSuchSession = "the surface holds no session %q. A session comes into existence only when agora serve is given none, so run agora serve without --session to open one"
+	portIsHeldByAnotherRoot   = "an agora surface of the root %s holds %s and agora will not take that port from it. Move this surface with %s in %s or with %s, and run the command again"
+	surfaceStandsWithNoRecord = "an agora surface of this root stands, and what it is reached with was not written beside it. Stop that surface and run the command again"
 	portIsHeldBySomethingElse = "something is already listening on %s and agora will not take that port from it. Free it, or move the surface with %s in %s or with %s, and run the command again"
 	bodyIsOverTheCeiling      = "what was sent is larger than the %d bytes the surface accepts. Send a smaller document"
 	cannotStream              = "this connection cannot carry a stream, so the page cannot be told when a reply arrives"
@@ -42,9 +44,8 @@ const (
 	answerNamesNoOption            = "an answer names option %d of decision %q, which that decision does not offer"
 	singleChoiceCarriesMoreThanOne = "an answer to the single-choice decision %q carries %d choices"
 
-	reachingTheSurface     = "reaching the surface: %w"
-	addressIsNotTheSurface = "something answers at %s and it does not say it is a surface agora started"
-	surfaceAnsweredWith    = "the surface answered with %d"
-	surfaceRefused         = "the surface refused with %d: %s"
-	readingTheAnswer       = "reading what came back: %w"
+	reachingTheSurface  = "reaching the surface: %w"
+	surfaceAnsweredWith = "the surface answered with %d"
+	surfaceRefused      = "the surface refused with %d: %s"
+	readingTheAnswer    = "reading what came back: %w"
 )

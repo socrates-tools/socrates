@@ -101,6 +101,10 @@ func TestAPageNobodyAnsweredExitsTheCodeForSomethingAsked(t *testing.T) {
 
 	const session = "a-page-nobody-answered"
 	nobodyAnswers := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.URL.Path == surface.IdentityRoute {
+			_ = json.NewEncoder(writer).Encode(surface.Identity{Tool: surface.IdentityTool, Root: held.home})
+			return
+		}
 		if request.URL.Path != "/sessions/"+session+"/answer" {
 			t.Errorf("agora poll asked for %q, and what waits on an answer is /sessions/%s/answer", request.URL.Path, session)
 			http.Error(writer, "that is not the route agora poll waits on", http.StatusNotFound)
@@ -421,8 +425,8 @@ func TestAnotherAgorasSurfaceIsNotMistakenForThisOne(t *testing.T) {
 	if code == exit.NothingAsked {
 		t.Fatalf("agora served at %q on a port another agora holds", printed)
 	}
-	if !strings.Contains(failures, shared) || !strings.Contains(failures, "--address") {
-		t.Errorf("what agora said is %q, and it names neither the port nor the flag that moves it", failures)
+	if !strings.Contains(failures, shared) || !strings.Contains(failures, "--address") || !strings.Contains(failures, foreign.home) {
+		t.Errorf("what agora said is %q, and it names neither the port, the root that holds it nor the flag that moves it", failures)
 	}
 	if strings.Contains(failures, "asked by whoever started it") {
 		t.Errorf("agora reported another agora on its port as a question of permission: %s", failures)

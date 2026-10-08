@@ -140,19 +140,30 @@ func hold(address string) error {
 }
 
 func start(command *cobra.Command, raw []byte, address string, said stated, session string) error {
-	if open, err := surface.ReadRecord(); err == nil {
-		reaching, cancel := context.WithTimeout(command.Context(), reachTimeout())
+	found, err := surface.Locate(command.Context(), address)
+	if err != nil {
+		return err
+	}
+	if err := surface.CheckNotHeldByAnotherRoot(found, said.file); err != nil {
+		if forgetting := surface.ForgetRecord(); forgetting != nil {
+			return forgetting
+		}
+		return err
+	}
+	if found.Standing {
+		open, err := found.Reached()
+		if err != nil {
+			return err
+		}
+		opening, cancel := context.WithTimeout(command.Context(), reachTimeout())
 		defer cancel()
 
-		caller := surface.Reach(open)
-		if caller.Reachable(reaching) == nil {
-			named, err := onTheSurfaceStanding(reaching, caller, raw, session)
-			if err != nil {
-				return err
-			}
-			handOver(command, open, said, named)
-			return nil
+		named, err := onTheSurfaceStanding(opening, surface.Reach(open), raw, session)
+		if err != nil {
+			return err
 		}
+		handOver(command, open, said, named)
+		return nil
 	}
 
 	if session != "" {
@@ -183,7 +194,7 @@ func start(command *cobra.Command, raw []byte, address string, said stated, sess
 	}
 	go func() { _ = spawned.Wait() }()
 
-	open, err := waitUntilReachable(command.Context())
+	open, err := waitUntilReachable(command.Context(), binding)
 	if err != nil {
 		return err
 	}
@@ -234,18 +245,14 @@ func whereThePageIs(open surface.Record, reachedAt, session string) string {
 	return strings.TrimSuffix(reached, "/") + surface.SessionPrefix + session
 }
 
-func waitUntilReachable(ctx context.Context) (surface.Record, error) {
+func waitUntilReachable(ctx context.Context, binding string) (surface.Record, error) {
 	waiting, cancel := context.WithTimeout(ctx, reachDeadline)
 	defer cancel()
 
 	for {
-		if open, err := surface.ReadRecord(); err == nil {
-			reaching, done := context.WithTimeout(waiting, reachTimeout())
-			err := surface.Reach(open).Reachable(reaching)
-			done()
-			if err == nil {
-				return open, nil
-			}
+		found, err := surface.Locate(waiting, binding)
+		if err == nil && found.Standing && found.Recorded {
+			return found.Record, nil
 		}
 
 		select {
