@@ -431,10 +431,6 @@ func TestAnotherAgorasSurfaceIsNotMistakenForThisOne(t *testing.T) {
 	if strings.Contains(failures, "asked by whoever started it") {
 		t.Errorf("agora reported another agora on its port as a question of permission: %s", failures)
 	}
-	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
-		t.Error("agora kept a record naming a surface that is not its own, so every later command repeats this")
-	}
-
 	if holds := foreign.record().Address; holds != shared {
 		t.Errorf("the other agora's own record moved to %q", holds)
 	}

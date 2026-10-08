@@ -145,9 +145,6 @@ func start(command *cobra.Command, raw []byte, address string, said stated, sess
 		return err
 	}
 	if err := surface.CheckNotHeldByAnotherRoot(found, said.file); err != nil {
-		if forgetting := surface.ForgetRecord(); forgetting != nil {
-			return forgetting
-		}
 		return err
 	}
 	if found.Standing {

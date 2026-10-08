@@ -90,3 +90,36 @@ func TestAServeUnderOneRootRefusesAPortAnotherRootsSurfaceHolds(t *testing.T) {
 		t.Error("the other root's session was answered by a refused serve")
 	}
 }
+
+func TestARefusedServeLeavesTheLiveSurfaceOfThisRootReachable(t *testing.T) {
+	// scenario: A refusal for another root's port does not forget this root's live surface
+	t.Parallel()
+	owner := standing(t)
+	owner.bindsWhatIsConfigured()
+	owner.serve(oneDecisionDocument)
+
+	mine := standing(t)
+	mine.serve(oneDecisionDocument)
+	recorded := mine.record()
+	mine.bindsWhatIsConfigured()
+
+	printed, failures, code := mine.reading(oneDecisionDocument, mine.serving()...)
+	if code == exit.NothingAsked {
+		t.Fatalf("a serve was answered at %q beside another root holding %s", printed, surface.DefaultAddress)
+	}
+	if !strings.Contains(failures, owner.home) {
+		t.Errorf("the refusal does not name the root holding the port: %s", failures)
+	}
+
+	if after := mine.record(); after != recorded {
+		t.Errorf("a refused serve changed what this root's live surface is reached with: %+v became %+v", recorded, after)
+	}
+	mine.answer(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}, Words: "go on"}}})
+	if printed, failures, code := mine.poll(); code != exit.NothingAsked || !strings.Contains(printed, "patch c-1") {
+		t.Errorf("agora poll exited %d and printed %q, so it did not reach the live surface: %s", code, printed, failures)
+	}
+	mine.end(mine.opened)
+	if _, failures, code := mine.run("stop"); code != exit.NothingAsked {
+		t.Errorf("agora stop exited %d, so it did not reach the live surface: %s", code, failures)
+	}
+}
