@@ -1,6 +1,6 @@
 # 13. This stays one tool
 
-- Status: accepted
+- Status: superseded by ADR 56
 - Date: 2026-09-09
 - Part of: reviewing a branch, and reviewing a change that is not mine
 

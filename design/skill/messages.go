@@ -41,7 +41,6 @@ A question whose answer depends on one still open belongs to a later round, once
 
 Never interview a person in the terminal.
 Put the round on a page: |socrates agora serve --document ./round.json| prints the loopback address of its page.
-The page is served on this machine and reaches nowhere beyond it.
 
 The document is one decision per question in the round:
 
@@ -76,7 +75,7 @@ An illustration that only repeats what the words already said costs the person a
 
 The person answers on the page.
 |socrates agora poll --session <session>| hands back what they chose and anything they wrote, in their own words.
-Their words are not a record you carry to somebody else to judge, the way a reviewer's finding is: here the person is deciding the design itself, so what they write is the decision, taken into the spec and the ADR it becomes exactly as they wrote it.
+Their words are not a record you carry to somebody else to judge: here the person is deciding the design itself, so what they write is the decision, taken into the spec and the ADR it becomes exactly as they wrote it.
 
 Mint the session once, with the first |socrates agora serve|, so the person is given one address.
 Keep that session for the whole design: serve every later round to the page they already have with |socrates agora serve --session <session>|, so a further round costs them no second address.
@@ -174,7 +173,7 @@ A decision that fails even one of the three stays inside the spec's Implementati
 All three often hold for a scope decision, for a deliberate deviation the next engineer would otherwise fix, and for a constraint the code does not show.
 Each still has to pass all three.
 
-Number the file after the highest number already in |docs/adr/|, and name it |docs/adr/NNNN-<sentence>.md|.
+Number the file after the highest number already in |docs/adr/|, or in any tool's |docs/adr/| where a |CONTEXT-MAP.md| names them, and name it |docs/adr/NNNN-<sentence>.md|, beside the tool it is about.
 Its front matter states |Status: accepted|, |Date|, and |Part of: <slug>|.
 Its Decision section says what was decided and why.
 

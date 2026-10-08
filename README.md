@@ -346,4 +346,4 @@ MIT, stated in `LICENSE`.
 ## Contributing
 
 Read `CONTRIBUTING.md`.
-`AGENTS.md` maps the layout and invariants, `CONTEXT.md` the vocabulary, and `docs/adr/` the decisions.
+`AGENTS.md` maps the layout and invariants, `CONTEXT-MAP.md` the vocabulary, and `docs/adr/` the decisions, each at the root and in each tool's directory.

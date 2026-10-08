@@ -20,8 +20,8 @@ The spec says, in the words of somebody using socrates review rather than the wo
 
 Two other places hold what a spec assumes rather than what it changes:
 
-- `CONTEXT.md` holds the vocabulary. A spec names a domain concept in the words defined there, and a concept with no word yet is either language this project does not use or a gap worth recording.
-- `docs/adr/` holds the decisions, each with what was rejected and why. A change that contradicts one says so rather than overriding it quietly.
+- `CONTEXT-MAP.md` names the glossary of each tool, and a glossary holds that tool's vocabulary beside the suite's shared words in `CONTEXT.md`. A spec names a domain concept in the words defined there, and a concept with no word yet is either language this project does not use or a gap worth recording.
+- `docs/adr/` holds the decisions about the suite and each tool's own `docs/adr/` holds its own, each with what was rejected and why, under one number space. A change that contradicts one says so rather than overriding it quietly.
 
 A pull request that edits code with no spec behind it will be turned away, and that is not a formality.
 Nothing enforces it mechanically. This repository held it with two gates that read a specification directory, and holds it by whoever reads the pull request instead.
@@ -89,7 +89,7 @@ Each of these is checked by a test, so it is cheaper to follow than to argue wit
 - **Mutate a guard you rely on.** A check nobody has broken on purpose is a check nobody knows works.
 - **Commit messages say what the change is.** No rationale essay, no summary of the conversation that produced it, no attribution trailer.
 
-`AGENTS.md` is the map: the layout, the verification sequence and the invariants that hold the design up. Read it once before your first change.
+`AGENTS.md` is the map: the suite's layout, the verification sequence and the invariants that hold across tools, and each tool's own `AGENTS.md` holds its layout and its invariants. Read the root's once before your first change, and a tool's before changing that tool.
 
 ## Dependencies
 

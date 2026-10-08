@@ -4,9 +4,9 @@
 
 - **`README.md`** answers what socrates review needs, what it does to your repository, what the exit codes mean, and what it deliberately is not.
   Most questions are answered by "What it deliberately is not".
-- **`CONTEXT.md`** defines the vocabulary, and **`docs/adr/`** holds the decisions, each with what was rejected and why.
+- **`CONTEXT-MAP.md`** names the glossary that defines the vocabulary of each tool, and **`docs/adr/`** at the root and in each tool's directory holds the decisions, each with what was rejected and why.
   If you are asking "why does it work like that", the answer is in one of those.
-- **`AGENTS.md`** states the invariants the design rests on, each held by a test that fails when it stops holding.
+- **`AGENTS.md`** at the root and in each tool's directory states the invariants the design rests on, each held by a test that fails when it stops holding.
 - **`CHANGELOG.md`** says what each release means to somebody who has the previous one.
 
 ## Then

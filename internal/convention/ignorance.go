@@ -36,6 +36,14 @@ var wordsOfTheOtherTool = []string{
 	`(?i)\brun's\b`,
 }
 
+var otherToolPatterns = func() []*regexp.Regexp {
+	patterns := make([]*regexp.Regexp, 0, len(wordsOfTheOtherTool))
+	for _, stated := range wordsOfTheOtherTool {
+		patterns = append(patterns, regexp.MustCompile(stated))
+	}
+	return patterns
+}()
+
 var drawnRound = regexp.MustCompile(`(?i)stroke-line(?:cap|join)\s*[:=]\s*["']?round\b`)
 
 var TheOtherToolNamedIn = map[string]string{
@@ -55,11 +63,6 @@ func WordsOfTheOtherTool(root string, directories []string, named map[string]str
 	where, err := ModulePath(root)
 	if err != nil {
 		return Ignorance{}, err
-	}
-
-	patterns := make([]*regexp.Regexp, 0, len(wordsOfTheOtherTool))
-	for _, stated := range wordsOfTheOtherTool {
-		patterns = append(patterns, regexp.MustCompile(stated))
 	}
 
 	var own *regexp.Regexp
@@ -99,7 +102,7 @@ func WordsOfTheOtherTool(root string, directories []string, named map[string]str
 				if own != nil {
 					vocabulary = own.ReplaceAllString(vocabulary, "")
 				}
-				for _, pattern := range patterns {
+				for _, pattern := range otherToolPatterns {
 					found := pattern.FindString(vocabulary)
 					if found == "" {
 						continue

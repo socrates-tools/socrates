@@ -1,6 +1,8 @@
 * @ktei
 
 /docs/ @ktei
-/CONTEXT.md @ktei
+CONTEXT.md @ktei
+CONTEXT-MAP.md @ktei
+adr/ @ktei
 /.github/ @ktei
 /SECURITY.md @ktei

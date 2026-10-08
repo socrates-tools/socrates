@@ -9,7 +9,7 @@ Where this is a bug fix that restores stated behaviour and needs no spec, say wh
 
 ## What the change is
 
-<!-- What it does, in the vocabulary CONTEXT.md defines. Not why: that is the spec's job. -->
+<!-- What it does, in the vocabulary the tool's CONTEXT.md defines. Not why: that is the spec's job. -->
 
 ## Which scenario holds it
 
@@ -17,7 +17,7 @@ Where this is a bug fix that restores stated behaviour and needs no spec, say wh
 
 ## Which decision it rests on or contradicts
 
-<!-- The ADR under docs/adr/ this change assumes, or the one it contradicts. Contradicting one is allowed and saying nothing about it is not. -->
+<!-- The ADR under a docs/adr/ directory this change assumes, or the one it contradicts. Contradicting one is allowed and saying nothing about it is not. -->
 
 ## Which guard was mutated
 

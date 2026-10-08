@@ -16,7 +16,7 @@ A change that reaches into any of those is out of scope however well it is writt
 
 ## The reasoning does not live in the code
 
-`CONTEXT.md` defines the vocabulary, `docs/adr/` holds the decisions with what each one rejected, and `AGENTS.md` states the invariants.
+`CONTEXT-MAP.md` names the glossary of each tool, `docs/adr/` at the root and in each tool's directory holds the decisions with what each one rejected, and `AGENTS.md` at the root and in each tool's directory states the invariants.
 A change that alters behaviour and leaves those saying the old thing has left the record wrong, and the code is not where the correction belongs.
 
 A constraint somebody would otherwise re-derive belongs in a test named for it.
