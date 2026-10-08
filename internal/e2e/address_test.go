@@ -132,8 +132,22 @@ func holdingTheWindowDownTo(t *testing.T, ports int) []string {
 	return addresses
 }
 
+func holdingTheWindowDownToWithTheNextOneFree(t *testing.T, ports int) []string {
+	t.Helper()
+
+	addresses := surface.Addresses()
+	next, err := net.Listen("tcp", addresses[ports])
+	if err != nil {
+		t.Skipf("something else holds %s, so the port a window walks down to cannot be read here: %v", addresses[ports], err)
+	}
+	if err := next.Close(); err != nil {
+		t.Fatalf("releasing %s: %v", addresses[ports], err)
+	}
+	return holdingTheWindowDownTo(t, ports)
+}
+
 func TestAHeldDefaultIsTheNextPortDownRatherThanARefusal(t *testing.T) {
-	addresses := holdingTheWindowDownTo(t, 1)
+	addresses := holdingTheWindowDownToWithTheNextOneFree(t, 1)
 
 	held := standing(t)
 	held.bindsWhatIsConfigured()
@@ -158,7 +172,7 @@ func TestAHeldDefaultIsTheNextPortDownRatherThanARefusal(t *testing.T) {
 }
 
 func TestTheWindowIsWalkedFromTheTopDownRatherThanAtRandom(t *testing.T) {
-	addresses := holdingTheWindowDownTo(t, 3)
+	addresses := holdingTheWindowDownToWithTheNextOneFree(t, 3)
 
 	held := standing(t)
 	held.bindsWhatIsConfigured()
@@ -544,7 +558,7 @@ func TestAPageServedWithNothingStatedSaysWhereItCanBeOpenedFrom(t *testing.T) {
 
 func TestWhatAPersonIsToldToForwardIsThePortTheWindowWalkedDownTo(t *testing.T) {
 	// scenario: A page served with nothing stated says where it can be opened from
-	addresses := holdingTheWindowDownTo(t, 1)
+	addresses := holdingTheWindowDownToWithTheNextOneFree(t, 1)
 
 	held := standing(t)
 	held.bindsWhatIsConfigured()
@@ -627,12 +641,18 @@ func TestASurfaceBlockInReviewsFileIsNotWhatAgoraBinds(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(review, state.ConfigurationFile), []byte(asASurfaceBlock("bind: "+inReviews+"\n")), 0o600); err != nil {
 		t.Fatalf("writing a surface block into review's file: %v", err)
 	}
+	inAgoras := aFreeLoopbackAddress(t)
+	held.configure("bind: " + inAgoras + "\n")
 	held.bindsWhatIsConfigured()
 
 	held.serve(oneDecisionDocument)
 
-	if open := held.record(); open.Address == inReviews {
+	open := held.record()
+	if open.Address == inReviews {
 		t.Errorf("the surface bound %q, which only review's file states, and agora reads %s", open.Address, held.agorasConfiguration())
+	}
+	if open.Address != inAgoras {
+		t.Errorf("the surface bound %q, and %s states %q", open.Address, held.agorasConfiguration(), inAgoras)
 	}
 }
 
