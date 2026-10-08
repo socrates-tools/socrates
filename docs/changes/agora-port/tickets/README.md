@@ -17,6 +17,6 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 57](../../../../agora/docs/adr/0
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1: The surface binds one port, and a held port is refused](1-one-default-port.md) | None | pending |
+| [1: The surface binds one port, and a held port is refused](1-one-default-port.md) | None | in progress |
 | [2: serve finds the surface by asking the port who stands there](2-surface-found-by-asking-the-port.md) | 1 | pending |
 | [3: A surface of another build is replaced once it holds no session](3-another-build-replaced-once-idle.md) | 2 | pending |
