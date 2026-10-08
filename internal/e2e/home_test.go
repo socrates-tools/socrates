@@ -193,6 +193,9 @@ func TestTheVariableThatMovedTheSurfacesOwnHomeIsRefused(t *testing.T) {
 	if !strings.Contains(failures, surface.RetiredHomeVariable) || !strings.Contains(failures, state.HomeVariable) {
 		t.Errorf("the refusal reads %q, and it names the variable that moved the surface's home and the one that replaced it", failures)
 	}
+	if instruction := "set " + state.HomeVariable + " instead"; !strings.Contains(failures, instruction) {
+		t.Errorf("the refusal reads %q, and it tells the person to %q", failures, instruction)
+	}
 	if !strings.Contains(failures, "root") {
 		t.Errorf("the refusal reads %q, and it names the brand's root %s moves", failures, state.HomeVariable)
 	}

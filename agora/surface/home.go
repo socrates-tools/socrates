@@ -26,7 +26,7 @@ func CheckNoHomeOfItsOwn() error {
 	if os.Getenv(RetiredHomeVariable) == "" {
 		return nil
 	}
-	return refusal.New(surfaceHasNoHomeOfItsOwn, RetiredHomeVariable, state.HomeVariable, RetiredHomeVariable)
+	return refusal.New(surfaceHasNoHomeOfItsOwn, RetiredHomeVariable, state.HomeVariable, RetiredHomeVariable, state.HomeVariable)
 }
 
 func RecordPath() (string, error) {
