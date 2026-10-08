@@ -24,8 +24,9 @@ While the major version is `0`, a minor release may change the surface half in w
   `agora version` is gone, because there is no second program to ask.
 - **Nothing is carried forward.**
   There is no shim, no alias and no deprecation period: the old names are not commands, and typing one is refused as an unknown command.
-- **What socrates reads and writes moved to `~/.socrates/review`.**
-  `~/.socrates` is now the brand's root, holding one directory per tool, and `SOCRATES_HOME` moves the root rather than this tool's home.
+- **What socrates reads and writes moved into a directory per tool.**
+  `socrates review` reads and writes `~/.socrates/review`, and `socrates agora` writes its server record and its page sessions under `~/.socrates/agora`, beside its own configuration file.
+  `~/.socrates` is now the brand's root, holding one directory per tool, and `SOCRATES_HOME` moves the root rather than one tool's home.
   Nothing migrates the old layout: remove `~/.socrates` and run `socrates review skill` again.
 - **The page's settings moved to a file of their own, `~/.socrates/agora/config.yaml`.**
   v0.1.0 read the `surface` block from the same file as every review setting.
