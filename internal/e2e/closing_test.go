@@ -318,6 +318,7 @@ func TestEitherPressOverABlankDecisionRaisesTheConfirmationAndSendsNothing(t *te
 	t.Parallel()
 	for _, press := range []string{".send", ".finish"} {
 		t.Run(press, func(t *testing.T) {
+			t.Parallel()
 			held, page := read(t, twoDecisionDocument)
 
 			page.evaluate(chose("c-1", 0), nil)
@@ -395,6 +396,7 @@ func TestSendAnywayDeliversWhatTheControlsHold(t *testing.T) {
 		ends  bool
 	}{{".send", false}, {".finish", true}} {
 		t.Run(raising.press, func(t *testing.T) {
+			t.Parallel()
 			held, page := read(t, twoDecisionDocument)
 
 			page.evaluate(chose("c-1", 0), nil)
@@ -443,6 +445,7 @@ func TestEveryWayOutOfTheConfirmationSendsNothingAndLeavesThePageAsItWas(t *test
 		{"a press on the backdrop", func(page *reader) { page.clickAt(4, 4) }},
 	} {
 		t.Run(door.name, func(t *testing.T) {
+			t.Parallel()
 			held, page := read(t, twoDecisionDocument)
 
 			page.evaluate(chose("c-1", 0), nil)
@@ -595,6 +598,7 @@ func TestABlankDecisionsNameTakesThePersonToItsCard(t *testing.T) {
 		{"a decision offering none", "q1", "words-field"},
 	} {
 		t.Run(jump.named, func(t *testing.T) {
+			t.Parallel()
 			held := standing(t)
 			page := opening(t, held.serve(offeringNoneBesideOfferingSome))
 
@@ -669,6 +673,7 @@ func TestTheConfirmationDimsThePageBehindIt(t *testing.T) {
 	t.Parallel()
 	for _, preference := range []string{"light", "dark"} {
 		t.Run(preference, func(t *testing.T) {
+			t.Parallel()
 			_, page := read(t, twoDecisionDocument)
 			page.emulate(preference)
 			page.evaluate(chose("c-2", 2), nil)

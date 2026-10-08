@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"io"
+	"math/rand/v2"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -9,7 +10,9 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -50,18 +53,38 @@ func asASurfaceBlock(stated string) string {
 	return block
 }
 
+const (
+	privateRangeStart = 20000
+	privateRangeSize  = 10000
+	privateRangeTries = 500
+)
+
+var claimedPorts sync.Map
+
 func aFreeLoopbackAddress(t *testing.T) string {
 	t.Helper()
 
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatalf("finding a loopback address nothing holds: %v", err)
+	for range privateRangeTries {
+		port := privateRangeStart + rand.IntN(privateRangeSize)
+		if _, claimed := claimedPorts.LoadOrStore(port, struct{}{}); claimed {
+			continue
+		}
+		address := net.JoinHostPort("127.0.0.1", strconv.Itoa(port))
+		listener, err := net.Listen("tcp", address)
+		if err != nil {
+			continue
+		}
+		if err := listener.Close(); err != nil {
+			t.Fatalf("releasing the loopback address that was found: %v", err)
+		}
+		return address
 	}
-	address := listener.Addr().String()
-	if err := listener.Close(); err != nil {
-		t.Fatalf("releasing the loopback address that was found: %v", err)
-	}
-	return address
+	t.Fatalf("finding a loopback address nothing holds in %d..%d", privateRangeStart, privateRangeStart+privateRangeSize)
+	return ""
+}
+
+func (s *surfaced) bindsAPortNothingElseWillTake() {
+	s.bind = aFreeLoopbackAddress(s.t)
 }
 
 func thePageAt(reached, session string) string {
@@ -91,20 +114,41 @@ func TestTheSurfaceReportsThePortItWasGivenRatherThanTheOneItAskedFor(t *testing
 	}
 }
 
+const (
+	listeningWait     = 10 * time.Second
+	listeningPoll     = 20 * time.Millisecond
+	connectingTimeout = time.Second
+)
+
+func somethingListensAt(address string) bool {
+	connection, err := net.DialTimeout("tcp", address, connectingTimeout)
+	if err != nil {
+		return false
+	}
+	_ = connection.Close()
+	return true
+}
+
+func listeningOnceFree(address string) (net.Listener, error) {
+	deadline := time.Now().Add(listeningWait)
+	for {
+		listener, err := net.Listen("tcp", address)
+		if err == nil || time.Now().After(deadline) {
+			return listener, err
+		}
+		time.Sleep(listeningPoll)
+	}
+}
+
 func untilThePortIsFree(t *testing.T, address string) {
 	t.Helper()
 
-	deadline := time.Now().Add(10 * time.Second)
-	for {
-		listener, err := net.Listen("tcp", address)
-		if err == nil {
-			_ = listener.Close()
-			return
-		}
+	deadline := time.Now().Add(listeningWait)
+	for somethingListensAt(address) {
 		if time.Now().After(deadline) {
-			t.Fatalf("the port %s is still held after the surface was stopped: %v", address, err)
+			t.Fatalf("the port %s is still held after the surface was stopped", address)
 		}
-		time.Sleep(20 * time.Millisecond)
+		time.Sleep(listeningPoll)
 	}
 }
 
@@ -117,12 +161,8 @@ func requireTheFixedPortIsFree(t *testing.T) {
 	t.Helper()
 	lockingTheWindow(t)
 
-	listener, err := net.Listen("tcp", surface.DefaultAddress)
-	if err != nil {
-		t.Skipf("something else holds %s, so what the surface binds when nothing states one cannot be read here: %v", surface.DefaultAddress, err)
-	}
-	if err := listener.Close(); err != nil {
-		t.Fatalf("releasing %s: %v", surface.DefaultAddress, err)
+	if somethingListensAt(surface.DefaultAddress) {
+		t.Skipf("something else holds %s, so what the surface binds when nothing states one cannot be read here", surface.DefaultAddress)
 	}
 }
 
@@ -132,7 +172,7 @@ func holdingTheWindowDownTo(t *testing.T, ports int) []string {
 
 	addresses := surface.Addresses()
 	for _, address := range addresses[:ports] {
-		listener, err := net.Listen("tcp", address)
+		listener, err := listeningOnceFree(address)
 		if err != nil {
 			t.Skipf("something else already holds %s, so a window walked past a held port cannot be read here: %v", address, err)
 		}
@@ -146,12 +186,8 @@ func holdingTheWindowDownToWithTheNextOneFree(t *testing.T, ports int) []string 
 	lockingTheWindow(t)
 
 	addresses := surface.Addresses()
-	next, err := net.Listen("tcp", addresses[ports])
-	if err != nil {
-		t.Skipf("something else holds %s, so the port a window walks down to cannot be read here: %v", addresses[ports], err)
-	}
-	if err := next.Close(); err != nil {
-		t.Fatalf("releasing %s: %v", addresses[ports], err)
+	if somethingListensAt(addresses[ports]) {
+		t.Skipf("something else holds %s, so the port a window walks down to cannot be read here", addresses[ports])
 	}
 	return holdingTheWindowDownTo(t, ports)
 }
@@ -245,11 +281,9 @@ func windowAddressesNothingHolds(t *testing.T) []string {
 
 	var free []string
 	for _, address := range surface.Addresses() {
-		listener, err := net.Listen("tcp", address)
-		if err != nil {
+		if somethingListensAt(address) {
 			continue
 		}
-		_ = listener.Close()
 		free = append(free, address)
 	}
 	return free
@@ -265,12 +299,9 @@ func (s *surfaced) boundNothing(named string, free []string) {
 		if address == named {
 			continue
 		}
-		listener, err := net.Listen("tcp", address)
-		if err != nil {
+		if somethingListensAt(address) {
 			s.t.Errorf("refusing %s bound %s instead of taking no port at all", named, address)
-			continue
 		}
-		_ = listener.Close()
 	}
 }
 

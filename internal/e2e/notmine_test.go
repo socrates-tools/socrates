@@ -392,6 +392,7 @@ func TestWhereAFindingIsDoesNotDependOnHowThePersonConfiguredTheirDiffs(t *testi
 		{"diff.mnemonicPrefix", "true"},
 	} {
 		t.Run(configured[0], func(t *testing.T) {
+			t.Parallel()
 			session := harness.Start(t)
 			session.Repository.Git("config", configured[0], configured[1])
 

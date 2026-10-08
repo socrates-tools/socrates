@@ -96,6 +96,7 @@ func TestImplementConfigRefusesAValueOutOfRangeAndAFieldItDoesNotHaveNamingTheFi
 		"an unknown field":      "parallelism: 3\n",
 	} {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			session := harness.Start(t)
 			stateImplementConfiguration(t, session, content)
 

@@ -246,6 +246,7 @@ func TestSocratesReachesNoRemoteToResolveABase(t *testing.T) {
 
 	name := session.Begin("--base", "main")
 	session.WaitFor(name, runstate.Clean)
+	session.WaitForTheWorktreeToBeRemoved(name)
 
 	if after := session.Repository.Git("rev-list", "--all"); after != before {
 		t.Errorf("the commits reachable in the repository changed while the base was resolved:\nbefore:\n%s\nafter:\n%s", before, after)

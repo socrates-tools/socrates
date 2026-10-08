@@ -223,6 +223,7 @@ func TestEachVerdictHasItsOwnCodeFromTheCommand(t *testing.T) {
 		{scenario: "default:\n  behaviour: no-result\n", state: runstate.Failed, code: exit.Failed},
 	} {
 		t.Run(string(verdict.state), func(t *testing.T) {
+			t.Parallel()
 			session := harness.Start(t)
 			session.Simulator.Scenario(verdict.scenario)
 			session.Repository.Write("internal/added.go", "package internal\n")

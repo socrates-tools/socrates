@@ -28,6 +28,7 @@ func TestSocratesSaysWhichRoundsWaitOnAPersonAndOnlyThose(t *testing.T) {
 		{named: "a round that found nothing blocking", scenario: dialogueScenario(nothingFoundAgain, nothingFoundAgain), state: runstate.Clean, waits: false},
 	} {
 		t.Run(driven.named, func(t *testing.T) {
+			t.Parallel()
 			journey := driving(t, driven.scenario, answeredWrongly)
 			name := journey.begin("count the characters of a document")
 

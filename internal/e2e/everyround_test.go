@@ -86,6 +86,7 @@ func TestARoundThatCompletedAReviewIsHandedOverAsAPage(t *testing.T) {
 		},
 	} {
 		t.Run(driven.named, func(t *testing.T) {
+			t.Parallel()
 			journey := driving(t, driven.scenario, answeredWrongly)
 			name := journey.begin("count the characters of a document")
 
@@ -197,6 +198,7 @@ func TestARoundThatWaitsOnNobodyIsHandedOverAndNotWaitedOn(t *testing.T) {
 		{named: "a parked round the author answers alone", scenario: dialogueScenario(patchableFindings, nothingFoundAgain), state: runstate.AwaitingResponse},
 	} {
 		t.Run(driven.named, func(t *testing.T) {
+			t.Parallel()
 			journey := driving(t, driven.scenario, answeredWrongly)
 			name := journey.begin("count the characters of a document")
 

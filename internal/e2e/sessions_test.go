@@ -218,6 +218,7 @@ func TestEndingOneSessionLeavesTheOthersBeingRead(t *testing.T) {
 func TestStoppingIsTheServerNotASession(t *testing.T) {
 	t.Parallel()
 	held := standing(t)
+	held.bindsAPortNothingElseWillTake()
 	firstAddress, _, secondAddress, _ := held.twoPages()
 	bound := held.record().Address
 
@@ -339,6 +340,7 @@ func TestAStrangerOnThePortIsNotMistakenForTheSurface(t *testing.T) {
 	// scenario: The default bind is a fixed loopback port
 	t.Parallel()
 	held := standing(t)
+	held.bindsAPortNothingElseWillTake()
 	held.serve(oneDecisionDocument)
 
 	bound := held.record().Address
@@ -382,7 +384,7 @@ func whatAKilledSurfaceLeaves(t *testing.T, address string) []byte {
 func aStrangerAnsweringOn(t *testing.T, address string) *http.Server {
 	t.Helper()
 
-	listener, err := net.Listen("tcp", address)
+	listener, err := listeningOnceFree(address)
 	if err != nil {
 		t.Fatalf("taking the port the killed surface left: %v", err)
 	}

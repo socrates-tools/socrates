@@ -46,6 +46,7 @@ type Server struct {
 	idle     time.Duration
 	stopping chan struct{}
 	stopped  chan struct{}
+	drained  chan struct{}
 	stopOnce sync.Once
 
 	sessions *Sessions
@@ -73,6 +74,7 @@ func Serve(address string, idle time.Duration) (*Server, error) {
 		idle:     idle,
 		stopping: make(chan struct{}),
 		stopped:  make(chan struct{}),
+		drained:  make(chan struct{}),
 		sessions: NewSessions(time.Now()),
 	}
 	server.serving = &http.Server{Handler: server.routes(), ReadHeaderTimeout: 10 * time.Second}
@@ -134,8 +136,9 @@ func (s *Server) Holds() []string {
 
 func (s *Server) hold() {
 	defer close(s.stopped)
-	if err := s.serving.Serve(s.listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return
+	err := s.serving.Serve(s.listener)
+	if errors.Is(err, http.ErrServerClosed) {
+		<-s.drained
 	}
 }
 
@@ -171,6 +174,7 @@ func (s *Server) Stop() {
 		shutting, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 		_ = s.serving.Shutdown(shutting)
+		close(s.drained)
 	})
 }
 

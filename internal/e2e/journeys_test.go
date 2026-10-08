@@ -142,6 +142,7 @@ func TestNoFailureJourneyReportsClean(t *testing.T) {
 		{behaviour: "error-result", names: "529"},
 	} {
 		t.Run(failure.behaviour, func(t *testing.T) {
+			t.Parallel()
 			session := harness.Start(t)
 			session.Simulator.Scenario("default:\n  behaviour: " + failure.behaviour + "\n")
 			session.Repository.Write("internal/added.go", "package internal\n")

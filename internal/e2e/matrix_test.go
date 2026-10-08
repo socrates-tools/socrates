@@ -56,6 +56,7 @@ func TestOneScenarioEveryVendor(t *testing.T) {
 		{named: "a reviewer that reported a failure", scenario: failingOutright, reaches: runstate.Failed},
 	} {
 		t.Run(journey.named, func(t *testing.T) {
+			t.Parallel()
 			harness.EachVendor(t, func(t *testing.T, session *harness.Session) {
 				session.Simulator.Scenario(journey.scenario)
 				session.Repository.Write("internal/added.go", "package internal\n")

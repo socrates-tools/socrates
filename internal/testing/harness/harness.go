@@ -315,6 +315,24 @@ func (s *Session) WaitFor(name string, state runstate.State) *runstore.Run {
 	return nil
 }
 
+func (s *Session) WaitForTheWorktreeToBeRemoved(name string) {
+	s.t.Helper()
+
+	worktree := s.Recorded(name).Worktree
+	if worktree == "" {
+		s.t.Fatalf("the run %s records no worktree", name)
+	}
+
+	deadline := time.Now().Add(terminalWait)
+	for time.Now().Before(deadline) {
+		_, statted := os.Stat(worktree)
+		if os.IsNotExist(statted) && !strings.Contains(s.Repository.Worktrees(), worktree) {
+			return
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+}
+
 func (s *Session) Round(name string, number int) runstore.Round {
 	s.t.Helper()
 	return s.Store.Round(name, number)

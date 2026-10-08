@@ -30,6 +30,7 @@ const (
 	drawnPoll   = 5 * time.Millisecond
 	changedWait = 2 * time.Second
 	settledWait = 20 * time.Millisecond
+	drainedWait = 2 * time.Second
 )
 
 type Terminal struct {
@@ -39,6 +40,7 @@ type Terminal struct {
 	device    *os.File
 	screen    *screen
 	finished  chan error
+	drained   chan struct{}
 	stopped   sync.Once
 	typedOver string
 	typed     bool
@@ -83,6 +85,7 @@ func (s *Session) startInATerminal(directory string, environment []string, argum
 		device:    device,
 		screen:    newScreen(),
 		finished:  make(chan error, 1),
+		drained:   make(chan struct{}),
 	}
 
 	go attached.read()
@@ -92,6 +95,7 @@ func (s *Session) startInATerminal(directory string, environment []string, argum
 }
 
 func (a *Terminal) read() {
+	defer close(a.drained)
 	held := make([]byte, 4096)
 	for {
 		count, err := a.device.Read(held)
@@ -198,7 +202,10 @@ func (a *Terminal) Wait() (string, int) {
 			}
 			code = exited.ExitCode()
 		}
-		time.Sleep(drawnPoll)
+		select {
+		case <-a.drained:
+		case <-time.After(drainedWait):
+		}
 		return a.Drawn(), code
 	case <-time.After(terminalWait):
 		a.t.Fatalf("socrates %s is still running after %s, and the screen reads:\n%s", strings.Join(a.arguments, " "), terminalWait, a.Drawn())

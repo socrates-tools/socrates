@@ -85,13 +85,7 @@ func TestTheWorktreeCanBeRemovedAfterTheRound(t *testing.T) {
 		t.Fatal("the run records no worktree")
 	}
 
-	deadline := time.Now().Add(10 * time.Second)
-	for time.Now().Before(deadline) {
-		if _, err := os.Stat(worktree); os.IsNotExist(err) {
-			break
-		}
-		time.Sleep(20 * time.Millisecond)
-	}
+	session.WaitForTheWorktreeToBeRemoved(name)
 
 	if _, err := os.Stat(worktree); err == nil {
 		t.Errorf("%s is still on disk after the round ended as %s", worktree, run.State)
