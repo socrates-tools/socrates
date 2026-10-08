@@ -7,7 +7,11 @@ import (
 	"github.com/socrates-tools/socrates/internal/refusal"
 )
 
-const localhostName = "localhost"
+const (
+	DefaultAddress = "127.0.0.1:24672"
+
+	localhostName = "localhost"
+)
 
 func CheckLoopback(address string) error {
 	host, port, err := net.SplitHostPort(address)
@@ -37,21 +41,12 @@ func CheckLoopback(address string) error {
 	return nil
 }
 
-func CheckFree(address string) error {
+func CheckFree(address, file string) error {
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		return refusal.New(portIsHeldByAnother, address)
+		return refusal.New(portIsHeldBySomethingElse, address, BindField, file, AddressOption)
 	}
 	return listener.Close()
-}
-
-func FirstFreeIn(addresses []string) (string, error) {
-	for _, address := range addresses {
-		if CheckFree(address) == nil {
-			return address, nil
-		}
-	}
-	return "", refusal.New(everyPortInTheWindowIsHeld, addresses[len(addresses)-1], addresses[0])
 }
 
 func CheckOpenable(address string) error {

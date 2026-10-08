@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -75,7 +74,7 @@ func oneRealReview(t *testing.T, vendor agent.Vendor) {
 	}
 	t.Logf("%s rated the change %s risk and reported %d findings", vendor.Name, document.RiskLevel, len(document.Findings))
 
-	t.Run("what it answered reaches a page on a port of the window", func(t *testing.T) {
+	t.Run("what it answered reaches a page on a free loopback port", func(t *testing.T) {
 		t.Setenv(state.HomeVariable, t.TempDir())
 
 		read := whatThePersonReads(document)
@@ -84,20 +83,14 @@ func oneRealReview(t *testing.T, vendor agent.Vendor) {
 			t.Fatalf("writing the document the page is served from: %v", err)
 		}
 
-		window := surface.Addresses()
-		free, err := surface.FirstFreeIn(window)
+		server, err := surface.Serve("127.0.0.1:0", surface.IdlePeriod)
 		if err != nil {
-			t.Fatalf("taking a port of the window: %v", err)
-		}
-
-		server, err := surface.Serve(free, surface.IdlePeriod)
-		if err != nil {
-			t.Fatalf("serving on %s: %v", free, err)
+			t.Fatalf("serving on a free loopback port: %v", err)
 		}
 		defer server.Stop()
 
-		if !slices.Contains(window, server.Address()) {
-			t.Fatalf("the surface bound %q, and the ports it takes where nothing states one run from %q to %q", server.Address(), window[len(window)-1], window[0])
+		if err := surface.CheckLoopback(server.Address()); err != nil {
+			t.Fatalf("the surface bound %q, and it binds a loopback address only: %v", server.Address(), err)
 		}
 
 		opened, err := server.Open(read, raw)

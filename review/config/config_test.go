@@ -256,7 +256,7 @@ func TestWhatTheLoaderRefusesIsRefusedFromContentAloneToo(t *testing.T) {
 	for _, unusable := range []string{
 		"diff_ceiling: -1\n",
 		"reviewer_temperature: 0.5\n",
-		"bind: 127.0.0.1:18018\n",
+		"bind: 127.0.0.1:9000\n",
 		"roles: [not a mapping\n",
 	} {
 		path := filepath.Join(t.TempDir(), "config.yaml")

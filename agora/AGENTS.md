@@ -16,7 +16,7 @@ This file is agora's layout and invariants.
 - `agora/stylesheet` - a caller's stylesheet read as a parse, reduced to a fixed allowlist, and scoped to the illustration.
 - `agora/render` - a document to one HTML page, the marks a severity and an audience are drawn as, and a patch to the rows of a split diff.
 - `agora/assets` - the built client bundle and fonts, embedded, and the stamp of their source.
-- `agora/surface` - the loopback server and its guards, the address bound where nothing states one and the window walked down from it, the sessions it holds, what it writes about itself and about each page, the exchange, and the bounds on waiting.
+- `agora/surface` - the loopback server and its guards, the one address bound where nothing states one, the sessions it holds, what it writes about itself and about each page, the exchange, and the bounds on waiting.
 - `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
 
 ## Invariants
@@ -27,8 +27,8 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 **The surface**
 
 - It binds a loopback address; nothing widens it, and an address that is not one is refused before any server starts.
-- It takes the first free port of a fixed window counting down where nothing states one, and a whole window held is a refusal naming it.
-  The window is stated once, in `agora/surface` beside the guards that judge an address.
+- It binds one fixed port where nothing states one, and that port held by anything else is a refusal naming the port, `surface.bind` and `--address`, and no surface starts on another port.
+  The port is stated once, in `agora/surface` beside the guards that judge an address.
 - A port an operator committed to, by flag or by either field of the `surface` block, is bound or refused and never walked past.
 - The surface mints a session, `--session` never brings one into existence, and every page and every route of it is served under a path holding that session.
 - It turns away a request naming a host it did not bind, and every state-changing route carries a token: a session's own answers for that session and no other, and the one minted when the server started answers everywhere.

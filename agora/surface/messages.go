@@ -20,12 +20,11 @@ const (
 	answerCarriesNoToken    = "an answer carries the token the page was served with"
 	requestCarriesNoControl = "this is asked of the surface itself, and it is asked by whoever started it"
 
-	surfaceHoldsNoSuchSession  = "the surface holds no session %q. A session comes into existence only when agora serve is given none, so run agora serve without --session to open one"
-	portIsHeldByAnother        = "something is already listening on %s and it is not a surface agora knows of, so agora will not take that port from it. Free it, or name another loopback address with --address, and run the command again"
-	everyPortInTheWindowIsHeld = "every port from %s to %s is held by something that is not a surface agora knows of, and those are the ports agora takes where nothing states one. Free one of them, or name a loopback address with --address, and run the command again"
-	bodyIsOverTheCeiling       = "what was sent is larger than the %d bytes the surface accepts. Send a smaller document"
-	cannotStream               = "this connection cannot carry a stream, so the page cannot be told when a reply arrives"
-	waitIsNotADuration         = "the wait %q is not a length of time. Give one such as 30m and run the command again"
+	surfaceHoldsNoSuchSession = "the surface holds no session %q. A session comes into existence only when agora serve is given none, so run agora serve without --session to open one"
+	portIsHeldBySomethingElse = "something is already listening on %s and agora will not take that port from it. Free it, or move the surface with %s in %s or with %s, and run the command again"
+	bodyIsOverTheCeiling      = "what was sent is larger than the %d bytes the surface accepts. Send a smaller document"
+	cannotStream              = "this connection cannot carry a stream, so the page cannot be told when a reply arrives"
+	waitIsNotADuration        = "the wait %q is not a length of time. Give one such as 30m and run the command again"
 
 	mintingTheToken      = "minting the token this session answers on: %w"
 	mintingTheSession    = "minting the session the page belongs to: %w"

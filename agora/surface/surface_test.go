@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/fs"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -565,4 +566,31 @@ func within(t *testing.T, root string) []string {
 	}
 	slices.Sort(held)
 	return held
+}
+
+func TestAHeldAddressIsRefusedNamingTheWaysToMoveTheSurface(t *testing.T) {
+	listener, err := net.Listen("tcp", aPortTheOperatingSystemChooses)
+	if err != nil {
+		t.Fatalf("holding a port: %v", err)
+	}
+	defer func() { _ = listener.Close() }()
+
+	err = surface.CheckFree(listener.Addr().String(), "/home/someone/.socrates/agora/config.yaml")
+	if err == nil {
+		t.Fatalf("%s is held and it was reported free", listener.Addr())
+	}
+	for _, named := range []string{listener.Addr().String(), "surface.bind", "/home/someone/.socrates/agora/config.yaml", "--address"} {
+		if !strings.Contains(err.Error(), named) {
+			t.Errorf("refusing a held address does not name %s:\n%s", named, err)
+		}
+	}
+}
+
+func TestTheAddressBoundWhereNothingStatesOneIsOneLoopbackPort(t *testing.T) {
+	if surface.DefaultAddress != "127.0.0.1:24672" {
+		t.Errorf("the address bound where nothing states one is %q", surface.DefaultAddress)
+	}
+	if err := surface.CheckLoopback(surface.DefaultAddress); err != nil {
+		t.Errorf("the address bound where nothing states one is not one the surface will bind: %v", err)
+	}
 }

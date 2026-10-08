@@ -256,8 +256,8 @@ socrates agora reads its own file, `~/.socrates/agora/config.yaml`, which holds 
 
 ```yaml
 surface:
-  bind: 127.0.0.1:18018
-  reached_at: http://localhost:18018/
+  bind: 127.0.0.1:24672
+  reached_at: http://localhost:24672/
 ```
 
 A `surface` block left in review's file is refused.
@@ -284,15 +284,15 @@ git add .socrates/review-guide.md && git commit -m "what a reviewer should know 
 
 ## Reading the page from another machine
 
-The page is served on `127.0.0.1:18018` and only opens on that machine.
-If that port is taken and you stated no address, it counts down through a window of ten ports and takes the first free one.
-If you stated an address, a taken port is refused.
+The page is served on `127.0.0.1:24672` and only opens on that machine.
+If something else is already listening on that port, socrates agora refuses and starts no page anywhere else.
+To move the page, state an address with `surface.bind` in agora's file or with `--address`, and a taken port you state is refused the same way.
 
 In a devcontainer, over ssh, or anywhere with its own network namespace, your browser cannot reach loopback, and it sees an empty reply.
 Forward the port from inside that namespace:
 
-- a devcontainer: `{ "forwardPorts": [18018] }` in `devcontainer.json`
-- ssh: `ssh -L 18018:127.0.0.1:18018 <host>`
+- a devcontainer: `{ "forwardPorts": [24672] }` in `devcontainer.json`
+- ssh: `ssh -L 24672:127.0.0.1:24672 <host>`
 - or a reverse proxy running beside it
 
 Publishing the port in a compose file does not work, because it forwards to the container's network interface, not to loopback.

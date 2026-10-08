@@ -94,14 +94,15 @@ func aPortWasCommittedTo(command *cobra.Command, configured config.Surface) bool
 	return command.Flags().Changed(addressFlag) || configured.Bind != "" || configured.ReachedAt != ""
 }
 
-func whereToBind(committed string) (string, error) {
-	if committed != "" {
-		if err := surface.CheckFree(committed); err != nil {
-			return "", err
-		}
-		return committed, nil
+func whereToBind(committed, file string) (string, error) {
+	binding := committed
+	if binding == "" {
+		binding = surface.DefaultAddress
 	}
-	return surface.FirstFreeIn(surface.Addresses())
+	if err := surface.CheckFree(binding, file); err != nil {
+		return "", err
+	}
+	return binding, nil
 }
 
 func readDocument(command *cobra.Command, from string) ([]byte, error) {
@@ -160,7 +161,7 @@ func start(command *cobra.Command, raw []byte, address string, said stated, sess
 	if err := surface.ForgetRecord(); err != nil {
 		return err
 	}
-	binding, err := whereToBind(address)
+	binding, err := whereToBind(address, said.file)
 	if err != nil {
 		return err
 	}

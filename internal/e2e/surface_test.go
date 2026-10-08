@@ -85,7 +85,7 @@ func (s *surfaced) surfaceHome() string {
 }
 
 func (s *surfaced) bindsWhatIsConfigured() {
-	lockingTheWindow(s.t)
+	lockingTheDefaultPort(s.t)
 	s.bind = ""
 }
 
