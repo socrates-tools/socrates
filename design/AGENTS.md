@@ -10,7 +10,7 @@ This file is design's layout and invariants.
 ## Layout
 
 - `design/command` - the command tree: one operation, `skill`, that installs both skills.
-- `design/skill` - the source of both skills. The design's: the rounds, the page, what was settled, the glossary, the spec, the decisions, the last round, ending early, and installing elsewhere. The tickets': the spec it starts from, slicing, blockers and waves, the breakdown on a page, the last card, the main ticket, a ticket, and leaving them to be committed.
+- `design/skill` - the source of both skills. The design's: the rounds, the page, what was settled, the glossary, the spec, the decisions, when the frontier empties, ending early, and installing elsewhere. The tickets': the spec it starts from, slicing, blockers and waves, the breakdown on a page, writing them, the main ticket, a ticket, and leaving them to be committed.
 
 ## Invariants
 
@@ -20,7 +20,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 **The design skill**
 
 - `design/skill` is tested through its rendered documents: their ceiling is enforced, the committed copies must match what the package renders, and every invocation it names must exist in the binary's command surface with the flags it names, across both namespaces it covers.
-- The last card offers write it and nothing that starts another skill, per ADR 49: every socrates skill is a person's to start.
+- No page asks a person to approve writing: once the frontier is empty, or every ticket card comes back kept, the session closes the page with `socrates agora end` and writes, and starts no other skill, per ADR 49: every socrates skill is a person's to start.
 - The skill writes no severity, no `None of these` option and no command on any option it composes: a design answer runs nothing, and a design question is earlier or later in the argument rather than more or less severe.
 - A settled question is written to the document's `settled` list rather than as a decision, stating the question, the labels chosen and the person's own words, and a person reopens one through the page's message, per ADR 46.
 - The ADR criterion the skill states is a conjunction, tested as one: hard to reverse, surprising without context, and the result of a real trade-off, never any one or two of the three.
@@ -28,7 +28,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - The glossary is challenged on cards: a fuzzy word, a scenario at the boundary between two terms, and a claim the code contradicts.
 - A card asks where the change is tested, an interface question offers drafts made under different constraints, and a prototype is written outside the repository and removed once its question settles.
 - There is no round cap: a person can end a design at any round, on the page or with `socrates agora end`, and either way the exchange ends carrying only what was actually answered, leaving everything else for the session to record as unsettled.
-- The loop is driven end to end through the real binary: a round renders with its recommendation chosen, and what the person answers, including approving the last round's card, reaches the session through `socrates agora poll`. What the binary cannot drive, because nothing in it writes a file, is the spec and the ADRs themselves: those are the session's to write from what `socrates agora poll` handed it.
+- The loop is driven end to end through the real binary: a round renders with its recommendation chosen, and what the person answers reaches the session through `socrates agora poll`, and a page the session ends once nothing is left to ask renders closed. What the binary cannot drive, because nothing in it writes a file, is the spec and the ADRs themselves: those are the session's to write from what `socrates agora poll` handed it.
 
 **The tickets skill**
 

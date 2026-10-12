@@ -8,14 +8,14 @@ import (
 )
 
 const (
-	startingHeading   = "## The spec it starts from"
-	slicingHeading    = "## Slicing"
-	wavesHeading      = "## Blockers and waves"
-	breakdownHeading  = "## Putting the breakdown on a page"
-	lastCardHeading   = "## The last card"
-	mainTicketHeading = "## The main ticket"
-	aTicketHeading    = "## A ticket"
-	committingHeading = "## Leaving them to be committed"
+	startingHeading    = "## The spec it starts from"
+	slicingHeading     = "## Slicing"
+	wavesHeading       = "## Blockers and waves"
+	breakdownHeading   = "## Putting the breakdown on a page"
+	writingThemHeading = "## Writing them"
+	mainTicketHeading  = "## The main ticket"
+	aTicketHeading     = "## A ticket"
+	committingHeading  = "## Leaving them to be committed"
 )
 
 func ticketsSaysEach(t *testing.T, heading, why string, said ...string) {
@@ -102,14 +102,19 @@ func TestTheBreakdownMintsItsOwnSessionAndNamesNoDesignHandingOn(t *testing.T) {
 	}
 }
 
-func TestWritingIsApprovedOnOneLastCardNamingTheFolderAndEveryFile(t *testing.T) {
-	ticketsSaysEach(t, lastCardHeading, "a person would discover where the tickets went rather than approve it",
-		"every card comes back kept",
-		"one card, and it is the only card on that page",
-		"every file the folder will hold",
+func TestTheTicketsAreWrittenOnceEveryCardIsKeptWithoutAFurtherPage(t *testing.T) {
+	ticketsSaysEach(t, writingThemHeading, "a person would be asked a second time to approve a breakdown they already kept",
+		"Nothing is written before a round comes back with every card kept",
+		"serve no further page",
+		"socrates agora end --session <session>",
 		"docs/changes/<slug>/tickets/",
-		"Nothing is written until that card is approved",
+		"say in the terminal every path you wrote",
 	)
+
+	writing := sectionOf(t, skill.TicketsDocument(), writingThemHeading)
+	if strings.Contains(writing, `"label"`) {
+		t.Errorf("the writing section still composes a card for the person to approve:\n%s", writing)
+	}
 }
 
 func TestTheMainTicketIsTheReadmeAndPointsAtTheSpecRatherThanRepeatingIt(t *testing.T) {
@@ -170,7 +175,7 @@ func TestTheTicketsSkillStatesItsSectionsInTheOrderTheWorkHappens(t *testing.T) 
 	document := skill.TicketsDocument()
 
 	previous := -1
-	for _, heading := range []string{startingHeading, slicingHeading, wavesHeading, breakdownHeading, lastCardHeading, mainTicketHeading, aTicketHeading, committingHeading} {
+	for _, heading := range []string{startingHeading, slicingHeading, wavesHeading, breakdownHeading, writingThemHeading, mainTicketHeading, aTicketHeading, committingHeading} {
 		at := strings.Index(document, "\n"+heading+"\n")
 		if at < 0 {
 			t.Fatalf("the tickets skill has no %s section", heading)

@@ -88,19 +88,12 @@ Mint the session once, with the first `socrates agora serve`, so the person is g
 Keep that session: serve every revision to the page the person already has with `socrates agora serve --session <session>`.
 Revise the breakdown from what they wrote and serve it again, until a round comes back with every card kept and nothing written beside it.
 
-## The last card
+## Writing them
 
-Once every card comes back kept, the last page is one card, and it is the only card on that page: every file the folder will hold, the main ticket among them, and the folder they go to.
-A person approves a location rather than discovers one:
-
-    {"title": "one card before the tickets are written",
-     "decisions": [{"id": "write", "question": "write the tickets now",
-                    "meaning": "path: docs/changes/<slug>/tickets/. files: README.md, 1-prefactor.md, 2.1-parse.md, 2.2-render.md, 3-cli.md",
-                    "mode": "single-choice",
-                    "options": [{"label": "write them", "recommended": true}]}]}
-
-Nothing is written until that card is approved.
-A person who wants something else takes *None of these* and says what in the words field.
+Nothing is written before a round comes back with every card kept and nothing written beside it.
+That round is the person's approval of the whole breakdown, so serve no further page to ask for it again.
+Close the page they hold with `socrates agora end --session <session>`, so it says the exchange is over, and write the tickets straight away to `docs/changes/<slug>/tickets/`.
+Once they are written, say in the terminal every path you wrote.
 
 ## The main ticket
 

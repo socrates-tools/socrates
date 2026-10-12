@@ -13,7 +13,7 @@ func TestTheSkillSaysADesignCanEndAtAnyRound(t *testing.T) {
 	ending := sectionOf(t, skill.Document(), endingHeading)
 
 	for _, said := range []string{
-		"The person can end a design at any round, not only the one carrying the last card",
+		"The person can end a design at any round, before the frontier empties",
 		"socrates agora end --session <session>",
 	} {
 		if !strings.Contains(ending, said) {
@@ -46,16 +46,16 @@ func TestUnsettledQuestionsGoUnderAHeadingSayingTheDesignEndedEarly(t *testing.T
 	}
 }
 
-func TestTheEndingSectionComesAfterTheLastRoundSection(t *testing.T) {
+func TestTheEndingSectionComesAfterTheFrontierEmptiesSection(t *testing.T) {
 	document := skill.Document()
 
-	last := strings.Index(document, lastRoundHeading)
+	frontier := strings.Index(document, frontierEmptiesHeading)
 	ending := strings.Index(document, endingHeading)
-	if last < 0 || ending < 0 {
-		t.Fatalf("the skill is missing one of %q or %q", lastRoundHeading, endingHeading)
+	if frontier < 0 || ending < 0 {
+		t.Fatalf("the skill is missing one of %q or %q", frontierEmptiesHeading, endingHeading)
 	}
-	if last > ending {
-		t.Error("the ending section is stated before the last round section")
+	if frontier > ending {
+		t.Error("the ending section is stated before the section on the frontier emptying")
 	}
 }
 

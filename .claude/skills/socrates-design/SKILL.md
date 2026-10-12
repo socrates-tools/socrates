@@ -160,28 +160,22 @@ Its Rejected section is built from the options the person declined, and from not
 Every alternative in it was a card the person saw, and the reason it lost is in the words they wrote beside the choice.
 An option nobody was offered never appears there: the section is a record of the page, not a reconstruction of what the session considered.
 
-## The last round
+## When the frontier empties
 
 There is no round cap.
 The frontier decides when a design stops, and it stops once the frontier is empty.
 
-When it empties, the last round is one card, and it is the only card on that page: the shape of what was agreed, what will be written and the path it will be written to.
-A person approves a location rather than discovers one:
+When it empties, there is nothing left to ask, so serve no further page.
+Every answer the person sent already approved what it settled, and a card asking only to go ahead would be a press that decides nothing.
+Close the page they hold with `socrates agora end --session <session>`, so it says the exchange is over, and write the spec and its decisions straight away.
 
-    {"title": "one card before the spec is written",
-     "decisions": [{"id": "write", "question": "write the spec now",
-                    "meaning": "shape: Problem Statement, Solution, User Stories, Implementation Decisions, Testing Decisions, Out of Scope, Further Notes. path: docs/changes/<slug>/spec.md",
-                    "mode": "single-choice",
-                    "options": [{"label": "write it", "recommended": true}]}]}
-
-The card offers one option in every repository: write it.
-The spec lives in the change's own folder and nowhere else.
-Offer no option that starts another skill: every socrates skill is a person's to start, so once the spec is written you stop, and the person types the next skill themselves.
-A person who wants a different path takes *None of these* and writes it in the words field: the card proposes a location, and does not insist on it.
+The spec goes to `docs/changes/<slug>/spec.md`, in the change's own folder and nowhere else.
+Once it is written, say in the terminal every path you wrote, so the person reads where the design went rather than hunting for it.
+Start no other skill: every socrates skill is a person's to start, so once the spec is written you stop, and the person types the next skill themselves.
 
 ## Ending early
 
-The person can end a design at any round, not only the one carrying the last card.
+The person can end a design at any round, before the frontier empties.
 The page's own *Send and finish* ends the exchange on any round, and `socrates agora end --session <session>` ends it from outside, over a page nobody is going to answer again.
 
 Write the spec anyway.

@@ -25,7 +25,7 @@ func Binaries() []string {
 
 func Document() string {
 	return assembled(frontMatter, purpose, theRoundsSection, pageTemplate, theSettledSection, theFactsSection,
-		theGlossarySection, theSeamsSection, theSpecSection, theDecisionsSection, theLastRoundSection, theEndingSection, installingElsewhere)
+		theGlossarySection, theSeamsSection, theSpecSection, theDecisionsSection, theFrontierEmptiesSection, theEndingSection, installingElsewhere)
 }
 
 func assembled(parts ...string) string {

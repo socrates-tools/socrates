@@ -2,7 +2,6 @@ package e2e_test
 
 import (
 	"encoding/json"
-	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -10,59 +9,38 @@ import (
 	"github.com/socrates-tools/socrates/internal/exit"
 )
 
-const lastDesignCardDocument = `{
-  "title": "one card before the spec is written",
-  "preamble": "q1: the surface, matching what agora's own source already calls it. q2: no round cap, because nothing here spawns a process for one to protect.",
-  "decisions": [
+const lastOpenDesignQuestionDocument = `{
+  "title": "the one question still open",
+  "settled": [
     {
       "id": "q1",
+      "name": "Question 1",
       "question": "what should the loopback server be called in the glossary",
-      "meaning": "settled: the surface, matching what agora's own source already calls it"
-    },
+      "chosen": ["the surface"],
+      "words": "matching what agora's own source already calls it"
+    }
+  ],
+  "decisions": [
     {
       "id": "q2",
+      "name": "Question 2",
       "question": "should a design round carry a cap the way a review round does",
-      "meaning": "settled: no cap, because nothing here spawns a process for a cap to protect"
-    },
-    {
-      "id": "write",
-      "question": "write the spec now",
-      "meaning": "shape: Problem Statement, Solution, User Stories, Implementation Decisions, Testing Decisions, Out of Scope, Further Notes. path: docs/changes/socrates-design/spec.md",
       "mode": "single-choice",
       "options": [
-        {"label": "write it", "recommended": true}
+        {"label": "no cap", "recommended": true},
+        {"label": "cap it at two"}
       ]
     }
   ]
 }`
 
-func TestTheLastDesignRoundIsOneCardApprovingTheShapeAndThePath(t *testing.T) {
+func TestAnsweringTheLastOpenQuestionLeavesThePageClosedOnceTheSessionEndsIt(t *testing.T) {
 	t.Parallel()
 	held := standing(t)
-	address := held.serve(lastDesignCardDocument)
+	address := held.serve(lastOpenDesignQuestionDocument)
 	page := opening(t, address)
 
-	var offering []string
-	page.evaluate(`Array.from(document.querySelectorAll('.decision')).filter((held) => held.querySelectorAll('.choice').length > 0).map((held) => held.dataset.decision)`, &offering)
-	if diff := cmp.Diff([]string{"write"}, offering); diff != "" {
-		t.Errorf("the last round offers options on more than one card, and it should be one card only (-want +got):\n%s", diff)
-	}
-
-	var meaning string
-	page.evaluate(`document.querySelector('.decision[data-decision="write"] .meaning').textContent`, &meaning)
-	for _, said := range []string{"Problem Statement", "Further Notes", "docs/changes/socrates-design/spec.md"} {
-		if !strings.Contains(meaning, said) {
-			t.Errorf("the last card does not say %q, so a person could not approve a shape and a path they cannot see: %q", said, meaning)
-		}
-	}
-
-	var checked bool
-	page.evaluate(`document.querySelector('.decision[data-decision="write"] .choice[value="0"]').checked`, &checked)
-	if !checked {
-		t.Error("the recommended way to write the spec does not arrive chosen on the last card")
-	}
-
-	pressPastTheConfirmation(page, ".finish")
+	page.click(".send")
 	page.waitFor(`document.querySelector('.send').disabled === true`)
 
 	printed, failures, code := held.poll()
@@ -74,25 +52,20 @@ func TestTheLastDesignRoundIsOneCardApprovingTheShapeAndThePath(t *testing.T) {
 	if err := json.Unmarshal([]byte(printed), &answered); err != nil {
 		t.Fatalf("reading back what agora poll printed: %v\n%s", err, printed)
 	}
-	if !answered.Ended {
-		t.Error("approving the last card does not end the design")
+	if answered.Ended {
+		t.Fatal("sending and waiting for a reply ended the exchange, so the session would have nothing left to close")
+	}
+	if len(answered.Decisions) != 1 || answered.Decisions[0].ID != "q2" {
+		t.Fatalf("answering the last open question delivered %+v, want only q2", answered.Decisions)
+	}
+	if diff := cmp.Diff([]string{"no cap"}, answered.Decisions[0].Chosen); diff != "" {
+		t.Errorf("the recommendation left untouched came back differently (-want +got):\n%s", diff)
 	}
 
-	var approved *surface.Decided
-	for position := range answered.Decisions {
-		if answered.Decisions[position].ID == "write" {
-			approved = &answered.Decisions[position]
-		}
-	}
-	if approved == nil {
-		t.Fatalf("what came back does not carry the write decision at all: %+v", answered.Decisions)
-	}
-	if diff := cmp.Diff([]string{"write it"}, approved.Chosen); diff != "" {
-		t.Errorf("what the person approved on the last card differs (-want +got):\n%s", diff)
-	}
-	if len(approved.Commands) != 0 {
-		t.Errorf("the last card came back carrying the commands %v, and a design answer runs nothing", approved.Commands)
-	}
+	held.end(held.opened)
+	page.waitFor(`document.querySelector('.state').textContent.toLowerCase().includes('over')`)
+
+	rendersClosed(t, page, "a design page the session closed once nothing was left to ask")
 }
 
 const twoOpenDesignQuestionsDocument = `{
