@@ -1,6 +1,6 @@
 module github.com/socrates-tools/socrates
 
-go 1.26
+go 1.26.0
 
 toolchain go1.26.5
 
@@ -15,7 +15,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/tdewolff/parse/v2 v2.8.16
 	go.yaml.in/yaml/v3 v3.0.5
-	golang.org/x/net v0.58.0
+	golang.org/x/net v0.61.0
 )
 
 require (
@@ -39,6 +39,6 @@ require (
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/sync v0.21.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
 )
