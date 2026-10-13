@@ -566,7 +566,7 @@ func TestEnterSubmitsTheForm(t *testing.T) {
 	t.Parallel()
 	held, page := read(t, oneDecisionDocument)
 
-	page.do(chromedp.Click(within("c-1", ".choice"), chromedp.ByQuery, chromedp.NodeVisible))
+	page.do(chromedp.Click(chromedp.CSS(within("c-1", ".choice")), chromedp.NodeVisible))
 	page.do(chromedp.KeyEvent(kb.Enter))
 	page.waitFor(`document.querySelector('.state').textContent.length > 0`)
 

@@ -80,7 +80,7 @@ type tipped struct {
 func TestAMarkSaysWhatItMeansWhileItHasTheCursor(t *testing.T) {
 	t.Parallel()
 	_, page := read(t, glancedDocument)
-	page.do(emulation.SetFocusEmulationEnabled(true))
+	page.do(sending(emulation.SetFocusEmulationEnabled, emulation.SetFocusEmulationEnabledParams{Enabled: true}))
 
 	var before tipped
 	page.evaluate(whatTheTipSays, &before)
@@ -88,7 +88,7 @@ func TestAMarkSaysWhatItMeansWhileItHasTheCursor(t *testing.T) {
 		t.Fatalf("the page opens with a mark's meaning showing: %q", before.Said)
 	}
 
-	page.do(chromedp.Focus(within("c-1", ".mark.severity"), chromedp.ByQuery))
+	page.do(chromedp.Focus(chromedp.CSS(within("c-1", ".mark.severity"))))
 
 	var focused tipped
 	page.evaluate(whatTheTipSays, &focused)
@@ -96,7 +96,7 @@ func TestAMarkSaysWhatItMeansWhileItHasTheCursor(t *testing.T) {
 		t.Errorf("a severity mark with the cursor on it shows %+v, and it says what the severity means", focused)
 	}
 
-	page.do(chromedp.Focus(within("c-1", ".words-field"), chromedp.ByQuery))
+	page.do(chromedp.Focus(chromedp.CSS(within("c-1", ".words-field"))))
 
 	var left tipped
 	page.evaluate(whatTheTipSays, &left)
@@ -251,7 +251,7 @@ func TestTheStatusStaysInViewAsThePageScrolls(t *testing.T) {
 func TestAnEntryLandsTheCardClearOfTheBar(t *testing.T) {
 	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
-	page.do(emulation.SetEmulatedMedia().WithFeatures([]*emulation.MediaFeature{{Name: "prefers-reduced-motion", Value: "reduce"}}))
+	page.do(sending(emulation.SetEmulatedMedia, emulation.SetEmulatedMediaParams{Features: []*emulation.MediaFeature{{Name: "prefers-reduced-motion", Value: "reduce"}}}))
 
 	page.evaluate(`window.scrollTo(0, document.documentElement.scrollHeight)`, nil)
 	page.evaluate(`document.querySelector('a.entry-link[data-decision="c-2"]').click()`, nil)

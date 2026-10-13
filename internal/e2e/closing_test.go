@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/kb"
 	"github.com/google/go-cmp/cmp"
 	"github.com/socrates-tools/socrates/agora/surface"
@@ -654,8 +653,7 @@ func TestABlankDecisionsNameTakesThePersonToItsCard(t *testing.T) {
 func cornerOfTheViewport(t *testing.T, page *reader) color.Color {
 	t.Helper()
 
-	var shot []byte
-	page.do(chromedp.CaptureScreenshot(&shot))
+	shot := page.screenshot()
 
 	painted, err := png.Decode(bytes.NewReader(shot))
 	if err != nil {

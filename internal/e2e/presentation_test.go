@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chromedp/cdproto/runtime"
 	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/kb"
 	"github.com/google/go-cmp/cmp"
@@ -146,7 +145,7 @@ func TestADecisionCanBeAnsweredWithoutAPointer(t *testing.T) {
 		}
 	}
 
-	page.do(chromedp.Focus(within("c-1", ".choice"), chromedp.ByQuery), chromedp.KeyEvent(" "))
+	page.do(chromedp.Focus(chromedp.CSS(within("c-1", ".choice"))), chromedp.KeyEvent(" "))
 
 	var ticked bool
 	page.evaluate(`document.querySelector('.decision[data-decision="c-1"] .choice').checked`, &ticked)
@@ -274,7 +273,7 @@ func TestTheTabAndTheTopBarCarryTheSocratesMark(t *testing.T) {
 		Fetched  int    `json:"fetched"`
 		Answered string `json:"answered"`
 	}
-	page.do(chromedp.Evaluate(`(async () => {
+	page.evaluate(`(async () => {
   const icon = document.querySelector('link[rel="icon"]');
   const mark = document.querySelector('.topbar .brand-mark');
   const fetched = icon ? await fetch(icon.href) : null;
@@ -287,7 +286,7 @@ func TestTheTabAndTheTopBarCarryTheSocratesMark(t *testing.T) {
     fetched: fetched ? fetched.status : 0,
     answered: fetched ? fetched.headers.get('content-type') : '',
   };
-})()`, &read, func(asked *runtime.EvaluateParams) *runtime.EvaluateParams { return asked.WithAwaitPromise(true) }))
+})()`, &read, awaitingThePromise)
 
 	if read.Icon == "" || read.Icon != read.Mark {
 		t.Errorf("the tab's icon is %q and the top bar's mark is %q, want both to be the one socrates mark", read.Icon, read.Mark)
@@ -366,11 +365,11 @@ func TestTheMarkIsSaidRatherThanPainted(t *testing.T) {
 	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
-	page.do(chromedp.Evaluate(`(() => {
+	page.evaluate(`(() => {
   const stripped = document.createElement('style');
   stripped.textContent = '* { color: black !important; background: white !important; border-color: black !important; }';
   document.head.appendChild(stripped);
-})()`, nil))
+})()`, nil)
 
 	var read marked
 	page.evaluate(readingTheMark, &read)

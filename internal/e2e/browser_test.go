@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
@@ -13,9 +14,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/log"
 	"github.com/chromedp/cdproto/network"
+	"github.com/chromedp/cdproto/runtime"
 	"github.com/chromedp/chromedp"
 )
 
@@ -158,42 +161,57 @@ func openingFor(t *testing.T, address, ready, painted string, options ...chromed
 	t.Cleanup(cancel)
 
 	requests, refused := &recorded{}, &recorded{}
-	chromedp.ListenTarget(bounded, func(event any) {
-		switch held := event.(type) {
-		case *network.EventRequestWillBeSent:
+	requested := chromedp.Events(bounded, network.RequestWillBeSent)
+	logged := chromedp.Events(bounded, log.EntryAdded)
+	go func() {
+		for held, err := range requested {
+			if err != nil {
+				return
+			}
 			requests.note(held.Request.URL)
-		case *log.EventEntryAdded:
-			if held.Entry.Source == log.SourceSecurity {
+		}
+	}()
+	go func() {
+		for held, err := range logged {
+			if err != nil {
+				return
+			}
+			if held.Entry.Source == log.EntrySourceSecurity {
 				refused.note(held.Entry.Text)
 			}
 		}
-	})
+	}()
 
 	held := &reader{t: t, context: bounded, requests: requests, refused: refused, ready: ready, painted: painted}
 	held.do(
-		network.Enable(),
-		log.Enable(),
+		sending(network.Enable, network.EnableParams{}),
+		sending(log.Enable, cdp.Empty{}),
 		chromedp.Navigate(address),
-		chromedp.WaitReady("body", chromedp.ByQuery),
-		chromedp.WaitReady(ready, chromedp.ByQuery),
+		chromedp.WaitReady(chromedp.CSS("body")),
+		chromedp.WaitReady(chromedp.CSS(ready)),
 	)
 	held.settled()
 	return held
 }
 
-func (r *reader) do(actions ...chromedp.Action) {
+func sending[P, R any](command cdp.Command[P, R], params P) chromedp.Action[chromedp.Void] {
+	return chromedp.Func(func(ctx context.Context, target *chromedp.Target) error {
+		_, err := cdp.Call(ctx, target, command, params)
+		return err
+	})
+}
+
+func (r *reader) do(actions ...chromedp.Action[chromedp.Void]) {
 	r.t.Helper()
 
-	if err := chromedp.Run(r.context, actions...); err != nil {
+	if err := chromedp.Do(r.context, actions...); err != nil {
 		r.t.Fatalf("driving the page: %v", err)
 	}
 }
 
 func (r *reader) settled() {
 	r.t.Helper()
-
-	var bound bool
-	r.do(chromedp.Poll("!!document.querySelector('"+r.painted+"') && !!window.getComputedStyle(document.body).backgroundColor", &bound))
+	r.waitFor("!!document.querySelector('" + r.painted + "') && !!window.getComputedStyle(document.body).backgroundColor")
 }
 
 func (r *reader) reload() {
@@ -201,15 +219,15 @@ func (r *reader) reload() {
 
 	r.do(
 		chromedp.Reload(),
-		chromedp.WaitReady("body", chromedp.ByQuery),
-		chromedp.WaitReady(r.ready, chromedp.ByQuery),
+		chromedp.WaitReady(chromedp.CSS("body")),
+		chromedp.WaitReady(chromedp.CSS(r.ready)),
 	)
 	r.settled()
 }
 
 func (r *reader) click(selector string) {
 	r.t.Helper()
-	r.do(chromedp.Click(selector, chromedp.ByQuery, chromedp.NodeVisible))
+	r.do(chromedp.Click(chromedp.CSS(selector), chromedp.NodeVisible))
 }
 
 func (r *reader) clickAt(x, y float64) {
@@ -224,21 +242,50 @@ func (r *reader) press(key string) {
 
 func (r *reader) write(selector, words string) {
 	r.t.Helper()
-	r.do(chromedp.SendKeys(selector, words, chromedp.ByQuery))
+	r.do(chromedp.SendKeys(chromedp.CSS(selector), words))
 }
 
-func (r *reader) evaluate(expression string, into any) {
+func (r *reader) evaluate(expression string, into any, options ...chromedp.EvaluateOption) {
 	r.t.Helper()
-	r.do(chromedp.Evaluate(expression, into))
+
+	if into == nil {
+		if _, err := chromedp.Run(r.context, chromedp.Evaluate[chromedp.Void](expression, options...)); err != nil {
+			r.t.Fatalf("driving the page: %v", err)
+		}
+		return
+	}
+	returned, err := chromedp.Run(r.context, chromedp.Evaluate[[]byte](expression, options...))
+	if err != nil {
+		r.t.Fatalf("driving the page: %v", err)
+	}
+	if len(returned) == 0 {
+		returned = []byte("null")
+	}
+	if err := json.Unmarshal(returned, into); err != nil {
+		r.t.Fatalf("reading what the page returned for %s: %v", expression, err)
+	}
+}
+
+func awaitingThePromise(asked *runtime.EvaluateParams) {
+	asked.AwaitPromise = new(true)
 }
 
 func (r *reader) waitFor(expression string) {
 	r.t.Helper()
 
-	var held bool
-	if err := chromedp.Run(r.context, chromedp.Poll(expression, &held)); err != nil {
+	if _, err := chromedp.Run(r.context, chromedp.Poll[bool](expression)); err != nil {
 		r.t.Fatalf("waiting for %s: %v", expression, err)
 	}
+}
+
+func (r *reader) screenshot() []byte {
+	r.t.Helper()
+
+	shot, err := chromedp.Run(r.context, chromedp.CaptureScreenshot())
+	if err != nil {
+		r.t.Fatalf("capturing what the page painted: %v", err)
+	}
+	return shot
 }
 
 func (r *reader) violations() []string {
@@ -255,9 +302,9 @@ func (r *reader) violations() []string {
 
 func (r *reader) emulate(preference string) {
 	r.t.Helper()
-	r.do(emulation.SetEmulatedMedia().WithFeatures([]*emulation.MediaFeature{
+	r.do(sending(emulation.SetEmulatedMedia, emulation.SetEmulatedMediaParams{Features: []*emulation.MediaFeature{
 		{Name: "prefers-color-scheme", Value: preference},
-	}))
+	}}))
 }
 
 func (r *reader) narrow(width, height int64) {
