@@ -297,11 +297,12 @@ Put it on a page: |socrates agora serve --document ./breakdown.json| prints the 
 The document is one card per proposed ticket, in the order of their waves, each identified by the file name it would be written to:
 
     {"title": "...", "preamble": "...",
-     "decisions": [{"id": "2.1-parse", "question": "2.1: ...", "meaning": "delivers: ... stories: 3, 4. blocked by: 1-prefactor",
+     "decisions": [{"id": "2.1-parse", "question": "2.1: ...", "meaning": "delivers: ...",
+                    "evidence": {"language": "markdown", "code": "# 2.1: ...\n\n## What to build\n..."},
                     "mode": "single-choice",
                     "options": [{"label": "keep it", "meaning": "cut as proposed", "recommended": true}]}]}
 
-Each card states the ticket's title, what it delivers from the user's side, the spec's user stories it delivers, what blocks it and anything it needs a person for, and offers *keep it*, marked recommended so it arrives chosen: a person who agrees with the whole breakdown presses once.
+Each card states the ticket's title and what it delivers from the user's side, carries as its evidence the whole file it would be written as, so the person reads its acceptance criteria, its stories and its blockers as they will be written, and offers *keep it*, marked recommended so it arrives chosen: a person who agrees with the whole breakdown presses once.
 A merge, a split or a different blocker is asked for in the words field of the card concerned, after taking *None of these*, which the page already renders, so never write that option yourself.
 A breakdown answer runs nothing, so no option carries a command, and no card states a severity.
 
@@ -318,7 +319,7 @@ Revise the breakdown from what they wrote and serve it again, until a round come
 
 Nothing is written before a round comes back with every card kept and nothing written beside it.
 That round is the person's approval of the whole breakdown, so serve no further page to ask for it again.
-Close the page they hold with |socrates agora end --session <session>|, so it says the exchange is over, and write the tickets straight away to |docs/changes/<slug>/tickets/|.
+Close the page they hold with |socrates agora end --session <session>|, so it says the exchange is over, and write the tickets straight away to |docs/changes/<slug>/tickets/|, each as exactly the evidence its card carried in that round.
 Once they are written, say in the terminal every path you wrote.`
 
 	mainTicketHeading = "## The main ticket"

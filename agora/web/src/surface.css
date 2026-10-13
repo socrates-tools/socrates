@@ -947,6 +947,11 @@ span.entry-link .entry-name {
   tab-size: 4;
 }
 
+.evidence.code code.language-markdown {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .hunk {
   display: block;
   max-width: 100%;

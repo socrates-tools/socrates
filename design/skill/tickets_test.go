@@ -117,6 +117,22 @@ func TestTheTicketsAreWrittenOnceEveryCardIsKeptWithoutAFurtherPage(t *testing.T
 	}
 }
 
+func TestEachCardCarriesTheWholeTicketItWouldBeWrittenAs(t *testing.T) {
+	ticketsSaysEach(t, breakdownHeading, "a person could approve a summary while the acceptance criteria and blockers were written unseen",
+		`"evidence": {"language": "markdown", "code":`,
+		"the whole file it would be written as",
+		"acceptance criteria, its stories and its blockers",
+	)
+	ticketsSaysEach(t, writingThemHeading, "a ticket could be rewritten from memory after the person approved its card",
+		"exactly the evidence its card carried in that round",
+	)
+
+	breakdown := sectionOf(t, skill.TicketsDocument(), breakdownHeading)
+	if strings.Contains(breakdown, "blocked by: 1-prefactor") {
+		t.Errorf("the card example still states blockers as free text beside the file that states them:\n%s", breakdown)
+	}
+}
+
 func TestTheMainTicketIsTheReadmeAndPointsAtTheSpecRatherThanRepeatingIt(t *testing.T) {
 	ticketsSaysEach(t, mainTicketHeading, "an implementer could be handed a second copy of the design",
 		"README.md",
@@ -204,7 +220,7 @@ func TestTheBreakdownAsksAboutGranularityAndBlockersAndNamesAStoryNoCardDelivers
 	ticketsSaysEach(t, breakdownHeading, "a cut could be too fine, gated by blockers that do not gate, or leave a story out",
 		"whether it is cut too coarse or too fine",
 		"whether every blocker gates the ticket it blocks",
-		"the spec's user stories it delivers",
+		"the person reads its acceptance criteria, its stories and its blockers",
 		"names every user story no card delivers",
 	)
 }

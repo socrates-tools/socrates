@@ -54,6 +54,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
   Either press over a blank decision raises a modal dialog naming every one of them and takes no armed state, a press inside it is what sends, what is behind it is dimmed, and each of its names closes it and puts the cursor on that card's first control.
   Going back, Escape and a press on the backdrop are one path: nothing is sent, the page is as it was, and the cursor returns to the button that raised it.
 - The languages the page highlights are the bundled library's common set, stated once and generated from `web/`, and a document naming one outside it is refused while one naming none renders as plain text.
+- Evidence written in markdown wraps at the width of its card rather than scrolling sideways, because it is prose a person reads whole, and code in any other language keeps its lines.
 - A caller's fragment is reduced to a fixed allowlist before it is embedded, and every name it carries is prefixed by the surface.
 - A caller's stylesheet is reduced from a parse that reached the end of its input, every selector it keeps is scoped to the illustration, and the page admits it by a hash of exactly the bytes it embedded.
 - What a caller paints is contained by the illustration, so a rule inside one decides nothing about where the page's own controls land.
@@ -61,6 +62,8 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - An exchange holds at most one uncollected answer, and a later submit replaces it rather than queueing behind it, so what a caller collects is a person's last word.
 - Collecting an answer is visible to the page, so the way back from a receipt is offered exactly while it would still reach the caller.
 - Nothing carries across a revision: not a selection, not a typed word, not the message, not the receipt and not an open confirmation, because a decision's identifier is unique only inside the document that names it.
+- A revision settling an identifier the exchange collected an answer for states the question, the labels and the words that were collected, exactly, or is refused before it is written or served, per ADR 59.
+  Only a collected answer binds, the last one collected for an identifier is the one that does, and what the exchange remembers is never sent to the page.
 - A stream is told where the exchange stands when it connects rather than only when something next changes, so a client that missed a revision catches up rather than waiting on a change that has already happened.
 - The end of an exchange stops the page offering to answer and not the page listening, so a caller who writes again reaches the page the person is already looking at, and only the test about reloading reloads before it asserts.
   A closed exchange says so under the title and draws no field nothing will read, per ADR 53.

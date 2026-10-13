@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -16,14 +17,16 @@ const breakdownDocument = `{
     {
       "id": "1-prefactor",
       "question": "1: the skill machinery takes a second design document",
-      "meaning": "delivers: socrates design skill installs two skills. blocked by: none",
+      "meaning": "delivers: socrates design skill installs two skills",
+      "evidence": {"language": "markdown", "code": "# 1: the skill machinery takes a second design document\n\n## What to build\n\nsocrates design skill installs two skills.\n\n## Acceptance criteria\n\n- [ ] socrates design skill writes a second SKILL.md, and before this ticket it writes one\n\n## User stories\n\n- 1\n\n## Blocked by\n\nNone"},
       "mode": "single-choice",
       "options": [{"label": "keep it", "meaning": "cut as proposed", "recommended": true}]
     },
     {
       "id": "2-tickets-skill",
       "question": "2: the tickets skill states the breakdown, the main ticket and the tickets",
-      "meaning": "delivers: a session can cut a spec into tickets. blocked by: 1-prefactor",
+      "meaning": "delivers: a session can cut a spec into tickets",
+      "evidence": {"language": "markdown", "code": "# 2: the tickets skill states the breakdown, the main ticket and the tickets\n\n## What to build\n\nA session can cut a spec into tickets.\n\n## Acceptance criteria\n\n- [ ] the installed tickets skill names the main ticket, and before this ticket nothing does\n\n## User stories\n\n- 2, 3\n\n## Blocked by\n\n- 1-prefactor.md"},
       "mode": "single-choice",
       "options": [{"label": "keep it", "meaning": "cut as proposed", "recommended": true}]
     }
@@ -42,6 +45,20 @@ func TestABreakdownArrivesKeptAndWhatThePersonAskedToChangeReachesTheSession(t *
 	page.evaluate(`Array.from(document.querySelectorAll('.decision')).map((held) => held.dataset.decision)`, &order)
 	if diff := cmp.Diff([]string{"1-prefactor", "2-tickets-skill"}, order); diff != "" {
 		t.Errorf("the breakdown does not render one card per ticket in the order it proposed them (-want +got):\n%s", diff)
+	}
+
+	var shown []string
+	page.evaluate(`['1-prefactor', '2-tickets-skill'].map((id) => (document.querySelector('.decision[data-decision="' + id + '"] .evidence.code') || { innerText: '' }).innerText)`, &shown)
+	for position, written := range []string{"socrates design skill writes a second SKILL.md", "- 1-prefactor.md"} {
+		if position >= len(shown) || !strings.Contains(shown[position], "## Acceptance criteria") || !strings.Contains(shown[position], written) {
+			t.Errorf("card %d does not show the whole ticket it would be written as, so its acceptance criteria and blockers would be approved unseen: %q", position+1, shown)
+		}
+	}
+
+	var scrolled bool
+	page.evaluate(`Array.from(document.querySelectorAll('.evidence.code pre')).some((held) => held.scrollWidth > held.clientWidth)`, &scrolled)
+	if scrolled {
+		t.Error("a ticket on its card runs past the edge of the card, so reading its acceptance criteria takes scrolling sideways")
 	}
 
 	var kept []bool

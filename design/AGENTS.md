@@ -23,6 +23,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - No page asks a person to approve writing: once the frontier is empty, or every ticket card comes back kept, the session closes the page with `socrates agora end` and writes, and starts no other skill, per ADR 49: every socrates skill is a person's to start.
 - The skill writes no severity, no `None of these` option and no command on any option it composes: a design answer runs nothing, and a design question is earlier or later in the argument rather than more or less severe.
 - A settled question is written to the document's `settled` list rather than as a decision, stating the question, the labels chosen and the person's own words, and a person reopens one through the page's message, per ADR 46.
+  The skill says to copy each one exactly as `socrates agora poll` handed it back, because agora refuses one restated otherwise, per ADR 59.
 - The ADR criterion the skill states is a conjunction, tested as one: hard to reverse, surprising without context, and the result of a real trade-off, never any one or two of the three.
 - Facts are looked up while the round goes out, so only the questions downstream of a running lookup wait for it.
 - The glossary is challenged on cards: a fuzzy word, a scenario at the boundary between two terms, and a claim the code contradicts.
@@ -40,5 +41,6 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - A change that fits one fresh context is one ticket, and a blocker is named only where its ticket cannot start without it.
 - Every ticket names the spec's user stories it delivers, the page names any story no card delivers, and a ticket that needs a person says what for.
 - Every acceptance criterion names what would show it false and is false where its ticket starts.
+- Every card carries as markdown evidence the whole file its ticket would be written as, and each ticket is written as exactly the evidence its card carried in the round that came back all kept, so a person approves the acceptance criteria, stories and blockers that are written rather than a summary of them.
 - The breakdown is driven end to end through the real binary: every card arrives with *keep it* chosen, and a card answered in the person's own words reaches the session through `socrates agora poll`. What the binary cannot drive is the tickets themselves, which are the session's to write.
   The skill says to copy each one exactly as `socrates agora poll` handed it back, because agora refuses one restated otherwise, per ADR 59.
