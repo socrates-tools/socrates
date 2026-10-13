@@ -212,3 +212,38 @@ func TestASecondDesignRoundOpensWithWhatWasSettledAheadOfWhatIsStillOpen(t *test
 
 	nothingLeftTheMachine(t, address, page.requests.all())
 }
+
+func TestASettledAnswerTheSessionParaphrasedIsRefusedAndThePageStaysWhereItWas(t *testing.T) {
+	t.Parallel()
+	held := standing(t)
+	address := held.serve(designRoundDocument)
+	page := opening(t, address)
+
+	page.write(within("q2", ".words-field"), inTheirOwnWordsAboutTheCap)
+	page.click(".send")
+	page.waitFor(`!document.querySelector('.receipt').hidden`)
+
+	if _, failures, code := held.poll(); code != exit.NothingAsked {
+		t.Fatalf("agora poll exited %d: %s", code, failures)
+	}
+
+	paraphrased := strings.Replace(designRoundTwoDocument, inTheirOwnWordsAboutTheCap, "no cap, since a design spawns nothing a cap would protect", 1)
+	_, failures, code := held.reading(paraphrased, held.serving("--session", held.opened)...)
+	if code == exit.NothingAsked {
+		t.Fatal("a second round settling q2 in words the person never wrote was served")
+	}
+	for _, named := range []string{"q2", "words", inTheirOwnWordsAboutTheCap, "agora poll"} {
+		if !strings.Contains(failures, named) {
+			t.Errorf("the refusal does not name %q:\n%s", named, failures)
+		}
+	}
+
+	var stillOpen bool
+	page.evaluate(reachedThePage("q2")+` && !document.querySelector('.decision[data-decision="q3"]')`, &stillOpen)
+	if !stillOpen {
+		t.Error("a refused round moved the page the person holds")
+	}
+
+	held.serveAgain(designRoundTwoDocument)
+	page.waitFor(reachedThePage("q3"))
+}

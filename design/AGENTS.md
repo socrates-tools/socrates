@@ -41,3 +41,4 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - Every ticket names the spec's user stories it delivers, the page names any story no card delivers, and a ticket that needs a person says what for.
 - Every acceptance criterion names what would show it false and is false where its ticket starts.
 - The breakdown is driven end to end through the real binary: every card arrives with *keep it* chosen, and a card answered in the person's own words reaches the session through `socrates agora poll`. What the binary cannot drive is the tickets themselves, which are the session's to write.
+  The skill says to copy each one exactly as `socrates agora poll` handed it back, because agora refuses one restated otherwise, per ADR 59.

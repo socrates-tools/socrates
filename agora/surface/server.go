@@ -121,8 +121,12 @@ func (s *Server) Open(read document.Document, raw []byte) (Opened, error) {
 }
 
 func (s *Server) Revise(session string, read document.Document, raw []byte) error {
-	if _, standing := s.sessions.Exchange(session); !standing {
+	one, standing := s.sessions.Exchange(session)
+	if !standing {
 		return refusal.New(surfaceHoldsNoSuchSession, session)
+	}
+	if err := one.Admits(read); err != nil {
+		return err
 	}
 	if err := WriteDocument(session, raw); err != nil {
 		return err
@@ -419,6 +423,10 @@ func (s *Server) revise(writer http.ResponseWriter, request *http.Request, one *
 	read, err := document.Read(raw)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err := one.exchange.Admits(read); err != nil {
+		http.Error(writer, err.Error(), http.StatusConflict)
 		return
 	}
 	if err := WriteDocument(request.PathValue("session"), raw); err != nil {

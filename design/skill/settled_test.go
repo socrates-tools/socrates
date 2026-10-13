@@ -29,6 +29,7 @@ func TestTheSkillStatesASettledAnswerGoesInTheSettledListRatherThanAmongTheDecis
 		"A settled answer goes in the document's `settled` list rather than among its decisions",
 		"states the question, the labels the person chose and their own words",
 		"An identifier is either settled or still open",
+		"copy each one exactly as it came back rather than restating it",
 	} {
 		if !strings.Contains(settled, said) {
 			t.Errorf("the settled section does not say %q:\n%s", said, settled)

@@ -74,3 +74,5 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 **The suite**
 
 - The page half is driven by a real browser against the real binary; asserting on served markup would test the renderer.
+- A revision settling an identifier the exchange collected an answer for states the question, the labels and the words that were collected, exactly, or is refused before it is written or served, per ADR 59.
+  Only a collected answer binds, the last one collected for an identifier is the one that does, and what the exchange remembers is never sent to the page.

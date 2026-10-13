@@ -44,6 +44,7 @@ const (
 
 	exchangeIsOver                 = "the exchange is over, and a closed exchange does not reopen"
 	answerNamesNoDecision          = "an answer names the decision %q, which this document does not hold"
+	settledOtherwiseThanCollected  = "the document settles %q with a %s other than the one this session collected for it, %q. Write the settled answer exactly as agora poll handed it back, or ask the question again as a decision, and run the command again"
 	answerNamesNoOption            = "an answer names option %d of decision %q, which that decision does not offer"
 	singleChoiceCarriesMoreThanOne = "an answer to the single-choice decision %q carries %d choices"
 

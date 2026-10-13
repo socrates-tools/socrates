@@ -48,8 +48,8 @@ func (s *Sessions) Revise(name string, read document.Document) error {
 	if !standing {
 		return refusal.New(surfaceHoldsNoSuchSession, name)
 	}
-	one.exchange.Revise(read)
-	return nil
+	_, err := one.exchange.ReviseAdmitted(read)
+	return err
 }
 
 func (s *Sessions) Retire() bool {

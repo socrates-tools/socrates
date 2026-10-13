@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/socrates-tools/socrates/agora/document"
+	"github.com/socrates-tools/socrates/internal/refusal"
 )
 
 type Sent struct {
@@ -43,6 +44,7 @@ type Exchange struct {
 	revision    int
 	uncollected *Answered
 	answeredAt  int
+	collected   map[string]document.Settled
 	over        bool
 	changed     chan struct{}
 	readers     int
@@ -51,10 +53,11 @@ type Exchange struct {
 
 func NewExchange(read document.Document, at time.Time) *Exchange {
 	return &Exchange{
-		read:     read,
-		revision: 1,
-		changed:  make(chan struct{}),
-		seen:     at,
+		read:      read,
+		revision:  1,
+		collected: map[string]document.Settled{},
+		changed:   make(chan struct{}),
+		seen:      at,
 	}
 }
 
@@ -73,6 +76,45 @@ func (e *Exchange) Revise(read document.Document) int {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
+	return e.reviseLocked(read)
+}
+
+func (e *Exchange) ReviseAdmitted(read document.Document) (int, error) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	if err := e.admitsLocked(read); err != nil {
+		return 0, err
+	}
+	return e.reviseLocked(read), nil
+}
+
+func (e *Exchange) Admits(read document.Document) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	return e.admitsLocked(read)
+}
+
+func (e *Exchange) admitsLocked(read document.Document) error {
+	for _, stated := range read.Settled {
+		answered, collected := e.collected[stated.ID]
+		if !collected {
+			continue
+		}
+		if stated.Question != answered.Question {
+			return refusal.New(settledOtherwiseThanCollected, stated.ID, "question", answered.Question)
+		}
+		if !slices.Equal(stated.Chosen, answered.Chosen) {
+			return refusal.New(settledOtherwiseThanCollected, stated.ID, "chosen", strings.Join(answered.Chosen, ", "))
+		}
+		if stated.Words != answered.Words {
+			return refusal.New(settledOtherwiseThanCollected, stated.ID, "words", answered.Words)
+		}
+	}
+	return nil
+}
+
+func (e *Exchange) reviseLocked(read document.Document) int {
 	e.read = read
 	e.revision++
 	e.over = false
@@ -137,6 +179,7 @@ func (e *Exchange) Await(ctx context.Context, within time.Duration) (Answered, b
 		if e.uncollectedLocked() {
 			taken := *e.uncollected
 			e.uncollected = nil
+			e.holdCollectedLocked(taken)
 			e.notify()
 			e.mu.Unlock()
 			return taken, true
@@ -150,6 +193,23 @@ func (e *Exchange) Await(ctx context.Context, within time.Duration) (Answered, b
 		case <-deadline:
 			return Answered{}, false
 		case <-waiting:
+		}
+	}
+}
+
+func (e *Exchange) holdCollectedLocked(taken Answered) {
+	for _, decided := range taken.Decisions {
+		position := slices.IndexFunc(e.read.Decisions, func(held document.Decision) bool {
+			return held.ID == decided.ID
+		})
+		if position < 0 {
+			continue
+		}
+		e.collected[decided.ID] = document.Settled{
+			ID:       decided.ID,
+			Question: e.read.Decisions[position].Question,
+			Chosen:   decided.Chosen,
+			Words:    decided.Words,
 		}
 	}
 }

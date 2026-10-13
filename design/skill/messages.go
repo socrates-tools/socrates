@@ -88,6 +88,7 @@ agora collects a session after 45 minutes with no reader, and no design state li
 
 Round two opens with what round one settled, above what is still open, on the page the person already has.
 Nothing carries across a revision, so what was settled is not carried over from the round before it: write it afresh, from what |socrates agora poll| last handed back.
+The surface refuses a settled answer whose question, labels or words differ from what it collected, so copy each one exactly as it came back rather than restating it.
 
 A settled answer goes in the document's |settled| list rather than among its decisions, and states the question, the labels the person chose and their own words:
 
