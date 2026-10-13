@@ -249,7 +249,7 @@ func TestTheLoopAnswersAQuestionAndReachesAVerdict(t *testing.T) {
 		t.Fatalf("the reviewer was invoked %d times, want twice", len(invocations))
 	}
 	judging := invocations[1].Prompt
-	if !strings.Contains(judging, "A person answered this finding, and the author records what they decided:\n"+decided) {
+	if !strings.Contains(judging, `"author_response": "A person answered this finding`) || !strings.Contains(judging, `"author_said": "`+decided+`"`) {
 		t.Errorf("the round that judges the decision was not told a person made it:\n%s", judging)
 	}
 
