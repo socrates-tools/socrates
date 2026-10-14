@@ -8,6 +8,26 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-14
+
+### Added
+
+- **One command installs socrates and every skill.**
+  `curl -fsSL https://github.com/socrates-tools/socrates/releases/latest/download/install.sh | sh` downloads the archive for your operating system and architecture, checks it against the release's checksums, puts `socrates` in `~/.local/bin`, and installs every skill.
+  It needs `curl` or `wget`, and no `gh` and no GitHub account.
+  Where `cosign` is on your `PATH`, it also verifies the release's signature before trusting the checksums.
+  It refuses and installs nothing where a check fails or the release carries no archive for your machine, and it tells you where `~/.local/bin` is not on your `PATH`.
+  `SOCRATES_INSTALL_DIR` puts the binary somewhere else, `SOCRATES_VERSION` installs another release, and running it again upgrades the binary and the skills.
+- **`socrates skill` installs every skill every namespace offers.**
+  It runs `socrates review skill`, `socrates design skill` and `socrates implement skill` at their defaults, so after `go install` or an upgrade by hand you run one command rather than three.
+  Each namespace's own `skill` still works, with `--to` and `--agents-to` as before, for putting one tool's skills somewhere else.
+
+### Fixed
+
+- **The README's manual install downloads one archive.**
+  The commands v0.2.0 documented fetched both the `amd64` and the `arm64` archive, so `tar` exited with an error, and on an Apple Silicon Mac or an `arm64` Linux machine it placed the `amd64` binary.
+  The manual route now picks the archive by architecture, uses `curl` rather than `gh`, and names `shasum` for a Mac without `sha256sum`.
+
 ## [0.2.0] - 2026-10-14
 
 ### Changed
@@ -126,6 +146,7 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.3.0
 [0.2.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.2.0
 [0.1.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.1.0
