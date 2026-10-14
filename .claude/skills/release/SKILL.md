@@ -51,7 +51,7 @@ Everything before the tag is yours: deciding the version, writing what the relea
    ```
 
    `make release-snapshot` runs the same releaser as the release path with publishing, signing and the bill of materials skipped, and leaves the archives under `dist/`.
-   Extract one and check that `socrates`, `scrat`, `agora`, `LICENSE` and `NOTICE` are all in it.
+   Extract one and check that `socrates`, `LICENSE` and `NOTICE` are all in it, and nothing else.
 
    Never run `make release` locally.
    That is the publishing path, and it is the workflow's to run.
