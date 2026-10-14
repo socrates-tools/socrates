@@ -18,7 +18,7 @@
 | you want socrates review to do something it does not | an issue saying what you are trying to achieve, not a pull request. See `CONTRIBUTING.md`: a change starts as a proposal |
 | a vulnerability | `SECURITY.md`. Not an issue |
 | a question about conduct | `CODE_OF_CONDUCT.md` |
-| the `claude` CLI itself misbehaved | its vendor. review drives it and does not maintain it |
+| the reviewer CLI itself misbehaved, whether `claude`, `codex` or `opencode` | its vendor. review drives it and does not maintain it |
 
 ## What to put in an issue
 

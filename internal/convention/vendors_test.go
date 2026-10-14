@@ -110,3 +110,21 @@ func rowFor(section, name string) string {
 	}
 	return ""
 }
+
+func TestTheSecurityPolicyNamesEveryReviewerCLIThatCarriesTheChangeToItsVendor(t *testing.T) {
+	policy, err := convention.Document(source.Root(t), convention.SecurityPolicyFile)
+	if err != nil {
+		t.Fatalf("reading %s: %v", convention.SecurityPolicyFile, err)
+	}
+	_, section, found := strings.Cut(policy, "\n## Where your code goes\n")
+	if !found {
+		t.Fatalf("%s has no section saying where your code goes", convention.SecurityPolicyFile)
+	}
+	section, _, _ = strings.Cut(section, "\n## ")
+
+	for _, name := range agent.SupportedNames() {
+		if !strings.Contains(section, "`"+name+"`") {
+			t.Errorf("%s says where your code goes and never names %s, which review drives and which sends the change to its vendor", convention.SecurityPolicyFile, name)
+		}
+	}
+}

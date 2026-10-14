@@ -25,7 +25,7 @@ Running a review starts no server and reaches no network.
 Running `socrates agora serve` binds a loopback address on purpose, to put a decision in front of a person, and a separate test holds that the address it binds cannot be widened.
 
 The reviewer CLI it drives is the other half.
-socrates review spawns `claude`, and that CLI sends the change to its vendor, Anthropic.
+socrates review spawns the reviewer CLI you configured, and that CLI sends the change to its vendor: `claude` to Anthropic, `codex` to OpenAI, and `opencode` to whichever model provider you configured it with.
 Your diff, the file contents a reviewer reads and the one line of intent you chose to state go there, under the terms your account carries.
 A finding about that channel is a finding about the CLI rather than about socrates review, and belongs with its vendor.
 
