@@ -1,5 +1,7 @@
 # socrates
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/socrates-tools/socrates/badge)](https://scorecard.dev/viewer/?uri=github.com/socrates-tools/socrates)
+
 socrates puts an independent reviewer in front of changes nobody has read yet.
 
 Your coding session writes a change.

@@ -182,6 +182,25 @@ type WorkflowStart struct {
 	Workflow  string
 	Unasked   []string
 	OnRequest bool
+	OnATag    bool
+}
+
+type workflowTriggers struct {
+	On struct {
+		Push *struct {
+			Tags     []string `yaml:"tags"`
+			Branches []string `yaml:"branches"`
+		} `yaml:"push"`
+	} `yaml:"on"`
+}
+
+func startsOnATagOnly(held []byte) bool {
+	var triggers workflowTriggers
+	if err := yaml.Unmarshal(held, &triggers); err != nil {
+		return false
+	}
+	push := triggers.On.Push
+	return push != nil && len(push.Tags) > 0 && len(push.Branches) == 0
 }
 
 func WhatStartsAWorkflow(root string, named string) (WorkflowStart, error) {
@@ -194,7 +213,11 @@ func WhatStartsAWorkflow(root string, named string) (WorkflowStart, error) {
 
 	stated := topLevelBlock(string(held), "on")
 	start.OnRequest = strings.Contains(stated, OnRequest)
+	start.OnATag = startsOnATagOnly(held)
 	for _, trigger := range triggersNobodyAsksFor {
+		if trigger == "push" && start.OnATag {
+			continue
+		}
 		if regexp.MustCompile(`(?m)^` + regexp.QuoteMeta(trigger) + `:?$`).MatchString(stated) {
 			start.Unasked = append(start.Unasked, trigger)
 		}
@@ -285,4 +308,26 @@ func EcosystemsUnwatched(root string) ([]string, error) {
 		}
 	}
 	return unwatched, nil
+}
+
+const (
+	TheWorkflowNobodyAsksFor = "scorecard.yml"
+	TheTriggerNobodyAsksFor  = "schedule"
+)
+
+func WhatStartsEveryWorkflow(root string) ([]WorkflowStart, error) {
+	paths, err := workflowPaths(filepath.Join(root, WorkflowsDirectory))
+	if err != nil {
+		return nil, err
+	}
+
+	var starting []WorkflowStart
+	for _, path := range paths {
+		start, err := WhatStartsAWorkflow(root, filepath.Base(path))
+		if err != nil {
+			return nil, err
+		}
+		starting = append(starting, start)
+	}
+	return starting, nil
 }

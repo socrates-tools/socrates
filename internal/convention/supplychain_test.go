@@ -228,3 +228,52 @@ func TestAnEcosystemWatchedInADirectoryThatIsNotThereIsReported(t *testing.T) {
 		t.Errorf("what a dependabot watching a directory that moved reports differs (-want +got):\n%s", diff)
 	}
 }
+
+func TestScorecardIsTheOneRunNobodyAsksFor(t *testing.T) {
+	starting, err := convention.WhatStartsEveryWorkflow(source.Root(t))
+	if err != nil {
+		t.Fatalf("reading what starts each workflow: %v", err)
+	}
+
+	found := false
+	for _, start := range starting {
+		if start.Workflow != convention.TheWorkflowNobodyAsksFor {
+			for _, unasked := range start.Unasked {
+				t.Errorf("%s starts on %s, and %s is the one workflow that starts without being asked", start.Workflow, unasked, convention.TheWorkflowNobodyAsksFor)
+			}
+			continue
+		}
+		found = true
+		if diff := cmp.Diff([]string{convention.TheTriggerNobodyAsksFor}, start.Unasked); diff != "" {
+			t.Errorf("%s starts unasked on something other than its schedule (-want +got):\n%s", start.Workflow, diff)
+		}
+		if !start.OnRequest {
+			t.Errorf("%s states no %s, so a fix cannot be seen to take effect without waiting a week", start.Workflow, convention.OnRequest)
+		}
+	}
+	if !found {
+		t.Errorf("there is no %s, so nothing reads the hardening this repository holds", convention.TheWorkflowNobodyAsksFor)
+	}
+}
+
+func TestEveryWorkflowsStartIsRead(t *testing.T) {
+	root := t.TempDir()
+	writeWorkflow(t, root, "asked.yml", "on:\n  workflow_dispatch:\n\njobs:\n  one:\n    steps:\n      - run: true\n")
+	writeWorkflow(t, root, "weekly.yml", "on:\n  schedule:\n    - cron: '0 0 * * 1'\n  push:\n\njobs:\n  one:\n    steps:\n      - run: true\n")
+	writeWorkflow(t, root, "tagged.yml", "on:\n  push:\n    tags:\n      - 'v*'\n\njobs:\n  one:\n    steps:\n      - run: true\n")
+	writeWorkflow(t, root, "tagged-and-branched.yml", "on:\n  push:\n    tags:\n      - 'v*'\n    branches: [main]\n\njobs:\n  one:\n    steps:\n      - run: true\n")
+
+	starting, err := convention.WhatStartsEveryWorkflow(root)
+	if err != nil {
+		t.Fatalf("reading fabricated workflows: %v", err)
+	}
+	want := []convention.WorkflowStart{
+		{Workflow: "asked.yml", OnRequest: true},
+		{Workflow: "tagged-and-branched.yml", Unasked: []string{"push"}},
+		{Workflow: "tagged.yml", OnATag: true},
+		{Workflow: "weekly.yml", Unasked: []string{"push", "schedule"}},
+	}
+	if diff := cmp.Diff(want, starting); diff != "" {
+		t.Errorf("what starts each fabricated workflow was read otherwise (-want +got):\n%s", diff)
+	}
+}

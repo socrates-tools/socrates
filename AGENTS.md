@@ -104,7 +104,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`, or in th
 - The matrix is read from the platform statement, so the suite runs on every platform the set names and on no runner it does not.
 - Every action a workflow uses is named by a commit with its version beside it, and a check fails while any is named by a tag.
 - Every workflow states a read-only token at the top and escalates only in the job that needs more, and a superseded run is cancelled rather than left to report.
-- A run happens when somebody asks for one and when a release gates on one, and nothing starts on a push.
+- A run happens when somebody asks for one and when a release gates on one, and nothing starts on a push, with one exception per ADR 64: Scorecard also runs weekly on a schedule, and no other workflow starts without being asked.
 - The module graph is checked for known vulnerabilities on the same footing, and dependency updates arrive as changes somebody reviews.
 - The browser the page half drives is installed by the run at a stated version rather than found on the runner, and an absent browser fails rather than skips.
 - Nothing a workflow runs reaches the real CLI or a forge, by target or by build tag.
