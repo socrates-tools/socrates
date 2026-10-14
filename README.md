@@ -242,7 +242,7 @@ These are not supported yet:
 | `pi` | a way to keep the reviewed repository's own instructions out of the reviewer's session, and a terminal event saying whether the work happened and what it says about why it did not |
 
 That is what their documentation showed, not proof it cannot be done.
-https://github.com/socrates-tools/socrates/issues/20 tracks it.
+Supporting them is not planned.
 Naming an unsupported CLI is refused before anything starts.
 
 ## Supported platforms

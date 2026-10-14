@@ -58,8 +58,8 @@ func TestAReaderLearnsWhyTheirCLIIsNotSupported(t *testing.T) {
 		}
 	}
 
-	if !strings.Contains(section, agent.DeferredSurvey) {
-		t.Errorf("%s says nothing is supported without linking where that is tracked", convention.VendorsHeading)
+	if !strings.Contains(section, agent.UnsupportedAreUnplanned) {
+		t.Errorf("%s names CLIs that are not supported without saying whether that is planned: %q", convention.VendorsHeading, agent.UnsupportedAreUnplanned)
 	}
 }
 

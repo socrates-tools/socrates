@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const DeferredSurvey = "https://github.com/socrates-tools/socrates/issues/20"
+const UnsupportedAreUnplanned = "Supporting them is not planned."
 
 type Tier string
 
