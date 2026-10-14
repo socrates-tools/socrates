@@ -51,6 +51,15 @@ jobs:
         run: make release
 
       - name: Record which workflow and which commit produced the archives
+        id: provenance
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: dist/*.tar.gz
+
+      - name: Attach that provenance to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+        run: |
+          cp "$BUNDLE" socrates.intoto.jsonl
+          gh release upload "$GITHUB_REF_NAME" socrates.intoto.jsonl --repo "$GITHUB_REPOSITORY"

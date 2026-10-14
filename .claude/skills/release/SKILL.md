@@ -127,7 +127,7 @@ tag=$(gh release view --repo socrates-tools/socrates --json tagName --jq .tagNam
 gh release view "$tag" --repo socrates-tools/socrates
 ```
 
-The release should carry one `tar.gz` per supported platform, `checksums.txt`, a `checksums.txt.bundle` signature, and a bill of materials per archive.
+The release should carry one `tar.gz` per supported platform, `install.sh`, `checksums.txt`, a `checksums.txt.sigstore.json` signature, the build provenance as `socrates.intoto.jsonl`, and a bill of materials per archive.
 Download one and run the verification the release footer states, then check that the binary names the tag:
 
 ```sh

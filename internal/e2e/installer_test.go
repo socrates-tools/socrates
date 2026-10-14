@@ -29,7 +29,8 @@ const (
 	pinnedVersion        = "8.8.8"
 	pinnedTag            = "v" + pinnedVersion
 	checksumsFile        = "checksums.txt"
-	checksumsBundle      = "checksums.txt.bundle"
+	checksumsBundle      = "checksums.txt.sigstore.json"
+	earlierBundle        = "checksums.txt.bundle"
 	decoyExitCode        = 97
 	defaultInstallSuffix = ".local/bin"
 )
@@ -427,7 +428,7 @@ func TestTheInstallerVerifiesTheSignatureWhereCosignIsOnPath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cosign is on PATH and the installer never ran it: %v", err)
 	}
-	for _, wanted := range []string{"verify-blob", "--bundle", "--certificate-identity-regexp", "https://github.com/socrates-tools/socrates/", "--certificate-oidc-issuer", "https://token.actions.githubusercontent.com"} {
+	for _, wanted := range []string{"verify-blob", "--bundle", checksumsBundle + "\n", "--certificate-identity-regexp", "https://github.com/socrates-tools/socrates/", "--certificate-oidc-issuer", "https://token.actions.githubusercontent.com"} {
 		if !strings.Contains(string(arguments), wanted) {
 			t.Errorf("the installer ran cosign without %s:\n%s", wanted, arguments)
 		}
@@ -445,5 +446,27 @@ func TestTheInstallerRefusesASignatureThatDoesNotVerify(t *testing.T) {
 	assertNothingInstalled(t, done)
 	if !strings.Contains(done.failures, "signature") {
 		t.Errorf("the refusal does not say the signature did not verify:\n%s", done.failures)
+	}
+}
+
+func TestTheInstallerVerifiesAnEarlierReleaseByTheNameItsSignatureWasPublishedUnder(t *testing.T) {
+	t.Parallel()
+	served := servedRelease(t, "linux_amd64")
+	if err := os.Rename(filepath.Join(served.latest(), checksumsBundle), filepath.Join(served.latest(), earlierBundle)); err != nil {
+		t.Fatal(err)
+	}
+	tools := toolsFor(t, onLinux())
+	called := filepath.Join(t.TempDir(), "cosign-arguments")
+	writeTool(t, tools, "cosign", "printf '%s\\n' \"$@\" > "+called+"\n")
+
+	done := runInstaller(t, tools, served)
+
+	assertInstalled(t, done, served)
+	arguments, err := os.ReadFile(called)
+	if err != nil {
+		t.Fatalf("cosign is on PATH and the installer never ran it: %v", err)
+	}
+	if !strings.Contains(string(arguments), earlierBundle+"\n") {
+		t.Errorf("the installer did not verify against %s, the name an earlier release published its signature under:\n%s", earlierBundle, arguments)
 	}
 }

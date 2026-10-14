@@ -443,3 +443,37 @@ func TestAnAssetTheReadmeDownloadsIsReadFromTheLatestRelease(t *testing.T) {
 		t.Errorf("what a fabricated front document downloads was read otherwise (-want +got):\n%s", diff)
 	}
 }
+
+func TestAReleasePublishesItsSignatureAndProvenanceUnderNamesVerifiersRecognise(t *testing.T) {
+	carried, err := convention.WhatAReleaseCarriesForVerification(source.Root(t))
+	if err != nil {
+		t.Fatalf("reading what a release carries: %v", err)
+	}
+
+	for _, signature := range carried.Signatures {
+		if signature.Over == "checksum" && !strings.HasSuffix(signature.Published, convention.SignatureVerifiersRecognise) {
+			t.Errorf("%s publishes the signature over the checksums as %q, and a verifier reading asset names looks for %s", convention.ReleaseConfigurationFile, signature.Published, convention.SignatureVerifiersRecognise)
+		}
+	}
+
+	attached := slices.ContainsFunc(carried.ProvenanceAttached, func(name string) bool {
+		return strings.HasSuffix(name, convention.ProvenanceVerifiersRecognise)
+	})
+	if !attached {
+		t.Errorf("%s attaches %v to the release, and no %s, so the provenance it attests is seen only by somebody who asks GitHub for it", convention.ReleaseWorkflow, carried.ProvenanceAttached, convention.ProvenanceVerifiersRecognise)
+	}
+}
+
+func TestAProvenanceAttachedByAnUploadIsRead(t *testing.T) {
+	root := t.TempDir()
+	writePackaged(t, filepath.Join(root, convention.ReleaseConfigurationFile), "checksum:\n  name_template: checksums.txt\n")
+	writeWorkflow(t, root, convention.ReleaseWorkflow, "jobs:\n  publication:\n    steps:\n      - run: |\n          gh release upload \"$tag\" \"$bundle#socrates.intoto.jsonl\" --repo \"$repository\"\n          gh release upload \"$tag\" dist/socrates.intoto.jsonl --clobber\n")
+
+	carried, err := convention.WhatAReleaseCarriesForVerification(root)
+	if err != nil {
+		t.Fatalf("reading a fabricated release: %v", err)
+	}
+	if diff := cmp.Diff([]string{"$bundle", "socrates.intoto.jsonl"}, carried.ProvenanceAttached); diff != "" {
+		t.Errorf("what a fabricated release attaches was read otherwise (-want +got):\n%s", diff)
+	}
+}

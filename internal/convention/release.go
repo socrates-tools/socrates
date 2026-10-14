@@ -114,6 +114,7 @@ type workflowJobs struct {
 		Steps []struct {
 			Uses string         `yaml:"uses"`
 			With map[string]any `yaml:"with"`
+			Run  string         `yaml:"run"`
 		} `yaml:"steps"`
 	} `yaml:"jobs"`
 }
@@ -209,18 +210,27 @@ func HowTheReleaseIsScanned(root string) (ReleaseScan, error) {
 const ProvenanceAction = "actions/attest-build-provenance"
 
 type ReleaseSignature struct {
-	Over    string
-	Command string
-	Keyless bool
+	Over      string
+	Command   string
+	Keyless   bool
+	Published string
 }
 
+const (
+	SignatureVerifiersRecognise  = ".sigstore.json"
+	ProvenanceVerifiersRecognise = ".intoto.jsonl"
+)
+
 type ReleaseVerification struct {
-	Checksums  string
-	BillsOver  []string
-	Signatures []ReleaseSignature
-	Provenance []string
-	Archives   []string
+	Checksums          string
+	BillsOver          []string
+	Signatures         []ReleaseSignature
+	Provenance         []string
+	ProvenanceAttached []string
+	Archives           []string
 }
+
+var releaseUpload = regexp.MustCompile(`gh release upload\b([^\n]*)`)
 
 type verificationConfiguration struct {
 	Checksum struct {
@@ -233,6 +243,7 @@ type verificationConfiguration struct {
 		Cmd       string   `yaml:"cmd"`
 		Args      []string `yaml:"args"`
 		Artifacts string   `yaml:"artifacts"`
+		Signature string   `yaml:"signature"`
 	} `yaml:"signs"`
 	Archives []struct {
 		NameTemplate string `yaml:"name_template"`
@@ -258,9 +269,10 @@ func WhatAReleaseCarriesForVerification(root string) (ReleaseVerification, error
 	}
 	for _, signature := range configured.Signs {
 		carried.Signatures = append(carried.Signatures, ReleaseSignature{
-			Over:    signature.Artifacts,
-			Command: signature.Cmd,
-			Keyless: !slices.ContainsFunc(signature.Args, func(argument string) bool { return strings.Contains(argument, "--key") }),
+			Over:      signature.Artifacts,
+			Command:   signature.Cmd,
+			Published: signature.Signature,
+			Keyless:   !slices.ContainsFunc(signature.Args, func(argument string) bool { return strings.Contains(argument, "--key") }),
 		})
 	}
 	for _, archive := range configured.Archives {
@@ -273,6 +285,7 @@ func WhatAReleaseCarriesForVerification(root string) (ReleaseVerification, error
 	}
 	for _, job := range document.Jobs {
 		for _, step := range job.Steps {
+			carried.ProvenanceAttached = append(carried.ProvenanceAttached, filesUploaded(step.Run)...)
 			if action, _, _ := strings.Cut(step.Uses, "@"); action != ProvenanceAction {
 				continue
 			}
@@ -481,4 +494,19 @@ func AssetsTheFrontDocumentDownloads(root string) ([]string, error) {
 	}
 	slices.Sort(downloaded)
 	return downloaded, nil
+}
+
+func filesUploaded(script string) []string {
+	var uploaded []string
+	for _, upload := range releaseUpload.FindAllStringSubmatch(script, -1) {
+		arguments := strings.Fields(upload[1])
+		for index, argument := range arguments {
+			if index == 0 || strings.HasPrefix(argument, "-") || strings.HasPrefix(arguments[index-1], "--") {
+				continue
+			}
+			file, _, _ := strings.Cut(strings.Trim(argument, `"'`), "#")
+			uploaded = append(uploaded, path.Base(file))
+		}
+	}
+	return uploaded
 }

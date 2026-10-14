@@ -70,9 +70,13 @@ platform="$(operating_system)_$(architecture)"
 download "$from" checksums.txt
 
 if command -v cosign >/dev/null 2>&1; then
-  download "$from" checksums.txt.bundle
+  signature=checksums.txt.sigstore.json
+  if ! fetch "$from/$signature" "$work/$signature" 2>/dev/null; then
+    signature=checksums.txt.bundle
+    download "$from" "$signature"
+  fi
   cosign verify-blob "$work/checksums.txt" \
-    --bundle "$work/checksums.txt.bundle" \
+    --bundle "$work/$signature" \
     --certificate-identity-regexp "https://github.com/$repository/.*" \
     --certificate-oidc-issuer https://token.actions.githubusercontent.com >/dev/null 2>&1 ||
     refuse "the signature over checksums.txt at $from does not verify, so nothing was installed: report it at https://github.com/$repository/security"

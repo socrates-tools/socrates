@@ -43,7 +43,7 @@ sboms:
 signs:
   - id: checksums
     cmd: cosign
-    signature: ${artifact}.bundle
+    signature: ${artifact}.sigstore.json
     args:
       - sign-blob
       - --yes
@@ -69,8 +69,10 @@ release:
     ```sh
     sha256sum --check --ignore-missing checksums.txt
     cosign verify-blob checksums.txt \
-      --bundle checksums.txt.bundle \
+      --bundle checksums.txt.sigstore.json \
       --certificate-identity-regexp 'https://github.com/socrates-tools/socrates/.*' \
       --certificate-oidc-issuer https://token.actions.githubusercontent.com
     gh attestation verify socrates_*.tar.gz --repo socrates-tools/socrates
     ```
+
+    `socrates.intoto.jsonl` is the same provenance, attached for a verifier that reads it from the release rather than from GitHub.

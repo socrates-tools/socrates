@@ -65,13 +65,16 @@ On a Mac without `sha256sum`, check with `shasum -a 256 --check --ignore-missing
 To check the release was built by this repository, verify the signature and the build provenance:
 
 ```sh
-curl -fsSLO "$base/checksums.txt.bundle"
+curl -fsSLO "$base/checksums.txt.sigstore.json"
 cosign verify-blob checksums.txt \
-  --bundle checksums.txt.bundle \
+  --bundle checksums.txt.sigstore.json \
   --certificate-identity-regexp 'https://github.com/socrates-tools/socrates/.*' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 gh attestation verify "$archive" --repo socrates-tools/socrates
 ```
+
+The release also carries the same provenance as `socrates.intoto.jsonl`, for a verifier that reads it from the release rather than from GitHub.
+Releases before v0.4.0 publish the signature as `checksums.txt.bundle` and carry no `socrates.intoto.jsonl`.
 
 ### From source
 
