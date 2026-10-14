@@ -8,6 +8,8 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-14
+
 ### Changed
 
 - **The page moved to port 24672, and a held port is refused rather than walked past.**
@@ -81,6 +83,10 @@ While the major version is `0`, a minor release may change the surface half in w
   It keeps no state of its own, has no round cap, and ends at any round you choose, on the page or with `socrates agora end`.
 - A document's options may carry no command, for an answer that runs nothing.
   A decision offers a command on every option or on none, and a decision mixing the two is refused.
+- `socrates design skill` also installs `socrates-tickets`, which cuts a spec under `docs/changes/<slug>/` into tickets beside it, with `README.md` holding their order and status.
+- `socrates implement`, a third workflow: once the tickets are cut and committed, the session you invoke the `socrates-implement` skill in oversees implementers that build each ticket in a worktree of its own, and you stay free to talk to it while they work.
+  It lands each ticket by fast-forward on a branch of its own, runs the repository's own verification after every landing, and reads the whole change against the spec before telling you the branch is ready.
+  `socrates implement skill` installs the skill and the `socrates-implementer` agent definition, and `socrates implement config`, `configure` and `default-branch` hold how many implementers run at once, which model they run on and which branch a feature starts from.
 
 ### Notes
 
@@ -120,5 +126,6 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.2.0
 [0.1.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.1.0
