@@ -2,7 +2,7 @@
 
 ## Read these first
 
-- **`README.md`** answers what socrates review needs, what it does to your repository, what the exit codes mean, and what it deliberately is not.
+- **`README.md`** answers what socrates needs, how to use each step, and what it deliberately is not.
   Most questions are answered by "What it deliberately is not".
 - **`CONTEXT-MAP.md`** names the glossary that defines the vocabulary of each tool, and **`docs/adr/`** at the root and in each tool's directory holds the decisions, each with what was rejected and why.
   If you are asking "why does it work like that", the answer is in one of those.
