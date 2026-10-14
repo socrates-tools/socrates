@@ -3,7 +3,7 @@
 - Status: accepted
 - Date: 2026-09-16
 - Part of: one command
-- Amended by: ADR 61, which adds a top-level `skill` that runs every namespace's own
+- Amended by: ADR 61, which adds a top-level `skill` that runs every namespace's own, and ADR 63, which adds a top-level `licences`
 
 ## Decision
 
