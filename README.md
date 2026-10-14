@@ -1,6 +1,12 @@
-# socrates
+<p align="center">
+  <img src="agora/web/brand/socrates-mark.svg" width="128" height="128" alt="socrates">
+</p>
 
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/socrates-tools/socrates/badge)](https://scorecard.dev/viewer/?uri=github.com/socrates-tools/socrates)
+<h1 align="center">socrates</h1>
+
+<p align="center">
+  <a href="https://scorecard.dev/viewer/?uri=github.com/socrates-tools/socrates"><img src="https://api.scorecard.dev/projects/github.com/socrates-tools/socrates/badge" alt="OpenSSF Scorecard"></a>
+</p>
 
 socrates takes a change from an idea to a reviewed branch.
 In your coding session, run these skills in order:
