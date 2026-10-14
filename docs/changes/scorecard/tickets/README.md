@@ -16,4 +16,4 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 64](../../../adr/0064-scorecard-
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1: Scorecard runs weekly, publishes, and is the one run nobody asks for](1-scorecard.md) | None | todo |
+| [1: Scorecard runs weekly, publishes, and is the one run nobody asks for](1-scorecard.md) | None | done |
