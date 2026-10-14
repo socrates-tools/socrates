@@ -27,41 +27,68 @@ The same binary holds three more tools:
 
 ## Installing
 
-From a release:
+```sh
+curl -fsSL https://github.com/socrates-tools/socrates/releases/latest/download/install.sh | sh
+```
+
+That downloads the archive for your operating system and architecture from the latest release, checks it against the release's checksums, puts `socrates` in `~/.local/bin`, and installs every skill.
+Where `cosign` is on your `PATH`, it also verifies the release's signature before trusting the checksums.
+It refuses, and installs nothing, where a check fails or the release carries no archive for your machine.
+It says so where `~/.local/bin` is not on your `PATH`, and how to add it.
+
+`SOCRATES_INSTALL_DIR` puts the binary somewhere else, and `SOCRATES_VERSION` installs another release than the latest:
 
 ```sh
-tag=$(gh release view --repo socrates-tools/socrates --json tagName --jq .tagName)
-gh release download "$tag" --repo socrates-tools/socrates --pattern "socrates_*_$(uname -s | tr 'A-Z' 'a-z')_*.tar.gz" --pattern checksums.txt
-sha256sum --check --ignore-missing checksums.txt
-tar -xzf socrates_*.tar.gz -C ~/.local/bin socrates
+curl -fsSL https://github.com/socrates-tools/socrates/releases/latest/download/install.sh | SOCRATES_INSTALL_DIR=/usr/local/bin SOCRATES_VERSION=v0.2.0 sh
 ```
+
+Running it again upgrades the binary and the skills.
+
+### By hand
+
+```sh
+os=$(uname -s | tr '[:upper:]' '[:lower:]')
+arch=$(uname -m | sed 's/x86_64/amd64/; s/aarch64/arm64/')
+base=https://github.com/socrates-tools/socrates/releases/latest/download
+curl -fsSLO "$base/checksums.txt"
+archive=$(grep -o "socrates_[^ ]*_${os}_${arch}\.tar\.gz$" checksums.txt)
+curl -fsSLO "$base/$archive"
+sha256sum --check --ignore-missing checksums.txt
+mkdir -p ~/.local/bin && tar -xzf "$archive" -C ~/.local/bin socrates
+~/.local/bin/socrates skill
+```
+
+On a Mac without `sha256sum`, check with `shasum -a 256 --check --ignore-missing checksums.txt` instead.
 
 To check the release was built by this repository, verify the signature and the build provenance:
 
 ```sh
-gh release download "$tag" --repo socrates-tools/socrates --pattern 'checksums.txt.bundle'
+curl -fsSLO "$base/checksums.txt.bundle"
 cosign verify-blob checksums.txt \
   --bundle checksums.txt.bundle \
   --certificate-identity-regexp 'https://github.com/socrates-tools/socrates/.*' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
-gh attestation verify socrates_*.tar.gz --repo socrates-tools/socrates
+gh attestation verify "$archive" --repo socrates-tools/socrates
 ```
 
-From source, `make install` puts `socrates` on your `PATH`.
-`go install github.com/socrates-tools/socrates/cmd/socrates@latest` also works, but that binary does not know its own version.
+### From source
+
+`make install` puts `socrates` on your `PATH` and installs every skill.
+`go install github.com/socrates-tools/socrates/cmd/socrates@latest` also works, but that binary does not know its own version, and you run `socrates skill` yourself afterwards.
 
 `socrates version` says which release and commit you have.
 `CHANGELOG.md` says what changed in each release.
 
-Then install the skills your coding session reads:
+### The skills
 
-```sh
-socrates review skill     # socrates-review and socrates-review-handover
-socrates design skill     # socrates-design and socrates-tickets
-socrates implement skill  # socrates-implement, and the socrates-implementer agent
-```
+`socrates skill` installs every skill your coding session reads, which is what the installer and `make install` run:
 
-They write under `~/.claude/skills/`, or wherever `--to` says, and the implementer's agent definition under `~/.claude/agents/`, or wherever `--agents-to` says.
+- `socrates-review` and `socrates-review-handover`, from `socrates review skill`.
+- `socrates-design` and `socrates-tickets`, from `socrates design skill`.
+- `socrates-implement`, and the `socrates-implementer` agent, from `socrates implement skill`.
+
+They write under `~/.claude/skills/`, and the implementer's agent definition under `~/.claude/agents/`.
+To put one tool's skills somewhere else, run its own command with `--to`, and the implementer's agent definition with `--agents-to`.
 
 ## Reviewing a change
 

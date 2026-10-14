@@ -6,9 +6,9 @@ Installing leads with the one-liner and the two variables, the manual route name
 
 ## Acceptance criteria
 
-- [ ] The README's one-liner downloads the asset `.goreleaser.yaml` attaches, and the suite fails where it names another.
-- [ ] The manual route's commands, run as written, download one archive and place a binary that runs.
-- [ ] The README names `socrates skill` as how to install the skills after `go install`.
+- [x] The README's one-liner downloads the asset `.goreleaser.yaml` attaches, and the suite fails where it names another.
+- [x] The manual route's commands, run as written, download one archive and place a binary that runs.
+- [x] The README names `socrates skill` as how to install the skills after `go install`.
 
 ## User stories
 

@@ -408,3 +408,38 @@ func TestAReleaseThatAttachesNoInstallerIsRead(t *testing.T) {
 		t.Errorf("a release listing nothing extra in its checksums was read as listing %v", attaching.Checksummed)
 	}
 }
+
+func TestTheOneLineTheReadmeInstallsWithDownloadsWhatAReleaseAttaches(t *testing.T) {
+	root := source.Root(t)
+
+	downloaded, err := convention.AssetsTheFrontDocumentDownloads(root)
+	if err != nil {
+		t.Fatalf("reading what %s downloads: %v", convention.FrontDocumentFile, err)
+	}
+	if !slices.Contains(downloaded, convention.InstallerFile) {
+		t.Errorf("%s downloads %v from the latest release, and not %s, so a person installing reads no one command", convention.FrontDocumentFile, downloaded, convention.InstallerFile)
+	}
+
+	attaching, err := convention.WhatAReleaseAttaches(root)
+	if err != nil {
+		t.Fatalf("reading what a release attaches: %v", err)
+	}
+	for _, asset := range downloaded {
+		if !slices.Contains(attaching.Attached, asset) {
+			t.Errorf("%s downloads %s from the latest release, and %s attaches only %v", convention.FrontDocumentFile, asset, convention.ReleaseConfigurationFile, attaching.Attached)
+		}
+	}
+}
+
+func TestAnAssetTheReadmeDownloadsIsReadFromTheLatestRelease(t *testing.T) {
+	root := t.TempDir()
+	writePackaged(t, filepath.Join(root, convention.FrontDocumentFile), "# x\n\n```sh\ncurl -fsSL https://github.com/socrates-tools/socrates/releases/latest/download/setup.sh | sh\n```\n")
+
+	downloaded, err := convention.AssetsTheFrontDocumentDownloads(root)
+	if err != nil {
+		t.Fatalf("reading a fabricated front document: %v", err)
+	}
+	if diff := cmp.Diff([]string{"setup.sh"}, downloaded); diff != "" {
+		t.Errorf("what a fabricated front document downloads was read otherwise (-want +got):\n%s", diff)
+	}
+}

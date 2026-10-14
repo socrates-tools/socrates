@@ -113,7 +113,11 @@ func publishRelease(t *testing.T, directory, version, realPair string, real []by
 		}
 		sum := sha256.Sum256(packed)
 		fmt.Fprintf(&checksums, "%s  %s\n", hex.EncodeToString(sum[:]), name)
+		bill := sha256.Sum256([]byte(name))
+		fmt.Fprintf(&checksums, "%s  %s.sbom.json\n", hex.EncodeToString(bill[:]), name)
 	}
+	installer := sha256.Sum256([]byte(installerFile))
+	fmt.Fprintf(&checksums, "%s  %s\n", hex.EncodeToString(installer[:]), installerFile)
 	for _, name := range []string{checksumsFile, checksumsBundle} {
 		content := checksums.String()
 		if name == checksumsBundle {
@@ -190,7 +194,13 @@ func runInstallerIn(t *testing.T, home, tools string, served *release, extra ...
 
 	done := installation{home: home, installDir: filepath.Join(home, filepath.FromSlash(defaultInstallSuffix)), tools: tools}
 
-	command := exec.Command("sh", filepath.Join(source.Root(t), installerFile))
+	script, err := os.ReadFile(filepath.Join(source.Root(t), installerFile))
+	if err != nil {
+		t.Fatalf("reading the installer a person pipes to sh: %v", err)
+	}
+
+	command := exec.Command("sh")
+	command.Stdin = bytes.NewReader(script)
 	command.Dir = home
 	command.Env = append([]string{
 		"HOME=" + home,

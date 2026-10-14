@@ -464,3 +464,21 @@ func WhatAReleaseAttaches(root string) (ReleaseAttachments, error) {
 	}
 	return attaching, nil
 }
+
+var latestReleaseAsset = regexp.MustCompile(`releases/latest/download/([A-Za-z0-9._-]+)`)
+
+func AssetsTheFrontDocumentDownloads(root string) ([]string, error) {
+	held, err := Document(root, FrontDocumentFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var downloaded []string
+	for _, named := range latestReleaseAsset.FindAllStringSubmatch(held, -1) {
+		if !slices.Contains(downloaded, named[1]) {
+			downloaded = append(downloaded, named[1])
+		}
+	}
+	slices.Sort(downloaded)
+	return downloaded, nil
+}
