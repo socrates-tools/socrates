@@ -6,8 +6,6 @@ import (
 	"strings"
 )
 
-const UnsupportedAreUnplanned = "Supporting them is not planned."
-
 type Tier string
 
 const (

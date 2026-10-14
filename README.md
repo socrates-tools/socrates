@@ -84,17 +84,6 @@ Set `reviewer_cli` to one of these:
 socrates validates the document either way.
 The first two conform more often, so prefer them if you have the choice.
 
-These are not supported yet:
-
-| reviewer CLI | what is missing |
-| --- | --- |
-| `cursor-agent` | a way to keep the reviewed repository's own instructions out of the reviewer's session |
-| `copilot` | a way to keep the reviewed repository's own instructions out of the reviewer's session, and a terminal event saying whether the work happened and what it says about why it did not |
-| `pi` | a way to keep the reviewed repository's own instructions out of the reviewer's session, and a terminal event saying whether the work happened and what it says about why it did not |
-
-Supporting them is not planned.
-Naming an unsupported CLI is refused before anything starts.
-
 ## Configuration
 
 ```sh

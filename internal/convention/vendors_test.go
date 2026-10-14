@@ -31,38 +31,6 @@ func TestADocumentThatNamesFewerCLIsThanSocratesSupportsFails(t *testing.T) {
 	}
 }
 
-func TestAReaderLearnsWhyTheirCLIIsNotSupported(t *testing.T) {
-	root := source.Root(t)
-
-	section, err := convention.VendorSection(root)
-	if err != nil {
-		t.Fatalf("reading what a person is told about the reviewer CLIs: %v", err)
-	}
-	if strings.TrimSpace(section) == "" {
-		t.Fatalf("%q is not there", convention.VendorsHeading)
-	}
-
-	unsupported := agent.Unsupported()
-	if len(unsupported) == 0 {
-		t.Fatal("every stated reviewer CLI is supported, so this check reads nothing")
-	}
-
-	for _, one := range unsupported {
-		if !strings.Contains(section, one.Name) {
-			t.Errorf("%s does not name %s, so a person who runs it learns nothing", convention.VendorsHeading, one.Name)
-		}
-		for _, lacking := range one.Lacking() {
-			if !strings.Contains(section, lacking) {
-				t.Errorf("%s names %s without saying it lacks %q", convention.VendorsHeading, one.Name, lacking)
-			}
-		}
-	}
-
-	if !strings.Contains(section, agent.UnsupportedAreUnplanned) {
-		t.Errorf("%s names CLIs that are not supported without saying whether that is planned: %q", convention.VendorsHeading, agent.UnsupportedAreUnplanned)
-	}
-}
-
 func TestEveryTierIsStatedForAReaderChoosingBetweenThem(t *testing.T) {
 	root := source.Root(t)
 
