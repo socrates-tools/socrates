@@ -122,6 +122,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`, or in th
 - What a release builds is the supported set and no others, and a target on one side and not the other fails the suite.
 - One archive carries the one binary the suite publishes, `LICENSE` and `NOTICE`, and the binary and the archive come from the same build so they cannot be at different commits.
 - Every job that publishes needs the job that ran the verification matrix, so a tag on a commit whose verification did not pass produces nothing.
+- Every job that publishes also needs the code scan, and the scan starts only when somebody asks for one or a release gates on one.
 - A release carries a checksum, a keyless signature over the checksums, a bill of materials and build provenance, and nothing in the release path reaches the real CLI.
 - Each release is recorded in `CHANGELOG.md`, written by hand, in terms of what it means to somebody who has the previous one.
 

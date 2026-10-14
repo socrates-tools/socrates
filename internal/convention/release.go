@@ -166,6 +166,45 @@ func HowTheReleaseIsGated(root string) (ReleaseGate, error) {
 	return gate, nil
 }
 
+type ReleaseScan struct {
+	Scanning  string
+	Unscanned []string
+}
+
+func HowTheReleaseIsScanned(root string) (ReleaseScan, error) {
+	var scan ReleaseScan
+
+	document, err := releaseWorkflow(root)
+	if err != nil {
+		return scan, err
+	}
+
+	scanning, err := WorkflowsChecking(root, TheCodeScan)
+	if err != nil {
+		return scan, err
+	}
+
+	needs := map[string][]string{}
+	for name, job := range document.Jobs {
+		needs[name] = named(job.Needs)
+		if job.Uses != "" && slices.Contains(scanning, filepath.Base(job.Uses)) {
+			scan.Scanning = name
+		}
+	}
+
+	for name, job := range document.Jobs {
+		if job.Uses != "" {
+			continue
+		}
+		if !reaches(needs, name, scan.Scanning) {
+			scan.Unscanned = append(scan.Unscanned, name)
+		}
+	}
+
+	slices.Sort(scan.Unscanned)
+	return scan, nil
+}
+
 const ProvenanceAction = "actions/attest-build-provenance"
 
 type ReleaseSignature struct {

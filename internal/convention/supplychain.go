@@ -16,6 +16,7 @@ const (
 	CancelSuperseded      = "cancel-in-progress: true"
 	DependabotFile        = ".github/dependabot.yml"
 	TheVulnerabilityCheck = "govulncheck"
+	TheCodeScan           = "github/codeql-action/analyze"
 )
 
 var ecosystemsADependabotWatches = []string{"gomod", "npm", "github-actions"}

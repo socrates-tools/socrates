@@ -302,3 +302,75 @@ func TestTheSymbolsAReleaseStampsAreReadFromItsLinkerFlags(t *testing.T) {
 		t.Errorf("the symbols read from a release's linker flags differ (-want +got):\n%s", diff)
 	}
 }
+
+func TestTheCodeIsScannedOnRequestAndBeforeARelease(t *testing.T) {
+	root := source.Root(t)
+
+	scanning, err := convention.WorkflowsChecking(root, convention.TheCodeScan)
+	if err != nil {
+		t.Fatalf("reading what the workflows check: %v", err)
+	}
+	if len(scanning) == 0 {
+		t.Fatalf("no workflow runs %s, so nothing analyses the code and the security tab stays empty", convention.TheCodeScan)
+	}
+	for _, named := range scanning {
+		start, err := convention.WhatStartsAWorkflow(root, named)
+		if err != nil {
+			t.Fatalf("reading what starts %s: %v", named, err)
+		}
+		if !start.OnRequest {
+			t.Errorf("%s runs %s and nobody can ask for one: state %s", named, convention.TheCodeScan, convention.OnRequest)
+		}
+		for _, unasked := range start.Unasked {
+			t.Errorf("%s starts on %s, and a run happens only when somebody asks for one or a release gates on one", named, unasked)
+		}
+	}
+
+	scan, err := convention.HowTheReleaseIsScanned(root)
+	if err != nil {
+		t.Fatalf("reading how the release is scanned: %v", err)
+	}
+	if scan.Scanning == "" {
+		t.Fatalf("no job in %s runs a workflow that runs %s, so a release publishes code nobody analysed", convention.ReleaseWorkflow, convention.TheCodeScan)
+	}
+	if len(scan.Unscanned) != 0 {
+		t.Errorf("%v in %s publish without needing %s", scan.Unscanned, convention.ReleaseWorkflow, scan.Scanning)
+	}
+}
+
+func TestAPublishingJobThatSkipsTheScanIsReported(t *testing.T) {
+	root := t.TempDir()
+	writeWorkflow(t, root, "verification.yml", "jobs:\n  suite:\n    steps:\n      - run: make verify\n")
+	writeWorkflow(t, root, "scan.yml", "jobs:\n  analysis:\n    steps:\n      - uses: github/codeql-action/analyze@0000000000000000000000000000000000000000\n")
+	writeWorkflow(t, root, convention.ReleaseWorkflow,
+		"jobs:\n  verification:\n    uses: ./.github/workflows/verification.yml\n  scanning:\n    needs: verification\n    uses: ./.github/workflows/scan.yml\n  publication:\n    needs: verification\n    steps:\n      - run: make release\n")
+
+	scan, err := convention.HowTheReleaseIsScanned(root)
+	if err != nil {
+		t.Fatalf("reading a fabricated release: %v", err)
+	}
+	if scan.Scanning != "scanning" {
+		t.Fatalf("the job running the scan was read as %q", scan.Scanning)
+	}
+
+	want := []string{"publication"}
+	if diff := cmp.Diff(want, scan.Unscanned); diff != "" {
+		t.Errorf("what a publishing job skipping the scan reports differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestAPublishingJobBehindTheScanIsNotReported(t *testing.T) {
+	root := t.TempDir()
+	writeWorkflow(t, root, "verification.yml", "jobs:\n  suite:\n    steps:\n      - run: make verify\n")
+	writeWorkflow(t, root, "scan.yml", "jobs:\n  analysis:\n    steps:\n      - uses: github/codeql-action/analyze@0000000000000000000000000000000000000000\n")
+	writeWorkflow(t, root, convention.ReleaseWorkflow,
+		"jobs:\n  verification:\n    uses: ./.github/workflows/verification.yml\n  scanning:\n    needs: verification\n    uses: ./.github/workflows/scan.yml\n  publication:\n    needs: [verification, scanning]\n    steps:\n      - run: make release\n")
+
+	scan, err := convention.HowTheReleaseIsScanned(root)
+	if err != nil {
+		t.Fatalf("reading a fabricated release: %v", err)
+	}
+	if len(scan.Unscanned) != 0 {
+		t.Errorf("a publishing job that needs the scan was reported as unscanned: %v", scan.Unscanned)
+	}
+}

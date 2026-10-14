@@ -16,8 +16,15 @@ jobs:
   verification:
     uses: ./.github/workflows/ci.yml
 
-  publication:
+  scanning:
     needs: verification
+    uses: ./.github/workflows/codeql.yml
+    permissions:
+      contents: read
+      security-events: write
+
+  publication:
+    needs: [verification, scanning]
     runs-on: ubuntu-latest
     permissions:
       contents: write
