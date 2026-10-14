@@ -102,7 +102,19 @@ func PlatformsDocumented(root string) ([]string, error) {
 	if !found {
 		return nil, nil
 	}
-	return namesTabulatedIn(section), nil
+	return slices.DeleteFunc(namesTabulatedIn(section), func(named string) bool {
+		return named == WhereTheWayForwardApplies && pointsAtTheWayForward(section)
+	}), nil
+}
+
+func pointsAtTheWayForward(section string) bool {
+	for _, line := range strings.Split(section, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, tableRow) && strings.TrimSpace(firstCellOf(trimmed)) == WhereTheWayForwardApplies {
+			return strings.Contains(trimmed, TheWayForward)
+		}
+	}
+	return false
 }
 
 func TheWayForwardIsDocumented(root string) (bool, error) {

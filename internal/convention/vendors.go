@@ -121,7 +121,7 @@ func SeamRulesRestatedOutside(root string, rules []string) ([]string, error) {
 	return restated, nil
 }
 
-const VendorsHeading = "## Reviewer CLIs"
+const VendorsHeading = "### Which CLI reviews"
 
 func VendorsDocumented(root string) ([]string, error) {
 	held, err := os.ReadFile(filepath.Join(root, documentationFile))

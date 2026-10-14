@@ -144,6 +144,42 @@ func TestAPlatformDocumentedInNoTableIsRead(t *testing.T) {
 	}
 }
 
+func TestAWindowsRowPointingAtWSLIsTheWayForwardRatherThanASupportedPlatform(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "README.md"), "# thing\n\n"+convention.DocumentedHeading+
+		"\n\n| platform | supported |\n| --- | --- |\n| Linux | yes |\n| macOS | yes |\n| Windows | under WSL |\n\n## something else\n")
+
+	documented, err := convention.PlatformsDocumented(root)
+	if err != nil {
+		t.Fatalf("reading the fabricated documentation: %v", err)
+	}
+	if diff := cmp.Diff([]string{"Linux", "macOS"}, documented); diff != "" {
+		t.Errorf("what the table documents differs (-want +got):\n%s", diff)
+	}
+
+	named, err := convention.TheWayForwardIsDocumented(root)
+	if err != nil {
+		t.Fatalf("reading the fabricated documentation: %v", err)
+	}
+	if !named {
+		t.Error("a Windows row naming WSL was read as naming neither")
+	}
+}
+
+func TestAWindowsRowThatDoesNotPointAtWSLIsReadAsASupportedPlatform(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "README.md"), "# thing\n\n"+convention.DocumentedHeading+
+		"\n\n| platform | supported |\n| --- | --- |\n| Linux | yes |\n| Windows | yes |\n\n## something else\n")
+
+	documented, err := convention.PlatformsDocumented(root)
+	if err != nil {
+		t.Fatalf("reading the fabricated documentation: %v", err)
+	}
+	if diff := cmp.Diff([]string{"Linux", "Windows"}, documented); diff != "" {
+		t.Errorf("what the table documents differs (-want +got):\n%s", diff)
+	}
+}
+
 func TestTheDocumentedPlatformsAreTheRowsOfTheTable(t *testing.T) {
 	root := t.TempDir()
 	writeNested(t, filepath.Join(root, "README.md"), "# thing\n\n"+convention.DocumentedHeading+

@@ -15,9 +15,8 @@ Each step works on its own, so you can review any change without a spec.
 ## What it needs
 
 - **Claude Code**, which runs the skills.
-- **A reviewer CLI on your `PATH`: `claude`, `codex` or `opencode`.**
-  socrates uses `claude` unless you set `reviewer_cli`, and `claude` must be 2.1.169 or later.
-- **An account that CLI is signed in to.**
+- **For review, `claude`, `codex` or `opencode` on your `PATH`, signed in to an account.**
+  Review uses `claude` unless you set `reviewer_cli`, and `claude` must be 2.1.169 or later.
   socrates is free, but every review is a model call billed to that account.
 - **Linux or macOS.**
   On Windows, use WSL.
@@ -69,28 +68,12 @@ Run `/socrates-review` before you push.
 A reviewer that did not write the change reads it, and your session fixes what it can and brings you the rest.
 For somebody else's change, check it out in its own worktree and run `/socrates-review-handover`, which posts only the findings you choose.
 
-To watch a review yourself:
-
-```sh
-socrates review watch      # follow it live
-socrates review findings   # what the reviewer found
-socrates review cancel     # stop it
-```
-
 The reviewer reads none of your `CLAUDE.md`, `AGENTS.md`, settings or skills, because the change could have written them.
 To tell it what it should know about your repository, commit `.socrates/review-guide.md`.
 
-## Configuration
+### Which CLI reviews
 
-```sh
-socrates review configure      # reviewer CLI, model, effort and limits
-socrates implement configure   # how many implementers run at once, and their model and effort
-```
-
-`socrates review config` and `socrates implement config` print every setting in force.
-Settings live in `~/.socrates/<tool>/config.yaml`, and `SOCRATES_HOME` moves `~/.socrates`.
-
-## Reviewer CLIs
+Set `reviewer_cli` to one of these:
 
 | reviewer CLI | how it produces the findings document | what keeps the repository's instructions out |
 | --- | --- | --- |
@@ -111,6 +94,16 @@ These are not supported yet:
 
 Supporting them is not planned.
 Naming an unsupported CLI is refused before anything starts.
+
+## Configuration
+
+```sh
+socrates review configure      # reviewer CLI, model, effort and limits
+socrates implement configure   # how many implementers run at once, and their model and effort
+```
+
+`socrates review config` and `socrates implement config` print every setting in force.
+Settings live in `~/.socrates/<tool>/config.yaml`, and `SOCRATES_HOME` moves `~/.socrates`.
 
 ## Reading the page from another machine
 
@@ -134,8 +127,7 @@ surface:
 | --- | --- |
 | Linux | yes |
 | macOS | yes |
-
-On Windows, run socrates under WSL.
+| Windows | under WSL |
 
 ## Your code and your data
 
