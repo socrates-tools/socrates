@@ -8,6 +8,29 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-14
+
+### Added
+
+- **`socrates licences` prints the terms the binary carries.**
+  It prints `LICENSE` and then `NOTICE` from copies built into the binary, so a copy installed with `go install`, which has neither file beside it, carries them too.
+  `socrates licenses` is the same command.
+- **Each release carries its build provenance as `socrates.intoto.jsonl`.**
+  It is the same provenance `gh attestation verify` checks, attached to the release for a verifier that reads it from there rather than from GitHub.
+
+### Changed
+
+- **The signature over the checksums is published as `checksums.txt.sigstore.json`.**
+  It was `checksums.txt.bundle`, a name verifiers such as OpenSSF Scorecard do not look for, so earlier releases read as unsigned though they were signed.
+  If you verify by hand, pass the new name to `cosign verify-blob --bundle`.
+  The installer verifies against the new name and falls back to the old one, so `SOCRATES_VERSION` still installs an earlier release with its signature checked.
+
+### Notes
+
+- `cursor-agent`, `copilot` and `pi` stay unsupported as reviewer CLIs, and supporting them is not planned.
+  `claude`, `codex` and `opencode` are unchanged.
+- `SECURITY.md` now says where each supported reviewer CLI sends your change: `claude` to Anthropic, `codex` to OpenAI, and `opencode` to the provider you configured.
+
 ## [0.3.0] - 2026-10-14
 
 ### Added
@@ -146,7 +169,8 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.4.0
 [0.3.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.3.0
 [0.2.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.2.0
 [0.1.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.1.0
