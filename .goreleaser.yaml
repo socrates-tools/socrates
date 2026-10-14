@@ -33,6 +33,8 @@ archives:
 
 checksum:
   name_template: checksums.txt
+  extra_files:
+    - glob: ./install.sh
 
 sboms:
   - id: archives
@@ -58,6 +60,8 @@ changelog:
 
 release:
   draft: false
+  extra_files:
+    - glob: ./install.sh
   prerelease: auto
   footer: |
     Verify a download against this repository without trusting whoever pushed the tag:

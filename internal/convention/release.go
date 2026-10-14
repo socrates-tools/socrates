@@ -3,6 +3,7 @@ package convention
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -420,4 +421,46 @@ func SymbolsAReleaseStamps(stamps []string) []string {
 		}
 	}
 	return named
+}
+
+const InstallerFile = "install.sh"
+
+type ReleaseAttachments struct {
+	Attached    []string
+	Checksummed []string
+}
+
+type attachmentConfiguration struct {
+	Release struct {
+		ExtraFiles []struct {
+			Glob string `yaml:"glob"`
+		} `yaml:"extra_files"`
+	} `yaml:"release"`
+	Checksum struct {
+		ExtraFiles []struct {
+			Glob string `yaml:"glob"`
+		} `yaml:"extra_files"`
+	} `yaml:"checksum"`
+}
+
+func WhatAReleaseAttaches(root string) (ReleaseAttachments, error) {
+	var attaching ReleaseAttachments
+
+	held, err := os.ReadFile(filepath.Join(root, ReleaseConfigurationFile))
+	if err != nil {
+		return attaching, err
+	}
+
+	var configured attachmentConfiguration
+	if err := yaml.Unmarshal(held, &configured); err != nil {
+		return attaching, fmt.Errorf("reading %s: %w", ReleaseConfigurationFile, err)
+	}
+
+	for _, extra := range configured.Release.ExtraFiles {
+		attaching.Attached = append(attaching.Attached, path.Clean(extra.Glob))
+	}
+	for _, extra := range configured.Checksum.ExtraFiles {
+		attaching.Checksummed = append(attaching.Checksummed, path.Clean(extra.Glob))
+	}
+	return attaching, nil
 }

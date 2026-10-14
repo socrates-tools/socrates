@@ -78,7 +78,7 @@ The README's manual route names the architecture, so it downloads one archive.
 
 - At the repository root, POSIX `sh`, so it runs under `curl ... | sh` on Linux and macOS.
 - Where it downloads from is `https://github.com/socrates-tools/socrates/releases/latest/download`, or `.../releases/download/$SOCRATES_VERSION` where that is set.
-  `SOCRATES_RELEASE_URL` replaces the whole base, which is the seam the suite downloads from a local server through, and which a mirror can use.
+  `SOCRATES_RELEASES_URL` replaces `https://github.com/socrates-tools/socrates/releases`, which is the seam the suite downloads from a local server through, and which a mirror can use.
 - It works in a temporary directory it removes on exit, and places the binary only after every check has passed.
 - It carries no comments, like the rest of the source.
 - It names no operating system or architecture as supported: which pairs exist is read from `checksums.txt`, so the platform statement in `internal/platform` stays the one copy.
@@ -102,7 +102,7 @@ The README's manual route names the architecture, so it downloads one archive.
 
 - `internal/e2e` runs `socrates skill` against the built binary under the harness's home, and asserts that every skill every namespace's `skill` installs, and the implementer's agent definition, are where those operations put them, with what their sources generate.
   It follows `TestEverySkillAnyNamespaceInstallsIsInvokedByAPersonOnly` in walking `convention.Tools` rather than a list, so a new tool's skill is checked without the test changing.
-- `internal/e2e` runs `install.sh` with `sh`, a real `curl`, a real `tar` and a real checksum tool, against a release served by `httptest` through `SOCRATES_RELEASE_URL`.
+- `internal/e2e` runs `install.sh` with `sh`, a real `curl`, a real `tar` and a real checksum tool, against a release served by `httptest` through `SOCRATES_RELEASES_URL`.
   The release holds an archive per pair: the one for the pair under test carries the built binary, every other carries a decoy that fails when run.
   A `uname` placed first on `PATH` states the pair, the way each vendor's simulator stands in for its CLI.
   The tests cover: `x86_64` Linux, `aarch64` Linux and `arm64` Darwin each installing the right archive and every skill; a pair with no archive refused by name with nothing installed; a mismatched checksum refused with nothing installed; a missing install directory created; a directory not on `PATH` reported; a second run replacing the first.

@@ -374,3 +374,37 @@ func TestAPublishingJobBehindTheScanIsNotReported(t *testing.T) {
 		t.Errorf("a publishing job that needs the scan was reported as unscanned: %v", scan.Unscanned)
 	}
 }
+
+func TestAReleaseCarriesTheInstallerAndListsItInTheChecksums(t *testing.T) {
+	root := source.Root(t)
+
+	attaching, err := convention.WhatAReleaseAttaches(root)
+	if err != nil {
+		t.Fatalf("reading what a release attaches: %v", err)
+	}
+	if !slices.Contains(attaching.Attached, convention.InstallerFile) {
+		t.Errorf("%s attaches %v, and not %s, so the one command a person installs with downloads nothing", convention.ReleaseConfigurationFile, attaching.Attached, convention.InstallerFile)
+	}
+	if !slices.Contains(attaching.Checksummed, convention.InstallerFile) {
+		t.Errorf("%s lists %v beside the archives in the checksums, and not %s, so the signature does not cover it", convention.ReleaseConfigurationFile, attaching.Checksummed, convention.InstallerFile)
+	}
+	if !convention.Carries(root, convention.InstallerFile) {
+		t.Errorf("the repository holds no %s for a release to attach", convention.InstallerFile)
+	}
+}
+
+func TestAReleaseThatAttachesNoInstallerIsRead(t *testing.T) {
+	root := t.TempDir()
+	writePackaged(t, filepath.Join(root, convention.ReleaseConfigurationFile), "checksum:\n  name_template: checksums.txt\nrelease:\n  extra_files:\n    - glob: ./other.sh\n")
+
+	attaching, err := convention.WhatAReleaseAttaches(root)
+	if err != nil {
+		t.Fatalf("reading a fabricated release: %v", err)
+	}
+	if diff := cmp.Diff([]string{"other.sh"}, attaching.Attached); diff != "" {
+		t.Errorf("what a fabricated release attaches was read otherwise (-want +got):\n%s", diff)
+	}
+	if len(attaching.Checksummed) != 0 {
+		t.Errorf("a release listing nothing extra in its checksums was read as listing %v", attaching.Checksummed)
+	}
+}
