@@ -106,7 +106,7 @@ Behind a reverse proxy, set the address people should open in `~/.socrates/agora
 
 ```yaml
 surface:
-  reached_at: http://socrates-review.localhost/
+  reached_at: http://socrates.localhost/
 ```
 
 ## Supported platforms
