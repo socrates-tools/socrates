@@ -26,8 +26,9 @@ An issue is only where somebody using socrates reports a bug or asks for somethi
 
 What the suite is:
 
+- The module root - one package, which embeds `LICENSE` and `NOTICE` for `socrates licences` and holds nothing else.
 - `cmd/socrates` - the binary: builds `internal/dispatcher`'s tree, runs it, and turns an error into an exit code.
-- `internal/dispatcher` - the root command: routes `review`, `agora`, `design` and `implement` to their own trees, owns the error-to-exit-code mapping and the one failure prefix, and holds the top-level `version` and the top-level `skill`, which runs every mounted tree's own `skill` without naming one, per ADR 61. It is not a tool, and nothing above the trees it mounts names a vendor, a namespace's own flag, or anything any tree does.
+- `internal/dispatcher` - the root command: routes `review`, `agora`, `design` and `implement` to their own trees, owns the error-to-exit-code mapping and the one failure prefix, and holds the top-level `version`, the top-level `licences`, which prints the `LICENSE` and `NOTICE` the root package embeds, per ADR 63, and the top-level `skill`, which runs every mounted tree's own `skill` without naming one, per ADR 61. It is not a tool, and nothing above the trees it mounts names a vendor, a namespace's own flag, or anything any tree does.
 - `review/`, `agora/`, `design/`, `implement/` - one directory per tool, each with its own `AGENTS.md`, `CONTEXT.md` and `docs/adr/`.
 
 What holds them all:

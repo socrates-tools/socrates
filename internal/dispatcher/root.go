@@ -38,6 +38,7 @@ func NewRootCommand(code *int) *cobra.Command {
 		designcommand.NewRootCommand(),
 		implementcommand.NewRootCommand(),
 		newSkillCommand(),
+		newLicencesCommand(),
 		newVersionCommand(),
 	)
 	return root

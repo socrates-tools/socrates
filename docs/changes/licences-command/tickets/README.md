@@ -16,4 +16,4 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 63](../../../adr/0063-the-binary
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1: socrates licences prints LICENSE and NOTICE](1-licences.md) | None | todo |
+| [1: socrates licences prints LICENSE and NOTICE](1-licences.md) | None | done |

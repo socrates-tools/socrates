@@ -6,10 +6,10 @@ What the spec describes: a root package embedding the two files, a top-level `li
 
 ## Acceptance criteria
 
-- [ ] `socrates licences` prints `LICENSE` then `NOTICE`, byte for byte as the repository holds them.
-- [ ] `socrates licenses` prints the same.
-- [ ] An argument is refused, naming it.
-- [ ] The README's Licence section names the command.
+- [x] `socrates licences` prints `LICENSE` then `NOTICE`, byte for byte as the repository holds them.
+- [x] `socrates licenses` prints the same.
+- [x] An argument is refused, naming it.
+- [x] The README's Licence section names the command.
 
 ## User stories
 

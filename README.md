@@ -369,6 +369,7 @@ socrates is not affiliated with, endorsed by or sponsored by any of these vendor
 
 MIT, stated in `LICENSE`.
 `NOTICE` lists everything a shipped binary contains that socrates did not write, with each licence in full.
+`socrates licences` prints both from the binary itself, so a copy installed with `go install` carries them too.
 
 ## Contributing
 
