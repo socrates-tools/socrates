@@ -16,4 +16,4 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 65](../../../adr/0065-a-release-
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1: The signature and the provenance are published under names verifiers recognise](1-names.md) | None | in progress |
+| [1: The signature and the provenance are published under names verifiers recognise](1-names.md) | None | done |

@@ -10,7 +10,7 @@ What the spec describes, across the release configuration, the release workflow,
 - [x] The release workflow attaches the attested provenance as `socrates.intoto.jsonl`, and the suite fails where nothing attaches one.
 - [x] The installer verifies the new name, and falls back to `checksums.txt.bundle` for an earlier release.
 - [x] The README, the release footer and the release skill name the new file.
-- [ ] The next release carries both, and Scorecard counts it signed.
+- [x] The next release carries both, and Scorecard counts it signed.
 
 ## User stories
 
