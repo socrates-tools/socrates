@@ -70,7 +70,7 @@ The README's manual route names the architecture, so it downloads one archive.
 **`internal/dispatcher`**
 
 - A `skill` command at the top level, beside `version`.
-  It finds the operation named `skill` in each namespace the root mounts, runs each in mount order with no flags set, and stops at the first that fails, returning that failure.
+  It finds the operation named `skill` in each namespace the root mounts, runs each with no flags set, and stops at the first that fails, returning that failure.
   It names no namespace, no flag and no skill: what each one prints is what that namespace's own `skill` prints.
 - Its short help and its refusal of arguments live in `messages.go`.
 

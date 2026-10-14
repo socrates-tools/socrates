@@ -7,7 +7,7 @@
 
 ## Decision
 
-`socrates skill` installs every skill the binary ships, by running each mounted namespace's own `skill` operation with that operation's defaults, in the order the namespaces are mounted.
+`socrates skill` installs every skill the binary ships, by running each mounted namespace's own `skill` operation with that operation's defaults.
 It takes no flags and no arguments.
 A person who wants a skill somewhere other than its default runs the namespace's own `skill` with `--to`, as before.
 

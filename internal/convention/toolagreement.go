@@ -9,7 +9,7 @@ import (
 
 const commandPackage = "command"
 
-var suiteNamespaces = []string{"version", "help"}
+var suiteNamespaces = []string{"version", "skill", "help"}
 
 func MountedWithoutATool(mounted []string, tools []Tool) []string {
 	var unlisted []string

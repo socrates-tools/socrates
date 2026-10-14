@@ -19,9 +19,7 @@ build:
 
 install:
 	go install -ldflags '$(STAMP)' ./cmd/socrates
-	$(INSTALL_DIR)/socrates review skill
-	$(INSTALL_DIR)/socrates design skill
-	$(INSTALL_DIR)/socrates implement skill
+	$(INSTALL_DIR)/socrates skill
 
 release:
 	go run $(RELEASER) release --clean

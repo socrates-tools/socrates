@@ -37,6 +37,7 @@ func NewRootCommand(code *int) *cobra.Command {
 		agoracommand.NewRootCommand(code),
 		designcommand.NewRootCommand(),
 		implementcommand.NewRootCommand(),
+		newSkillCommand(),
 		newVersionCommand(),
 	)
 	return root

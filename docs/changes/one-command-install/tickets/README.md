@@ -17,6 +17,6 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 61](../../../adr/0061-the-top-le
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1: socrates skill installs every namespace's skills](1-top-level-skill.md) | None | todo |
+| [1: socrates skill installs every namespace's skills](1-top-level-skill.md) | None | done |
 | [2: The release carries an installer that picks the right archive](2-install-script.md) | 1 | todo |
 | [3: The README installs in one line, and its manual route downloads one archive](3-readme.md) | 2 | todo |

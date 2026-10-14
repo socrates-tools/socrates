@@ -62,7 +62,7 @@ func TestAMountedNamespaceMissingFromTheListIsReported(t *testing.T) {
 }
 
 func TestTheSuitesOwnNamespacesNeedNoTool(t *testing.T) {
-	got := convention.MountedWithoutATool([]string{"version", "help"}, nil)
+	got := convention.MountedWithoutATool([]string{"version", "skill", "help"}, nil)
 
 	if len(got) != 0 {
 		t.Errorf("the suite's own namespaces are reported as unlisted: %v", got)
