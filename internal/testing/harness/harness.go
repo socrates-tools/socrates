@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -18,6 +19,7 @@ import (
 	"github.com/socrates-tools/socrates/internal/testing/simulator"
 	"github.com/socrates-tools/socrates/internal/testing/source"
 	"github.com/socrates-tools/socrates/review/agent"
+	"github.com/socrates-tools/socrates/review/reviewer"
 	"github.com/socrates-tools/socrates/review/runlog"
 	"github.com/socrates-tools/socrates/review/runstate"
 	"github.com/socrates-tools/socrates/review/runstore"
@@ -294,6 +296,20 @@ func (s *Session) WaitForTerminal(name string) *runstore.Run {
 	run := s.Run(name)
 	s.t.Fatalf("the run %s is still %s after %s", name, run.State, terminalWait)
 	return run
+}
+
+func (s *Session) WaitForTheLogToRecordTheEnd(name string) {
+	s.t.Helper()
+
+	deadline := time.Now().Add(terminalWait)
+	for time.Now().Before(deadline) {
+		events, err := runlog.Read(filepath.Join(s.Store.Path(name), runlog.FileName))
+		if err == nil && slices.ContainsFunc(events, func(event runlog.Event) bool { return event.Kind == reviewer.EventRunEnded }) {
+			return
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	s.t.Fatalf("the event log of %s holds no %s event after %s", name, reviewer.EventRunEnded, terminalWait)
 }
 
 func (s *Session) WaitFor(name string, state runstate.State) *runstore.Run {

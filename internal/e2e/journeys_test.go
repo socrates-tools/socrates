@@ -41,6 +41,9 @@ func TestTheCleanJourney(t *testing.T) {
 	if after := session.Repository.Status(); after != before {
 		t.Errorf("the repository changed:\nbefore:\n%s\nafter:\n%s", before, after)
 	}
+	if run.Worktree != "" {
+		session.WaitForTheWorktreeToBeRemoved(name)
+	}
 	if _, err := os.Stat(run.Worktree); run.Worktree != "" && !os.IsNotExist(err) {
 		t.Errorf("the worktree at %s was not cleaned up", run.Worktree)
 	}

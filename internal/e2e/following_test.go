@@ -197,6 +197,7 @@ func TestReadingAFinishedRun(t *testing.T) {
 
 	name := session.Begin()
 	session.WaitForTerminal(name)
+	session.WaitForTheLogToRecordTheEnd(name)
 
 	printed, failures, code := session.Socrates("logs", name)
 	if code != 1 {

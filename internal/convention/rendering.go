@@ -14,9 +14,10 @@ import (
 const eventConstantPrefix = "Event"
 
 var EventKindsNamed = map[string]string{
-	filepath.Join("review", "presentation", "messages.go"): "the one place an event kind becomes a line a person reads",
-	filepath.Join("review", "follow", "follow.go"):         "the rotation record, which tells a follower what the log kept when it was truncated",
-	filepath.Join("review", "corpus", "runs", "runs.go"):   "which model answered a round, taken out of the log as data rather than rendered",
+	filepath.Join("review", "presentation", "messages.go"):        "the one place an event kind becomes a line a person reads",
+	filepath.Join("review", "follow", "follow.go"):                "the rotation record, which tells a follower what the log kept when it was truncated",
+	filepath.Join("review", "corpus", "runs", "runs.go"):          "which model answered a round, taken out of the log as data rather than rendered",
+	filepath.Join("internal", "testing", "harness", "harness.go"): "waiting for the event that ends a run's log before a test reads it, matched as data rather than rendered",
 }
 
 type Naming struct {

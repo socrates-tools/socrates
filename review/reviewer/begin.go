@@ -183,13 +183,11 @@ func conclude(store runstore.Store, run *runstore.Run, state runstate.State, rea
 	if err := run.End(state, reason); err != nil {
 		return err
 	}
+	lifted := liftTheSeal(run)
 	if err := store.Save(run); err != nil {
-		return err
+		return errors.Join(lifted, err)
 	}
-	if err := liftTheSeal(run); err != nil {
-		return err
-	}
-	return recordEnd(store, run)
+	return errors.Join(lifted, recordEnd(store, run))
 }
 
 func recordEnd(store runstore.Store, run *runstore.Run) error {

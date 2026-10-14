@@ -107,6 +107,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
   `configure` offers to reset the block, and nothing moves it into agora's file or rewrites the file unasked.
 - `findings --json` reports each finding's recorded resolution and whether its location is inside the change, and `review/hunks` is the one place that question is answered.
 - A follower stops on the run's record or on the log, waits bounded for a log that does not exist yet, and stops on a parked round.
+- A run's record is saved only once its teardown is done, so a record that has ended or parked names a worktree already unsealed or removed, and the event that ends the log is written after the record rather than before it.
 - `status`, `watch` and `logs` stay three commands.
 
 **The skill**

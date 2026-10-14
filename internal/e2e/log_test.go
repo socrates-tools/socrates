@@ -78,6 +78,7 @@ func TestEventsAreOneJSONObjectPerLineThroughARun(t *testing.T) {
 	if run.State != runstate.Escalated {
 		t.Fatalf("the run ended as %s: %s", run.State, reason(run))
 	}
+	session.WaitForTheLogToRecordTheEnd(name)
 
 	content := session.File(filepath.Join(session.Store.Path(name), runlog.FileName))
 	for line := range strings.SplitSeq(strings.TrimSpace(content), "\n") {

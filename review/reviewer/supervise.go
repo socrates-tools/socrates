@@ -153,18 +153,12 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		if len(answer.Structured) > 0 {
 			reason += fmt.Sprintf(whatItReturnedIsKept, round.FindingsPath())
 		}
-		if err := supervision.end(run, runstate.Failed, reason); err != nil {
-			return err
-		}
-		return removeWorktree(ctx, worktree)
+		return supervision.endRemoving(ctx, run, runstate.Failed, reason, worktree)
 	}
 
 	document, err := findings.Parse(answer.Structured)
 	if err != nil {
-		if endErr := supervision.end(run, runstate.Failed, fmt.Sprintf(schemaNotSatisfied, err, round.FindingsPath())); endErr != nil {
-			return endErr
-		}
-		return removeWorktree(ctx, worktree)
+		return supervision.endRemoving(ctx, run, runstate.Failed, fmt.Sprintf(schemaNotSatisfied, err, round.FindingsPath()), worktree)
 	}
 
 	classified := dialogue.Classified(document, run.Authorship())
@@ -175,10 +169,7 @@ func Supervise(ctx context.Context, supervision Supervision) error {
 		return errors.Join(removed, supervision.park(run, round.Number, classified, removed))
 	}
 
-	if err := supervision.end(run, outcome, verdictReason(document, classified, round.Number)); err != nil {
-		return err
-	}
-	return removeWorktree(ctx, worktree)
+	return supervision.endRemoving(ctx, run, outcome, verdictReason(document, classified, round.Number), worktree)
 }
 
 func (s Supervision) park(run *runstore.Run, round int, classified findings.Classification, teardown error) error {
@@ -187,11 +178,10 @@ func (s Supervision) park(run *runstore.Run, round int, classified findings.Clas
 	if err := run.Advance(runstate.AwaitingResponse); err != nil {
 		return err
 	}
-	if err := s.Store.Save(run); err != nil {
-		return err
-	}
-
 	lifted := liftTheSeal(run)
+	if err := s.Store.Save(run); err != nil {
+		return errors.Join(lifted, err)
+	}
 	if s.Recorder == nil {
 		return lifted
 	}
@@ -245,18 +235,25 @@ func priorRounds(store runstore.Store, name string, current int) ([]prompt.Prior
 }
 
 func (s Supervision) end(run *runstore.Run, outcome runstate.State, reason string) error {
+	return s.finish(run, outcome, reason, func() error { return nil })
+}
+
+func (s Supervision) endRemoving(ctx context.Context, run *runstore.Run, outcome runstate.State, reason string, worktree snapshot.Worktree) error {
+	return s.finish(run, outcome, reason, func() error { return removeWorktree(ctx, worktree) })
+}
+
+func (s Supervision) finish(run *runstore.Run, outcome runstate.State, reason string, removal func() error) error {
 	if err := run.End(outcome, reason); err != nil {
 		return err
 	}
+	torndown := errors.Join(liftTheSeal(run), removal())
 	if err := s.Store.Save(run); err != nil {
-		return err
+		return errors.Join(torndown, err)
 	}
-
-	lifted := liftTheSeal(run)
 	if s.Recorder == nil {
-		return lifted
+		return torndown
 	}
-	return errors.Join(lifted, s.Recorder.Record(runlog.Event{
+	return errors.Join(torndown, s.Recorder.Record(runlog.Event{
 		Kind:    EventRunEnded,
 		Subject: run.Name,
 		Fields:  map[string]any{"state": string(outcome), "reason": reason},
