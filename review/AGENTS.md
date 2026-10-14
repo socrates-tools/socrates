@@ -57,7 +57,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - Nothing fetches and nothing rebases: no ref is written, no commit is rewritten, and the reflog is untouched by resolving a base.
 - A write in the snapshot worktree is refused by the filesystem, and the worktree is compared against its commit after the round.
 - One file is read out of it, `.socrates/review-guide.md`, at the run's base commit and never from the working tree or the snapshot, so a guide the change writes governs the next run rather than this one.
-- That guide is bounded, neutralised on the way into the prompt, and additive: it withdraws no rule review delivers, and nothing review decides is derived from a word of it.
+- That guide is bounded, neutralised on the way into the prompt, and additive: it withdraws no rule review delivers, and nothing review decides is derived from a word of it, per ADR 62.
 
 **The reviewer**
 
