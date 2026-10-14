@@ -161,10 +161,11 @@ func aSurfaceOfAnotherBuildThatNeverLetsGo(t *testing.T, held *surfaced) {
 			http.NotFound(writer, request)
 		}
 	}))
-	listener, err := net.Listen("tcp", held.bind)
+	listener, err := net.Listen("tcp", aPortTheOperatingSystemChooses)
 	if err != nil {
-		t.Fatalf("standing in for a surface at %s: %v", held.bind, err)
+		t.Fatalf("standing in for a surface on a port the operating system chooses: %v", err)
 	}
+	held.bind = listener.Addr().String()
 	standing.Listener = listener
 	standing.Start()
 	t.Cleanup(standing.Close)
@@ -184,7 +185,6 @@ func aSurfaceOfAnotherBuildThatNeverLetsGo(t *testing.T, held *surfaced) {
 func TestASurfaceOfAnotherBuildThatDoesNotLetGoOfThePortIsRefusedAsAPortHeldBySomethingElse(t *testing.T) {
 	t.Parallel()
 	held := standing(t)
-	held.bindsAPortNothingElseWillTake()
 	aSurfaceOfAnotherBuildThatNeverLetsGo(t, held)
 
 	started := time.Now()
