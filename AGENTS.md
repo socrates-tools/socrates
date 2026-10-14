@@ -159,6 +159,9 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`, or in th
 - **One sentence per line in Markdown.**
 - **No em dashes anywhere.**
 - **Commit messages say what the change is**, with no rationale essay and no AI attribution trailer.
+- **The maintainer's commits carry the GitHub noreply address.**
+  Author and committer are `Rui Cheng <2195250+ktei@users.noreply.github.com>`, for the maintainer and for any agent committing on their behalf.
+  Run `git config user.email` before the first commit of a session, set the address in the repository if it differs, and never commit under an employer's or any other real address.
 - **Tests name their scenario.** Prefer a test name containing the scenario text; use a `// scenario:` marker where the honest name would not.
 - **Test first.** A task is not done until a test named for the scenario failed for the right reason and then passed.
 - **A task about a live run says record it, never return this.**
