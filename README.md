@@ -102,7 +102,6 @@ From a devcontainer or over ssh, forward that port:
 - a devcontainer: `{ "forwardPorts": [24672] }` in `devcontainer.json`
 - ssh: `ssh -L 24672:127.0.0.1:24672 <host>`
 
-Publishing the port in a compose file does not work, because it forwards to the container's network interface, not to loopback.
 Behind a reverse proxy, set the address people should open in `~/.socrates/agora/config.yaml`:
 
 ```yaml
@@ -130,11 +129,7 @@ socrates is not affiliated with, endorsed by or sponsored by Anthropic or OpenAI
 ## Out of scope
 
 - **It does not push, open pull requests or run CI.**
-- **It does not approve anything.** A clean review means the reviewer found nothing blocking, not that the build is green.
-- **The reviewer cannot write.**
-  Its snapshot is made unwritable and the round fails if a byte changes, so a review is refused where that cannot be enforced, such as when running as root.
-- **A hook your administrator's policy configures stays on** in the reviewer's session.
-  It runs inside the sealed snapshot, but nothing stops it reaching outside it.
+- **A hook your administrator's policy configures stays on in the reviewer's session**, and nothing stops it reaching outside the snapshot.
 
 `SECURITY.md` says what socrates review defends against and how to report a problem.
 
