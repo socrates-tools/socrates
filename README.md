@@ -33,10 +33,9 @@ The same binary holds three more tools:
 curl -fsSL https://github.com/socrates-tools/socrates/releases/latest/download/install.sh | sh
 ```
 
-That downloads the archive for your operating system and architecture from the latest release, checks it against the release's checksums, puts `socrates` in `~/.local/bin`, and installs every skill.
-Where `cosign` is on your `PATH`, it also verifies the release's signature before trusting the checksums.
-It refuses, and installs nothing, where a check fails or the release carries no archive for your machine.
-It says so where `~/.local/bin` is not on your `PATH`, and how to add it.
+That puts `socrates` in `~/.local/bin` and installs every skill and agent definition under `~/.claude/`.
+It checks the archive against the release's checksums, and the checksums against the release's signature where `cosign` is on your `PATH`, and installs nothing if a check fails.
+Running it again upgrades everything.
 
 `SOCRATES_INSTALL_DIR` puts the binary somewhere else, and `SOCRATES_VERSION` installs another release than the latest:
 
@@ -44,56 +43,9 @@ It says so where `~/.local/bin` is not on your `PATH`, and how to add it.
 curl -fsSL https://github.com/socrates-tools/socrates/releases/latest/download/install.sh | SOCRATES_INSTALL_DIR=/usr/local/bin SOCRATES_VERSION=v0.2.0 sh
 ```
 
-Running it again upgrades the binary and the skills.
+From a clone, `make install` does the same from source.
 
-### By hand
-
-```sh
-os=$(uname -s | tr '[:upper:]' '[:lower:]')
-arch=$(uname -m | sed 's/x86_64/amd64/; s/aarch64/arm64/')
-base=https://github.com/socrates-tools/socrates/releases/latest/download
-curl -fsSLO "$base/checksums.txt"
-archive=$(grep -o "socrates_[^ ]*_${os}_${arch}\.tar\.gz$" checksums.txt)
-curl -fsSLO "$base/$archive"
-sha256sum --check --ignore-missing checksums.txt
-mkdir -p ~/.local/bin && tar -xzf "$archive" -C ~/.local/bin socrates
-~/.local/bin/socrates skill
-```
-
-On a Mac without `sha256sum`, check with `shasum -a 256 --check --ignore-missing checksums.txt` instead.
-
-To check the release was built by this repository, verify the signature and the build provenance:
-
-```sh
-curl -fsSLO "$base/checksums.txt.sigstore.json"
-cosign verify-blob checksums.txt \
-  --bundle checksums.txt.sigstore.json \
-  --certificate-identity-regexp 'https://github.com/socrates-tools/socrates/.*' \
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com
-gh attestation verify "$archive" --repo socrates-tools/socrates
-```
-
-The release also carries the same provenance as `socrates.intoto.jsonl`, for a verifier that reads it from the release rather than from GitHub.
-Releases before v0.4.0 publish the signature as `checksums.txt.bundle` and carry no `socrates.intoto.jsonl`.
-
-### From source
-
-`make install` puts `socrates` on your `PATH` and installs every skill.
-`go install github.com/socrates-tools/socrates/cmd/socrates@latest` also works, but that binary does not know its own version, and you run `socrates skill` yourself afterwards.
-
-`socrates version` says which release and commit you have.
-`CHANGELOG.md` says what changed in each release.
-
-### The skills
-
-`socrates skill` installs every skill your coding session reads, which is what the installer and `make install` run:
-
-- `socrates-review` and `socrates-review-handover`, from `socrates review skill`.
-- `socrates-design` and `socrates-tickets`, from `socrates design skill`.
-- `socrates-implement`, and the `socrates-implementer` agent, from `socrates implement skill`.
-
-They write under `~/.claude/skills/`, and the implementer's agent definition under `~/.claude/agents/`.
-To put one tool's skills somewhere else, run its own command with `--to`, and the implementer's agent definition with `--agents-to`.
+`socrates version` says which release and commit you have, and `CHANGELOG.md` says what changed in each release.
 
 ## Reviewing a change
 
@@ -374,7 +326,7 @@ socrates is not affiliated with, endorsed by or sponsored by any of these vendor
 
 MIT, stated in `LICENSE`.
 `NOTICE` lists everything a shipped binary contains that socrates did not write, with each licence in full.
-`socrates licences` prints both from the binary itself, so a copy installed with `go install` carries them too.
+`socrates licences` prints both from the binary itself.
 
 ## Contributing
 
