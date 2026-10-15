@@ -430,6 +430,10 @@ func (s *Session) killWhatIsStillRunning() int {
 		if err != nil {
 			continue
 		}
+		if run.State == runstate.Starting && run.Reviewer == 0 {
+			alive++
+			continue
+		}
 		if process.Alive(run.Agent) {
 			alive++
 			_ = process.KillGroup(run.Agent)
