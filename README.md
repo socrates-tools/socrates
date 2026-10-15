@@ -35,7 +35,8 @@ Each step works on its own, so you can review any change without a spec.
 curl -fsSL https://github.com/socrates-tools/socrates/releases/latest/download/install.sh | sh
 ```
 
-That puts `socrates` in `~/.local/bin` and installs every skill and agent definition under `~/.claude/`.
+That puts `socrates` in `~/.local/bin` and installs every skill and agent definition under `$CLAUDE_CONFIG_DIR`, or `~/.claude/` where it is unset.
+Codex as a host is being built and is on the roadmap, not yet supported, though an install already writes Codex's copies under `~/.agents/skills` and the Codex agents directory.
 It checks the archive against the release's checksums, and the checksums against the release's signature where `cosign` is on your `PATH`, and installs nothing if a check fails.
 Running it again upgrades everything.
 
