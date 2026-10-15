@@ -13,4 +13,5 @@ Use these words rather than synonyms, in a spec, an issue title, a test name or 
 - **spec**: what a design leaves behind, holding the problem, the solution, the user stories and the decisions. Committed to the change's own folder, and published nowhere else.
 - **setting**: one thing a person can configure, named by its YAML key, carrying the value in force, whether that value is theirs or a default, and the default it falls back to. What a tool's `config` reports and what its `configure` offers are the same set.
 - **use the default**: removing a setting's line, rather than writing today's default into the file, so that the file holds only what a person decided.
+- **host**: the coding agent a person starts a socrates skill in, Claude Code or Codex. Every skill is rendered once per host, and an install writes for every host the suite supports. Not the reviewer CLI, which review spawns as a process of its own: the host's vendor is only its default where `reviewer_cli` is unset.
 - **scenario**: the behaviour a test is named for. A task is not done until a test named for the scenario failed for the right reason and then passed.
