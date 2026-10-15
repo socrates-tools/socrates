@@ -2,7 +2,6 @@ package skill
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/socrates-tools/socrates/internal/skill"
 )
@@ -15,5 +14,5 @@ func TicketsDocument(host skill.Host) string {
 }
 
 func ticketsInstallingElsewhere(host skill.Host) string {
-	return fmt.Sprintf(ticketsInstallingElsewhereTemplate, filepath.ToSlash(host.SkillsDirectory), host.Flag)
+	return fmt.Sprintf(ticketsInstallingElsewhereTemplate, host.SkillsLocation(), host.Flag)
 }

@@ -218,7 +218,7 @@ Name each one and what it was asking, so whoever picks the spec up next can see 
 
 	installingElsewhereTemplate = installingHeading + `
 
-This document installs under |~/%s| by default.
+This document installs under %s.
 Write it somewhere else instead with |socrates design skill --host %s --to <directory>|.`
 )
 
@@ -399,6 +399,6 @@ Say what was written and where, and say that the folder must be committed before
 
 	ticketsInstallingElsewhereTemplate = installingHeading + `
 
-This document installs under |~/%s| beside |socrates-design|.
+This document installs beside |socrates-design|, under %s.
 Write both somewhere else instead with |socrates design skill --host %s --to <directory>|.`
 )

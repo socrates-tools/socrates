@@ -41,6 +41,9 @@ func (i Installed) Announcement() string {
 }
 
 func UserDirectory(host Host, invocation string) (string, error) {
+	if stated := host.ConfigurationStated(); host.SkillsUnderConfiguration && stated != "" {
+		return filepath.Join(stated, filepath.Base(host.SkillsDirectory)), nil
+	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", refusal.Wrapping(err, noHomeDirectory, err, invocation)

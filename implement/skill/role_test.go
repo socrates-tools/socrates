@@ -228,3 +228,19 @@ func TestCodexsAgentsDirectoryFollowsCodexHomeAndFallsBackToTheHomeDirectory(t *
 		t.Errorf("with CODEX_HOME set the directory is %s (error %v), want %s", got, err, filepath.Join(stated, "agents"))
 	}
 }
+
+func TestClaudeCodesAgentsDirectoryFollowsClaudeConfigDirAndFallsBackToTheHomeDirectory(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	t.Setenv("CLAUDE_CONFIG_DIR", "")
+	if got, err := skill.AgentsDirectory(skillkit.ClaudeCode); err != nil || got != filepath.Join(home, ".claude", "agents") {
+		t.Errorf("with CLAUDE_CONFIG_DIR unset the directory is %s (error %v), want it under ~/.claude", got, err)
+	}
+
+	stated := t.TempDir()
+	t.Setenv("CLAUDE_CONFIG_DIR", stated)
+	if got, err := skill.AgentsDirectory(skillkit.ClaudeCode); err != nil || got != filepath.Join(stated, "agents") {
+		t.Errorf("with CLAUDE_CONFIG_DIR set the directory is %s (error %v), want %s", got, err, filepath.Join(stated, "agents"))
+	}
+}

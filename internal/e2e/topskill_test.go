@@ -205,6 +205,47 @@ func TestOneCommandWritesTheCodexRoleUnderCodexHomeWhereItIsSetAndUnderTheHomeWh
 	}
 }
 
+func TestOneCommandWritesClaudeCodesRenderingsUnderClaudeConfigDirWhereItIsSetAndNothingUnderTheHome(t *testing.T) {
+	t.Parallel()
+	session := harness.Start(t)
+	stated := filepath.Join(t.TempDir(), "not", "yet", "there")
+
+	printed, failures, code := session.TopWith([]string{"CLAUDE_CONFIG_DIR=" + stated}, "skill")
+	if code != 0 {
+		t.Fatalf("socrates skill with CLAUDE_CONFIG_DIR exited %d: %s\n%s", code, failures, printed)
+	}
+
+	for _, one := range allSkills() {
+		if one.Host != skillkit.ClaudeCode {
+			continue
+		}
+		path := filepath.Join(stated, "skills", one.Name, skillkit.FileName)
+		if written := session.File(path); written != one.Rendered() {
+			t.Errorf("with CLAUDE_CONFIG_DIR set %s is not what the package renders for Claude Code", path)
+		}
+		if !strings.Contains(printed, path) {
+			t.Errorf("socrates skill does not say it wrote %s:\n%s", path, printed)
+		}
+	}
+
+	agent := filepath.Join(stated, "agents", implementskill.AgentFileName())
+	if written := session.File(agent); written != implementskill.DefaultDefinition() {
+		t.Errorf("with CLAUDE_CONFIG_DIR set %s is not what the package renders", agent)
+	}
+	if !strings.Contains(printed, agent) {
+		t.Errorf("socrates skill does not say it wrote %s:\n%s", agent, printed)
+	}
+
+	if left := writtenIn(t, filepath.Join(session.UserHome, filepath.Dir(skillkit.ClaudeCode.SkillsDirectory))); len(left) != 0 {
+		t.Errorf("with CLAUDE_CONFIG_DIR set socrates skill still wrote under ~/.claude: %v", slices.Sorted(maps.Keys(left)))
+	}
+
+	record := session.File(filepath.Join(session.Root, "implement", implementskill.RecordFile))
+	if !strings.Contains(record, filepath.Join(stated, "agents")) {
+		t.Errorf("the record does not name the Claude Code agents directory under CLAUDE_CONFIG_DIR:\n%s", record)
+	}
+}
+
 func TestOneCommandRefusesAnArgument(t *testing.T) {
 	t.Parallel()
 	session := harness.Start(t)

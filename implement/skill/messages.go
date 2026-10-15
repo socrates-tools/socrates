@@ -12,9 +12,6 @@ const description = "Land a change's tickets through implementers while you stay
 const (
 	namesNoAgentsDirectory = "it names no agents directory"
 
-	codeSpan             = "|%s|"
-	agentsUnderAVariable = "|$%s/%s|, or |%s| where it is unset"
-
 	purpose = `# socrates implement
 
 You are the overseer.
@@ -170,7 +167,7 @@ Push nothing, open no pull request and post nothing: publishing the change is th
 
 	installingElsewhereTemplate = `## Installing elsewhere
 
-This skill installs under |~/%s| and the %s under %s.
+This skill installs under %s, and the %s under %s.
 Write them elsewhere with |socrates implement skill --host %s --to <directory> --agents-to <directory>|.`
 
 	agentDescription = "Builds one ticket of a change in a worktree of its own, reports what it did and what it did not, and patches its own work when feedback arrives."

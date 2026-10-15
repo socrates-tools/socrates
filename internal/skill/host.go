@@ -24,12 +24,13 @@ type Host struct {
 	SkillsDirectory string
 	AgentsDirectory string
 
-	ConfigurationVariable string
-	PersonOnlyField       string
-	PolicyFile            string
-	Escalation            string
-	Delegation            string
-	NoSkill               string
+	ConfigurationVariable    string
+	SkillsUnderConfiguration bool
+	PersonOnlyField          string
+	PolicyFile               string
+	Escalation               string
+	Delegation               string
+	NoSkill                  string
 }
 
 var ClaudeCode = Host{
@@ -39,6 +40,9 @@ var ClaudeCode = Host{
 	SkillsDirectory: filepath.Join(".claude", "skills"),
 	AgentsDirectory: filepath.Join(".claude", "agents"),
 	PersonOnlyField: "disable-model-invocation: true",
+
+	ConfigurationVariable:    "CLAUDE_CONFIG_DIR",
+	SkillsUnderConfiguration: true,
 }
 
 var Codex = Host{
@@ -87,6 +91,31 @@ func (h Host) Guidance(page string, delegates bool) string {
 
 func (h Host) Starts(name string) string {
 	return h.Starter + name
+}
+
+func (h Host) ConfigurationStated() string {
+	if h.ConfigurationVariable == "" {
+		return ""
+	}
+	return os.Getenv(h.ConfigurationVariable)
+}
+
+func (h Host) SkillsLocation() string {
+	if h.SkillsUnderConfiguration {
+		return h.location(h.SkillsDirectory)
+	}
+	return fmt.Sprintf(locationUnderTheHome, filepath.ToSlash(h.SkillsDirectory))
+}
+
+func (h Host) AgentsLocation() string {
+	if h.ConfigurationVariable == "" {
+		return fmt.Sprintf(locationUnderTheHome, filepath.ToSlash(h.AgentsDirectory))
+	}
+	return h.location(h.AgentsDirectory)
+}
+
+func (h Host) location(underTheHome string) string {
+	return fmt.Sprintf(locationUnderAVariable, h.ConfigurationVariable, filepath.Base(underTheHome), filepath.ToSlash(underTheHome))
 }
 
 func (h Host) SkillsDirectoryUnder(home string) string {

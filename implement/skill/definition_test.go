@@ -200,6 +200,7 @@ func TestReinstallingWritesTheDefinitionAgainWhereTheRecordSays(t *testing.T) {
 func TestTheDefaultDirectoryIsUnderTheHome(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
+	t.Setenv("CLAUDE_CONFIG_DIR", "")
 
 	directory, err := skill.AgentsDirectory(skillkit.ClaudeCode)
 	if err != nil {
