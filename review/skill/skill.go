@@ -29,7 +29,7 @@ func Binaries() []string {
 }
 
 func Document(host skill.Host) string {
-	return assembled(skill.FrontMatter(host, Name, description), purpose, host.Guidance(reviewPage, true), rules(), thePage(theAnswerAPageCarries), theLoop, prohibitions)
+	return assembled(skill.FrontMatter(host, Name, description), purpose, host.Guidance(reviewPage, true), rules(), thePage(theAnswerAPageCarries), fmt.Sprintf(theLoop, host.Flag), prohibitions)
 }
 
 func thePage(answer string) string {

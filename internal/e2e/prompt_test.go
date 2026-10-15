@@ -258,7 +258,7 @@ func TestTheAuthorsRationaleHasNoChannel(t *testing.T) {
 	}
 
 	taking := flagsTakingAValue(documented)
-	if diff := cmp.Diff([]string{"--base", "--intent"}, taking); diff != "" {
+	if diff := cmp.Diff([]string{"--base", "--host", "--intent"}, taking); diff != "" {
 		t.Errorf("the values a caller may supply differ (-want +got):\n%s\n%s", diff, documented)
 	}
 

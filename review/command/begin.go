@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/socrates-tools/socrates/internal/refusal"
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/socrates-tools/socrates/review/config"
 	"github.com/socrates-tools/socrates/review/report"
@@ -23,6 +24,7 @@ func newBeginCommand(code *int) *cobra.Command {
 	var base string
 	var notMyChange bool
 	var wait bool
+	var host string
 
 	command := &cobra.Command{
 		Use:   "begin",
@@ -61,7 +63,8 @@ func newBeginCommand(code *int) *cobra.Command {
 				StartedAt:       time.Now(),
 				Retention:       settings.RunRetention,
 				GuidanceCeiling: int64(settings.GuidanceCeiling),
-				ReviewerCLI:     settings.Vendor(),
+				ReviewerCLI:     settings.ReviewerCLI,
+				Host:            host,
 			})
 			if err != nil {
 				return err
@@ -90,6 +93,7 @@ func newBeginCommand(code *int) *cobra.Command {
 	command.Flags().StringVar(&intent, "intent", "", intentUsage)
 	command.Flags().StringVar(&base, "base", "", baseUsage)
 	command.Flags().BoolVar(&notMyChange, "not-my-change", false, notMyChangeUsage)
+	command.Flags().StringVar(&host, skillkit.HostFlag, "", hostUsage)
 	command.Flags().BoolVar(&wait, "wait", false, waitUsage)
 	return command
 }

@@ -7,11 +7,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/socrates-tools/socrates/internal/platform"
 	"github.com/socrates-tools/socrates/internal/process"
 	"github.com/socrates-tools/socrates/internal/refusal"
+	"github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/review/agent"
 	"github.com/socrates-tools/socrates/review/guidance"
 	"github.com/socrates-tools/socrates/review/runlog"
@@ -49,6 +51,7 @@ type Beginning struct {
 	Retention       time.Duration
 	GuidanceCeiling int64
 	ReviewerCLI     string
+	Host            string
 }
 
 func ReviewerCLIIsSupported(named string) error {
@@ -65,6 +68,36 @@ func ReviewerCLIIsSupported(named string) error {
 	return nil
 }
 
+func ResolveReviewerCLI(stated, host string) (string, error) {
+	followed := agent.DefaultVendor
+	if host != "" {
+		named, known := skill.HostFlagged(host)
+		if !known {
+			return "", refusal.New(noSuchHost, host, hostFlags())
+		}
+		vendor, mapped := agent.ForHost(named)
+		if !mapped {
+			return "", refusal.New(noSuchHost, host, hostFlags())
+		}
+		followed = vendor.Name
+	}
+	if stated == "" {
+		stated = followed
+	}
+	if err := ReviewerCLIIsSupported(stated); err != nil {
+		return "", err
+	}
+	return stated, nil
+}
+
+func hostFlags() string {
+	var flags []string
+	for _, host := range skill.Hosts() {
+		flags = append(flags, host.Flag)
+	}
+	return strings.Join(flags, " or ")
+}
+
 func OuterRun() string {
 	return os.Getenv(RunMarker)
 }
@@ -73,7 +106,8 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 	if !platform.ReviewIsSupported() {
 		return nil, refusal.New(nothingHereReapsAGroup, platform.TheOneRunning(), platform.Stated())
 	}
-	if err := ReviewerCLIIsSupported(beginning.ReviewerCLI); err != nil {
+	reviewerCLI, err := ResolveReviewerCLI(beginning.ReviewerCLI, beginning.Host)
+	if err != nil {
 		return nil, err
 	}
 	if outer := OuterRun(); outer != "" {
@@ -107,6 +141,7 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 		NotMyChange:     beginning.NotMyChange,
 		ReviewGuide:     reached,
 		GuidanceCeiling: guide.Ceiling,
+		ReviewerCLI:     reviewerCLI,
 	})
 	if err != nil {
 		return nil, err

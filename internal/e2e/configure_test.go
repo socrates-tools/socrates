@@ -135,6 +135,7 @@ func TestChoosingAReviewerCLIWritesAFileHoldingOnlyThatSetting(t *testing.T) {
 func TestTheListOffersOnlyTheReviewerCLIsSocratesReviewDrives(t *testing.T) {
 	t.Parallel()
 	session := harness.Start(t)
+	stateConfiguration(t, session, "reviewer_cli: claude\n")
 
 	menu := session.SocratesInATerminal("configure")
 	menu.Await(everySettingReported[0])
@@ -154,6 +155,9 @@ func TestTheListOffersOnlyTheReviewerCLIsSocratesReviewDrives(t *testing.T) {
 	}
 	if !strings.Contains(drawn, "in force") {
 		t.Errorf("nothing in the list is marked as the one in force:\n%s", drawn)
+	}
+	if !strings.Contains(drawn, "use the default (follows the host a review begins from)") {
+		t.Errorf("the default is not described as following the host:\n%s", drawn)
 	}
 
 	menu.Type(harness.Escape)

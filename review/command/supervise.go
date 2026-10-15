@@ -33,9 +33,13 @@ func newSuperviseCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			vendor, known := agent.Named(settings.Vendor())
+			run, err := store.Load(name)
+			if err != nil {
+				return errors.Join(err, events.Close())
+			}
+			vendor, known := agent.Named(run.Vendor())
 			if !known {
-				return reviewer.ReviewerCLIIsSupported(settings.Vendor())
+				return errors.Join(reviewer.ReviewerCLIIsSupported(run.Vendor()), events.Close())
 			}
 
 			supervised := reviewer.Supervise(command.Context(), reviewer.Supervision{
@@ -46,7 +50,7 @@ func newSuperviseCommand() *cobra.Command {
 				Recorder: events,
 				Vendor:   vendor,
 				NewAgent: func(recorder runlog.Recorder) (agent.Agent, error) {
-					return agent.New(settings.Vendor(), agent.Options{
+					return agent.New(vendor.Name, agent.Options{
 						Recorder: recorder,
 						Routing:  settings.Roles,
 						Deadline: settings.AgentDeadline,

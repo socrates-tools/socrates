@@ -208,3 +208,21 @@ func TestARunFromBeforeTheFieldIsReadAsTheOriginalCLI(t *testing.T) {
 		t.Errorf("a run recorded with a reviewer CLI reads as %q on the %q tier", named.Vendor(), named.Tier())
 	}
 }
+
+func TestCreateRecordsTheReviewerCLIItWasGivenAndItsTier(t *testing.T) {
+	store := New(t.TempDir())
+
+	run, err := store.Create(Start{StartedAt: time.Now(), RepositoryRoot: t.TempDir(), ReviewerCLI: "codex"})
+	if err != nil {
+		t.Fatalf("creating the run: %v", err)
+	}
+
+	loaded, err := store.Load(run.Name)
+	if err != nil {
+		t.Fatalf("reading the run: %v", err)
+	}
+	codex, _ := agent.Named("codex")
+	if loaded.ReviewerCLI != "codex" || loaded.Tier() != string(codex.Tier) {
+		t.Errorf("the run reads as %q on the %q tier, want codex on %q", loaded.ReviewerCLI, loaded.Tier(), codex.Tier)
+	}
+}

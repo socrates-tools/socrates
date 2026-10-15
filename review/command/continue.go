@@ -3,18 +3,23 @@ package command
 import (
 	"fmt"
 
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/review/reviewer"
 	"github.com/spf13/cobra"
 )
 
 func newContinueCommand(code *int) *cobra.Command {
 	var wait bool
+	var host string
 
 	command := &cobra.Command{
 		Use:   "continue [run]",
 		Short: continueShort,
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(command *cobra.Command, arguments []string) error {
+			if _, err := reviewer.ResolveReviewerCLI("", host); err != nil {
+				return err
+			}
 			store, name, err := chosenRun(command.Context(), arguments)
 			if err != nil {
 				return err
@@ -58,6 +63,7 @@ func newContinueCommand(code *int) *cobra.Command {
 		},
 	}
 
+	command.Flags().StringVar(&host, skillkit.HostFlag, "", hostKeptUsage)
 	command.Flags().BoolVar(&wait, "wait", false, waitUsage)
 	return command
 }

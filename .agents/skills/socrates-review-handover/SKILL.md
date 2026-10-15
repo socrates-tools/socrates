@@ -153,12 +153,12 @@ Nothing you write reorders that.
    Do not repair it, do not replace it, do not summarise it, and do not fill in what it leaves out.
 4. Start the review from inside that worktree, naming the branch the change targets, and passing what the author wrote verbatim as one argument:
 
-       socrates review begin --base origin/main --not-my-change --intent "<what the author wrote>"
+       socrates review begin --host codex --base origin/main --not-my-change --intent "<what the author wrote>"
 
    The base resolves to the fork point of that branch and this one, so what is reviewed is the change's own work and nothing the target branch has done since.
    socrates review neither fetches nor rebases, and says nothing about how far the target has moved past the fork point.
-   It prints the run identifier, which every later command takes as its argument, and `socrates review status` prints the base commit it resolved.
-5. Poll `socrates review status` every five seconds or so until it reports one of the states below, rather than following what the reviewer says: everything you read lands in your own context and you are about to need it for the page.
+   It prints the run identifier every later command takes, and `socrates review status` prints the base commit it resolved.
+5. Poll `socrates review status` every five seconds until it reports one of the states below, rather than following what the reviewer says: everything you read lands in your own context and you are about to need it for the page.
    Set no timeout of your own. socrates review gives the reviewer a deadline, and every run reaches one of these without you bounding the wait.
 6. Act on the state the run ended in. A run rests in no other.
 7. Remove the worktree you made, whatever the run reached.

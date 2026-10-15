@@ -3,6 +3,7 @@
 - Status: accepted
 - Date: 2026-10-14
 - Part of: issue 31
+- Amended by: ADR 69, which lets the host a review begins from name the reviewer CLI where `reviewer_cli` is unset, and changes nothing about the model or the effort
 
 ## Decision
 

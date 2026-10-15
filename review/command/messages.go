@@ -20,6 +20,8 @@ const (
 	intentUsage      = "what the person asked for, in their words, or what the author of the change says they were doing"
 	baseUsage        = "the branch or commit this work targets, whose fork point with HEAD the change is reviewed against"
 	notMyChangeUsage = "the change is not yours to patch, so every finding is forwarded, dropped or rejected"
+	hostUsage        = "the host this review begins from, claude or codex, which decides the reviewer CLI where reviewer_cli is unset"
+	hostKeptUsage    = "accepted so a skill can pass the one flag to every command, and ignored: a run is reviewed by the CLI its first round was"
 	waitUsage        = "block until the review concludes or parks on you, and exit with its status"
 	jsonUsage        = "print one JSON object instead of lines for a person"
 	findingUsage     = "the identifier of the one finding this answers"
