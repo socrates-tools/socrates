@@ -18,7 +18,7 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 66](../../../adr/0066-every-skil
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1-skills-rendered-for-a-host](1-skills-rendered-for-a-host.md) | None | pending |
+| [1-skills-rendered-for-a-host](1-skills-rendered-for-a-host.md) | None | in progress |
 | [2.1-codex-renderings-installed](2.1-codex-renderings-installed.md) | 1 | pending |
 | [2.2-claude-config-dir-honoured](2.2-claude-config-dir-honoured.md) | 1 | pending |
 | [3.1-codex-escalates-the-page](3.1-codex-escalates-the-page.md) | 2.1 | pending |
