@@ -1,4 +1,5 @@
 BINARY := bin/socrates
+SITE := bin/site
 MODULE := github.com/socrates-tools/socrates
 LINTER := github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
 RELEASER := github.com/goreleaser/goreleaser/v2@v2.17.1
@@ -10,7 +11,7 @@ UNCOMMITTED = $(if $(shell git status --porcelain 2>/dev/null),yes,)
 VERSION = $(shell git describe --tags --exact-match 2>/dev/null)
 STAMP = -X $(MODULE)/internal/version.version=$(VERSION) -X $(MODULE)/internal/version.commit=$(COMMIT) -X $(MODULE)/internal/version.uncommitted=$(UNCOMMITTED)
 
-TARGETS := build install release release-snapshot verify test lint fmt help skill assets platforms corpus-outcomes fixtures fixtures-diff live-smoke forge-smoke
+TARGETS := build install release release-snapshot verify test lint fmt help skill assets platforms site corpus-outcomes fixtures fixtures-diff live-smoke forge-smoke
 
 .PHONY: $(TARGETS)
 
@@ -63,6 +64,13 @@ assets:
 
 platforms:
 	go run ./review/cmd/platforms
+
+site:
+	rm -rf $(SITE)
+	mkdir -p $(SITE)/fonts
+	cp site/* $(SITE)/
+	cp agora/web/fonts/*.woff2 $(SITE)/fonts/
+	cp agora/web/brand/socrates-mark.svg NOTICE $(SITE)/
 
 corpus-outcomes:
 	./scripts/corpus-outcomes

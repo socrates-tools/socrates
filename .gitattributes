@@ -7,6 +7,9 @@
 *.json text eol=lf
 *.txtar text eol=lf
 *.sh text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
 Makefile text eol=lf
 
 *.woff2 binary

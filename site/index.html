@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>socrates · from an idea to a reviewed branch</title>
+  <meta name="description" content="socrates takes your coding session through design, tickets, implementation and review, and asks you its questions on a page in your browser.">
+  <meta property="og:title" content="socrates">
+  <meta property="og:description" content="A workflow for delivering features with AI, from first idea to reviewed branch.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#F6F2EA">
+  <link rel="icon" type="image/svg+xml" href="socrates-mark.svg">
+  <link rel="preload" href="fonts/Manrope-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="site.css">
+  <script src="site.js" defer></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <img class="mark" src="socrates-mark.svg" width="28" height="28" alt="">
+      <span class="wordmark">socrates</span>
+    </a>
+    <nav aria-label="Sections">
+      <a class="section-link" href="#why">About</a>
+      <a class="section-link" href="#workflow">Workflow</a>
+      <a class="section-link" href="#install">Install</a>
+      <a class="section-link" href="#contribute">Contribute</a>
+      <a class="pill pill-quiet" href="https://github.com/socrates-tools/socrates"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-body">
+      <img class="mark hero-mark" src="socrates-mark.svg" width="72" height="72" alt="socrates">
+      <h1>A workflow for delivering features with AI, from first idea to reviewed branch.</h1>
+      <p>socrates takes your coding session through design, tickets, implementation and review. When it needs you, it opens a clear, interactive page in your browser instead of printing walls of markdown in the terminal.</p>
+      <div class="actions">
+        <a class="pill pill-primary" href="#install">Install socrates</a>
+        <a class="pill pill-secondary" href="#workflow">See the workflow</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="why" class="why on-card">
+  <div class="wrap">
+    <img class="mark why-mark" src="socrates-mark.svg" width="96" height="96" alt="socrates">
+    <span class="overline">Why it was built</span>
+    <h2 class="section-title">Humans and AI understanding each other before work starts</h2>
+    <p class="lede">socrates exists so that people and AI reach a shared understanding before any work begins, rather than handing tasks over blindly. The <code>socrates-design</code> skill, for instance, settles every open question with you before a single line of the spec is written.</p>
+  </div>
+</section>
+
+<section class="inspired">
+  <div class="wrap">
+    <span class="overline">Inspired by</span>
+    <h2>Two projects that inspired socrates</h2>
+    <div class="inspirations">
+      <a class="card inspiration" href="https://github.com/kunchenguid/lavish-axi">
+        <span class="inspiration-name"><strong>lavish</strong><code>kunchenguid/lavish-axi</code></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="card inspiration" href="https://github.com/mattpocock/skills">
+        <span class="inspiration-name"><strong>grill</strong><code>mattpocock/skills</code></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="workflow" class="stacked">
+  <div class="wrap">
+    <div class="heading">
+      <span class="overline">The workflow</span>
+      <h2 class="section-title">From an idea to a reviewed branch</h2>
+      <p class="lede">You work through four skills in your coding session. Use all four for a new feature, or go straight to review for a change you already have.</p>
+    </div>
+
+    <ol class="steps">
+      <li class="card step">
+        <div class="step-name"><h3>Design</h3><code>socrates-design</code></div>
+        <p class="step-when">When you have an idea and no spec yet.</p>
+        <p class="step-body">Interviews you over a decisions page until every open question is settled, then writes the spec and its decisions.</p>
+      </li>
+      <li class="card step">
+        <div class="step-name"><h3>Tickets</h3><code>socrates-tickets</code></div>
+        <p class="step-when">Once the spec is committed.</p>
+        <p class="step-body">Cuts the spec into tickets ordered by their blockers, so independent ones can be built in parallel.</p>
+      </li>
+      <li class="card step">
+        <div class="step-name"><h3>Implement</h3><code>socrates-implement</code></div>
+        <p class="step-when">Once the tickets are committed.</p>
+        <p class="step-body">Tickets that don’t block each other are built in parallel, each in its own worktree, and landed on one branch. Keep talking to it while it works. Nothing is pushed.</p>
+      </li>
+      <li class="card step">
+        <div class="step-name"><h3>Review</h3><code>socrates-review</code></div>
+        <p class="step-when">Before you push.</p>
+        <p class="step-body">A reviewer that did not write the change checks it. Your session fixes what it can and asks you the rest.</p>
+      </li>
+    </ol>
+
+    <div class="decisions">
+      <div class="heading">
+        <span class="overline">The decisions page</span>
+        <h3>Decisions on a page, not walls of markdown in a terminal</h3>
+        <p>When a skill needs your input, socrates opens a page in your browser. Each question shows its options and what each one means, with the recommended choice marked. You click to answer, and your session picks it up from there.</p>
+      </div>
+      <figure class="preview" aria-label="A decisions page asking about one finding">
+        <div class="preview-bar">
+          <span class="brand"><img class="mark" src="socrates-mark.svg" width="22" height="22" alt=""><span class="wordmark">socrates</span></span>
+          <span class="chip chip-open">Open</span>
+        </div>
+        <div class="preview-body">
+          <div class="finding">
+            <div class="finding-head">
+              <div class="finding-meta">
+                <span class="number">01</span>
+                <span class="title">Finding 1</span>
+                <span class="chip chip-warning"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Warning</span>
+                <span class="chip chip-yours"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Your call</span>
+                <span class="location">cmd/flags.go:15</span>
+              </div>
+              <span class="finding-question">keep the old flag for one release, or remove it now?</span>
+              <span class="finding-consequence">scripts that still pass <code>--legacy-cache</code> will fail to start.</span>
+              <div class="diff">
+                <div class="diff-head">
+                  <span>cmd/flags.go</span>
+                  <span class="diff-counts"><span class="count-added">+1</span><span class="count-removed">-1</span></span>
+                </div>
+                <div class="diff-scroll">
+                  <div class="diff-lines"><span class="gutter">14</span><span class="gutter">14</span><span class="line"><span class="sign"> </span><span class="keyword">func</span> <span class="function">registerFlags</span><span class="punctuation">(</span>fs <span class="punctuation">*</span><span class="type">flag.FlagSet</span><span class="punctuation">) {</span></span>
+<span class="removed gutter">15</span><span class="removed gutter"></span><span class="removed line"><span class="sign">-</span>  fs.<span class="function">BoolVar</span><span class="punctuation">(&amp;</span>cfg.Legacy<span class="punctuation">,</span> <span class="string">"legacy-cache"</span><span class="punctuation">,</span> <span class="keyword">false</span><span class="punctuation">,</span> <span class="string">"use the old cache"</span><span class="punctuation">)</span></span>
+<span class="added gutter"></span><span class="added gutter">15</span><span class="added line"><span class="sign">+</span>  fs.<span class="function">IntVar</span><span class="punctuation">(&amp;</span>cfg.CacheSize<span class="punctuation">,</span> <span class="string">"cache-size"</span><span class="punctuation">,</span> <span class="number-literal">1000</span><span class="punctuation">,</span> <span class="string">"entries to keep"</span><span class="punctuation">)</span></span>
+<span class="gutter">16</span><span class="gutter">16</span><span class="line"><span class="sign"> </span><span class="punctuation">}</span></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="answer">
+              <fieldset>
+                <legend class="overline" hidden>Your answer</legend>
+                <label class="option">
+                  <input type="radio" name="preview-answer" checked>
+                  <span class="option-head"><span class="option-label">Keep it for one release</span><span class="chip chip-recommended">Recommended</span></span>
+                  <span class="option-meaning">callers get a release to move before it goes</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="preview-answer">
+                  <span class="option-head"><span class="option-label">Remove it now</span></span>
+                  <span class="option-meaning">a smaller change, and a breaking one</span>
+                </label>
+              </fieldset>
+              <div class="send"><span class="pill">Send and wait for a reply</span></div>
+            </div>
+          </div>
+        </div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="install" class="install on-card">
+  <div class="wrap">
+    <div class="needs">
+      <span class="overline">Install</span>
+      <h2 class="section-title">What it needs</h2>
+      <ul>
+        <li><strong>Claude Code</strong><span>It runs the skills.</span></li>
+        <li><strong>For review, <code>claude</code>, <code>codex</code> or <code>opencode</code> on your <code>PATH</code></strong><span>Signed in to an account. socrates is free, but every review is a model call billed to that account.</span></li>
+        <li><strong>Linux or macOS</strong><span>On Windows, use WSL.</span></li>
+        <li><strong><code>git</code></strong></li>
+      </ul>
+    </div>
+    <div class="ways">
+      <div class="way">
+        <div class="way-head">
+          <h3>From binary</h3>
+          <button class="pill pill-quiet copy" type="button" data-copies="install-command">Copy</button>
+        </div>
+        <pre class="terminal wraps" id="install-command"><span class="call">curl</span> <span class="flag">-fsSL</span> <span class="string">https://github.com/socrates-tools/socrates/releases/latest/download/install.sh</span> <span class="punctuation">|</span> <span class="call">sh</span></pre>
+        <p>This installs socrates and all four skills. It checks the download before installing anything, and running it again upgrades everything.</p>
+      </div>
+      <div class="way">
+        <h3>From source</h3>
+        <pre class="terminal"><span class="call">git</span> <span class="subcommand">clone</span> <span class="string">https://github.com/socrates-tools/socrates</span>
+<span class="call">cd</span> socrates
+<span class="call">make</span> <span class="subcommand">install</span></pre>
+        <p>Does the same as the binary install. Needs Go 1.26 or later.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contribute" class="stacked">
+  <div class="wrap">
+    <div class="heading">
+      <span class="overline">Contribute</span>
+      <h2 class="section-title">socrates is open source, and built the way it works</h2>
+      <p class="lede">Every change here starts as a spec in <code>docs/changes/&lt;slug&gt;/</code>, with its tickets beside it. Run <code>/socrates-design</code> on your idea, or open an issue if you are not sure it needs one.</p>
+    </div>
+    <div class="contribute-cards">
+      <div class="card contribute-card">
+        <h3>Architecture</h3>
+        <p>One Go binary. Each namespace is a tool with its own directory.</p>
+        <dl class="layout">
+          <div><dt><code>design/</code></dt><dd>The interview and the spec, and cutting it into tickets.</dd></div>
+          <div><dt><code>implement/</code></dt><dd>Builds a change’s tickets through implementers.</dd></div>
+          <div><dt><code>review/</code></dt><dd>The independent reviewer.</dd></div>
+          <div><dt><code>agora/</code></dt><dd>Serves the decisions page and waits for your answer.</dd></div>
+          <div><dt><code>internal/dispatcher</code></dt><dd>Routes <code>socrates</code> to each tool.</dd></div>
+        </dl>
+        <p><code>AGENTS.md</code> maps the layout and invariants, <code>CONTEXT-MAP.md</code> the vocabulary, and <code>docs/adr/</code> the decisions.</p>
+      </div>
+      <div class="card contribute-card">
+        <h3>Run it locally</h3>
+        <pre class="terminal"><span class="call">git</span> <span class="subcommand">clone</span> <span class="string">https://github.com/socrates-tools/socrates</span>
+<span class="call">cd</span> socrates
+<span class="call">make</span> <span class="subcommand">install</span>
+<span class="call">make</span> <span class="subcommand">verify</span>   <span class="aside"># every gate, the same as CI</span></pre>
+        <p>Needs Go 1.26 or later, <code>git</code>, and Chrome or Chromium for the page tests. Read <code>CONTRIBUTING.md</code> before opening a pull request.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="licence"><img class="mark" src="socrates-mark.svg" width="20" height="20" alt="">MIT licence</span>
+    <nav aria-label="Project">
+      <a href="https://github.com/socrates-tools/socrates">GitHub</a>
+      <a href="https://github.com/socrates-tools/socrates/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/socrates-tools/socrates/blob/main/SECURITY.md">Security</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

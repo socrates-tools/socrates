@@ -91,7 +91,7 @@ var moduleFloor = regexp.MustCompile(`(?m)^go\s+([0-9]+\.[0-9]+)`)
 
 var documentedFloor = regexp.MustCompile(`Go ([0-9]+\.[0-9]+)`)
 
-var documentsStatingTheFloor = []string{FrontDocumentFile, ContributingFile}
+var documentsStatingTheFloor = []string{FrontDocumentFile, ContributingFile, LandingPage}
 
 func ToolchainFloorRequired(root string) (string, error) {
 	held, err := Document(root, "go.mod")

@@ -63,3 +63,11 @@ jobs:
         run: |
           cp "$BUNDLE" socrates.intoto.jsonl
           gh release upload "$GITHUB_REF_NAME" socrates.intoto.jsonl --repo "$GITHUB_REPOSITORY"
+
+  site:
+    needs: [verification, scanning]
+    uses: ./.github/workflows/pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
