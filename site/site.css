@@ -1009,6 +1009,22 @@ footer nav {
   .top nav .section-link, .why-mark {
     display: none;
   }
+
+  .hero-body {
+    align-items: center;
+    text-align: center;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-self: stretch;
+    gap: 12px;
+  }
+
+  .actions .pill {
+    justify-content: center;
+    height: 44px;
+  }
 }
 
 @media (min-width: 720px) {
