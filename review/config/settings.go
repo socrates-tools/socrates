@@ -44,7 +44,7 @@ func (c Config) Settings() []Setting {
 	stated := c.Roles[agent.Reviewer]
 
 	return []Setting{
-		chosenFrom(inForce(reviewerCLIKey, c.ReviewerCLI, agent.DefaultVendor), agent.SupportedNames()),
+		chosenFrom(inForce(reviewerCLIKey, c.ReviewerCLI, followsTheHost), agent.SupportedNames()),
 		routed(reviewerModelKey, routing.Model, unrouted.Model, stated.Model != ""),
 		routed(reviewerEffortKey, routing.Effort, unrouted.Effort, stated.Effort != ""),
 		inForce(diffCeilingKey, counted(int64(c.DiffCeiling)), counted(prompt.DefaultCeiling)),

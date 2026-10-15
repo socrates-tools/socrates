@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+
+	"github.com/socrates-tools/socrates/internal/skill"
 )
 
 type Tier string
@@ -105,6 +107,15 @@ var stated = []Vendor{
 }
 
 const DefaultVendor = "claude"
+
+var vendorOfHost = map[string]string{
+	skill.ClaudeCode.Flag: "claude",
+	skill.Codex.Flag:      "codex",
+}
+
+func ForHost(host skill.Host) (Vendor, bool) {
+	return Named(vendorOfHost[host.Flag])
+}
 
 func Vendors() []Vendor {
 	return slices.Clone(stated)

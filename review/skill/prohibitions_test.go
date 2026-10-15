@@ -45,6 +45,7 @@ func TestNoChannelIsImpliedForTheAuthorsAccount(t *testing.T) {
 		"--note":          "what was done about a patched finding, which reaches the next reviewer as a claim it judges",
 		"--reason":        "why a rejected finding is wrong, which reaches the next reviewer as a claim it judges",
 		"--session":       "which page a poll is about, minted by the surface and carrying nothing anybody wrote",
+		"--host":          "which host the review begins from, which names a reviewer CLI only where nobody set one and carries nothing of the session's account of the change",
 		"--to":            "where to install the skill, which reaches no reviewer at all",
 		"--json":          "what socrates concluded, as an object rather than as lines, which is a way of reading and not a way of saying anything",
 	}

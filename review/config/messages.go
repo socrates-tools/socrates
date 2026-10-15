@@ -1,6 +1,7 @@
 package config
 
 const (
+	followsTheHost          = "follows the host a review begins from"
 	unreadableFile          = "%s exists and socrates review cannot read it: %s. Fix its permissions or move it aside and run the command again"
 	unparsableFile          = "%s is not configuration socrates review can read: %s. Fix the file or move it aside, because socrates review will not quietly run on defaults while a configuration file says otherwise"
 	statesSomethingUnusable = "%s states something socrates review cannot use: %s. Fix the file or move it aside and run the command again"

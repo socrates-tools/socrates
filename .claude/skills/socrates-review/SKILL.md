@@ -135,13 +135,13 @@ Nothing you write reorders that.
 1. Implement what the person asked for.
 2. Start the review, passing what the person asked for in their own words:
 
-       socrates review begin --intent "count the characters of a document"
+       socrates review begin --host claude --intent "count the characters of a document"
 
-   It returns as soon as the run exists and prints the run identifier, which every later command takes as its argument.
-3. Wait for the run to end: poll `socrates review status` every five seconds or so until it reports one of the states below.
+   It returns once the run exists and prints the run identifier, which every later command takes as its argument.
+3. Wait for the run to end: poll `socrates review status` every five seconds until it reports one of the states below.
    Poll rather than follow what the reviewer is saying, because everything you read lands in your own context and you are about to need that context for the patching.
    Set no timeout of your own. socrates review gives the reviewer a deadline, a reviewer that answers nothing before it passes ends the run as failed, and every run reaches one of the states below without you bounding the wait.
-4. Act on the state the run ended in. Each of them is below, and a run rests in no other.
+4. Act on the state the run ended in. Each is below, and a run rests in no other.
 5. Report how many rounds ran and what the last one found, not just the verdict.
    Two rounds ending with nothing blocking and one round ending the same way are different results, and the verdict alone does not say which of them the person got.
 

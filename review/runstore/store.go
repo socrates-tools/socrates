@@ -132,6 +132,7 @@ type Start struct {
 	NotMyChange     bool
 	ReviewGuide     guidance.Outcome
 	GuidanceCeiling int64
+	ReviewerCLI     string
 }
 
 type Store struct {
@@ -247,8 +248,12 @@ func (s Store) Create(start Start) (*Run, error) {
 		NotMyChange:     start.NotMyChange,
 		ReviewGuide:     start.ReviewGuide,
 		GuidanceCeiling: start.GuidanceCeiling,
+		ReviewerCLI:     start.ReviewerCLI,
 		StartedAt:       start.StartedAt.UTC().Truncate(time.Second),
 		State:           runstate.Starting,
+	}
+	if vendor, known := agent.Named(start.ReviewerCLI); known {
+		run.ReviewerTier = string(vendor.Tier)
 	}
 
 	if err := os.MkdirAll(s.root, 0o755); err != nil {

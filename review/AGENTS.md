@@ -66,6 +66,10 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - A CLI qualifies on three things: the reviewed repository's own instructions can be kept out of the session, a terminal event says whether the work happened and what it said about a failure, and a model is selectable per invocation.
 - Whether the vendor constrains output against the schema is a tier rather than a criterion, because review validates the document either way.
 - A configured CLI review does not drive is refused by name, naming the guarantee it does not offer, before a snapshot is taken and before a reviewer is spawned.
+- Where `reviewer_cli` is unset, the host `socrates review begin --host` names decides the reviewer CLI, which the seam states once and nothing above it names, and a `begin` without `--host` keeps the default, per ADR 69.
+  A `reviewer_cli` a person set wins whatever the host.
+  The CLI is resolved once at `begin` and recorded on the run, so every round is reviewed by the CLI the first one was, whatever `--host` a later command is given.
+  A `--host` naming neither host is refused before a snapshot is taken, and nothing about the session's own model is read or passed.
 - Nothing above the seam names a vendor, a flag or an event shape, and nothing outside review shapes a reviewer's answer into the findings document.
 - Each vendor's invocation asks for none of the machine's own customisations; the session's tool list and named sources are recorded rather than trusted, and a vendor that reports no inventory produces runs that record that.
 - A round after the first inherits no session: the only cross-round context is the labelled prior findings and recorded responses.
@@ -97,6 +101,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - `status` prints the base commit the run resolved, as a bare fact and not a warning, and review says nothing about how far a named ref has moved past it.
 - `config` names the file it reads and then every setting by its YAML key, with the value in force and whether a person set it, and a setting nothing states in force prints empty rather than invented.
   Each default it reports is read from the package that owns it, so a default has one home, and a test fails where a reported one and its owner's disagree.
+  An unset `reviewer_cli` prints as following the host a review begins from.
   It reports and judges nothing: a reviewer CLI review will not drive is printed as the file states it, and refused where a review starts rather than here.
 - `configure` draws a menu of the same settings `config` reports, read from the same place, so the two cannot disagree about what is in force.
   It writes only the key a person confirmed, as soon as they confirm it, and a person's comments, key order and blank lines survive the write.

@@ -241,3 +241,26 @@ func settingsIn(t *testing.T, printed string) map[string]config.Setting {
 	}
 	return reported
 }
+
+func TestAnUnsetReviewerCLIIsReportedAsFollowingTheHostAndAStatedOneAsTheFileStatesIt(t *testing.T) {
+	t.Parallel()
+	session := harness.Start(t)
+
+	printed, failures, code := session.Socrates("config")
+	if code != exit.NothingAsked {
+		t.Fatalf("socrates review config exited %d: %s", code, failures)
+	}
+	unset := settingsIn(t, printed)["reviewer_cli"]
+	if unset.Source != config.Default || !strings.Contains(unset.Value, "follows the host") {
+		t.Errorf("an unset reviewer_cli reports %q as %s, want that it follows the host a review begins from:\n%s", unset.Value, unset.Source, printed)
+	}
+
+	stateConfiguration(t, session, "reviewer_cli: claude\n")
+	printed, failures, code = session.Socrates("config")
+	if code != exit.NothingAsked {
+		t.Fatalf("socrates review config exited %d: %s", code, failures)
+	}
+	if stated := settingsIn(t, printed)["reviewer_cli"]; stated.Source != config.Set || stated.Value != "claude" {
+		t.Errorf("a stated reviewer_cli reports %q as %s, want claude as set:\n%s", stated.Value, stated.Source, printed)
+	}
+}

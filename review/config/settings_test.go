@@ -105,6 +105,30 @@ func TestAReviewerCLISocratesReviewDoesNotDriveIsReportedRatherThanCorrected(t *
 	}
 }
 
+func TestAnUnsetReviewerCLIIsReportedAsFollowingTheHostRatherThanAsAVendor(t *testing.T) {
+	unset := reviewerCLIOf((config.Config{}).Settings())
+	if unset.Source != config.Default || !followsTheHost(unset.Value) {
+		t.Errorf("an unset reviewer_cli reports %q as %s, want a default that says it follows the host", unset.Value, unset.Source)
+	}
+	if unset.Default != unset.Value {
+		t.Errorf("an unset reviewer_cli reports the default %q, and no vendor is its default", unset.Default)
+	}
+
+	stated := reviewerCLIOf((config.Config{ReviewerCLI: "claude"}).Settings())
+	if stated.Source != config.Set || stated.Value != "claude" {
+		t.Errorf("a stated reviewer_cli reports %q as %s, want what the file states", stated.Value, stated.Source)
+	}
+}
+
+func reviewerCLIOf(settings []config.Setting) config.Setting {
+	for _, one := range settings {
+		if one.Key == "reviewer_cli" {
+			return one
+		}
+	}
+	return config.Setting{}
+}
+
 func TestASettingNothingHasAValueForIsReportedEmpty(t *testing.T) {
 	reported := valuesOf((config.Config{ReviewerCLI: "codex"}).Settings())
 	if reported["roles.reviewer.model"] != "" {
@@ -138,7 +162,7 @@ func defaultsThatDrifted(of config.Config, reported []config.Setting) []string {
 	routing := vendor.Routing[agent.Reviewer]
 
 	owners := map[string]func(string) bool{
-		"reviewer_cli":          reads(agent.DefaultVendor),
+		"reviewer_cli":          followsTheHost,
 		"roles.reviewer.model":  reads(routing.Model),
 		"roles.reviewer.effort": reads(routing.Effort),
 		"diff_ceiling":          counts(int64(prompt.DefaultCeiling)),
@@ -163,6 +187,10 @@ func defaultsThatDrifted(of config.Config, reported []config.Setting) []string {
 		}
 	}
 	return drifted
+}
+
+func followsTheHost(reported string) bool {
+	return strings.Contains(reported, "host") && !slices.Contains(agent.Names(), reported)
 }
 
 func reads(owned string) func(string) bool {
