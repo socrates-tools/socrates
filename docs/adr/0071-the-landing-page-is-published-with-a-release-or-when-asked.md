@@ -10,6 +10,8 @@
 `make site` assembles it into `bin/site` beside the fonts under `agora/web/fonts`, the mark under `agora/web/brand` and `NOTICE`, so the page paints with the bytes the decisions page ships and no second copy of them is committed.
 
 `.github/workflows/pages.yml` publishes what `make site` assembled, when somebody asks for it and as a job of every release that needs the verification matrix and the code scan, like every other job that publishes.
+Pages serves every file with ten minutes of `max-age` and nothing in the repository can change that, so `make site` asks for the stylesheet and the script by the first twelve characters of their git blob name, and a page from one release never paints with the last release's stylesheet.
+
 A release refreshes the page so it describes what a person installing gets, and a change to the page alone is published by asking for a run.
 
 The page installs with the command `README.md` states and states the toolchain floor `go.mod` requires, and the suite fails while either disagrees.

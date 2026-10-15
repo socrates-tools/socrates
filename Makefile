@@ -71,6 +71,10 @@ site:
 	cp site/* $(SITE)/
 	cp agora/web/fonts/*.woff2 $(SITE)/fonts/
 	cp agora/web/brand/socrates-mark.svg NOTICE $(SITE)/
+	for asset in site.css site.js; do \
+		fingerprint=$$(git hash-object $(SITE)/$$asset | cut -c1-12); \
+		sed "s|\"$$asset\"|\"$$asset?v=$$fingerprint\"|" $(SITE)/index.html > $(SITE)/index.html.next && mv $(SITE)/index.html.next $(SITE)/index.html; \
+	done
 
 corpus-outcomes:
 	./scripts/corpus-outcomes
