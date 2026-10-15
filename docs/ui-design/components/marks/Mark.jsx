@@ -14,6 +14,8 @@ const TONES = {
   error: ['var(--state-error-wash)', 'var(--state-error)'],
   warning: ['var(--state-warning-wash)', 'var(--state-warning)'],
   clay: ['var(--clay-wash)', 'var(--clay-ink)'],
+  recommended: ['var(--recommended-wash)', 'var(--recommended)'],
+  call: ['var(--your-call-wash)', 'var(--your-call)'],
   neutral: ['var(--surface-muted)', 'var(--fg-2)'],
 };
 

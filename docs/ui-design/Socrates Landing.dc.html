@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
+<title>socrates · from an idea to a reviewed branch</title>
+<style>
+@font-face{font-family:'Cinzel';font-weight:400 900;font-display:swap;src:url('fonts/Cinzel-Variable.woff2') format('woff2');}
+@font-face{font-family:'Manrope';font-weight:200 800;font-display:swap;src:url('fonts/Manrope-Variable.woff2') format('woff2');}
+@font-face{font-family:'JetBrains Mono';font-weight:100 800;font-display:swap;src:url('fonts/JetBrainsMono-Variable.woff2') format('woff2');}
+*,*::before,*::after{box-sizing:border-box;}
+html{scroll-behavior:smooth;scroll-padding-top:57px;}
+html,body{margin:0;background:#F6F2EA;color:#14283C;font-family:'Manrope',ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+a{color:#1259A8;text-decoration:none;}a:hover{color:#0E4A8C;}
+::selection{background:#CFE0F3;color:#14283C;}
+code{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;}
+@media (prefers-reduced-motion: reduce){*{transition-duration:0ms !important;scroll-behavior:auto !important;}}
+</style>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#1259A8"></rect><text x="50" y="64" text-anchor="middle" font-family="Georgia,serif" font-size="44" font-weight="700" fill="#F6F2EA">S</text></svg></template>
+</helmet>
+
+<header data-screen-label="Top bar" style="position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(246,242,234,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #E5DED1;">
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+    <a href="#top" style="display:flex;align-items:center;gap:10px;color:#14283C;">
+      <img src="assets/brand/socrates-mark.svg" width="28" height="28" alt="" style="display:block;border-radius:7px;">
+      <span style="font-family:'Cinzel',Georgia,serif;font-size:15px;font-weight:700;letter-spacing:0.12em;">socrates</span>
+    </a>
+    <nav style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+      <a href="#what" style="padding:8px 12px;border-radius:999px;font-size:13px;font-weight:600;color:#3D4D5E;" style-hover="color:#1259A8;background:#EFE9DD;">About</a>
+      <a href="#workflow" style="padding:8px 12px;border-radius:999px;font-size:13px;font-weight:600;color:#3D4D5E;" style-hover="color:#1259A8;background:#EFE9DD;">Workflow</a>
+      <a href="#install" style="padding:8px 12px;border-radius:999px;font-size:13px;font-weight:600;color:#3D4D5E;" style-hover="color:#1259A8;background:#EFE9DD;">Install</a>
+      <a href="#contribute" style="padding:8px 12px;border-radius:999px;font-size:13px;font-weight:600;color:#3D4D5E;" style-hover="color:#1259A8;background:#EFE9DD;">Contribute</a>
+      <a href="https://github.com/socrates-tools/socrates" style="display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 16px;margin-left:8px;border-radius:999px;border:1px solid #D6CDBD;background:#FFFFFF;font-size:13px;font-weight:700;color:#14283C;" style-hover="border-color:#1259A8;color:#1259A8;"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top" style="padding-top:57px;">
+
+<section data-screen-label="Hero" style="max-width:1200px;margin:0 auto;padding:88px 24px 96px;">
+  <div style="display:flex;flex-direction:column;gap:20px;max-width:760px;">
+    <h1 style="margin:0;font-size:44px;line-height:1.12;font-weight:700;letter-spacing:-0.025em;text-wrap:balance;">A workflow for delivering features with AI, from first idea to reviewed branch.</h1>
+    <p style="margin:0;font-size:16px;line-height:1.6;color:#3D4D5E;max-width:600px;text-wrap:pretty;">socrates takes your coding session through design, tickets, implementation and review. When it needs you, it opens a clear, interactive page in your browser instead of printing walls of markdown in the terminal.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:4px;">
+      <a href="#install" style="display:inline-flex;align-items:center;height:40px;padding:0 20px;border-radius:999px;background:#1259A8;color:#FFFFFF;font-size:14px;font-weight:700;box-shadow:0 6px 16px -6px rgba(18,89,168,0.5);" style-hover="background:#0E4A8C;color:#FFFFFF;">Install socrates</a>
+      <a href="#workflow" style="display:inline-flex;align-items:center;height:40px;padding:0 20px;border-radius:999px;border:1px solid #D6CDBD;background:#FFFFFF;color:#14283C;font-size:14px;font-weight:700;" style-hover="border-color:#1259A8;color:#1259A8;">See the workflow</a>
+    </div>
+  </div>
+</section>
+
+<section id="what" data-screen-label="What it does" style="border-top:1px solid #E5DED1;background:#FFFFFF;">
+  <div style="max-width:1200px;margin:0 auto;padding:80px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;">
+    <img src="assets/brand/socrates-mark.svg" width="96" height="96" alt="socrates" style="display:block;border-radius:22px;margin-bottom:20px;box-shadow:0 1px 2px rgba(20,40,60,0.06),0 16px 32px -12px rgba(18,89,168,0.35);">
+    <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#66727F;">WHY IT WAS BUILT</span>
+    <h2 style="margin:0;font-size:28px;line-height:1.25;font-weight:700;letter-spacing:-0.02em;max-width:720px;text-wrap:balance;">Humans and AI understanding each other before work starts</h2>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#3D4D5E;max-width:640px;text-wrap:pretty;">socrates exists so that people and AI reach a shared understanding before any work begins, rather than handing tasks over blindly. The <code>socrates-design</code> skill, for instance, settles every open question with you before a single line of the spec is written.</p>
+  </div>
+</section>
+
+<section id="inspired" data-screen-label="Inspired by" style="border-top:1px solid #E5DED1;">
+  <div style="max-width:1200px;margin:0 auto;padding:64px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:20px;">
+    <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#66727F;">INSPIRED BY</span>
+    <h2 style="margin:0;font-size:22px;line-height:1.3;font-weight:700;letter-spacing:-0.015em;">Two projects that inspired socrates</h2>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px;width:100%;">
+      <a href="https://github.com/kunchenguid/lavish-axi" style="flex:1 1 260px;max-width:360px;padding:20px 24px;border:1px solid #E5DED1;border-radius:12px;background:#FFFFFF;box-shadow:0 1px 2px rgba(20,40,60,0.04),0 12px 32px -12px rgba(20,40,60,0.10);display:flex;justify-content:space-between;align-items:center;gap:16px;color:#14283C;text-align:left;transition:border-color 160ms cubic-bezier(0.2,0,0,1);" style-hover="border-color:#1259A8;color:#14283C;">
+        <span style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:16px;font-weight:700;">lavish</span><code style="font-size:12.5px;color:#66727F;">kunchenguid/lavish-axi</code></span>
+        <span style="font-size:16px;color:#1259A8;">→</span>
+      </a>
+      <a href="https://github.com/mattpocock/skills" style="flex:1 1 260px;max-width:360px;padding:20px 24px;border:1px solid #E5DED1;border-radius:12px;background:#FFFFFF;box-shadow:0 1px 2px rgba(20,40,60,0.04),0 12px 32px -12px rgba(20,40,60,0.10);display:flex;justify-content:space-between;align-items:center;gap:16px;color:#14283C;text-align:left;transition:border-color 160ms cubic-bezier(0.2,0,0,1);" style-hover="border-color:#1259A8;color:#14283C;">
+        <span style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:16px;font-weight:700;">grill</span><code style="font-size:12.5px;color:#66727F;">mattpocock/skills</code></span>
+        <span style="font-size:16px;color:#1259A8;">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="workflow" data-screen-label="Workflow" style="border-top:1px solid #E5DED1;">
+  <div style="max-width:1200px;margin:0 auto;padding:80px 24px;display:flex;flex-direction:column;gap:40px;">
+    <div style="display:flex;flex-direction:column;gap:12px;max-width:640px;">
+      <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#66727F;">THE WORKFLOW</span>
+      <h2 style="margin:0;font-size:28px;line-height:1.25;font-weight:700;letter-spacing:-0.02em;">From an idea to a reviewed branch</h2>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#3D4D5E;text-wrap:pretty;">You work through four skills in your coding session. Use all four for a new feature, or go straight to review for a change you already have.</p>
+    </div>
+
+    <ol style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+        <li style="padding:24px;border:1px solid #E5DED1;border-radius:12px;background:#FFFFFF;box-shadow:0 1px 2px rgba(20,40,60,0.04),0 12px 32px -12px rgba(20,40,60,0.10);display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <h3 style="margin:0;font-size:18px;font-weight:700;letter-spacing:-0.01em;">{{ s.title }}</h3>
+            <code style="font-size:12.5px;font-weight:600;color:#1259A8;">{{ s.skill }}</code>
+          </div>
+          <p style="margin:0;font-size:13px;font-weight:700;color:#A3471F;">{{ s.when }}</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#3D4D5E;text-wrap:pretty;">{{ s.body }}</p>
+        </li>
+      </sc-for>
+    </ol>
+
+    <sc-if value="{{ showPreview }}" hint-placeholder-val="{{ true }}">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:40px;align-items:center;padding-top:24px;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#66727F;">THE DECISIONS PAGE</span>
+        <h3 style="margin:0;font-size:22px;line-height:1.3;font-weight:700;letter-spacing:-0.015em;text-wrap:balance;">Decisions on a page, not walls of markdown in a terminal</h3>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:#3D4D5E;text-wrap:pretty;">When a skill needs your input, socrates opens a page in your browser. Each question shows its options and what each one means, with the recommended choice marked. You click to answer, and your session picks it up from there.</p>
+      </div>
+      <div style="border:1px solid #E5DED1;border-radius:12px;background:#F6F2EA;box-shadow:0 1px 2px rgba(20,40,60,0.04),0 24px 48px -20px rgba(20,40,60,0.18);overflow:hidden;">
+        <div style="height:44px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #E5DED1;">
+          <span style="display:flex;align-items:center;gap:8px;"><img src="assets/brand/socrates-mark.svg" width="22" height="22" alt="" style="display:block;border-radius:6px;"><span style="font-family:'Cinzel',Georgia,serif;font-size:13px;font-weight:700;letter-spacing:0.12em;">socrates</span></span>
+          <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 10px;border-radius:999px;background:#EEF4FB;color:#1259A8;font-size:12px;font-weight:700;"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;"></span>Waiting for you</span>
+        </div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+          <span style="font-size:18px;font-weight:700;letter-spacing:-0.01em;">one thing to settle before this lands</span>
+          <div style="background:#FFFFFF;border:1px solid #E5DED1;border-radius:12px;overflow:hidden;">
+            <div style="padding:16px 20px;display:flex;flex-direction:column;gap:8px;">
+              <span style="display:inline-flex;align-self:flex-start;align-items:center;height:22px;padding:0 8px;border-radius:999px;background:#E8F0FA;color:#1259A8;font-size:12px;font-weight:700;">Your call</span>
+              <span style="font-size:15px;font-weight:700;">keep the old flag for one release, or remove it now?</span>
+            </div>
+            <div style="padding:16px 20px;background:#FBF9F5;border-top:1px solid #E5DED1;display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ previewOptions }}" as="o" hint-placeholder-count="2">
+                <button onClick="{{ o.pick }}" style="all:unset;cursor:pointer;display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-radius:12px;background:{{ o.bg }};border:1px solid {{ o.border }};box-shadow:{{ o.ring }};transition:border-color 160ms cubic-bezier(0.2,0,0,1);">
+                  <span style="margin-top:2px;width:16px;height:16px;flex:none;border-radius:50%;border:{{ o.radio }};background:#FFFFFF;"></span>
+                  <span style="display:flex;flex-direction:column;gap:2px;flex:1;">
+                    <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;font-weight:700;">{{ o.label }}<sc-if value="{{ o.rec }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;color:#0B6E79;">Recommended</span></sc-if></span>
+                    <span style="font-size:13px;color:#3D4D5E;">{{ o.meaning }}</span>
+                  </span>
+                </button>
+              </sc-for>
+              <div style="display:flex;justify-content:flex-end;padding-top:4px;">
+                <span style="display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:999px;background:#1259A8;color:#FFFFFF;font-size:13px;font-weight:700;">Send and wait for a reply</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+</section>
+
+<section id="install" data-screen-label="Install" style="border-top:1px solid #E5DED1;background:#FFFFFF;">
+  <div style="max-width:1200px;margin:0 auto;padding:80px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:48px;align-items:start;">
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#66727F;">INSTALL</span>
+      <h2 style="margin:0;font-size:28px;line-height:1.25;font-weight:700;letter-spacing:-0.02em;">What it needs</h2>
+      <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;border-top:1px solid #E5DED1;">
+        <li style="padding:12px 0;border-bottom:1px solid #E5DED1;display:flex;flex-direction:column;gap:2px;"><span style="font-size:14px;font-weight:700;">Claude Code</span><span style="font-size:13px;color:#3D4D5E;">It runs the skills. Codex support is coming.</span></li>
+        <li style="padding:12px 0;border-bottom:1px solid #E5DED1;display:flex;flex-direction:column;gap:2px;"><span style="font-size:14px;font-weight:700;">For review, <code>claude</code>, <code>codex</code> or <code>opencode</code> on your <code>PATH</code></span><span style="font-size:13px;color:#3D4D5E;">Signed in to an account. socrates is free, but every review is a model call billed to that account.</span></li>
+        <li style="padding:12px 0;border-bottom:1px solid #E5DED1;display:flex;flex-direction:column;gap:2px;"><span style="font-size:14px;font-weight:700;">Linux or macOS</span><span style="font-size:13px;color:#3D4D5E;">On Windows, use WSL.</span></li>
+        <li style="padding:12px 0;border-bottom:1px solid #E5DED1;display:flex;flex-direction:column;gap:2px;"><span style="font-size:14px;font-weight:700;"><code>git</code></span></li>
+      </ul>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:32px;padding-top:4px;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <h3 style="margin:0;font-size:16px;font-weight:700;">From binary</h3>
+          <button onClick="{{ copyInstall }}" style="all:unset;cursor:pointer;height:30px;padding:0 14px;border-radius:999px;border:1px solid #D6CDBD;display:inline-flex;align-items:center;font-size:13px;font-weight:700;color:#14283C;" style-hover="border-color:#1259A8;color:#1259A8;">{{ copyLabel }}</button>
+        </div>
+        <pre style="margin:0;padding:16px;border:1px solid #E5DED1;border-radius:12px;background:#FBF9F5;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;color:#14283C;overflow-x:auto;">curl -fsSL https://github.com/socrates-tools/socrates/releases/latest/download/install.sh | sh</pre>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:#3D4D5E;text-wrap:pretty;">This installs socrates and all four skills. It checks the download before installing anything, and running it again upgrades everything.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <h3 style="margin:0;font-size:16px;font-weight:700;">From source</h3>
+        <pre style="margin:0;padding:16px;border:1px solid #E5DED1;border-radius:12px;background:#FBF9F5;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;color:#14283C;overflow-x:auto;">git clone https://github.com/socrates-tools/socrates
+cd socrates
+make install</pre>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:#3D4D5E;text-wrap:pretty;">Does the same as the binary install. Needs Go 1.26 or later.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contribute" data-screen-label="Contribute" style="border-top:1px solid #E5DED1;">
+  <div style="max-width:1200px;margin:0 auto;padding:80px 24px;display:flex;flex-direction:column;gap:40px;">
+    <div style="display:flex;flex-direction:column;gap:12px;max-width:640px;">
+      <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#66727F;">CONTRIBUTE</span>
+      <h2 style="margin:0;font-size:28px;line-height:1.25;font-weight:700;letter-spacing:-0.02em;">socrates is open source, and built the way it works</h2>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#3D4D5E;text-wrap:pretty;">Every change here starts as a spec in <code>docs/changes/&lt;slug&gt;/</code>, with its tickets beside it. Run <code>/socrates-design</code> on your idea, or open an issue if you are not sure it needs one.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:16px;align-items:start;">
+      <div style="padding:24px;border:1px solid #E5DED1;border-radius:12px;background:#FFFFFF;box-shadow:0 1px 2px rgba(20,40,60,0.04),0 12px 32px -12px rgba(20,40,60,0.10);display:flex;flex-direction:column;gap:16px;">
+        <h3 style="margin:0;font-size:16px;font-weight:700;">Architecture</h3>
+        <p style="margin:0;font-size:13px;color:#3D4D5E;">One Go binary. Each namespace is a tool with its own directory.</p>
+        <div style="display:flex;flex-direction:column;border-top:1px solid #E5DED1;">
+            <div style="display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr);gap:16px;padding:10px 0;border-bottom:1px solid #E5DED1;"><code style="color:#1259A8;font-weight:600;">design/</code><span style="font-size:13px;color:#3D4D5E;">The interview and the spec, and cutting it into tickets.</span></div>
+            <div style="display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr);gap:16px;padding:10px 0;border-bottom:1px solid #E5DED1;"><code style="color:#1259A8;font-weight:600;">implement/</code><span style="font-size:13px;color:#3D4D5E;">Builds a change's tickets through implementers.</span></div>
+            <div style="display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr);gap:16px;padding:10px 0;border-bottom:1px solid #E5DED1;"><code style="color:#1259A8;font-weight:600;">review/</code><span style="font-size:13px;color:#3D4D5E;">The independent reviewer.</span></div>
+            <div style="display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr);gap:16px;padding:10px 0;border-bottom:1px solid #E5DED1;"><code style="color:#1259A8;font-weight:600;">agora/</code><span style="font-size:13px;color:#3D4D5E;">Serves the decisions page and waits for your answer.</span></div>
+            <div style="display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr);gap:16px;padding:10px 0;border-bottom:1px solid #E5DED1;"><code style="color:#1259A8;font-weight:600;">internal/dispatcher</code><span style="font-size:13px;color:#3D4D5E;">Routes <code>socrates</code> to each tool.</span></div>
+        </div>
+        <p style="margin:0;font-size:13px;color:#3D4D5E;"><code>AGENTS.md</code> maps the layout and invariants, <code>CONTEXT-MAP.md</code> the vocabulary, and <code>docs/adr/</code> the decisions.</p>
+      </div>
+      <div style="padding:24px;border:1px solid #E5DED1;border-radius:12px;background:#FFFFFF;box-shadow:0 1px 2px rgba(20,40,60,0.04),0 12px 32px -12px rgba(20,40,60,0.10);display:flex;flex-direction:column;gap:16px;">
+        <h3 style="margin:0;font-size:16px;font-weight:700;">Run it locally</h3>
+        <pre style="margin:0;padding:16px;border:1px solid #E5DED1;border-radius:12px;background:#FBF9F5;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;color:#14283C;overflow-x:auto;">git clone https://github.com/socrates-tools/socrates
+cd socrates
+make install
+make verify   <span style="color:#66727F;"># every gate, the same as CI</span></pre>
+        <p style="margin:0;font-size:13px;color:#3D4D5E;">Needs Go 1.26 or later, <code>git</code>, and Chrome or Chromium for the page tests. Read <code>CONTRIBUTING.md</code> before opening a pull request.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer style="border-top:1px solid #E5DED1;">
+  <div style="max-width:1200px;margin:0 auto;padding:24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:13px;color:#66727F;">
+    <span style="display:flex;align-items:center;gap:10px;"><img src="assets/brand/socrates-mark.svg" width="20" height="20" alt="" style="display:block;border-radius:5px;">MIT licence. <code>NOTICE</code> lists everything a shipped binary contains that socrates did not write.</span>
+    <span style="display:flex;gap:16px;"><a href="https://github.com/socrates-tools/socrates">GitHub</a><a href="https://github.com/socrates-tools/socrates/blob/main/CHANGELOG.md">Changelog</a><a href="https://github.com/socrates-tools/socrates/blob/main/SECURITY.md">Security</a></span>
+  </div>
+</footer>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showDecisionsPreview&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;}}">
+const INSTALL = 'curl -fsSL https://github.com/socrates-tools/socrates/releases/latest/download/install.sh | sh';
+
+class Component extends DCLogic {
+  state = { copied: false, pick: 0 };
+  copy = () => {
+    navigator.clipboard?.writeText(INSTALL).catch(() => {});
+    this.setState({ copied: true });
+    clearTimeout(this.t); this.t = setTimeout(() => this.setState({ copied: false }), 1600);
+  };
+  componentWillUnmount() { clearTimeout(this.t); }
+  renderVals() {
+    const opts = [
+      { label: 'Keep it for one release', meaning: 'callers get a release to move before it goes', rec: true },
+      { label: 'Remove it now', meaning: 'a smaller change, and a breaking one' },
+    ];
+    return {
+      showPreview: this.props.showDecisionsPreview ?? true,
+      steps: [
+        { n: 1, title: 'Design', skill: 'socrates-design', when: 'When you have an idea and no spec yet.', body: 'Interviews you over a decisions page until every open question is settled, then writes the spec and its decisions.' },
+        { n: 2, title: 'Tickets', skill: 'socrates-tickets', when: 'Once the spec is committed.', body: 'Cuts the spec into tickets ordered by their blockers, so independent ones can be built in parallel.' },
+        { n: 3, title: 'Implement', skill: 'socrates-implement', when: 'Once the tickets are committed.', body: 'Tickets that don\u2019t block each other are built in parallel, each in its own worktree, and landed on one branch. Keep talking to it while it works. Nothing is pushed.' },
+        { n: 4, title: 'Review', skill: 'socrates-review', when: 'Before you push.', body: 'A reviewer that did not write the change checks it. Your session fixes what it can and asks you the rest.' },
+      ],
+      previewOptions: opts.map((o, i) => {
+        const on = this.state.pick === i;
+        return { ...o, rec: !!o.rec, pick: () => this.setState({ pick: i }),
+          bg: on ? '#EEF4FB' : '#FFFFFF', border: on ? '#1259A8' : '#E5DED1', ring: on ? '0 0 0 1px #1259A8' : 'none',
+          radio: on ? '5px solid #1259A8' : '1.5px solid #B9AF9E' };
+      }),
+      copyInstall: this.copy,
+      copyLabel: this.state.copied ? 'Copied' : 'Copy',
+    };
+  }
+}
+</script>
+</body>
+</html>

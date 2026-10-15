@@ -2,6 +2,8 @@ import React from 'react';
 
 const TONES = {
   clay: ['var(--clay-wash)', 'var(--clay-ink)'],
+  recommended: ['var(--recommended-wash)', 'var(--recommended)'],
+  call: ['var(--your-call-wash)', 'var(--your-call)'],
   resolved: ['var(--state-resolved-wash)', 'var(--state-resolved)'],
   accent: ['var(--accent-wash)', 'var(--accent)'],
   neutral: ['var(--surface-muted)', 'var(--fg-2)'],

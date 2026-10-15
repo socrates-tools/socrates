@@ -43,6 +43,7 @@
   --cinnabar-600: #B42E24;
   --ochre-50: #FAEFD8;
   --ochre-700: #8A5A00;
+  --sea-50: #E2F0F1;
   --sea-600: #0B6E79;
 
   /* Semantic: ground and surfaces */
@@ -82,6 +83,12 @@
   --clay: var(--clay-500);
   --clay-ink: var(--clay-600);
   --clay-wash: var(--clay-50);
+
+  /* Semantic: recommendation (sea) and your call (Aegean wash) */
+  --recommended: var(--sea-600);
+  --recommended-wash: var(--sea-50);
+  --your-call: var(--aegean-600);
+  --your-call-wash: var(--aegean-100);
 
   /* Semantic: states */
   --state-resolved: var(--olive-600);
