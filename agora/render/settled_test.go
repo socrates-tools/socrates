@@ -112,3 +112,29 @@ func TestAPageHoldingOnlyWhatWasSettledOffersNeitherControl(t *testing.T) {
 		t.Errorf("a page holding only what was settled offers a <%s class=%q>, and there is nothing on it to answer", control.Data, attribute(control, "class"))
 	}
 }
+
+func settledBlockIn(t *testing.T, page *html.Node) *html.Node {
+	t.Helper()
+	for _, block := range elements(page, "details") {
+		if hasClass(block, "settled") {
+			return block
+		}
+	}
+	t.Fatal("no block of what was settled rendered")
+	return nil
+}
+
+func TestWhatWasSettledArrivesFoldedWhileAQuestionIsStillOpen(t *testing.T) {
+	if block := settledBlockIn(t, rendered(t, withWhatWasSettled())); hasAttribute(block, "open") {
+		t.Error("what was settled arrives unfolded beside a question still open, and a person reads it only when they ask to")
+	}
+}
+
+func TestWhatWasSettledArrivesUnfoldedWhenNothingIsStillOpen(t *testing.T) {
+	read := withWhatWasSettled()
+	read.Decisions = nil
+
+	if block := settledBlockIn(t, rendered(t, read)); !hasAttribute(block, "open") {
+		t.Error("what was settled arrives folded on a page holding nothing else, and a person would see an empty page")
+	}
+}

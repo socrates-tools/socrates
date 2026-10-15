@@ -60,7 +60,7 @@
 
 <div class="column">
 {{if .Settled}}
-<details class="settled" id="settled" open>
+<details class="settled" id="settled"{{if not .Decisions}} open{{end}}>
 <summary class="settled-summary">
 <span class="settled-heading">
 <span class="settled-title">Settled earlier <span class="settled-count">· {{len .Settled}}</span></span>

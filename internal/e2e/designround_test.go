@@ -160,7 +160,7 @@ func TestASecondDesignRoundOpensWithWhatWasSettledAheadOfWhatIsStillOpen(t *test
 		First     bool     `json:"first"`
 		Controls  int      `json:"controls"`
 		Said      string   `json:"said"`
-		Shown     bool     `json:"shown"`
+		Folded    bool     `json:"folded"`
 	}
 	page.evaluate(`(() => {
   const settled = document.querySelector('.settled');
@@ -171,7 +171,7 @@ func TestASecondDesignRoundOpensWithWhatWasSettledAheadOfWhatIsStillOpen(t *test
     first: !!settled && !!decisions && !!(settled.compareDocumentPosition(decisions) & Node.DOCUMENT_POSITION_FOLLOWING),
     controls: settled ? settled.querySelectorAll('input, textarea, button, select').length : -1,
     said: (document.querySelector('.settled-answer[data-settled="q2"]') || { textContent: '' }).textContent,
-    shown: !!settled && settled.open && settled.getBoundingClientRect().height > 0,
+    folded: !!settled && !settled.open && settled.querySelector('.settled-summary').getBoundingClientRect().height > 0,
   };
 })()`, &read)
 
@@ -186,8 +186,11 @@ func TestASecondDesignRoundOpensWithWhatWasSettledAheadOfWhatIsStillOpen(t *test
 	if diff := cmp.Diff([]string{"q3"}, read.Decisions); diff != "" {
 		t.Errorf("round two renders something other than the one open question as a card (-want +got):\n%s", diff)
 	}
-	if !read.First || !read.Shown {
+	if !read.First {
 		t.Errorf("what was settled is not shown ahead of what is still open: %+v", read)
+	}
+	if !read.Folded {
+		t.Errorf("what was settled does not arrive folded under a heading the person can open: %+v", read)
 	}
 	if read.Controls != 0 {
 		t.Errorf("what was settled offers %d controls, and a settled answer offers nothing to answer", read.Controls)

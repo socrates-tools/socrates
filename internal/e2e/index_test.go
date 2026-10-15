@@ -164,22 +164,33 @@ const settledDocument = `{
   ]
 }`
 
-func TestWhatWasSettledFoldsAwayAndTheIndexOpensItAgain(t *testing.T) {
+func TestWhatWasSettledArrivesFoldedAndOpensFromItsHeadingOrTheIndex(t *testing.T) {
 	t.Parallel()
 	_, page := read(t, settledDocument)
 
 	const answersShown = `document.querySelector('.settled-answer').checkVisibility()`
+	const headingShown = `document.querySelector('.settled-summary').checkVisibility()`
 
 	var shown bool
+	page.evaluate(headingShown, &shown)
+	if !shown {
+		t.Fatal("the heading of what was settled is not shown, and a person could not open it")
+	}
+	page.evaluate(answersShown, &shown)
+	if shown {
+		t.Fatal("what was settled arrives unfolded, and it arrives folded while a question is still open")
+	}
+
+	page.click(".settled-summary")
 	page.evaluate(answersShown, &shown)
 	if !shown {
-		t.Fatal("what was settled arrives folded away, and it arrives open")
+		t.Error("pressing the heading of what was settled left it folded")
 	}
 
 	page.click(".settled-summary")
 	page.evaluate(answersShown, &shown)
 	if shown {
-		t.Error("pressing the heading of what was settled left it showing")
+		t.Error("pressing the heading of what was settled again left it showing")
 	}
 
 	page.click(".settled-link")

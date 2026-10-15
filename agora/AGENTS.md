@@ -47,6 +47,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - Every entry of the source is rendered ahead of the decisions, in an index beside them that names every decision where there is no source, and both are ordered by the severity the source carries, most severe first, informational last, an unstated severity after all of them, and ties in the order the document listed them.
 - The index counts a decision answered by the rule that decides what is sent, as the person answers it, so a decision whose recommendation arrives chosen arrives counted.
 - What was settled is rendered ahead of every open question, offers no control, is counted by nothing and is never sent, and an identifier is either settled or still open, per ADR 46.
+- What was settled arrives folded while a question is still open, and unfolded when nothing is, per ADR 72.
 - The order is the surface's, so no field of a document reaches it, and a page with nothing to answer offers neither control and says so.
 - Every decision carries a free-text field that no document field can remove, including one that offers no options.
 - The option a document marks arrives chosen, a decision that marks none arrives with nothing chosen, and a decision offering options also offers taking none of them, which is not an option, carries no command and leaves the decision with nothing chosen.
