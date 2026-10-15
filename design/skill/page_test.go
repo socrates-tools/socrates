@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -14,7 +15,7 @@ const (
 )
 
 func TestTheSkillStatesTheFrontierAndTheRound(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	for _, said := range []string{
 		"The frontier is every question whose prerequisites are settled.",
@@ -28,7 +29,7 @@ func TestTheSkillStatesTheFrontierAndTheRound(t *testing.T) {
 }
 
 func TestTheAnswerArrivesChosenAndAtMostOneIsMarked(t *testing.T) {
-	page := sectionOf(t, skill.Document(), pageHeading)
+	page := sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading)
 
 	for _, said := range []string{
 		`"recommended": true`,
@@ -43,7 +44,7 @@ func TestTheAnswerArrivesChosenAndAtMostOneIsMarked(t *testing.T) {
 }
 
 func TestTheSessionIsMintedOnceAndKeptForTheWholeDesign(t *testing.T) {
-	page := sectionOf(t, skill.Document(), pageHeading)
+	page := sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading)
 
 	for _, said := range []string{
 		"Mint the session once, with the first",
@@ -59,7 +60,7 @@ func TestTheSessionIsMintedOnceAndKeptForTheWholeDesign(t *testing.T) {
 }
 
 func TestTheSkillSaysWhenAnIllustrationEarnsItsPlace(t *testing.T) {
-	page := sectionOf(t, skill.Document(), pageHeading)
+	page := sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading)
 
 	for _, said := range []string{
 		"A decision may also carry one illustration, painted by the document's own stylesheet",
@@ -74,7 +75,7 @@ func TestTheSkillSaysWhenAnIllustrationEarnsItsPlace(t *testing.T) {
 }
 
 func TestFactsAreFoundRatherThanAsked(t *testing.T) {
-	facts := sectionOf(t, skill.Document(), factsHeading)
+	facts := sectionOf(t, skill.Document(skillkit.ClaudeCode), factsHeading)
 
 	for _, said := range []string{
 		"Facts are found rather than asked for",
@@ -110,7 +111,7 @@ func sectionOf(t *testing.T, document, heading string) string {
 }
 
 func TestTheRoundsSectionComesBeforeThePageSection(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	rounds := strings.Index(document, roundsHeading)
 	page := strings.Index(document, pageHeading)
@@ -123,7 +124,7 @@ func TestTheRoundsSectionComesBeforeThePageSection(t *testing.T) {
 }
 
 func TestTheSkillNumbersQuestionsFromOneAndNamesEachQuestionN(t *testing.T) {
-	page := sectionOf(t, skill.Document(), pageHeading)
+	page := sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading)
 
 	for _, said := range []string{
 		`{"id": "q2", "name": "Question 2",`,

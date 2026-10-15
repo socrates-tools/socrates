@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 const specHeading = "## Writing the spec"
 
 func TestTheSkillNamesTheSpecsPathOnTheRepositorysTemplate(t *testing.T) {
-	spec := sectionOf(t, skill.Document(), specHeading)
+	spec := sectionOf(t, skill.Document(skillkit.ClaudeCode), specHeading)
 
 	if !strings.Contains(spec, "docs/changes/<slug>/spec.md") {
 		t.Errorf("the spec section does not name docs/changes/<slug>/spec.md as where the spec goes:\n%s", spec)
@@ -32,7 +33,7 @@ func TestTheSkillNamesTheSpecsPathOnTheRepositorysTemplate(t *testing.T) {
 }
 
 func TestTheSpecSectionsAreNamedInTemplateOrder(t *testing.T) {
-	spec := sectionOf(t, skill.Document(), specHeading)
+	spec := sectionOf(t, skill.Document(skillkit.ClaudeCode), specHeading)
 
 	order := []string{
 		"Problem Statement",
@@ -58,7 +59,7 @@ func TestTheSpecSectionsAreNamedInTemplateOrder(t *testing.T) {
 }
 
 func TestTheSpecSectionSaysFurtherNotesCarriesWhatADesignEndedEarlyLeftOpen(t *testing.T) {
-	spec := sectionOf(t, skill.Document(), specHeading)
+	spec := sectionOf(t, skill.Document(skillkit.ClaudeCode), specHeading)
 
 	if !strings.Contains(spec, "where a design ends early, what it left open") {
 		t.Errorf("the spec section does not connect Further Notes to a design that ended early:\n%s", spec)
@@ -66,7 +67,7 @@ func TestTheSpecSectionSaysFurtherNotesCarriesWhatADesignEndedEarlyLeftOpen(t *t
 }
 
 func TestTheSpecSectionComesAfterTheGlossarySection(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	glossary := strings.Index(document, glossaryHeading)
 	spec := strings.Index(document, specHeading)

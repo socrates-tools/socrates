@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -21,7 +22,7 @@ const (
 func ticketsSaysEach(t *testing.T, heading, why string, said ...string) {
 	t.Helper()
 
-	section := sectionOf(t, skill.TicketsDocument(), heading)
+	section := sectionOf(t, skill.TicketsDocument(skillkit.ClaudeCode), heading)
 	for _, one := range said {
 		if !strings.Contains(section, one) {
 			t.Errorf("the %s section of the tickets skill does not say %q, so %s:\n%s", heading, one, why, section)
@@ -96,7 +97,7 @@ func TestTheBreakdownMintsItsOwnSessionAndNamesNoDesignHandingOn(t *testing.T) {
 		"Mint the session once, with the first `socrates agora serve`",
 	)
 	for _, unsaid := range []string{"handed on", "hand on", "design's session", "a design that"} {
-		if strings.Contains(skill.TicketsDocument(), unsaid) {
+		if strings.Contains(skill.TicketsDocument(skillkit.ClaudeCode), unsaid) {
 			t.Errorf("the tickets skill says %q, so it could reach for the session of a skill it cannot invoke", unsaid)
 		}
 	}
@@ -111,7 +112,7 @@ func TestTheTicketsAreWrittenOnceEveryCardIsKeptWithoutAFurtherPage(t *testing.T
 		"say in the terminal every path you wrote",
 	)
 
-	writing := sectionOf(t, skill.TicketsDocument(), writingThemHeading)
+	writing := sectionOf(t, skill.TicketsDocument(skillkit.ClaudeCode), writingThemHeading)
 	if strings.Contains(writing, `"label"`) {
 		t.Errorf("the writing section still composes a card for the person to approve:\n%s", writing)
 	}
@@ -127,7 +128,7 @@ func TestEachCardCarriesTheWholeTicketItWouldBeWrittenAs(t *testing.T) {
 		"exactly the evidence its card carried in that round",
 	)
 
-	breakdown := sectionOf(t, skill.TicketsDocument(), breakdownHeading)
+	breakdown := sectionOf(t, skill.TicketsDocument(skillkit.ClaudeCode), breakdownHeading)
 	if strings.Contains(breakdown, "blocked by: 1-prefactor") {
 		t.Errorf("the card example still states blockers as free text beside the file that states them:\n%s", breakdown)
 	}
@@ -182,13 +183,13 @@ func TestATicketsAcceptanceCriteriaNameNoTest(t *testing.T) {
 }
 
 func TestTheTicketsSkillNamesNoReview(t *testing.T) {
-	if document := skill.TicketsDocument(); strings.Contains(document, "socrates review") {
+	if document := skill.TicketsDocument(skillkit.ClaudeCode); strings.Contains(document, "socrates review") {
 		t.Error("the tickets skill names socrates review, and how a ticket is implemented is the implementing session's own")
 	}
 }
 
 func TestTheTicketsSkillStatesItsSectionsInTheOrderTheWorkHappens(t *testing.T) {
-	document := skill.TicketsDocument()
+	document := skill.TicketsDocument(skillkit.ClaudeCode)
 
 	previous := -1
 	for _, heading := range []string{startingHeading, slicingHeading, wavesHeading, breakdownHeading, writingThemHeading, mainTicketHeading, aTicketHeading, committingHeading} {

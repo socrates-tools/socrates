@@ -16,30 +16,38 @@ import (
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 )
 
-const userVendorDirectory = ".claude"
+func installedKey(host skillkit.Host, name string) string {
+	return filepath.ToSlash(filepath.Join(host.SkillsDirectory, name, skillkit.FileName))
+}
+
+func installedAgentKey(host skillkit.Host) string {
+	return filepath.ToSlash(filepath.Join(host.AgentsDirectory, implementskill.AgentFileName()))
+}
 
 func writtenUnder(t *testing.T, home string) map[string]string {
 	t.Helper()
 
-	root := filepath.Join(home, userVendorDirectory)
 	written := map[string]string{}
-	walked := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
-		if err != nil || entry.IsDir() {
-			return err
+	for _, host := range skillkit.Hosts() {
+		root := filepath.Join(home, host.ConfigurationDirectory)
+		walked := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
+			if err != nil || entry.IsDir() {
+				return err
+			}
+			content, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			relative, err := filepath.Rel(home, path)
+			if err != nil {
+				return err
+			}
+			written[filepath.ToSlash(relative)] = string(content)
+			return nil
+		})
+		if walked != nil && !os.IsNotExist(walked) {
+			t.Fatalf("reading what was written under %s: %v", root, walked)
 		}
-		content, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		relative, err := filepath.Rel(root, path)
-		if err != nil {
-			return err
-		}
-		written[filepath.ToSlash(relative)] = string(content)
-		return nil
-	})
-	if walked != nil && !os.IsNotExist(walked) {
-		t.Fatalf("reading what was written under %s: %v", root, walked)
 	}
 	return written
 }
@@ -95,11 +103,11 @@ func TestOneCommandInstallsEverySkillEveryNamespaceOffers(t *testing.T) {
 	}
 
 	for _, one := range allSkills() {
-		if _, held := written["skills/"+one.Name+"/"+skillkit.FileName]; !held {
+		if _, held := written[installedKey(one.Host, one.Name)]; !held {
 			t.Errorf("socrates skill left out %s", one.Name)
 		}
 	}
-	if _, held := written["agents/"+implementskill.AgentFileName()]; !held {
+	if _, held := written[installedAgentKey(skillkit.ClaudeCode)]; !held {
 		t.Errorf("socrates skill left out the implementer's agent definition")
 	}
 }

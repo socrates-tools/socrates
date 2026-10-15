@@ -19,34 +19,40 @@ func TestTheOverseerSkillIsHeldToACeilingOfItsOwn(t *testing.T) {
 	}
 }
 
-func TestTheOverseerSkillCarriesThePersonOnlyField(t *testing.T) {
-	if !convention.CarriesThePersonOnlyField(skill.Document()) {
-		t.Errorf("the skill does not carry %s, so a model could start an overseer", skillkit.PersonOnlyField)
+func TestTheOverseerSkillCarriesEachHostsPersonOnlySwitch(t *testing.T) {
+	for _, one := range skill.All() {
+		if !one.Host.CarriesPersonOnly(one.Rendered()) {
+			t.Errorf("the skill rendered for %s does not carry %s, so a model could start an overseer", one.Host.Name, one.Host.PersonOnlyField)
+		}
 	}
 }
 
 func TestTheOverseerSkillDeclaresTheNameItIsInstalledUnder(t *testing.T) {
-	if !strings.Contains(skill.Document(), "\nname: "+skill.Name+"\n") {
-		t.Errorf("the skill does not declare itself %q", skill.Name)
+	for _, one := range skill.All() {
+		if !strings.Contains(one.Rendered(), "\nname: "+skill.Name+"\n") {
+			t.Errorf("the skill rendered for %s does not declare itself %q", one.Host.Name, skill.Name)
+		}
 	}
 }
 
 func TestTheCommittedOverseerSkillMatchesWhatIsRendered(t *testing.T) {
-	path := filepath.Join(source.Root(t), ".claude", "skills", skill.Name, skillkit.FileName)
+	for _, one := range skill.All() {
+		path := filepath.Join(one.Host.SkillsDirectoryUnder(source.Root(t)), skill.Name, skillkit.FileName)
 
-	committed, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("%s is not readable, and it is the copy this repository ships: %v. Run make skill to write it", path, err)
-	}
-	if string(committed) != skill.Document() {
-		t.Errorf("%s is not what the skill's source generates: run make skill to rewrite it", path)
+		committed, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("%s is not readable, and it is the copy this repository ships: %v. Run make skill to write it", path, err)
+		}
+		if string(committed) != one.Rendered() {
+			t.Errorf("%s is not what the skill's source generates: run make skill to rewrite it", path)
+		}
 	}
 }
 
 func TestInstallingTheOverseerSkillWritesItUnderItsOwnName(t *testing.T) {
 	directory := t.TempDir()
 
-	written, err := skillkit.Install(directory, skill.All(), skillkit.Dispatcher+" implement skill")
+	written, err := skillkit.Install(directory, skill.For(skillkit.ClaudeCode), skillkit.Dispatcher+" implement skill")
 	if err != nil {
 		t.Fatalf("installing: %v", err)
 	}
@@ -82,7 +88,7 @@ func TestTheOverseerSkillNamesInvocationsOfImplementOnly(t *testing.T) {
 func sectionOf(t *testing.T, heading string) string {
 	t.Helper()
 
-	_, after, found := strings.Cut(skill.Document(), heading)
+	_, after, found := strings.Cut(skill.Document(skillkit.ClaudeCode), heading)
 	if !found {
 		t.Fatalf("the skill has no %s section", heading)
 	}
@@ -246,7 +252,7 @@ func TestTheVerificationAfterALandingRunsInTheBackgroundSoTheOverseerStaysFree(t
 }
 
 func TestTheCommandsTheOverseerRunsAreNotCountedAsAllThatTheNamespaceHolds(t *testing.T) {
-	if strings.Contains(skill.Document(), "offers three commands") {
+	if strings.Contains(skill.Document(skillkit.ClaudeCode), "offers three commands") {
 		t.Error("the skill counts the binary's commands, which stops being true when the namespace gains one")
 	}
 	saysEach(t, "# socrates implement", "the commands the overseer runs are not stated", "The commands you run are these")
@@ -312,7 +318,7 @@ func TestTheWholeChangeIsReadAgainstTheSpecFromTheDefaultBranchsForkPointAndNoth
 }
 
 func TestTheSectionsComeInTheOrderOfTheLoop(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	previous := -1
 	for _, heading := range []string{
@@ -328,7 +334,7 @@ func TestTheSectionsComeInTheOrderOfTheLoop(t *testing.T) {
 }
 
 func TestTheOverseerSkillNamesNoSocratesReviewInvocation(t *testing.T) {
-	if found := regexp.MustCompile(`(?i)socrates\s+review`).FindString(skill.Document()); found != "" {
+	if found := regexp.MustCompile(`(?i)socrates\s+review`).FindString(skill.Document(skillkit.ClaudeCode)); found != "" {
 		t.Errorf("the skill names %q, and how a ticket is reviewed is the overseer's own", found)
 	}
 }
@@ -338,7 +344,7 @@ func TestTheOverseerSkillNamesNoNamespaceButImplement(t *testing.T) {
 		if tool.Namespace == "implement" {
 			continue
 		}
-		if found := regexp.MustCompile(`(?i)socrates\s+` + regexp.QuoteMeta(tool.Namespace) + `\b`).FindString(skill.Document()); found != "" {
+		if found := regexp.MustCompile(`(?i)socrates\s+` + regexp.QuoteMeta(tool.Namespace) + `\b`).FindString(skill.Document(skillkit.ClaudeCode)); found != "" {
 			t.Errorf("the skill names %q, and it drives no other namespace", found)
 		}
 	}
@@ -347,7 +353,7 @@ func TestTheOverseerSkillNamesNoNamespaceButImplement(t *testing.T) {
 func TestTheOverseerSkillNamesNoOtherSkill(t *testing.T) {
 	allowed := map[string]bool{skill.Name: true, skill.AgentName: true}
 
-	for _, named := range regexp.MustCompile(`socrates-[a-z]+(-[a-z]+)*`).FindAllString(skill.Document(), -1) {
+	for _, named := range regexp.MustCompile(`socrates-[a-z]+(-[a-z]+)*`).FindAllString(skill.Document(skillkit.ClaudeCode), -1) {
 		if !allowed[named] {
 			t.Errorf("the skill names %q, and an overseer invokes no skill", named)
 		}

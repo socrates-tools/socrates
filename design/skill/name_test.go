@@ -12,40 +12,45 @@ import (
 )
 
 func TestEachDesignSkillIsInstalledUnderItsOwnName(t *testing.T) {
-	directory := t.TempDir()
+	for _, host := range skillkit.Hosts() {
+		t.Run(host.Name, func(t *testing.T) {
+			skills := skill.For(host)
+			directory := t.TempDir()
 
-	written, err := skillkit.Install(directory, skill.All(), skillkit.Dispatcher+" design skill")
-	if err != nil {
-		t.Fatalf("installing the skills: %v", err)
-	}
-
-	want := []string{skill.Name, skill.TicketsName}
-	var got []string
-	for _, installed := range written {
-		got = append(got, installed.Name)
-	}
-	if !slices.Equal(got, want) {
-		t.Fatalf("installing wrote %v, and design states %v", got, want)
-	}
-
-	for position, installed := range written {
-		if named := filepath.Base(filepath.Dir(installed.Path)); named != installed.Name {
-			t.Errorf("the %s skill is installed under %q", installed.Name, named)
-		}
-		if _, err := os.Stat(installed.Path); err != nil {
-			t.Errorf("nothing is at %s: %v", installed.Path, err)
-		}
-
-		declared := ""
-		for line := range strings.SplitSeq(skill.All()[position].Document(), "\n") {
-			if stated, isName := strings.CutPrefix(line, "name: "); isName {
-				declared = strings.TrimSpace(stated)
-				break
+			written, err := skillkit.Install(directory, skills, skillkit.Dispatcher+" design skill")
+			if err != nil {
+				t.Fatalf("installing the skills: %v", err)
 			}
-		}
-		if declared != installed.Name {
-			t.Errorf("the skill declares itself %q while it is installed as %q, so one of the two is a second copy of the name", declared, installed.Name)
-		}
+
+			want := []string{skill.Name, skill.TicketsName}
+			var got []string
+			for _, installed := range written {
+				got = append(got, installed.Name)
+			}
+			if !slices.Equal(got, want) {
+				t.Fatalf("installing wrote %v, and design states %v", got, want)
+			}
+
+			for position, installed := range written {
+				if named := filepath.Base(filepath.Dir(installed.Path)); named != installed.Name {
+					t.Errorf("the %s skill is installed under %q", installed.Name, named)
+				}
+				if _, err := os.Stat(installed.Path); err != nil {
+					t.Errorf("nothing is at %s: %v", installed.Path, err)
+				}
+
+				declared := ""
+				for line := range strings.SplitSeq(skills[position].Rendered(), "\n") {
+					if stated, isName := strings.CutPrefix(line, "name: "); isName {
+						declared = strings.TrimSpace(stated)
+						break
+					}
+				}
+				if declared != installed.Name {
+					t.Errorf("the skill declares itself %q while it is installed as %q, so one of the two is a second copy of the name", declared, installed.Name)
+				}
+			}
+		})
 	}
 }
 

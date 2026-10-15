@@ -16,7 +16,6 @@ import (
 	"strings"
 	"testing"
 
-	implementskill "github.com/socrates-tools/socrates/implement/skill"
 	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/internal/state"
 	"github.com/socrates-tools/socrates/internal/testing/source"
@@ -249,11 +248,11 @@ func assertInstalled(t *testing.T, done installation, served *release) {
 
 	written := writtenUnder(t, done.home)
 	for _, one := range allSkills() {
-		if written["skills/"+one.Name+"/"+skillkit.FileName] != one.Document() {
+		if written[installedKey(one.Host, one.Name)] != one.Rendered() {
 			t.Errorf("the installer left %s out, or installed something other than what its source generates", one.Name)
 		}
 	}
-	if _, held := written["agents/"+implementskill.AgentFileName()]; !held {
+	if _, held := written[installedAgentKey(skillkit.ClaudeCode)]; !held {
 		t.Error("the installer left the implementer's agent definition out")
 	}
 	if !strings.Contains(done.printed, done.binary()) {
@@ -399,7 +398,7 @@ func TestRunningTheInstallerAgainReplacesTheBinaryAndTheSkills(t *testing.T) {
 
 	first := runInstaller(t, tools, served)
 	assertInstalled(t, first, served)
-	stale := filepath.Join(first.home, ".claude", "skills", allSkills()[0].Name, skillkit.FileName)
+	stale := filepath.Join(allSkills()[0].Host.SkillsDirectoryUnder(first.home), allSkills()[0].Name, skillkit.FileName)
 	if err := os.WriteFile(stale, []byte("an older skill\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}

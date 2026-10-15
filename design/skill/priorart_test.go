@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -12,7 +13,7 @@ const seamsHeading = "## Seams and alternatives"
 func designSaysEach(t *testing.T, heading, why string, said ...string) {
 	t.Helper()
 
-	section := sectionOf(t, skill.Document(), heading)
+	section := sectionOf(t, skill.Document(skillkit.ClaudeCode), heading)
 	for _, one := range said {
 		if !strings.Contains(section, one) {
 			t.Errorf("the %s section of the design skill does not say %q, so %s:\n%s", heading, one, why, section)
@@ -73,7 +74,7 @@ func TestAPrototypeAnswersAQuestionWordsCannotSettleOutsideTheRepository(t *test
 }
 
 func TestTheSeamsSectionSitsBetweenTheGlossaryAndTheSpec(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	glossary := strings.Index(document, glossaryHeading)
 	seams := strings.Index(document, seamsHeading)

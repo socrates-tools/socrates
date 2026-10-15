@@ -1,6 +1,7 @@
 package findings_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -17,7 +18,7 @@ var shapingTheDocument = []string{
 }
 
 func TestTheAuthorNeverShapesTheDocument(t *testing.T) {
-	read := skill.Document()
+	read := skill.Document(skillkit.ClaudeCode)
 	if strings.TrimSpace(read) == "" {
 		t.Fatal("the skill the authoring session reads is empty, so this check reads nothing")
 	}

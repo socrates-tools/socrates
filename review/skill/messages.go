@@ -1,11 +1,9 @@
 package skill
 
-import "github.com/socrates-tools/socrates/internal/skill"
+const (
+	description = "Have an independent reviewer read the change you just made, and drive that review to a verdict. Use after implementing anything nobody else has read."
 
-var (
-	frontMatter = skill.FrontMatter(Name, "Have an independent reviewer read the change you just made, and drive that review to a verdict. Use after implementing anything nobody else has read.")
-
-	handoverFrontMatter = skill.FrontMatter(HandoverName, "Have an independent reviewer read a change somebody else wrote, and decide with the person which of its findings to raise with whoever wrote it. Use for a pull request or a branch that is not yours to patch.")
+	handoverDescription = "Have an independent reviewer read a change somebody else wrote, and decide with the person which of its findings to raise with whoever wrote it. Use for a pull request or a branch that is not yours to patch."
 )
 
 const (

@@ -26,8 +26,8 @@ func Binaries() []string {
 	return []string{Name, Surface}
 }
 
-func Document() string {
-	return assembled(frontMatter, purpose, rules(), thePage(theAnswerAPageCarries), theLoop, prohibitions)
+func Document(host skill.Host) string {
+	return assembled(skill.FrontMatter(host, Name, description), purpose, rules(), thePage(theAnswerAPageCarries), theLoop, prohibitions)
 }
 
 func thePage(answer string) string {
@@ -50,9 +50,17 @@ func stating(rules []string) string {
 	return strings.Join(stated, "\n")
 }
 
-func All() []skill.Skill {
+func For(host skill.Host) []skill.Skill {
 	return []skill.Skill{
-		{Name: Name, Document: Document, Ceiling: Ceiling},
-		{Name: HandoverName, Document: HandoverDocument, Ceiling: HandoverCeiling},
+		{Name: Name, Host: host, Document: Document, Ceiling: Ceiling},
+		{Name: HandoverName, Host: host, Document: HandoverDocument, Ceiling: HandoverCeiling},
 	}
+}
+
+func All() []skill.Skill {
+	var every []skill.Skill
+	for _, host := range skill.Hosts() {
+		every = append(every, For(host)...)
+	}
+	return every
 }

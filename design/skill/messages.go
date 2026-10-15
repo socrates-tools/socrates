@@ -1,11 +1,9 @@
 package skill
 
-import "github.com/socrates-tools/socrates/internal/skill"
+const (
+	description = "Interview a person over a page rather than a scrollback, and leave a spec and its decisions behind. Use when a change needs a spec before it has code."
 
-var (
-	frontMatter = skill.FrontMatter(Name, "Interview a person over a page rather than a scrollback, and leave a spec and its decisions behind. Use when a change needs a spec before it has code.")
-
-	ticketsFrontMatter = skill.FrontMatter(TicketsName, "Cut a spec into tickets an implementer works through, written as files beside the spec, with one main ticket that holds the order and the status. Use when a spec under docs/changes/<slug>/ is ready to be built.")
+	ticketsDescription = "Cut a spec into tickets an implementer works through, written as files beside the spec, with one main ticket that holds the order and the status. Use when a spec under docs/changes/<slug>/ is ready to be built."
 )
 
 const (

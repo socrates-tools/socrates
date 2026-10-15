@@ -26,7 +26,7 @@ func Named(skills []Skill, namespaces map[string]string) []Invocation {
 
 	var written []string
 	for _, one := range skills {
-		written = append(written, codeIn(one.Document())...)
+		written = append(written, codeIn(one.Rendered())...)
 	}
 
 	for _, code := range written {

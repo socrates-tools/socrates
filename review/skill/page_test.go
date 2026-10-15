@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -22,7 +23,7 @@ var branchesThatHaveAResult = []string{cleanHeading, escalatedHeading, parkedHea
 var branchesThatHaveNone = []string{failedHeading, cancelledHeading}
 
 func TestTheBarIsStatedOnceAndRenderedFromThere(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	if !strings.Contains(document, skill.PageBar) {
 		t.Fatalf("the skill does not render the bar its source states:\n%s", skill.PageBar)
@@ -65,7 +66,7 @@ func TestTheBarNamesEachWayThePageFailsAPerson(t *testing.T) {
 }
 
 func TestTheBarIsStatedBeforeTheBranchesThatReferToIt(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	bar := strings.Index(document, skill.PageBar)
 	if bar < 0 {
@@ -89,7 +90,7 @@ func TestTheBarIsStatedBeforeTheBranchesThatReferToIt(t *testing.T) {
 }
 
 func TestEveryBranchThatHasAResultSaysToServeThePage(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	for _, branch := range branchesThatHaveAResult {
 		section := strings.ToLower(sectionOf(t, document, branch))
@@ -162,7 +163,7 @@ func TestEveryBranchThatHasAResultSaysToServeThePage(t *testing.T) {
 }
 
 func TestTheSkillSaysWhichBranchesWait(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 	page := strings.ToLower(sectionOf(t, document, pageHeading))
 
 	for _, said := range []string{
@@ -186,7 +187,7 @@ func TestTheSkillSaysWhichBranchesWait(t *testing.T) {
 }
 
 func TestTheSessionDoesNotDecideTheConditionItself(t *testing.T) {
-	page := sectionOf(t, skill.Document(), pageHeading)
+	page := sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading)
 
 	if !strings.Contains(page, "awaits a person") {
 		t.Error("the skill does not name the line socrates prints, so a session has to decide for itself which rounds wait on a person")
@@ -199,7 +200,7 @@ func TestTheSessionDoesNotDecideTheConditionItself(t *testing.T) {
 }
 
 func TestARoundTheAuthorAnswersAloneGetsAPageNobodyWaitsOn(t *testing.T) {
-	parked := sectionOf(t, skill.Document(), parkedHeading)
+	parked := sectionOf(t, skill.Document(skillkit.ClaudeCode), parkedHeading)
 
 	for _, said := range []string{
 		"Hand the round over as a page whichever of the two it holds",
@@ -217,7 +218,7 @@ func TestARoundTheAuthorAnswersAloneGetsAPageNobodyWaitsOn(t *testing.T) {
 }
 
 func TestARoundWithNothingToAnswerIsStillARoundInFull(t *testing.T) {
-	page := sectionOf(t, skill.Document(), pageHeading)
+	page := sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading)
 
 	for _, said := range []string{
 		"every finding is still a card and none of them carries an option",
@@ -239,7 +240,7 @@ func TestARoundWithNothingToAnswerIsStillARoundInFull(t *testing.T) {
 }
 
 func TestThePageIsNotInThePollingLoop(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	step := stepOf(t, document, waitingStep)
 	if strings.Contains(strings.ToLower(step), "page") {
@@ -251,7 +252,7 @@ func TestThePageIsNotInThePollingLoop(t *testing.T) {
 }
 
 func TestAControlCarriesItsCommandAndShowsItToNobody(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{
 		"carries the command it becomes",
@@ -269,7 +270,7 @@ func TestAControlCarriesItsCommandAndShowsItToNobody(t *testing.T) {
 }
 
 func TestTheSkillSaysHowAnAnswerReachesTheRun(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{"the person answers on the page", "socrates agora poll", "socrates review respond", "their own words"} {
 		if !strings.Contains(page, said) {
@@ -282,7 +283,7 @@ func TestTheSkillSaysHowAnAnswerReachesTheRun(t *testing.T) {
 }
 
 func TestAPageIsServedLocallyAndPublishedNowhere(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	if !strings.Contains(page, "socrates agora serve") {
 		t.Errorf("the page section names no local surface to serve the page with:\n%s", page)
@@ -295,7 +296,7 @@ func TestAPageIsServedLocallyAndPublishedNowhere(t *testing.T) {
 }
 
 func TestADecisionIsStillThePersonsToMake(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 	parked := sectionOf(t, document, parkedHeading)
 
 	if !strings.Contains(parked, "You do not answer such a finding on your own behalf.") {
@@ -311,7 +312,7 @@ func TestADecisionIsStillThePersonsToMake(t *testing.T) {
 }
 
 func TestTheSkillSaysThePageAndTheTerminalUseTheSameIdentifiers(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{"identifier", "severity", "audience", "f3", "socrates review findings --json"} {
 		if !strings.Contains(page, said) {
@@ -321,7 +322,7 @@ func TestTheSkillSaysThePageAndTheTerminalUseTheSameIdentifiers(t *testing.T) {
 }
 
 func TestThePageSaysWhatChoosingAnOptionMeansForTheChange(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{
 		"name each decision from its identifier",
@@ -338,7 +339,7 @@ func TestThePageSaysWhatChoosingAnOptionMeansForTheChange(t *testing.T) {
 const recommendingLine = "Say which option you would take, where you would take one, by marking that option and no other."
 
 func TestTheSkillNamesTheMarkWhereItNamesTheDocument(t *testing.T) {
-	page := sectionOf(t, skill.Document(), pageHeading)
+	page := sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading)
 
 	shape, _, found := strings.Cut(page, "The person answers on the page")
 	if !found {
@@ -350,7 +351,7 @@ func TestTheSkillNamesTheMarkWhereItNamesTheDocument(t *testing.T) {
 }
 
 func TestTheSkillSaysOneOptionCarriesIt(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{"at most one", "refused before anything is served"} {
 		if !strings.Contains(page, said) {
@@ -360,7 +361,7 @@ func TestTheSkillSaysOneOptionCarriesIt(t *testing.T) {
 }
 
 func TestTheSkillSaysTheMarkedOptionArrivesSelected(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{"reads that option first", "in words", "arrives selected", "taking none of them"} {
 		if !strings.Contains(page, said) {
@@ -370,7 +371,7 @@ func TestTheSkillSaysTheMarkedOptionArrivesSelected(t *testing.T) {
 }
 
 func TestWhenToRecommendIsStatedOnce(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	if counted := strings.Count(document, recommendingLine); counted != 1 {
 		t.Fatalf("the skill states %q %d times, want once, and the bar is where it belongs", recommendingLine, counted)
@@ -389,7 +390,7 @@ func TestWhenToRecommendIsStatedOnce(t *testing.T) {
 }
 
 func TestEveryFindingInTheRoundIsACard(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{
 		"give every finding in the round a card of its own",
@@ -413,7 +414,7 @@ func TestEveryFindingInTheRoundIsACard(t *testing.T) {
 }
 
 func TestAResolvedFindingIsStatedRatherThanAsked(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{
 		"a finding you have already resolved on a card that states something rather than one that asks anything",
@@ -428,7 +429,7 @@ func TestAResolvedFindingIsStatedRatherThanAsked(t *testing.T) {
 }
 
 func TestTheReasonForOfferingNoOptionsIsGiven(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{
 		"a control that changes nothing reads as a question the person still has to answer",
@@ -443,7 +444,7 @@ func TestTheReasonForOfferingNoOptionsIsGiven(t *testing.T) {
 }
 
 func TestForegroundingSurvivesWithoutDemotingAnything(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{
 		"the order the cards arrive in and the absence of controls",
@@ -500,7 +501,7 @@ func stepOf(t *testing.T, document, named string) string {
 }
 
 func TestTheSkillSaysToCarryTheSessionFromServeToPoll(t *testing.T) {
-	page := sectionOf(t, skill.Document(), pageHeading)
+	page := sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading)
 
 	for _, said := range []string{
 		"socrates agora serve --document ./round.json" + inlineCode + " prints the loopback address of its page",
@@ -514,7 +515,7 @@ func TestTheSkillSaysToCarryTheSessionFromServeToPoll(t *testing.T) {
 }
 
 func TestALaterRoundReachesThePageThePersonAlreadyHas(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 	page := sectionOf(t, document, pageHeading)
 
 	for _, said := range []string{
@@ -541,7 +542,7 @@ func TestALaterRoundReachesThePageThePersonAlreadyHas(t *testing.T) {
 }
 
 func TestTheSessionIsStatedOnceRatherThanOnEveryBranch(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	if counted := strings.Count(document, "socrates agora poll --session"); counted != 1 {
 		t.Errorf("the skill says how the session reaches socrates agora poll %d times, want once, and the copy a session reads first is the one that gets softened", counted)

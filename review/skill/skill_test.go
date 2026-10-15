@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strconv"
 	"strings"
 	"testing"
@@ -50,7 +51,7 @@ func numberedStep(t *testing.T, document string, number int) string {
 }
 
 func TestTheWaitingCommandIsStatus(t *testing.T) {
-	waiting := numberedStep(t, skill.Document(), 3)
+	waiting := numberedStep(t, skill.Document(skillkit.ClaudeCode), 3)
 
 	if !strings.Contains(waiting, "socrates review status") {
 		t.Errorf("the step that waits for a review does not name socrates review status:\n%s", waiting)
@@ -61,7 +62,7 @@ func TestTheWaitingCommandIsStatus(t *testing.T) {
 }
 
 func TestTheWaitingStepSaysHowOftenAndForHowLong(t *testing.T) {
-	waiting := strings.ToLower(numberedStep(t, skill.Document(), 3))
+	waiting := strings.ToLower(numberedStep(t, skill.Document(skillkit.ClaudeCode), 3))
 
 	if !strings.Contains(waiting, "five seconds") {
 		t.Errorf("the step that waits for a review names no interval, so a session picks its own:\n%s", waiting)
@@ -74,7 +75,7 @@ func TestTheWaitingStepSaysHowOftenAndForHowLong(t *testing.T) {
 }
 
 func TestWatchIsForThePerson(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	if named := strings.Count(document, "socrates review watch"); named != 1 {
 		t.Fatalf("the skill names socrates review watch %d times, and it is a suggestion for the person rather than a step", named)
@@ -108,7 +109,7 @@ func sentenceNaming(document, named string) string {
 }
 
 func TestEveryTerminalStateIsCovered(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	for _, state := range []runstate.State{runstate.Clean, runstate.Failed, runstate.Escalated, runstate.AwaitingResponse} {
 		t.Run(string(state), func(t *testing.T) {
@@ -121,7 +122,7 @@ func TestEveryTerminalStateIsCovered(t *testing.T) {
 }
 
 func TestEveryStateARunRestsInIsNamed(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	for _, state := range runstate.States() {
 		if !state.Terminal() && state != runstate.AwaitingResponse {
@@ -134,7 +135,7 @@ func TestEveryStateARunRestsInIsNamed(t *testing.T) {
 }
 
 func TestACancelledRunIsNotAVerdict(t *testing.T) {
-	said := strings.ToLower(sectionAbout(t, skill.Document(), string(runstate.Cancelled)))
+	said := strings.ToLower(sectionAbout(t, skill.Document(skillkit.ClaudeCode), string(runstate.Cancelled)))
 
 	for _, stated := range []string{"nothing was decided", "not report the change as reviewed", "on purpose"} {
 		if !strings.Contains(said, stated) {
@@ -144,7 +145,7 @@ func TestACancelledRunIsNotAVerdict(t *testing.T) {
 }
 
 func TestAFailedRunIsStatedNotToBeAPass(t *testing.T) {
-	said := sectionAbout(t, skill.Document(), string(runstate.Failed))
+	said := sectionAbout(t, skill.Document(skillkit.ClaudeCode), string(runstate.Failed))
 
 	for _, stated := range []string{"no review completed", "nothing has been checked", "not a clean"} {
 		if !strings.Contains(strings.ToLower(said), stated) {
@@ -155,7 +156,7 @@ func TestAFailedRunIsStatedNotToBeAPass(t *testing.T) {
 
 func TestFailedComesBeforeEscalated(t *testing.T) {
 	// scenario: A failed run is stated not to be a pass
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	failed := strings.Index(document, sectionHeading(string(runstate.Failed)))
 	escalated := strings.Index(document, sectionHeading(string(runstate.Escalated)))
@@ -168,7 +169,7 @@ func TestFailedComesBeforeEscalated(t *testing.T) {
 }
 
 func TestTheRulesAreStatedBeforeTheFindingsAreRead(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	stated := 0
 	for _, rule := range dialogue.Rules() {
@@ -189,7 +190,7 @@ func TestTheRulesAreStatedBeforeTheFindingsAreRead(t *testing.T) {
 }
 
 func TestAQuestionIsThePersons(t *testing.T) {
-	said := sectionAbout(t, skill.Document(), string(runstate.AwaitingResponse))
+	said := sectionAbout(t, skill.Document(skillkit.ClaudeCode), string(runstate.AwaitingResponse))
 
 	for _, stated := range []string{"needing a person", "is the person's", "record what they decided"} {
 		if !strings.Contains(said, stated) {
@@ -205,7 +206,7 @@ func TestAQuestionIsThePersons(t *testing.T) {
 }
 
 func TestARoundIsSpentWithoutAsking(t *testing.T) {
-	said := sectionAbout(t, skill.Document(), string(runstate.AwaitingResponse))
+	said := sectionAbout(t, skill.Document(skillkit.ClaudeCode), string(runstate.AwaitingResponse))
 
 	if !strings.Contains(said, "Do not ask the person whether the round is worth spending.") {
 		t.Errorf("the parked branch does not say that the round is spent without asking:\n%s", said)
@@ -218,7 +219,7 @@ func TestARoundIsSpentWithoutAsking(t *testing.T) {
 }
 
 func TestWhatThePersonIsToldAtTheEnd(t *testing.T) {
-	reporting := numberedStep(t, skill.Document(), 5)
+	reporting := numberedStep(t, skill.Document(skillkit.ClaudeCode), 5)
 
 	for _, stated := range []string{"how many rounds", "what the last one found"} {
 		if !strings.Contains(reporting, stated) {
@@ -228,7 +229,7 @@ func TestWhatThePersonIsToldAtTheEnd(t *testing.T) {
 }
 
 func TestAFurtherLookIsANewRun(t *testing.T) {
-	said := sectionAbout(t, skill.Document(), string(runstate.Escalated))
+	said := sectionAbout(t, skill.Document(skillkit.ClaudeCode), string(runstate.Escalated))
 
 	t.Run("There is no third round", func(t *testing.T) {
 		if !strings.Contains(said, "No further round is possible.") {
@@ -257,7 +258,7 @@ func TestAFurtherLookIsANewRun(t *testing.T) {
 }
 
 func TestTheLoopCloses(t *testing.T) {
-	said := sectionAbout(t, skill.Document(), string(runstate.AwaitingResponse))
+	said := sectionAbout(t, skill.Document(skillkit.ClaudeCode), string(runstate.AwaitingResponse))
 
 	for _, named := range []string{"socrates review findings", "socrates review respond", "socrates review continue", "socrates review status"} {
 		if !strings.Contains(said, named) {

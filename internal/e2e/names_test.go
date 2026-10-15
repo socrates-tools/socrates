@@ -47,13 +47,13 @@ func TestOneNameIsInstalledAndNothingIsPutBesideIt(t *testing.T) {
 
 	// scenario: make install also installs the skill, under the home it was given rather than the person's own
 	for _, one := range skill.All() {
-		path := filepath.Join(skillkit.UserDirectoryUnder(home), one.Name, skillkit.FileName)
+		path := filepath.Join(skillkit.UserDirectoryUnder(one.Host, home), one.Name, skillkit.FileName)
 		content, err := os.ReadFile(path)
 		if err != nil {
 			t.Errorf("make install did not install %s under the disposable home: %v", one.Name, err)
 			continue
 		}
-		if string(content) != one.Document() {
+		if string(content) != one.Rendered() {
 			t.Errorf("what make install wrote for %s under %s is not what the skill's source generates", one.Name, path)
 		}
 	}

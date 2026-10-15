@@ -1,6 +1,7 @@
 package e2e_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"os"
 	"path/filepath"
 	"strings"
@@ -374,7 +375,7 @@ func TestImplementSkillWritesTheDefinitionUnderTheDefaultDirectoryAtTheDefaults(
 		t.Fatalf("socrates implement skill exited %d: %s", code, failures)
 	}
 
-	path := filepath.Join(session.UserHome, ".claude", "agents", skill.AgentFileName())
+	path := filepath.Join(skillkit.ClaudeCode.AgentsDirectoryUnder(session.UserHome), skill.AgentFileName())
 	if !strings.Contains(printed, path) {
 		t.Errorf("socrates implement skill does not say where it wrote, and %s is where it did:\n%s", path, printed)
 	}

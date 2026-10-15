@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -29,7 +30,7 @@ func barLine(t *testing.T, naming string) string {
 }
 
 func TestShowingAndDrawingAreSeparateLines(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	shown := barLine(t, showing)
 	drawn := barLine(t, drawing)
@@ -51,7 +52,7 @@ func TestShowingAndDrawingAreSeparateLines(t *testing.T) {
 }
 
 func TestTheSkillNamesTheIllustrationAsSomethingADecisionMayCarry(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{
 		"a decision may also carry one illustration",
@@ -65,7 +66,7 @@ func TestTheSkillNamesTheIllustrationAsSomethingADecisionMayCarry(t *testing.T) 
 }
 
 func TestTheSkillSaysWhatFormsAnIllustrationTakes(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{
 		"one of two forms",
@@ -79,7 +80,7 @@ func TestTheSkillSaysWhatFormsAnIllustrationTakes(t *testing.T) {
 		}
 	}
 
-	document := strings.ToLower(skill.Document())
+	document := strings.ToLower(skill.Document(skillkit.ClaudeCode))
 	for _, engine := range []string{
 		"mermaid", "graphviz", "plantuml", "kroki", "excalidraw",
 		"diagram engine", "lays it out for you", "renders it for you",
@@ -91,7 +92,7 @@ func TestTheSkillSaysWhatFormsAnIllustrationTakes(t *testing.T) {
 }
 
 func TestTheSkillSaysTheLookIsStatedOncePerDocument(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{
 		`"stylesheet"`,
@@ -105,7 +106,7 @@ func TestTheSkillSaysTheLookIsStatedOncePerDocument(t *testing.T) {
 }
 
 func TestTheSkillSaysWhatIsStrippedBeforeEitherIsEmbedded(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{
 		"reduced to an allowlist before they are embedded",
@@ -121,7 +122,7 @@ func TestTheSkillSaysWhatIsStrippedBeforeEitherIsEmbedded(t *testing.T) {
 }
 
 func TestTheSkillSaysTheSurfaceDoesTheScoping(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(), pageHeading))
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 
 	for _, said := range []string{
 		"the surface scopes the stylesheet itself",
@@ -136,7 +137,7 @@ func TestTheSkillSaysTheSurfaceDoesTheScoping(t *testing.T) {
 }
 
 func TestHowToIllustrateIsStatedBesideWhenTo(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	bar := strings.Index(document, skill.PageBar)
 	mechanism := strings.Index(document, "A decision may also carry one illustration")

@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 const endingHeading = "## Ending early"
 
 func TestTheSkillSaysADesignCanEndAtAnyRound(t *testing.T) {
-	ending := sectionOf(t, skill.Document(), endingHeading)
+	ending := sectionOf(t, skill.Document(skillkit.ClaudeCode), endingHeading)
 
 	for _, said := range []string{
 		"The person can end a design at any round, before the frontier empties",
@@ -23,7 +24,7 @@ func TestTheSkillSaysADesignCanEndAtAnyRound(t *testing.T) {
 }
 
 func TestEndingEarlyStillWritesFromWhatIsSettled(t *testing.T) {
-	ending := sectionOf(t, skill.Document(), endingHeading)
+	ending := sectionOf(t, skill.Document(skillkit.ClaudeCode), endingHeading)
 
 	if !strings.Contains(ending, "Write the spec anyway") {
 		t.Errorf("the ending section does not say to write the spec anyway:\n%s", ending)
@@ -34,7 +35,7 @@ func TestEndingEarlyStillWritesFromWhatIsSettled(t *testing.T) {
 }
 
 func TestUnsettledQuestionsGoUnderAHeadingSayingTheDesignEndedEarly(t *testing.T) {
-	ending := sectionOf(t, skill.Document(), endingHeading)
+	ending := sectionOf(t, skill.Document(skillkit.ClaudeCode), endingHeading)
 
 	for _, said := range []string{
 		"is listed under a heading in Further Notes that says the design ended early",
@@ -47,7 +48,7 @@ func TestUnsettledQuestionsGoUnderAHeadingSayingTheDesignEndedEarly(t *testing.T
 }
 
 func TestTheEndingSectionComesAfterTheFrontierEmptiesSection(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	frontier := strings.Index(document, frontierEmptiesHeading)
 	ending := strings.Index(document, endingHeading)
@@ -60,7 +61,7 @@ func TestTheEndingSectionComesAfterTheFrontierEmptiesSection(t *testing.T) {
 }
 
 func TestTheEndingSectionComesBeforeInstallingElsewhere(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	ending := strings.Index(document, endingHeading)
 	installing := strings.Index(document, "## Installing elsewhere")

@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -10,21 +11,21 @@ import (
 )
 
 func TestTheHandoverSkillIsASkillOfItsOwn(t *testing.T) {
-	handover := skill.HandoverDocument()
+	handover := skill.HandoverDocument(skillkit.ClaudeCode)
 
-	if handover == skill.Document() {
+	if handover == skill.Document(skillkit.ClaudeCode) {
 		t.Fatal("the two skills render the same document, so a session reviewing its own work reads the forwarding half as well")
 	}
 	if !strings.Contains(handover, "name: "+skill.HandoverName) {
 		t.Errorf("the handover skill does not declare itself %s:\n%s", skill.HandoverName, handover)
 	}
-	if strings.Contains(skill.Document(), skill.HandoverName) {
+	if strings.Contains(skill.Document(skillkit.ClaudeCode), skill.HandoverName) {
 		t.Error("the skill a session reads about its own change names the handover skill, and what it costs that session is the prose it does not need")
 	}
 }
 
 func TestTheHandoverSkillAnswersFindingsByItsOwnRules(t *testing.T) {
-	handover := skill.HandoverDocument()
+	handover := skill.HandoverDocument(skillkit.ClaudeCode)
 
 	for _, rule := range dialogue.HandoverRules() {
 		if !strings.Contains(handover, rule) {
@@ -44,7 +45,7 @@ func TestTheHandoverSkillAnswersFindingsByItsOwnRules(t *testing.T) {
 }
 
 func TestTheHandoverSkillNamesTheBaseAndSaysWhatItResolvesTo(t *testing.T) {
-	handover := skill.HandoverDocument()
+	handover := skill.HandoverDocument(skillkit.ClaudeCode)
 
 	for _, stated := range []string{"--base", "--not-my-change", "fork point"} {
 		if !strings.Contains(handover, stated) {
@@ -59,7 +60,7 @@ func TestTheHandoverSkillNamesTheBaseAndSaysWhatItResolvesTo(t *testing.T) {
 }
 
 func TestTheChangeIsReadInAWorktreeOfItsOwn(t *testing.T) {
-	handover := skill.HandoverDocument()
+	handover := skill.HandoverDocument(skillkit.ClaudeCode)
 
 	if !strings.Contains(handover, "git worktree add") {
 		t.Errorf("the handover skill does not say to check the change out in a worktree of its own, so the review would be of their branch plus this session's edits:\n%s", handover)
@@ -70,7 +71,7 @@ func TestTheChangeIsReadInAWorktreeOfItsOwn(t *testing.T) {
 }
 
 func TestTheHeadOfTheChangeIsCapturedAndCheckedBeforeAnythingIsPosted(t *testing.T) {
-	handover := skill.HandoverDocument()
+	handover := skill.HandoverDocument(skillkit.ClaudeCode)
 
 	if !strings.Contains(handover, "Record the commit") {
 		t.Errorf("the handover skill does not say to record the commit the change is at:\n%s", handover)
@@ -82,7 +83,7 @@ func TestTheHeadOfTheChangeIsCapturedAndCheckedBeforeAnythingIsPosted(t *testing
 }
 
 func TestARelayedAccountIsPassedRatherThanFollowed(t *testing.T) {
-	handover := skill.HandoverDocument()
+	handover := skill.HandoverDocument(skillkit.ClaudeCode)
 
 	for _, stated := range []string{"verbatim", "one argument", "never run"} {
 		if !strings.Contains(handover, stated) {
@@ -97,7 +98,7 @@ func TestARelayedAccountIsPassedRatherThanFollowed(t *testing.T) {
 }
 
 func TestWhereACommentGoesComesFromSocrates(t *testing.T) {
-	handover := skill.HandoverDocument()
+	handover := skill.HandoverDocument(skillkit.ClaudeCode)
 
 	if !strings.Contains(handover, "inside the change") {
 		t.Fatalf("the handover skill says nothing about whether a finding's location is inside the change:\n%s", handover)
@@ -117,7 +118,7 @@ func TestWhereACommentGoesComesFromSocrates(t *testing.T) {
 }
 
 func TestNothingIsPostedThatThePersonDidNotChoose(t *testing.T) {
-	handover := skill.HandoverDocument()
+	handover := skill.HandoverDocument(skillkit.ClaudeCode)
 
 	if !strings.Contains(handover, "Post nothing the person did not choose on the page") {
 		t.Errorf("the handover skill does not say that nothing is posted the person did not choose:\n%s", handover)
@@ -134,7 +135,7 @@ func TestNothingIsPostedThatThePersonDidNotChoose(t *testing.T) {
 }
 
 func TestADropsReasonStaysOnThisMachine(t *testing.T) {
-	handover := skill.HandoverDocument()
+	handover := skill.HandoverDocument(skillkit.ClaudeCode)
 
 	kept := sentenceNaming(handover, "leaves this machine")
 	if !strings.Contains(kept, "dropped") && !strings.Contains(kept, "reason") {
@@ -146,7 +147,7 @@ func TestADropsReasonStaysOnThisMachine(t *testing.T) {
 }
 
 func TestNoSecondRoundFollowsAHandover(t *testing.T) {
-	said := sectionAbout(t, skill.HandoverDocument(), string(runstate.AwaitingResponse))
+	said := sectionAbout(t, skill.HandoverDocument(skillkit.ClaudeCode), string(runstate.AwaitingResponse))
 
 	if !strings.Contains(said, "socrates review continue") {
 		t.Errorf("the handover skill does not say to run socrates review continue once every finding is answered:\n%s", said)
@@ -160,7 +161,7 @@ func TestNoSecondRoundFollowsAHandover(t *testing.T) {
 }
 
 func TestARepeatReviewReadsWhatIsAlreadyThereAndJudgesNoDuplicate(t *testing.T) {
-	said := sectionAbout(t, skill.HandoverDocument(), string(runstate.AwaitingResponse))
+	said := sectionAbout(t, skill.HandoverDocument(skillkit.ClaudeCode), string(runstate.AwaitingResponse))
 
 	for _, stated := range []string{"comments already on the change", "file and line only", "evidence"} {
 		if !strings.Contains(said, stated) {
@@ -173,7 +174,7 @@ func TestARepeatReviewReadsWhatIsAlreadyThereAndJudgesNoDuplicate(t *testing.T) 
 }
 
 func TestEveryStateAHandoverRunRestsInIsNamed(t *testing.T) {
-	handover := skill.HandoverDocument()
+	handover := skill.HandoverDocument(skillkit.ClaudeCode)
 
 	for _, state := range runstate.States() {
 		if !state.Terminal() && state != runstate.AwaitingResponse {
@@ -186,7 +187,7 @@ func TestEveryStateAHandoverRunRestsInIsNamed(t *testing.T) {
 }
 
 func TestEveryBranchOfTheHandoverThatHasAResultServesAPage(t *testing.T) {
-	handover := skill.HandoverDocument()
+	handover := skill.HandoverDocument(skillkit.ClaudeCode)
 
 	for _, state := range []runstate.State{runstate.Clean, runstate.Escalated, runstate.AwaitingResponse} {
 		said := sectionAbout(t, handover, string(state))
@@ -206,7 +207,7 @@ func TestEveryBranchOfTheHandoverThatHasAResultServesAPage(t *testing.T) {
 }
 
 func TestThePageIsHeldToTheSameBarInBothSkills(t *testing.T) {
-	handover := skill.HandoverDocument()
+	handover := skill.HandoverDocument(skillkit.ClaudeCode)
 
 	if !strings.Contains(handover, skill.PageBar) {
 		t.Errorf("the handover skill does not hold the page to the bar the other skill holds it to:\n%s", handover)
@@ -221,7 +222,7 @@ func TestThePageIsHeldToTheSameBarInBothSkills(t *testing.T) {
 
 func TestNoInlineMarkerSurvivesIntoEitherDocument(t *testing.T) {
 	for _, one := range skill.All() {
-		document := one.Document()
+		document := one.Rendered()
 
 		if counted := strings.Count(document, "|"); counted != 0 {
 			t.Errorf("%s carries %d inline markers that were never turned into code", one.Name, counted)

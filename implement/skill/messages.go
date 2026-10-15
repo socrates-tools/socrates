@@ -1,8 +1,6 @@
 package skill
 
-import skillkit "github.com/socrates-tools/socrates/internal/skill"
-
-var frontMatter = skillkit.FrontMatter(Name, "Land a change's tickets through implementers while you stay free to talk, with a session that writes no code. Use when a spec's tickets are cut and ready to be built.")
+const description = "Land a change's tickets through implementers while you stay free to talk, with a session that writes no code. Use when a spec's tickets are cut and ready to be built."
 
 const (
 	namesNoAgentsDirectory = "it names no agents directory"

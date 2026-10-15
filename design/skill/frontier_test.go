@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 const frontierEmptiesHeading = "## When the frontier empties"
 
 func TestAnEmptyFrontierWritesTheSpecWithoutAFurtherPage(t *testing.T) {
-	frontier := sectionOf(t, skill.Document(), frontierEmptiesHeading)
+	frontier := sectionOf(t, skill.Document(skillkit.ClaudeCode), frontierEmptiesHeading)
 
 	for _, said := range []string{
 		"there is nothing left to ask, so serve no further page",
@@ -29,7 +30,7 @@ func TestAnEmptyFrontierWritesTheSpecWithoutAFurtherPage(t *testing.T) {
 }
 
 func TestTheSpecIsPublishedInNoRepository(t *testing.T) {
-	frontier := sectionOf(t, skill.Document(), frontierEmptiesHeading)
+	frontier := sectionOf(t, skill.Document(skillkit.ClaudeCode), frontierEmptiesHeading)
 
 	for _, unsaid := range []string{"issue", "tracker", "publish"} {
 		if strings.Contains(strings.ToLower(frontier), unsaid) {
@@ -42,7 +43,7 @@ func TestTheSpecIsPublishedInNoRepository(t *testing.T) {
 }
 
 func TestADesignHasNoRoundCap(t *testing.T) {
-	frontier := sectionOf(t, skill.Document(), frontierEmptiesHeading)
+	frontier := sectionOf(t, skill.Document(skillkit.ClaudeCode), frontierEmptiesHeading)
 
 	for _, said := range []string{
 		"There is no round cap",
@@ -55,7 +56,7 @@ func TestADesignHasNoRoundCap(t *testing.T) {
 }
 
 func TestTheFrontierEmptiesSectionComesAfterTheDecisionsSection(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	decisions := strings.Index(document, decisionsHeading)
 	frontier := strings.Index(document, frontierEmptiesHeading)
@@ -68,7 +69,7 @@ func TestTheFrontierEmptiesSectionComesAfterTheDecisionsSection(t *testing.T) {
 }
 
 func TestAWrittenSpecStartsNoOtherSkill(t *testing.T) {
-	frontier := sectionOf(t, skill.Document(), frontierEmptiesHeading)
+	frontier := sectionOf(t, skill.Document(skillkit.ClaudeCode), frontierEmptiesHeading)
 
 	for _, unsaid := range []string{"cut its tickets", skill.TicketsName, "cut the tickets", "tickets next"} {
 		if strings.Contains(frontier, unsaid) {

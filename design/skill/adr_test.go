@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 const decisionsHeading = "## Writing the decisions"
 
 func TestTheADRCriterionIsConjunctiveRatherThanDisjunctive(t *testing.T) {
-	decisions := sectionOf(t, skill.Document(), decisionsHeading)
+	decisions := sectionOf(t, skill.Document(skillkit.ClaudeCode), decisionsHeading)
 
 	if !strings.Contains(decisions, "all three of these hold together: it is hard to reverse, it is surprising without context, and it is the result of a real trade-off") {
 		t.Errorf("the decisions section does not state the three-part criterion joined by and:\n%s", decisions)
@@ -31,7 +32,7 @@ func TestTheADRCriterionIsConjunctiveRatherThanDisjunctive(t *testing.T) {
 }
 
 func TestTheADRsHomeAndNumberingAreStated(t *testing.T) {
-	decisions := sectionOf(t, skill.Document(), decisionsHeading)
+	decisions := sectionOf(t, skill.Document(skillkit.ClaudeCode), decisionsHeading)
 
 	for _, said := range []string{
 		"Number the file after the highest number already in",
@@ -47,7 +48,7 @@ func TestTheADRsHomeAndNumberingAreStated(t *testing.T) {
 }
 
 func TestTheRejectedSectionIsBuiltFromDeclinedOptionsOnly(t *testing.T) {
-	decisions := sectionOf(t, skill.Document(), decisionsHeading)
+	decisions := sectionOf(t, skill.Document(skillkit.ClaudeCode), decisionsHeading)
 
 	for _, said := range []string{
 		"Its Rejected section is built from the options the person declined, and from nothing else",
@@ -61,7 +62,7 @@ func TestTheRejectedSectionIsBuiltFromDeclinedOptionsOnly(t *testing.T) {
 }
 
 func TestTheDecisionsSectionComesAfterTheSpecSection(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	spec := strings.Index(document, specHeading)
 	decisions := strings.Index(document, decisionsHeading)

@@ -116,7 +116,7 @@ func TestTheDefinitionNamesNoSocratesCommand(t *testing.T) {
 }
 
 func TestTheCommittedCopyMatchesWhatIsRenderedAtTheDefaults(t *testing.T) {
-	path := filepath.Join(source.Root(t), ".claude", "agents", skill.AgentFileName())
+	path := filepath.Join(skillkit.ClaudeCode.AgentsDirectoryUnder(source.Root(t)), skill.AgentFileName())
 
 	committed, err := os.ReadFile(path)
 	if err != nil {
@@ -201,7 +201,7 @@ func TestTheDefaultDirectoryIsUnderTheHome(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 
-	directory, err := skill.AgentsDirectory()
+	directory, err := skill.AgentsDirectory(skillkit.ClaudeCode)
 	if err != nil {
 		t.Fatalf("resolving the default directory: %v", err)
 	}

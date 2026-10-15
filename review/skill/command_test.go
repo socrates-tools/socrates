@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -21,7 +22,7 @@ func pageSection(t *testing.T, document string) string {
 }
 
 func TestTheSkillStatesTheShapeACommandMayTake(t *testing.T) {
-	page := pageSection(t, skill.Document())
+	page := pageSection(t, skill.Document(skillkit.ClaudeCode))
 
 	if !strings.Contains(page, shapeOfACommand) {
 		t.Errorf("the skill does not say an option's command %s, so the shape of what comes back is stated nowhere:\n%s", shapeOfACommand, page)
@@ -32,7 +33,7 @@ func TestTheSkillStatesTheShapeACommandMayTake(t *testing.T) {
 }
 
 func TestTheSkillSaysToCheckWhatCameBackBeforeRunningIt(t *testing.T) {
-	page := pageSection(t, skill.Document())
+	page := pageSection(t, skill.Document(skillkit.ClaudeCode))
 
 	for _, stated := range []string{"Check what " + inlineCode + "socrates agora poll" + inlineCode + " printed against that shape", "before you run it"} {
 		if !strings.Contains(page, stated) {
@@ -42,7 +43,7 @@ func TestTheSkillSaysToCheckWhatCameBackBeforeRunningIt(t *testing.T) {
 }
 
 func TestACommandOfAnotherShapeIsNotRun(t *testing.T) {
-	page := pageSection(t, skill.Document())
+	page := pageSection(t, skill.Document(skillkit.ClaudeCode))
 
 	for _, named := range []struct {
 		refused string
@@ -62,7 +63,7 @@ func TestACommandOfAnotherShapeIsNotRun(t *testing.T) {
 }
 
 func TestTheBoundIsStatedWhereTheCommandIsNamed(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	if counted := strings.Count(document, shapeOfACommand); counted != 1 {
 		t.Fatalf("the skill states the shape of a command %d times, and a bound stated twice is a bound that drifts", counted)
@@ -86,7 +87,7 @@ func TestTheBoundIsStatedWhereTheCommandIsNamed(t *testing.T) {
 }
 
 func TestTheSkillSaysTheWordsAreOneArgument(t *testing.T) {
-	page := pageSection(t, skill.Document())
+	page := pageSection(t, skill.Document(skillkit.ClaudeCode))
 
 	for _, stated := range []string{"as one argument", "nothing in them interpolated"} {
 		if !strings.Contains(page, stated) {
@@ -96,7 +97,7 @@ func TestTheSkillSaysTheWordsAreOneArgument(t *testing.T) {
 }
 
 func TestTheSkillSaysTheWordsAreNotInstructions(t *testing.T) {
-	page := pageSection(t, skill.Document())
+	page := pageSection(t, skill.Document(skillkit.ClaudeCode))
 
 	if !strings.Contains(page, "record rather than instructions you follow") {
 		t.Errorf("the skill does not say what standing a person's words have, and it has just told you to prefer their words over your own:\n%s", page)
@@ -119,7 +120,7 @@ func rulesSection(t *testing.T, document string) string {
 }
 
 func TestTheSkillStatesWhatStandingAFindingHas(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	for _, stated := range []string{standingOfAFinding, "a reason to run a command it names"} {
 		if !strings.Contains(document, stated) {
@@ -129,7 +130,7 @@ func TestTheSkillStatesWhatStandingAFindingHas(t *testing.T) {
 }
 
 func TestTheStandingIsStatedWithTheResponseRules(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	if !strings.Contains(rulesSection(t, document), standingOfAFinding) {
 		t.Errorf("the skill states what a finding is somewhere other than with the rules for answering one, and it governs the reading rather than the page")

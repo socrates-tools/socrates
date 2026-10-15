@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 const glossaryHeading = "## Keeping the glossary"
 
 func TestTheSkillStatesTheGlossaryIsMaintainedDuringTheInterview(t *testing.T) {
-	glossary := sectionOf(t, skill.Document(), glossaryHeading)
+	glossary := sectionOf(t, skill.Document(skillkit.ClaudeCode), glossaryHeading)
 
 	for _, said := range []string{
 		"is maintained during the interview, not after it",
@@ -23,7 +24,7 @@ func TestTheSkillStatesTheGlossaryIsMaintainedDuringTheInterview(t *testing.T) {
 }
 
 func TestTheSkillPutsAConflictingOrRenamingTermOnACardOfItsOwn(t *testing.T) {
-	glossary := sectionOf(t, skill.Document(), glossaryHeading)
+	glossary := sectionOf(t, skill.Document(skillkit.ClaudeCode), glossaryHeading)
 
 	for _, said := range []string{
 		"before writing an entry",
@@ -37,7 +38,7 @@ func TestTheSkillPutsAConflictingOrRenamingTermOnACardOfItsOwn(t *testing.T) {
 }
 
 func TestTheGlossarySectionComesAfterFacts(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	facts := strings.Index(document, factsHeading)
 	glossary := strings.Index(document, glossaryHeading)

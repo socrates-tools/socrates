@@ -10,7 +10,7 @@ import (
 
 func TestTheThreeProhibitionsArePresent(t *testing.T) {
 	// scenario: The reasoning a session needs stays
-	document := strings.ToLower(skill.Document())
+	document := strings.ToLower(skill.Document(skillkit.ClaudeCode))
 
 	for _, prohibition := range []struct {
 		named  string

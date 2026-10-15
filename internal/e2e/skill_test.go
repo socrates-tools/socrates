@@ -32,7 +32,7 @@ func allNamespaces() map[string]string {
 
 func committedSkill(t *testing.T, session *harness.Session) string {
 	t.Helper()
-	return session.File(filepath.Join(source.Root(t), ".claude", "skills", skill.Name, skillkit.FileName))
+	return session.File(filepath.Join(skillkit.ClaudeCode.SkillsDirectoryUnder(source.Root(t)), skill.Name, skillkit.FileName))
 }
 
 func userLevelPath(t *testing.T, session *harness.Session) string {
@@ -42,7 +42,7 @@ func userLevelPath(t *testing.T, session *harness.Session) string {
 	if home == "" {
 		t.Fatal("the harness left no home directory, so this test would write into the person's own")
 	}
-	return filepath.Join(home, ".claude", "skills", skill.Name, skillkit.FileName)
+	return filepath.Join(skillkit.ClaudeCode.SkillsDirectoryUnder(home), skill.Name, skillkit.FileName)
 }
 
 func TestInstallingNamesThePath(t *testing.T) {
@@ -157,7 +157,7 @@ func TestADirectoryThatCannotBeWritten(t *testing.T) {
 
 func committedDesignSkill(t *testing.T, session *harness.Session) string {
 	t.Helper()
-	return session.File(filepath.Join(source.Root(t), ".claude", "skills", designskill.Name, skillkit.FileName))
+	return session.File(filepath.Join(skillkit.ClaudeCode.SkillsDirectoryUnder(source.Root(t)), designskill.Name, skillkit.FileName))
 }
 
 func designUserLevelPath(t *testing.T, session *harness.Session) string {
@@ -167,7 +167,7 @@ func designUserLevelPath(t *testing.T, session *harness.Session) string {
 	if home == "" {
 		t.Fatal("the harness left no home directory, so this test would write into the person's own")
 	}
-	return filepath.Join(home, ".claude", "skills", designskill.Name, skillkit.FileName)
+	return filepath.Join(skillkit.ClaudeCode.SkillsDirectoryUnder(home), designskill.Name, skillkit.FileName)
 }
 
 func TestInstallingDesignNamesThePath(t *testing.T) {
@@ -429,7 +429,7 @@ func TestOneSourceTwoSurfaces(t *testing.T) {
 		t.Fatalf("socrates review findings of a parked run exited %d: %s", code, failures)
 	}
 
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 	for _, rule := range report.ResponseRules() {
 		if !strings.Contains(printed, rule) {
 			t.Errorf("socrates review findings does not print the rule %q:\n%s", rule, printed)
@@ -471,12 +471,12 @@ func TestBothSkillsAreInstalled(t *testing.T) {
 	}
 
 	for _, one := range skill.All() {
-		path := filepath.Join(home, ".claude", "skills", one.Name, skillkit.FileName)
+		path := filepath.Join(skillkit.ClaudeCode.SkillsDirectoryUnder(home), one.Name, skillkit.FileName)
 
 		if !strings.Contains(printed, path) {
 			t.Errorf("socrates review skill does not say it wrote %s:\n%s", path, printed)
 		}
-		if written := session.File(path); written != one.Document() {
+		if written := session.File(path); written != one.Rendered() {
 			t.Errorf("what was installed at %s is not what the skill's source generates", path)
 		}
 	}
@@ -500,15 +500,15 @@ func TestBothDesignSkillsAreInstalled(t *testing.T) {
 	}
 
 	for _, one := range designskill.All() {
-		path := filepath.Join(home, ".claude", "skills", one.Name, skillkit.FileName)
+		path := filepath.Join(skillkit.ClaudeCode.SkillsDirectoryUnder(home), one.Name, skillkit.FileName)
 
 		if !strings.Contains(printed, path) {
 			t.Errorf("socrates design skill does not say it wrote %s:\n%s", path, printed)
 		}
-		if written := session.File(path); written != one.Document() {
+		if written := session.File(path); written != one.Rendered() {
 			t.Errorf("what was installed at %s is not what the skill's source generates", path)
 		}
-		if committed := session.File(filepath.Join(source.Root(t), ".claude", "skills", one.Name, skillkit.FileName)); committed != one.Document() {
+		if committed := session.File(filepath.Join(skillkit.ClaudeCode.SkillsDirectoryUnder(source.Root(t)), one.Name, skillkit.FileName)); committed != one.Rendered() {
 			t.Errorf("the committed copy of %s is not what its source generates: run make skill", one.Name)
 		}
 	}
@@ -530,15 +530,15 @@ func TestTheOverseerSkillIsInstalledAndTheCommittedCopyIsWhatItsSourceGenerates(
 	if home == "" {
 		t.Fatal("the harness left no home directory, so this test would write into the person's own")
 	}
-	path := filepath.Join(home, ".claude", "skills", implementskill.Name, skillkit.FileName)
+	path := filepath.Join(skillkit.ClaudeCode.SkillsDirectoryUnder(home), implementskill.Name, skillkit.FileName)
 
 	if !strings.Contains(printed, path) {
 		t.Errorf("socrates implement skill does not say it wrote %s:\n%s", path, printed)
 	}
-	if written := session.File(path); written != implementskill.Document() {
+	if written := session.File(path); written != implementskill.Document(skillkit.ClaudeCode) {
 		t.Errorf("what was installed at %s is not what the skill's source generates", path)
 	}
-	if committed := session.File(filepath.Join(source.Root(t), ".claude", "skills", implementskill.Name, skillkit.FileName)); committed != implementskill.Document() {
+	if committed := session.File(filepath.Join(skillkit.ClaudeCode.SkillsDirectoryUnder(source.Root(t)), implementskill.Name, skillkit.FileName)); committed != implementskill.Document(skillkit.ClaudeCode) {
 		t.Errorf("the committed copy of %s is not what its source generates: run make skill", implementskill.Name)
 	}
 }
@@ -553,7 +553,7 @@ func TestTheOverseerSkillIsInstalledBesideTheDefinitionUnderTheDirectoriesNamed(
 		t.Fatalf("socrates implement skill exited %d: %s\n%s", code, failures, printed)
 	}
 
-	if written := session.File(filepath.Join(skills, implementskill.Name, skillkit.FileName)); written != implementskill.Document() {
+	if written := session.File(filepath.Join(skills, implementskill.Name, skillkit.FileName)); written != implementskill.Document(skillkit.ClaudeCode) {
 		t.Error("what was installed under --to is not what the skill's source generates")
 	}
 	if _, err := os.Stat(filepath.Join(agents, implementskill.AgentFileName())); err != nil {

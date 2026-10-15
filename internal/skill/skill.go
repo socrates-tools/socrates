@@ -8,44 +8,43 @@ import (
 	"github.com/socrates-tools/socrates/internal/refusal"
 )
 
-const (
-	FileName = "SKILL.md"
+const FileName = "SKILL.md"
 
-	vendorDirectory = ".claude"
-	skillsDirectory = "skills"
-)
-
-const PersonOnlyField = "disable-model-invocation: true"
-
-func FrontMatter(name, description string) string {
-	return "---\nname: " + name + "\ndescription: " + description + "\n" + PersonOnlyField + "\n---"
+func FrontMatter(host Host, name, description string) string {
+	return frontMatterFence + "\nname: " + name + "\ndescription: " + description + "\n" + host.PersonOnlyField + "\n" + frontMatterFence
 }
 
 type Skill struct {
 	Name     string
-	Document func() string
+	Host     Host
+	Document func(Host) string
 	Ceiling  int
+}
+
+func (s Skill) Rendered() string {
+	return s.Document(s.Host)
 }
 
 type Installed struct {
 	Name string
+	Host Host
 	Path string
 }
 
 func (i Installed) Announcement() string {
-	return fmt.Sprintf(installedForAPerson, i.Name, i.Path, i.Name)
+	return fmt.Sprintf(installedForAPerson, i.Name, i.Path, i.Host.Starts(i.Name))
 }
 
-func UserDirectory(invocation string) (string, error) {
+func UserDirectory(host Host, invocation string) (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", refusal.Wrapping(err, noHomeDirectory, err, invocation)
 	}
-	return UserDirectoryUnder(home), nil
+	return UserDirectoryUnder(host, home), nil
 }
 
-func UserDirectoryUnder(home string) string {
-	return filepath.Join(home, vendorDirectory, skillsDirectory)
+func UserDirectoryUnder(host Host, home string) string {
+	return host.SkillsDirectoryUnder(home)
 }
 
 func Install(directory string, skills []Skill, invocation string) ([]Installed, error) {
@@ -57,10 +56,10 @@ func Install(directory string, skills []Skill, invocation string) ([]Installed, 
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			return nil, refusal.Wrapping(err, theTargetCannotBeWritten, path, err, invocation)
 		}
-		if err := os.WriteFile(path, []byte(one.Document()), 0o644); err != nil {
+		if err := os.WriteFile(path, []byte(one.Rendered()), 0o644); err != nil {
 			return nil, refusal.Wrapping(err, theTargetCannotBeWritten, path, err, invocation)
 		}
-		written = append(written, Installed{Name: one.Name, Path: path})
+		written = append(written, Installed{Name: one.Name, Host: one.Host, Path: path})
 	}
 
 	return written, nil

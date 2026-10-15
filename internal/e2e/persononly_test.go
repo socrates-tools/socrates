@@ -34,8 +34,8 @@ func TestEverySkillAnyNamespaceInstallsIsInvokedByAPersonOnly(t *testing.T) {
 				return err
 			}
 			installedHere++
-			if !convention.CarriesThePersonOnlyField(session.File(path)) {
-				t.Errorf("socrates %s skill installed %s without %s in its front matter, so a model could start it", tool.Namespace, path, skillkit.PersonOnlyField)
+			if !skillkit.ClaudeCode.PersonOnly(filepath.Dir(path)) {
+				t.Errorf("socrates %s skill installed %s without %s in its front matter, so a model could start it", tool.Namespace, path, skillkit.ClaudeCode.PersonOnlyField)
 			}
 			return nil
 		})
@@ -76,7 +76,7 @@ func TestEveryInstallSaysAPersonStartsTheSkillAndNoSessionDoes(t *testing.T) {
 		}
 		for _, path := range installed {
 			name := filepath.Base(filepath.Dir(path))
-			want := "the " + name + " skill is at " + path + ", and only a person starts it, by typing /" + name
+			want := "the " + name + " skill is at " + path + ", and only a person starts it, by typing " + skillkit.ClaudeCode.Starts(name)
 			if !strings.Contains(printed, want+"\n") {
 				t.Errorf("socrates %s skill printed:\n%s\nand a person reading it is not told that only they start %s, with:\n%s", tool.Namespace, printed, name, want)
 			}

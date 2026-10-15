@@ -23,20 +23,20 @@ func newSkillCommand() *cobra.Command {
 			}
 
 			if target == "" {
-				chosen, err := skillkit.UserDirectory(skillInvocation)
+				chosen, err := skillkit.UserDirectory(skillkit.ClaudeCode, skillInvocation)
 				if err != nil {
 					return err
 				}
 				target = chosen
 			}
 
-			written, err := skillkit.Install(target, skill.All(), skillInvocation)
+			written, err := skillkit.Install(target, skill.For(skillkit.ClaudeCode), skillInvocation)
 			if err != nil {
 				return err
 			}
 
 			if agentsTarget == "" {
-				chosen, err := skill.AgentsDirectory()
+				chosen, err := skill.AgentsDirectory(skillkit.ClaudeCode)
 				if err != nil {
 					return err
 				}

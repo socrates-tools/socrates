@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"strings"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 const settledHeading = "## What was settled"
 
 func TestTheSkillStatesRoundTwoOpensWithWhatWasSettled(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	for _, said := range []string{
 		"Round two opens with what round one settled, above what is still open",
@@ -23,7 +24,7 @@ func TestTheSkillStatesRoundTwoOpensWithWhatWasSettled(t *testing.T) {
 }
 
 func TestTheSkillStatesASettledAnswerGoesInTheSettledListRatherThanAmongTheDecisions(t *testing.T) {
-	settled := sectionOf(t, skill.Document(), settledHeading)
+	settled := sectionOf(t, skill.Document(skillkit.ClaudeCode), settledHeading)
 
 	for _, said := range []string{
 		"A settled answer goes in the document's `settled` list rather than among its decisions",
@@ -50,7 +51,7 @@ func TestTheSkillStatesASettledAnswerGoesInTheSettledListRatherThanAmongTheDecis
 }
 
 func TestTheSkillStatesASettledAnswerIsReopenedThroughTheMessage(t *testing.T) {
-	settled := sectionOf(t, skill.Document(), settledHeading)
+	settled := sectionOf(t, skill.Document(skillkit.ClaudeCode), settledHeading)
 
 	for _, said := range []string{
 		"A settled answer offers no field of its own",
@@ -64,7 +65,7 @@ func TestTheSkillStatesASettledAnswerIsReopenedThroughTheMessage(t *testing.T) {
 }
 
 func TestTheSkillStatesThePreambleCarriesOneLinePerSettledQuestion(t *testing.T) {
-	settled := sectionOf(t, skill.Document(), settledHeading)
+	settled := sectionOf(t, skill.Document(skillkit.ClaudeCode), settledHeading)
 
 	if !strings.Contains(settled, "Carry one sentence per settled question into the preamble too") {
 		t.Errorf("the settled section does not say the preamble carries one sentence per settled question:\n%s", settled)
@@ -75,7 +76,7 @@ func TestTheSkillStatesThePreambleCarriesOneLinePerSettledQuestion(t *testing.T)
 }
 
 func TestTheSkillStatesIdentifiersAreStableForTheLifeOfTheDesign(t *testing.T) {
-	settled := sectionOf(t, skill.Document(), settledHeading)
+	settled := sectionOf(t, skill.Document(skillkit.ClaudeCode), settledHeading)
 
 	for _, said := range []string{
 		"Identifiers are stable for the life of the design",
@@ -89,7 +90,7 @@ func TestTheSkillStatesIdentifiersAreStableForTheLifeOfTheDesign(t *testing.T) {
 }
 
 func TestTheSkillStatesThePageReadsWhatWasSettledFirstWhereverItIsListed(t *testing.T) {
-	settled := sectionOf(t, skill.Document(), settledHeading)
+	settled := sectionOf(t, skill.Document(skillkit.ClaudeCode), settledHeading)
 
 	if !strings.Contains(settled, "The page reads what was settled ahead of every open question, as a block that offers nothing to answer") {
 		t.Errorf("the settled section does not say the page reads what was settled first:\n%s", settled)
@@ -100,7 +101,7 @@ func TestTheSkillStatesThePageReadsWhatWasSettledFirstWhereverItIsListed(t *test
 }
 
 func TestTheSettledSectionComesAfterThePageSectionAndBeforeFacts(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	page := strings.Index(document, pageHeading)
 	settled := strings.Index(document, settledHeading)

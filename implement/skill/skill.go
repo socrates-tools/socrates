@@ -17,9 +17,6 @@ const (
 	AgentName       = "socrates-implementer"
 	AgentCeiling    = 1700
 	AgentFileSuffix = ".md"
-
-	vendorDirectory = ".claude"
-	agentsDirectory = "agents"
 )
 
 var Namespaces = map[string]string{"implement": Name}
@@ -28,15 +25,23 @@ func Binaries() []string {
 	return []string{Name}
 }
 
-func Document() string {
-	parts := []string{frontMatter, purpose, theWritesNoCodeSection, theStartingSection, theDefaultBranchSection,
+func Document(host skillkit.Host) string {
+	parts := []string{skillkit.FrontMatter(host, Name, description), purpose, theWritesNoCodeSection, theStartingSection, theDefaultBranchSection,
 		theChangesBranchSection, theFrontierSection, theWorktreesSection, theReviewSection, theLandingSection,
 		theStatusSection, theResumingSection, thePersonSection, theLastReadSection, installingElsewhere}
 	return strings.ReplaceAll(strings.Join(parts, "\n\n")+"\n", skillkit.InlineCodeMarker, skillkit.CodeMarker)
 }
 
+func For(host skillkit.Host) []skillkit.Skill {
+	return []skillkit.Skill{{Name: Name, Host: host, Document: Document, Ceiling: Ceiling}}
+}
+
 func All() []skillkit.Skill {
-	return []skillkit.Skill{{Name: Name, Document: Document, Ceiling: Ceiling}}
+	var every []skillkit.Skill
+	for _, host := range skillkit.Hosts() {
+		every = append(every, For(host)...)
+	}
+	return every
 }
 
 func AgentFileName() string {
@@ -63,20 +68,24 @@ func DefinitionFor(stated config.Config) string {
 	return Definition(role.Model, role.Effort)
 }
 
-func AgentsDirectory() (string, error) {
+func AgentsDirectory(host skillkit.Host) (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", refusal.Wrapping(err, noHomeDirectory, err)
 	}
-	return AgentsDirectoryUnder(home), nil
+	return AgentsDirectoryUnder(host, home), nil
 }
 
-func AgentsDirectoryUnder(home string) string {
-	return filepath.Join(home, vendorDirectory, agentsDirectory)
+func AgentsDirectoryUnder(host skillkit.Host, home string) string {
+	return host.AgentsDirectoryUnder(home)
+}
+
+func defaultDefinitionFor(skillkit.Host) string {
+	return DefaultDefinition()
 }
 
 func Ceilings() []skillkit.Skill {
-	return append(All(), skillkit.Skill{Name: AgentName, Document: DefaultDefinition, Ceiling: AgentCeiling})
+	return append(All(), skillkit.Skill{Name: AgentName, Host: skillkit.ClaudeCode, Document: defaultDefinitionFor, Ceiling: AgentCeiling})
 }
 
 func WriteDefinition(directory string, stated config.Config) (string, error) {

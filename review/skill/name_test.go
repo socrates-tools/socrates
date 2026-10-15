@@ -12,58 +12,51 @@ import (
 	"github.com/socrates-tools/socrates/review/skill"
 )
 
-func documentOf(t *testing.T, named string) string {
-	t.Helper()
-
-	for _, one := range skill.All() {
-		if one.Name == named {
-			return one.Document()
-		}
-	}
-	t.Fatalf("this repository states no skill called %s", named)
-	return ""
-}
-
 func TestOneConstantNamesTheSkillAndReadsItsInvocations(t *testing.T) {
-	directory := t.TempDir()
+	for _, host := range skillkit.Hosts() {
+		t.Run(host.Name, func(t *testing.T) {
+			skills := skill.For(host)
+			directory := t.TempDir()
 
-	written, err := skillkit.Install(directory, skill.All(), skillkit.Dispatcher+" review skill")
-	if err != nil {
-		t.Fatalf("installing the skills: %v", err)
-	}
-	if len(written) != len(skill.All()) {
-		t.Fatalf("installing wrote %d skills, and this repository states %d", len(written), len(skill.All()))
-	}
-
-	everything := ""
-	for _, installed := range written {
-		if named := filepath.Base(filepath.Dir(installed.Path)); named != installed.Name {
-			t.Errorf("the %s skill is installed under %q", installed.Name, named)
-		}
-
-		document := documentOf(t, installed.Name)
-		everything += document
-
-		declared := ""
-		for line := range strings.SplitSeq(document, "\n") {
-			if stated, isName := strings.CutPrefix(line, "name: "); isName {
-				declared = strings.TrimSpace(stated)
-				break
+			written, err := skillkit.Install(directory, skills, skillkit.Dispatcher+" review skill")
+			if err != nil {
+				t.Fatalf("installing the skills: %v", err)
 			}
-		}
-		if declared != installed.Name {
-			t.Errorf("the skill declares itself %q while it is installed as %q, so one of the two is a second copy of the name", declared, installed.Name)
-		}
-	}
+			if len(written) != len(skills) {
+				t.Fatalf("installing wrote %d skills, and this repository states %d", len(written), len(skills))
+			}
 
-	named := skillkit.Named(skill.All(), skill.Namespaces)
-	if len(named) == 0 {
-		t.Fatal("the skills are read to name no invocation at all, so this check reads nothing")
-	}
-	for _, invocation := range named {
-		if !strings.Contains(everything, typedInvocation(invocation.Binary, invocation.Command)) {
-			t.Errorf("a skill is read to name %q, which appears under no other name than %q", invocation.Command, invocation.Binary)
-		}
+			everything := ""
+			for position, installed := range written {
+				if named := filepath.Base(filepath.Dir(installed.Path)); named != installed.Name {
+					t.Errorf("the %s skill is installed under %q", installed.Name, named)
+				}
+
+				document := skills[position].Rendered()
+				everything += document
+
+				declared := ""
+				for line := range strings.SplitSeq(document, "\n") {
+					if stated, isName := strings.CutPrefix(line, "name: "); isName {
+						declared = strings.TrimSpace(stated)
+						break
+					}
+				}
+				if declared != installed.Name {
+					t.Errorf("the skill declares itself %q while it is installed as %q, so one of the two is a second copy of the name", declared, installed.Name)
+				}
+			}
+
+			named := skillkit.Named(skills, skill.Namespaces)
+			if len(named) == 0 {
+				t.Fatal("the skills are read to name no invocation at all, so this check reads nothing")
+			}
+			for _, invocation := range named {
+				if !strings.Contains(everything, typedInvocation(invocation.Binary, invocation.Command)) {
+					t.Errorf("a skill is read to name %q, which appears under no other name than %q", invocation.Command, invocation.Binary)
+				}
+			}
+		})
 	}
 }
 
@@ -78,7 +71,7 @@ func typedInvocation(binary, command string) string {
 }
 
 func TestTheSkillNamesTheOneNameTheToolHas(t *testing.T) {
-	document := skill.Document()
+	document := skill.Document(skillkit.ClaudeCode)
 
 	if skill.Name != convention.Repository {
 		t.Errorf("the skill is named %q and the repository is named %q, and the skill keeps that name because .claude/skills is a flat namespace with no dispatcher of its own", skill.Name, convention.Repository)
