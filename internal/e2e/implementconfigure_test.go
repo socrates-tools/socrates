@@ -361,7 +361,7 @@ func TestImplementConfigureOffersACodexModelTakingATypedIdentifierOrTheDefaultAn
 		t.Errorf("the Codex model row offers %v, want a typed identifier and use the default", offered)
 	}
 	for _, each := range config.CodexEfforts() {
-		if !slices.Contains(optionsIn(effort), each) {
+		if !slices.ContainsFunc(optionsIn(effort), func(row string) bool { return strings.Fields(row)[0] == each }) {
 			t.Errorf("the Codex effort row offers no %s:\n%s", each, effort)
 		}
 	}
