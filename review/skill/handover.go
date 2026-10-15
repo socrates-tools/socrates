@@ -6,7 +6,7 @@ import (
 )
 
 func HandoverDocument(host skill.Host) string {
-	return assembled(skill.FrontMatter(host, HandoverName, handoverDescription), handoverPurpose, handoverRules(), thePage(theAnswerAHandoverPageCarries), theHandoverLoop, handoverProhibitions)
+	return assembled(skill.FrontMatter(host, HandoverName, handoverDescription), handoverPurpose, host.Guidance(handoverPage, true), handoverRules(), thePage(theAnswerAHandoverPageCarries), theHandoverLoop, handoverProhibitions)
 }
 
 func handoverRules() string {

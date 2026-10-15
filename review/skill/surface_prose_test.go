@@ -10,16 +10,7 @@ import (
 )
 
 func TestProseNamingTheProductIsNotAnInvocation(t *testing.T) {
-	var commands []string
-	for _, named := range skillkit.Named(skill.All(), skill.Namespaces) {
-		attributed := named.Binary + " " + named.Command
-		if !slices.Contains(commands, attributed) {
-			commands = append(commands, attributed)
-		}
-	}
-	slices.Sort(commands)
-
-	want := []string{
+	common := []string{
 		"agora poll",
 		"agora serve",
 		"socrates-review begin",
@@ -29,7 +20,22 @@ func TestProseNamingTheProductIsNotAnInvocation(t *testing.T) {
 		"socrates-review status",
 		"socrates-review watch",
 	}
-	if diff := cmp.Diff(want, commands); diff != "" {
-		t.Errorf("the commands the skill is read to name differ (-want +got):\n%s\na prose sentence about socrates is not an invocation, and an invocation is written as code", diff)
+
+	for host, want := range map[skillkit.Host][]string{
+		skillkit.ClaudeCode: common,
+		skillkit.Codex:      slices.Concat([]string{"agora end"}, common),
+	} {
+		var commands []string
+		for _, named := range skillkit.Named(skill.For(host), skill.Namespaces) {
+			attributed := named.Binary + " " + named.Command
+			if !slices.Contains(commands, attributed) {
+				commands = append(commands, attributed)
+			}
+		}
+		slices.Sort(commands)
+
+		if diff := cmp.Diff(want, commands); diff != "" {
+			t.Errorf("the commands the skill is read to name on %s differ (-want +got):\n%s\na prose sentence about socrates is not an invocation, and an invocation is written as code", host.Name, diff)
+		}
 	}
 }

@@ -7,6 +7,11 @@ const (
 )
 
 const (
+	designPage  = "the design questions page"
+	ticketsPage = "the ticket breakdown page"
+)
+
+const (
 	purpose = `# socrates design
 
 A design is an interview.

@@ -20,6 +20,12 @@ The interview is put to a person on a page rather than as prose in a terminal:
     socrates agora serve           put a round of questions in front of a person
     socrates agora poll            read what they answered
 
+## On Codex
+
+Run `socrates agora serve`, `socrates agora poll` and `socrates agora end` outside the sandbox, which denies the loopback port the page is served on: call each with `sandbox_permissions` set to `require_escalated` and a one-line `justification` naming the page, which is the design questions page, so Codex asks the person before it runs.
+Wherever this skill says subagent, start it with `spawn_agent` and collect it with `wait_agent`, waiting briefly enough each time to answer the person between waits.
+Invoke no skill: every socrates skill is a person's to start.
+
 ## Rounds
 
 An interview is a tree of questions, walked in rounds rather than one question at a time.

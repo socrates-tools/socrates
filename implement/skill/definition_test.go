@@ -39,7 +39,7 @@ func stated(model, effort string) config.Config {
 }
 
 func TestTheDefinitionIsHeldToACeilingOfItsOwn(t *testing.T) {
-	for _, violation := range skillkit.CeilingViolations(skill.Ceilings()) {
+	for _, violation := range skillkit.CeilingViolations(skill.WithAgentFiles()) {
 		t.Error(violation)
 	}
 }

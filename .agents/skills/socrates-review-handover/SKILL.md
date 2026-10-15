@@ -11,6 +11,12 @@ Nothing here is yours to patch, so every finding is handed to whoever wrote the 
 The person chooses which, on a page, and you post what they chose and nothing else.
 socrates review posts nothing: it has no forge, no credentials and no network, so the fetching and the posting are yours.
 
+## On Codex
+
+Run `socrates agora serve`, `socrates agora poll` and `socrates agora end` outside the sandbox, which denies the loopback port the page is served on: call each with `sandbox_permissions` set to `require_escalated` and a one-line `justification` naming the page, which is the review handover page, so Codex asks the person before it runs.
+Wherever this skill says subagent, start it with `spawn_agent` and collect it with `wait_agent`, waiting briefly enough each time to answer the person between waits.
+Invoke no skill: every socrates skill is a person's to start.
+
 ## Answering findings
 
 - You did not review this code, and you did not write it either. An independent reviewer read a change somebody else wrote.

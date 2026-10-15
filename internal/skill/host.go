@@ -1,6 +1,7 @@
 package skill
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,6 +27,9 @@ type Host struct {
 	ConfigurationVariable string
 	PersonOnlyField       string
 	PolicyFile            string
+	Escalation            string
+	Delegation            string
+	NoSkill               string
 }
 
 var ClaudeCode = Host{
@@ -44,6 +48,9 @@ var Codex = Host{
 	SkillsDirectory: filepath.Join(".agents", "skills"),
 	AgentsDirectory: filepath.Join(".codex", "agents"),
 	PolicyFile:      filepath.Join("agents", "openai.yaml"),
+	Escalation:      escalatesThePage,
+	Delegation:      spawnsAndWaitsForAgents,
+	NoSkill:         invokesNoSkill,
 
 	ConfigurationVariable: "CODEX_HOME",
 }
@@ -59,6 +66,23 @@ func HostFlagged(value string) (Host, bool) {
 		}
 	}
 	return Host{}, false
+}
+
+func (h Host) Guidance(page string, delegates bool) string {
+	var lines []string
+	if h.Escalation != "" {
+		lines = append(lines, fmt.Sprintf(h.Escalation, page))
+	}
+	if delegates && h.Delegation != "" {
+		lines = append(lines, h.Delegation)
+	}
+	if h.NoSkill != "" {
+		lines = append(lines, h.NoSkill)
+	}
+	if len(lines) == 0 {
+		return ""
+	}
+	return strings.Join(append([]string{fmt.Sprintf(guidanceHeading, h.Name), ""}, lines...), "\n")
 }
 
 func (h Host) Starts(name string) string {

@@ -611,3 +611,83 @@ func TestEveryHostsFrontMatterCarriesItsOwnKeysAndNoOthers(t *testing.T) {
 		}
 	}
 }
+
+func servingSkills() []skillkit.Skill {
+	var serving []skillkit.Skill
+	for _, one := range allSkills() {
+		if strings.Contains(one.Rendered(), "socrates agora serve") {
+			serving = append(serving, one)
+		}
+	}
+	return serving
+}
+
+func TestEveryCodexRenderingThatServesAPageEscalatesServePollAndEnd(t *testing.T) {
+	t.Parallel()
+
+	var checked int
+	for _, one := range servingSkills() {
+		if one.Host != skillkit.Codex {
+			continue
+		}
+		checked++
+		for _, want := range []string{"sandbox_permissions", "require_escalated", "socrates agora serve", "socrates agora poll", "socrates agora end", "justification"} {
+			if !strings.Contains(one.Rendered(), want) {
+				t.Errorf("%s for Codex serves a page and does not say %q", one.Name, want)
+			}
+		}
+	}
+	if checked != 4 {
+		t.Errorf("%d Codex renderings serve a page, want the four design, tickets, review and review handover", checked)
+	}
+}
+
+func TestEveryCodexRenderingThatDelegatesStartsAgentsWithSpawnAgentAndCollectsThemWithWaitAgent(t *testing.T) {
+	t.Parallel()
+
+	for _, one := range servingSkills() {
+		if one.Host != skillkit.Codex || !strings.Contains(one.Rendered(), "subagent") {
+			continue
+		}
+		for _, want := range []string{"spawn_agent", "wait_agent", "answer the person between"} {
+			if !strings.Contains(one.Rendered(), want) {
+				t.Errorf("%s for Codex sends work to a subagent and does not say %q", one.Name, want)
+			}
+		}
+	}
+}
+
+func TestNoClaudeCodeRenderingNamesCodexsEscalationOrAgentCalls(t *testing.T) {
+	t.Parallel()
+
+	for _, one := range allSkills() {
+		if one.Host != skillkit.ClaudeCode {
+			continue
+		}
+		for _, unsaid := range []string{"require_escalated", "spawn_agent", "wait_agent"} {
+			if strings.Contains(one.Rendered(), unsaid) {
+				t.Errorf("%s for Claude Code names %q, which is Codex's", one.Name, unsaid)
+			}
+		}
+	}
+}
+
+func TestNoCodexRenderingThatServesAPageDescribesBackgroundWork(t *testing.T) {
+	t.Parallel()
+
+	for _, one := range servingSkills() {
+		if one.Host == skillkit.Codex && strings.Contains(strings.ToLower(one.Rendered()), "background") {
+			t.Errorf("%s for Codex describes work in the background, which is Claude Code's", one.Name)
+		}
+	}
+}
+
+func TestEveryCodexRenderingThatServesAPageTellsTheSessionToInvokeNoSkill(t *testing.T) {
+	t.Parallel()
+
+	for _, one := range servingSkills() {
+		if one.Host == skillkit.Codex && !strings.Contains(one.Rendered(), "Invoke no skill") {
+			t.Errorf("%s for Codex does not tell the session to invoke no skill", one.Name)
+		}
+	}
+}

@@ -24,3 +24,13 @@ const (
 
 	noHomeDirectory = "the skill installs under a home directory by default, and none could be found: %s. Name a directory to write it to with %s --host and --to"
 )
+
+const (
+	guidanceHeading = "## On %s"
+
+	escalatesThePage = `Run |socrates agora serve|, |socrates agora poll| and |socrates agora end| outside the sandbox, which denies the loopback port the page is served on: call each with |sandbox_permissions| set to |require_escalated| and a one-line |justification| naming the page, which is %s, so Codex asks the person before it runs.`
+
+	spawnsAndWaitsForAgents = `Wherever this skill says subagent, start it with |spawn_agent| and collect it with |wait_agent|, waiting briefly enough each time to answer the person between waits.`
+
+	invokesNoSkill = `Invoke no skill: every socrates skill is a person's to start.`
+)

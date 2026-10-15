@@ -22,3 +22,9 @@ func CeilingViolations(skills []Skill) []string {
 func onHost(one Skill) string {
 	return fmt.Sprintf(skillOnAHost, one.Name, one.Host.Name)
 }
+
+type Ceilings map[Host]int
+
+func (c Ceilings) For(host Host) int {
+	return c[host]
+}

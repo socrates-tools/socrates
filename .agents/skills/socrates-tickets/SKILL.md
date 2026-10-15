@@ -23,6 +23,11 @@ The breakdown is put to a person on a page, the way a design's questions are, ra
     socrates agora serve           put the proposed breakdown in front of a person
     socrates agora poll            read what they answered
 
+## On Codex
+
+Run `socrates agora serve`, `socrates agora poll` and `socrates agora end` outside the sandbox, which denies the loopback port the page is served on: call each with `sandbox_permissions` set to `require_escalated` and a one-line `justification` naming the page, which is the ticket breakdown page, so Codex asks the person before it runs.
+Invoke no skill: every socrates skill is a person's to start.
+
 ## The spec it starts from
 
 Start from a spec at `docs/changes/<slug>/spec.md`, and nothing else.

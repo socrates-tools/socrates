@@ -87,7 +87,7 @@ func TestTheCodexRoleNamesNoSocratesCommand(t *testing.T) {
 
 func TestTheCodexRoleIsHeldToACeilingOfItsOwn(t *testing.T) {
 	held := false
-	for _, one := range skill.Ceilings() {
+	for _, one := range skill.WithAgentFiles() {
 		if one.Name == skill.AgentName && one.Host == skillkit.Codex {
 			held = true
 		}

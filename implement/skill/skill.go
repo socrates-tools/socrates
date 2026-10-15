@@ -13,15 +13,16 @@ import (
 )
 
 const (
-	Name    = "socrates-implement"
-	Ceiling = 10500
+	Name = "socrates-implement"
 
-	AgentName       = "socrates-implementer"
-	AgentCeiling    = 1700
-	AgentFileSuffix = ".md"
-
-	CodexRoleCeiling    = 1750
+	AgentName           = "socrates-implementer"
+	AgentFileSuffix     = ".md"
 	CodexRoleFileSuffix = ".toml"
+)
+
+var (
+	Ceilings      = skillkit.Ceilings{skillkit.ClaudeCode: 10500, skillkit.Codex: 10500}
+	AgentCeilings = skillkit.Ceilings{skillkit.ClaudeCode: 1700, skillkit.Codex: 1750}
 )
 
 var Namespaces = map[string]string{"implement": Name}
@@ -54,7 +55,7 @@ func whereAgentsInstall(host skillkit.Host) string {
 }
 
 func For(host skillkit.Host) []skillkit.Skill {
-	return []skillkit.Skill{{Name: Name, Host: host, Document: Document, Ceiling: Ceiling}}
+	return []skillkit.Skill{{Name: Name, Host: host, Document: Document, Ceiling: Ceilings.For(host)}}
 }
 
 func All() []skillkit.Skill {
@@ -143,11 +144,12 @@ func defaultAgentFor(host skillkit.Host) string {
 	return DefaultDefinition()
 }
 
-func Ceilings() []skillkit.Skill {
-	return append(All(),
-		skillkit.Skill{Name: AgentName, Host: skillkit.ClaudeCode, Document: defaultAgentFor, Ceiling: AgentCeiling},
-		skillkit.Skill{Name: AgentName, Host: skillkit.Codex, Document: defaultAgentFor, Ceiling: CodexRoleCeiling},
-	)
+func WithAgentFiles() []skillkit.Skill {
+	every := All()
+	for _, host := range skillkit.Hosts() {
+		every = append(every, skillkit.Skill{Name: AgentName, Host: host, Document: defaultAgentFor, Ceiling: AgentCeilings.For(host)})
+	}
+	return every
 }
 
 func agentFor(host skillkit.Host, stated config.Config) string {
