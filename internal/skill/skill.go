@@ -78,3 +78,13 @@ func Install(directory string, skills []Skill, invocation string) ([]Installed, 
 
 	return written, nil
 }
+
+func Assembled(parts ...string) string {
+	var present []string
+	for _, part := range parts {
+		if part != "" {
+			present = append(present, part)
+		}
+	}
+	return strings.ReplaceAll(strings.Join(present, "\n\n")+"\n", InlineCodeMarker, CodeMarker)
+}

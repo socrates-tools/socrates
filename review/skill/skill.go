@@ -12,9 +12,11 @@ const (
 	Name         = "socrates-review"
 	HandoverName = Name + "-handover"
 	Surface      = "agora"
+)
 
-	Ceiling         = 15708
-	HandoverCeiling = 17000
+var (
+	Ceilings         = skill.Ceilings{skill.ClaudeCode: 15708, skill.Codex: 16257}
+	HandoverCeilings = skill.Ceilings{skill.ClaudeCode: 17000, skill.Codex: 17549}
 )
 
 var Namespaces = map[string]string{
@@ -27,7 +29,7 @@ func Binaries() []string {
 }
 
 func Document(host skill.Host) string {
-	return assembled(skill.FrontMatter(host, Name, description), purpose, rules(), thePage(theAnswerAPageCarries), theLoop, prohibitions)
+	return assembled(skill.FrontMatter(host, Name, description), purpose, host.Guidance(reviewPage, true), rules(), thePage(theAnswerAPageCarries), theLoop, prohibitions)
 }
 
 func thePage(answer string) string {
@@ -35,7 +37,7 @@ func thePage(answer string) string {
 }
 
 func assembled(parts ...string) string {
-	return strings.ReplaceAll(strings.Join(parts, "\n\n")+"\n", skill.InlineCodeMarker, skill.CodeMarker)
+	return skill.Assembled(parts...)
 }
 
 func rules() string {
@@ -52,8 +54,8 @@ func stating(rules []string) string {
 
 func For(host skill.Host) []skill.Skill {
 	return []skill.Skill{
-		{Name: Name, Host: host, Document: Document, Ceiling: Ceiling},
-		{Name: HandoverName, Host: host, Document: HandoverDocument, Ceiling: HandoverCeiling},
+		{Name: Name, Host: host, Document: Document, Ceiling: Ceilings.For(host)},
+		{Name: HandoverName, Host: host, Document: HandoverDocument, Ceiling: HandoverCeilings.For(host)},
 	}
 }
 

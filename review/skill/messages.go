@@ -7,6 +7,11 @@ const (
 )
 
 const (
+	reviewPage   = "the review findings page"
+	handoverPage = "the review handover page"
+)
+
+const (
 	purpose = `# socrates review
 
 You have implemented something nobody has read.

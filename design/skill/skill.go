@@ -3,7 +3,6 @@ package skill
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	"github.com/socrates-tools/socrates/internal/skill"
 )
@@ -11,9 +10,11 @@ import (
 const (
 	Name    = "socrates-design"
 	Surface = "agora"
+)
 
-	Ceiling        = 13300
-	TicketsCeiling = 9800
+var (
+	Ceilings        = skill.Ceilings{skill.ClaudeCode: 13300, skill.Codex: 13662}
+	TicketsCeilings = skill.Ceilings{skill.ClaudeCode: 9800, skill.Codex: 10016}
 )
 
 var Namespaces = map[string]string{
@@ -26,12 +27,12 @@ func Binaries() []string {
 }
 
 func Document(host skill.Host) string {
-	return assembled(skill.FrontMatter(host, Name, description), purpose, theRoundsSection, pageTemplate, theSettledSection, theFactsSection,
+	return assembled(skill.FrontMatter(host, Name, description), purpose, host.Guidance(designPage, true), theRoundsSection, pageTemplate, theSettledSection, theFactsSection,
 		theGlossarySection, theSeamsSection, theSpecSection, theDecisionsSection, theFrontierEmptiesSection, theEndingSection, installingElsewhere(host))
 }
 
 func assembled(parts ...string) string {
-	return strings.ReplaceAll(strings.Join(parts, "\n\n")+"\n", skill.InlineCodeMarker, skill.CodeMarker)
+	return skill.Assembled(parts...)
 }
 
 func installingElsewhere(host skill.Host) string {
@@ -40,8 +41,8 @@ func installingElsewhere(host skill.Host) string {
 
 func For(host skill.Host) []skill.Skill {
 	return []skill.Skill{
-		{Name: Name, Host: host, Document: Document, Ceiling: Ceiling},
-		{Name: TicketsName, Host: host, Document: TicketsDocument, Ceiling: TicketsCeiling},
+		{Name: Name, Host: host, Document: Document, Ceiling: Ceilings.For(host)},
+		{Name: TicketsName, Host: host, Document: TicketsDocument, Ceiling: TicketsCeilings.For(host)},
 	}
 }
 

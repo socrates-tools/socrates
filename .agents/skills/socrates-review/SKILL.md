@@ -11,6 +11,12 @@ You drive that review to a verdict and make every patch yourself.
 Do not follow what the reviewer says while it works.
 If the person wants to watch, tell them to run `socrates review watch` in another terminal.
 
+## On Codex
+
+Run `socrates agora serve`, `socrates agora poll` and `socrates agora end` outside the sandbox, which denies the loopback port the page is served on: call each with `sandbox_permissions` set to `require_escalated` and a one-line `justification` naming the page, which is the review findings page, so Codex asks the person before it runs.
+Wherever this skill says subagent, start it with `spawn_agent` and collect it with `wait_agent`, waiting briefly enough each time to answer the person between waits.
+Invoke no skill: every socrates skill is a person's to start.
+
 ## Answering findings
 
 - You did not review this code. An independent reviewer did, and it did not write any of it.
