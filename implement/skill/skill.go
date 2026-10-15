@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/socrates-tools/socrates/implement/config"
 	"github.com/socrates-tools/socrates/internal/refusal"
@@ -12,13 +11,14 @@ import (
 )
 
 const (
-	Name    = "socrates-implement"
-	Ceiling = 10500
+	Name = "socrates-implement"
 
 	AgentName       = "socrates-implementer"
 	AgentCeiling    = 1700
 	AgentFileSuffix = ".md"
 )
+
+var OverseerCeilings = skillkit.Ceilings{skillkit.ClaudeCode: 10500, skillkit.Codex: 11200}
 
 var Namespaces = map[string]string{"implement": Name}
 
@@ -27,10 +27,31 @@ func Binaries() []string {
 }
 
 func Document(host skillkit.Host) string {
-	parts := []string{skillkit.FrontMatter(host, Name, description), purpose, theWritesNoCodeSection, theStartingSection, theDefaultBranchSection,
-		theChangesBranchSection, theFrontierSection, theWorktreesSection, theReviewSection, theLandingSection,
-		theStatusSection, theResumingSection, thePersonSection, theLastReadSection, installingElsewhere(host)}
-	return strings.ReplaceAll(strings.Join(parts, "\n\n")+"\n", skillkit.InlineCodeMarker, skillkit.CodeMarker)
+	wording := wordingFor(host)
+	parts := []string{skillkit.FrontMatter(host, Name, description), purpose, hostSection(host), theWritesNoCodeSection,
+		fmt.Sprintf(startingSection, wording.noun, wording.verb), theDefaultBranchSection, theChangesBranchSection, theFrontierSection,
+		fmt.Sprintf(worktreesSection, wording.startsTheImplementer), theReviewSection,
+		fmt.Sprintf(landingSection, wording.runsTheVerification), theStatusSection, theResumingSection,
+		fmt.Sprintf(personSection, wording.implementersRun), theLastReadSection, installingElsewhere(host)}
+	return skillkit.Assembled(parts...)
+}
+
+type hostWording struct {
+	noun, verb, startsTheImplementer, runsTheVerification, implementersRun string
+}
+
+func wordingFor(host skillkit.Host) hostWording {
+	if host == skillkit.Codex {
+		return hostWording{codexNoun, codexVerb, codexStartsTheImplementer, codexRunsTheVerification, codexImplementersRun}
+	}
+	return hostWording{claudeCodeNoun, claudeCodeVerb, claudeCodeStartsTheImplementer, claudeCodeRunsTheVerification, claudeCodeImplementersRun}
+}
+
+func hostSection(host skillkit.Host) string {
+	if host != skillkit.Codex {
+		return ""
+	}
+	return fmt.Sprintf(codexSection, host.Delegation)
 }
 
 func installingElsewhere(host skillkit.Host) string {
@@ -41,7 +62,7 @@ func installingElsewhere(host skillkit.Host) string {
 }
 
 func For(host skillkit.Host) []skillkit.Skill {
-	return []skillkit.Skill{{Name: Name, Host: host, Document: Document, Ceiling: Ceiling}}
+	return []skillkit.Skill{{Name: Name, Host: host, Document: Document, Ceiling: OverseerCeilings.For(host)}}
 }
 
 func All() []skillkit.Skill {
