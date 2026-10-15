@@ -24,7 +24,7 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 66](../../../adr/0066-every-skil
 | [3.1-codex-escalates-the-page](3.1-codex-escalates-the-page.md) | 2.1 | done |
 | [3.2-reviewer-follows-the-host](3.2-reviewer-follows-the-host.md) | 2.1 | in progress |
 | [3.3-codex-implementer-role](3.3-codex-implementer-role.md) | 2.1 | in progress |
-| [3.4-codex-overseer](3.4-codex-overseer.md) | 2.1 | in progress |
+| [3.4-codex-overseer](3.4-codex-overseer.md) | 2.1 | done |
 | [4-codex-implementer-settings](4-codex-implementer-settings.md) | 3.3 | pending |
 | [5.1-readme-names-codex](5.1-readme-names-codex.md) | 2.2, 3.1, 3.2, 3.4, 4 | pending |
 | [5.2-live-runs-under-codex](5.2-live-runs-under-codex.md) | 3.1, 3.2, 3.4, 4 | pending |

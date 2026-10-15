@@ -32,7 +32,7 @@ A conflict is never yours to resolve.
 Invoke no skill: not this one again and not another, because every skill is a person's to start.
 Settle everything a capable engineer would decide by your own best judgement, and do not ask the person.`
 
-	theStartingSection = `## Starting a run
+	startingSection = `## Starting a run
 
 Start every run by reading the main ticket, the spec, every ADR the spec names and the glossaries, before anything is handed out.
 You review each ticket against that argument, so read it, not each ticket alone.
@@ -40,7 +40,7 @@ You review each ticket against that argument, so read it, not each ticket alone.
 Read the settings with |socrates implement config| at the start of every run.
 |concurrency| is the most implementers running at once.
 An implementer's model and effort are not yours to pass, because the |socrates-implementer| agent definition carries them.
-Where |socrates-implementer| is not an agent you can start, tell the person to run |socrates implement skill| and start nothing.
+Where |socrates-implementer| is not %s you can %s, tell the person to run |socrates implement skill| and start nothing.
 
 Before the first hand-out, have one subagent read the code the change touches and write notes to |<notes>/<slug>.md|: where things live, the names the shared surfaces will use, and how the repository verifies.
 |<notes>| is the |notes/| directory beside the file |socrates implement config| prints on its first line, |~/.socrates/implement/notes/| by default, outside the repository.
@@ -78,7 +78,7 @@ Hold back a ready ticket that shares a surface with a running one, such as a mes
 It runs once the one it shares with has landed.
 Write no blocker into the tickets for it: they stay as the person approved them.`
 
-	theWorktreesSection = `## Worktrees and briefs
+	worktreesSection = `## Worktrees and briefs
 
 Make each implementer's worktree and branch yourself, with git, off the change's branch:
 
@@ -88,7 +88,7 @@ Make each implementer's worktree and branch yourself, with git, off the change's
 |<worktrees>| is the |worktrees/| directory beside the file |socrates implement config| prints on its first line, which is |~/.socrates/implement/worktrees/| by default.
 The branch is a sibling of the change's branch rather than a child, because git cannot hold a branch and a branch beneath it.
 
-Run the implementer in the background, as the |socrates-implementer| agent, so you stay free to talk to the person.
+%s
 Brief it with pointers rather than a paraphrase: its worktree, its branch, the change's branch, its ticket, the notes, and the spec and ADRs the ticket rests on.
 Everything else it needs is in its definition and the files, and a brief restating them can drift from them.`
 
@@ -102,14 +102,14 @@ Where it falls short, send feedback to the same implementer, which patches its o
 Set no cap on the exchanges: keep going while your judgement says the work is converging.
 Where a ticket has stalled, hand it to a fresh implementer briefed with what the first one got wrong.`
 
-	theLandingSection = `## Landing
+	landingSection = `## Landing
 
 Land one ticket at a time, by fast-forward, from the person's own checkout on the change's branch:
 
     git merge --ff-only <type>/<slug>-<ticket>
 
 Then run the repository's own verification, the command its instructions name, on the change's branch.
-Run it in the background, so you stay free to talk to the person while it runs, as the implementers do.
+%s
 Run it after every landing, so two tickets that each passed alone but fail together are caught at the landing that broke them.
 A failure goes back to the implementer whose ticket landed last, which patches its own branch and reports again, and you land that the same way.
 Remove a ticket's worktree and branch once its landing has passed.
@@ -137,9 +137,9 @@ Where the change's branch exists already, read the main ticket's table rather th
 Hand each in-progress ticket to a fresh implementer, briefed to continue from that ticket's own branch, so no committed work is thrown away.
 Then carry on from the frontier.`
 
-	thePersonSection = `## The person
+	personSection = `## The person
 
-You are the one channel through which the person talks about the change while it is built, and the implementers run in the background so you stay free to answer.
+You are the one channel through which the person talks about the change while it is built, and %s so you stay free to answer.
 What the person says mid-run, relay it at once to every implementer it concerns, rather than at the next landing.
 
 Reach the person in the terminal, in your own reply, and only about what coding cannot fix: a security block, a credential, an account or a permission you cannot grant yourself.
@@ -197,4 +197,30 @@ Never invoke a socrates skill.`
 	theRecordCannotBeRead         = "%s records where the agent definition was installed and socrates implement cannot read it: %s. Move it aside and run socrates implement skill again"
 	theRecordCannotBeWritten      = "socrates implement could not record where it wrote the agent definition in %s: %s. Fix its permissions and run socrates implement skill again"
 	theTargetCannotBeMadeAbsolute = "%s cannot be made an absolute path: %s. Name an absolute directory with socrates implement skill --agents-to"
+)
+
+const (
+	claudeCodeStartsTheImplementer = "Run the implementer in the background, as the |socrates-implementer| agent, so you stay free to talk to the person."
+	claudeCodeRunsTheVerification  = "Run it in the background, so you stay free to talk to the person while it runs, as the implementers do."
+	claudeCodeImplementersRun      = "the implementers run in the background"
+
+	claudeCodeNoun = "an agent"
+	claudeCodeVerb = "start"
+
+	codexStartsTheImplementer = "Start the implementer with |spawn_agent|, naming |agent_type| |socrates-implementer|, so you stay free to talk to the person."
+	codexRunsTheVerification  = "Have a subagent run it, so you stay free to talk to the person while it runs, as the implementers do."
+	codexImplementersRun      = "the implementers run as subagents"
+
+	codexNoun = "a role"
+	codexVerb = "spawn"
+
+	codexSection = `## On Codex
+
+Check at the start of every run that you can write the directory beside the file |socrates implement config| prints on its first line, by creating a file there and removing it.
+Where you cannot, start nothing, and tell the person to add that directory to |writable_roots| under |[sandbox_workspace_write]| in Codex's configuration, or to start Codex with |--add-dir <that directory>|.
+
+%s
+
+Send feedback to an implementer with |send_input|.
+Collect its report with |wait_agent| between answering the person, and close it with |close_agent| once its ticket has landed, because an open agent counts against Codex's concurrency limit.`
 )
