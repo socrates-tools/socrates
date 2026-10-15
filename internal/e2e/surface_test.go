@@ -86,6 +86,7 @@ func (s *surfaced) surfaceHome() string {
 
 func (s *surfaced) bindsWhatIsConfigured() {
 	lockingTheDefaultPort(s.t)
+	s.t.Cleanup(func() { s.run("stop") })
 	s.bind = ""
 }
 

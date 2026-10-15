@@ -175,9 +175,17 @@ func untilThePortIsFree(t *testing.T, address string) {
 	}
 }
 
+var defaultPortFreedAtTheEnd sync.Map
+
 func lockingTheDefaultPort(t *testing.T) {
 	t.Helper()
 	exclusive.Machine(t, "agora-default-port")
+	if _, already := defaultPortFreedAtTheEnd.LoadOrStore(t, struct{}{}); !already {
+		t.Cleanup(func() {
+			defaultPortFreedAtTheEnd.Delete(t)
+			untilThePortIsFree(t, surface.DefaultAddress)
+		})
+	}
 }
 
 func requireTheFixedPortIsFree(t *testing.T) {
