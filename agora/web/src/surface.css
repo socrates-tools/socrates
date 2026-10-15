@@ -15,8 +15,6 @@
   --aegean-700: #0e4a8c;
   --aegean-800: #0b3d73;
 
-  --clay-50: #f8e8df;
-  --clay-500: #b4532d;
   --clay-600: #a3471f;
 
   --limestone-0: #ffffff;
@@ -45,6 +43,7 @@
   --cinnabar-600: #b42e24;
   --ochre-50: #faefd8;
   --ochre-700: #8a5a00;
+  --sea-50: #e2f0f1;
   --sea-600: #0b6e79;
 
   --bg-ground: var(--limestone-100);
@@ -80,9 +79,10 @@
   --accent-ring: var(--aegean-200);
   --selection: var(--aegean-300);
 
-  --clay: var(--clay-500);
-  --clay-ink: var(--clay-600);
-  --clay-wash: var(--clay-50);
+  --recommended: var(--sea-600);
+  --recommended-wash: var(--sea-50);
+  --your-call: var(--aegean-600);
+  --your-call-wash: var(--aegean-100);
 
   --state-resolved: var(--olive-600);
   --state-resolved-wash: var(--olive-50);
@@ -606,9 +606,9 @@ span.entry-link .entry-name {
   color: var(--state-error);
 }
 
-.mark[data-tone='clay'] {
-  background: var(--clay-wash);
-  color: var(--clay-ink);
+.mark[data-tone='call'] {
+  background: var(--your-call-wash);
+  color: var(--your-call);
 }
 
 .mark[data-tone='warning'] {
@@ -1198,8 +1198,8 @@ span.entry-link .entry-name {
   align-items: center;
   padding: 0 8px;
   border-radius: var(--radius-pill);
-  background: var(--clay-wash);
-  color: var(--clay-ink);
+  background: var(--recommended-wash);
+  color: var(--recommended);
   font-size: var(--size-micro);
   font-weight: 700;
   letter-spacing: var(--tracking-chip);

@@ -14,7 +14,7 @@ func TestAnAudienceSocratesReviewWritesIsMarkedAsTheDesignDrewIt(t *testing.T) {
 		tone     string
 		spoken   string
 	}{
-		{"needs a person", "clay", "Your call. Only a person can decide this. The reviewer will not answer it."},
+		{"needs a person", "call", "Your call. Only a person can decide this. The reviewer will not answer it."},
 		{"can be patched", "neutral", "Author can patch. The session that wrote the change can fix this without you."},
 		{"informational", "neutral", "For information. Nothing to decide."},
 		{"the author patches", "neutral", "Decides: the author patches"},

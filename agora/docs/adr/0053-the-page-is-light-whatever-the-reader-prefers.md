@@ -1,6 +1,6 @@
 # 53. The page is light whatever the reader prefers
 
-- Status: accepted
+- Status: accepted, its clay marks amended by ADR 70
 - Date: 2026-10-04
 - Part of: the-aegean-page
 
