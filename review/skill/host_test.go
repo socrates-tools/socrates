@@ -14,7 +14,7 @@ func TestEveryRenderingPassesItsOwnHostToBegin(t *testing.T) {
 	for _, one := range skill.All() {
 		started := 0
 		for _, line := range strings.Split(one.Rendered(), "\n") {
-			if !strings.HasPrefix(line, skillkit.CodeIndent+beginning) {
+			if !strings.HasPrefix(line, skillkit.CodeIndent) || !strings.HasPrefix(strings.TrimLeft(line, " "), beginning) {
 				continue
 			}
 			started++
