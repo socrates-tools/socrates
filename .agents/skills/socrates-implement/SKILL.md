@@ -21,6 +21,16 @@ The commands you run are these, and every other step is git, the repository's ow
     socrates implement config            print every setting in force and this repository's default branch
     socrates implement default-branch    remember the branch this repository's features start from
 
+## On Codex
+
+Check at the start of every run that you can write the directory beside the file `socrates implement config` prints on its first line, by creating a file there and removing it.
+Where you cannot, start nothing, and tell the person to add that directory to `writable_roots` under `[sandbox_workspace_write]` in Codex's configuration, or to start Codex with `--add-dir <that directory>`.
+
+Wherever this skill says subagent, start it with `spawn_agent` and collect it with `wait_agent`, waiting briefly enough each time to answer the person between waits.
+
+Send feedback to an implementer with `send_input`.
+Collect its report with `wait_agent` between answering the person, and close it with `close_agent` once its ticket has landed, because an open agent counts against Codex's concurrency limit.
+
 ## You write no code
 
 You write no code, no test and no documentation.
@@ -38,7 +48,7 @@ You review each ticket against that argument, so read it, not each ticket alone.
 Read the settings with `socrates implement config` at the start of every run.
 `concurrency` is the most implementers running at once.
 An implementer's model and effort are not yours to pass, because the `socrates-implementer` agent definition carries them.
-Where `socrates-implementer` is not an agent you can start, tell the person to run `socrates implement skill` and start nothing.
+Where `socrates-implementer` is not a role you can spawn, tell the person to run `socrates implement skill` and start nothing.
 
 Before the first hand-out, have one subagent read the code the change touches and write notes to `<notes>/<slug>.md`: where things live, the names the shared surfaces will use, and how the repository verifies.
 `<notes>` is the `notes/` directory beside the file `socrates implement config` prints on its first line, `~/.socrates/implement/notes/` by default, outside the repository.
@@ -86,7 +96,7 @@ Make each implementer's worktree and branch yourself, with git, off the change's
 `<worktrees>` is the `worktrees/` directory beside the file `socrates implement config` prints on its first line, which is `~/.socrates/implement/worktrees/` by default.
 The branch is a sibling of the change's branch rather than a child, because git cannot hold a branch and a branch beneath it.
 
-Run the implementer in the background, as the `socrates-implementer` agent, so you stay free to talk to the person.
+Start the implementer with `spawn_agent`, naming `agent_type` `socrates-implementer`, so you stay free to talk to the person.
 Brief it with pointers rather than a paraphrase: its worktree, its branch, the change's branch, its ticket, the notes, and the spec and ADRs the ticket rests on.
 Everything else it needs is in its definition and the files, and a brief restating them can drift from them.
 
@@ -107,7 +117,7 @@ Land one ticket at a time, by fast-forward, from the person's own checkout on th
     git merge --ff-only <type>/<slug>-<ticket>
 
 Then run the repository's own verification, the command its instructions name, on the change's branch.
-Run it in the background, so you stay free to talk to the person while it runs, as the implementers do.
+Have a subagent run it, so you stay free to talk to the person while it runs, as the implementers do.
 Run it after every landing, so two tickets that each passed alone but fail together are caught at the landing that broke them.
 A failure goes back to the implementer whose ticket landed last, which patches its own branch and reports again, and you land that the same way.
 Remove a ticket's worktree and branch once its landing has passed.
@@ -137,7 +147,7 @@ Then carry on from the frontier.
 
 ## The person
 
-You are the one channel through which the person talks about the change while it is built, and the implementers run in the background so you stay free to answer.
+You are the one channel through which the person talks about the change while it is built, and the implementers run as subagents so you stay free to answer.
 What the person says mid-run, relay it at once to every implementer it concerns, rather than at the next landing.
 
 Reach the person in the terminal, in your own reply, and only about what coding cannot fix: a security block, a credential, an account or a permission you cannot grant yourself.

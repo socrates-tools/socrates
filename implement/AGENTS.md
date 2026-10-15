@@ -39,6 +39,10 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - In progress is committed before a hand-out and done once a ticket has landed and passed, and a resumed overseer continues each in-progress ticket from its own branch with a fresh implementer.
 - What the person says mid-run is relayed at once to every implementer it concerns, and the person is reached in the terminal only about what coding cannot fix.
 - The whole change is read against the spec from the default branch's fork point, story by story, every worktree is removed, and nothing is pushed.
+- Every promise above holds in each host's rendering, and what differs is stated in the Codex rendering's `On Codex` section and in the three sentences that say how an implementer or the verification runs: Claude Code runs them in the background, as the `socrates-implementer` agent, and Codex starts an implementer with `spawn_agent` naming `agent_type` `socrates-implementer` and has a subagent run the verification.
+- The Codex overseer sends feedback with `send_input`, collects reports with `wait_agent` between answering the person, closes each implementer with `close_agent` once its ticket has landed, and tells the person to run `socrates implement skill` where `socrates-implementer` is not a role it can spawn.
+- The Codex overseer checks at the start of every run that it can write the directory beside the file `socrates implement config` prints on its first line, and where it cannot starts nothing and names `writable_roots` under `[sandbox_workspace_write]` and `--add-dir`, per ADR 68.
+- Each host's rendering has a ceiling of its own, `OverseerCeilings`.
 - The orchestration itself is the session's to perform from what the skill says: the suite asserts each promise as a statement in the rendered document and every command the skill names against the real binary.
 
 **The implementer's agent definition**

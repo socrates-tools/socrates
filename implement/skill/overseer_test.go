@@ -89,12 +89,12 @@ func TestTheOverseerSkillNamesInvocationsOfImplementOnly(t *testing.T) {
 	}
 }
 
-func sectionOf(t *testing.T, heading string) string {
+func sectionOf(t *testing.T, host skillkit.Host, heading string) string {
 	t.Helper()
 
-	_, after, found := strings.Cut(skill.Document(skillkit.ClaudeCode), heading)
+	_, after, found := strings.Cut(skill.Document(host), heading)
 	if !found {
-		t.Fatalf("the skill has no %s section", heading)
+		t.Fatalf("the skill for %s has no %s section", host.Name, heading)
 	}
 	if next := strings.Index(after, "\n## "); next >= 0 {
 		return after[:next]
@@ -105,10 +105,18 @@ func sectionOf(t *testing.T, heading string) string {
 func saysEach(t *testing.T, heading, why string, said ...string) {
 	t.Helper()
 
-	section := sectionOf(t, heading)
+	for _, host := range skillkit.Hosts() {
+		saysEachOn(t, host, heading, why, said...)
+	}
+}
+
+func saysEachOn(t *testing.T, host skillkit.Host, heading, why string, said ...string) {
+	t.Helper()
+
+	section := sectionOf(t, host, heading)
 	for _, one := range said {
 		if !strings.Contains(section, one) {
-			t.Errorf("the %s section does not say %q, so %s:\n%s", heading, one, why, section)
+			t.Errorf("the %s section for %s does not say %q, so %s:\n%s", heading, host.Name, one, why, section)
 		}
 	}
 }
@@ -194,7 +202,7 @@ func TestTheFrontierIsEveryTicketWhoseBlockersAreDoneBoundedByConcurrency(t *tes
 }
 
 func TestTheLongestChainGoesFirstThenTheMostUnblockedThenNameOrder(t *testing.T) {
-	section := sectionOf(t, frontierHeading)
+	section := sectionOf(t, skillkit.ClaudeCode, frontierHeading)
 
 	chain := strings.Index(section, "the ticket with the longest chain of tickets waiting behind it")
 	unblocks := strings.Index(section, "the ticket that unblocks the most tickets")
@@ -222,10 +230,15 @@ func TestEachImplementerWorksInAWorktreeTheOverseerMadeOnABranchSheNamed(t *test
 	)
 }
 
-func TestAnImplementerIsBriefedWithPointersAndRunsInTheBackground(t *testing.T) {
-	saysEach(t, worktreesHeading, "the overseer could block on a ticket or hand over a paraphrase that drifts",
+func TestAnImplementerIsBriefedWithPointersAndRunsInTheBackgroundOnClaudeCode(t *testing.T) {
+	saysEachOn(t, skillkit.ClaudeCode, worktreesHeading, "the overseer could block on a ticket",
 		"Run the implementer in the background",
 		"so you stay free to talk to the person",
+	)
+}
+
+func TestAnImplementerIsBriefedWithPointers(t *testing.T) {
+	saysEach(t, worktreesHeading, "the overseer could hand over a paraphrase that drifts",
 		"Brief it with pointers rather than a paraphrase",
 		"its worktree, its branch, the change's branch, its ticket, the notes, and the spec and ADRs the ticket rests on",
 	)
@@ -250,14 +263,16 @@ func TestLandingIsAFastForwardFollowedByTheRepositorysOwnVerificationAfterEveryL
 }
 
 func TestTheVerificationAfterALandingRunsInTheBackgroundSoTheOverseerStaysFree(t *testing.T) {
-	saysEach(t, landingHeading, "a verification that takes minutes could leave the person unanswered",
+	saysEachOn(t, skillkit.ClaudeCode, landingHeading, "a verification that takes minutes could leave the person unanswered",
 		"Run it in the background, so you stay free to talk to the person while it runs, as the implementers do",
 	)
 }
 
 func TestTheCommandsTheOverseerRunsAreNotCountedAsAllThatTheNamespaceHolds(t *testing.T) {
-	if strings.Contains(skill.Document(skillkit.ClaudeCode), "offers three commands") {
-		t.Error("the skill counts the binary's commands, which stops being true when the namespace gains one")
+	for _, one := range skill.All() {
+		if strings.Contains(one.Rendered(), "offers three commands") {
+			t.Errorf("the skill for %s counts the binary's commands, which stops being true when the namespace gains one", one.Host.Name)
+		}
 	}
 	saysEach(t, "# socrates implement", "the commands the overseer runs are not stated", "The commands you run are these")
 }
@@ -322,24 +337,28 @@ func TestTheWholeChangeIsReadAgainstTheSpecFromTheDefaultBranchsForkPointAndNoth
 }
 
 func TestTheSectionsComeInTheOrderOfTheLoop(t *testing.T) {
-	document := skill.Document(skillkit.ClaudeCode)
+	for _, host := range skillkit.Hosts() {
+		document := skill.Document(host)
 
-	previous := -1
-	for _, heading := range []string{
-		writesNoCodeHeading, startingHeading, defaultHeading, branchHeading, frontierHeading, worktreesHeading,
-		reviewHeading, landingHeading, statusHeading, resumingHeading, personHeading, lastReadHeading,
-	} {
-		at := strings.Index(document, heading)
-		if at < 0 || at < previous {
-			t.Fatalf("%q is missing or comes before the section that must precede it", heading)
+		previous := -1
+		for _, heading := range []string{
+			writesNoCodeHeading, startingHeading, defaultHeading, branchHeading, frontierHeading, worktreesHeading,
+			reviewHeading, landingHeading, statusHeading, resumingHeading, personHeading, lastReadHeading,
+		} {
+			at := strings.Index(document, heading)
+			if at < 0 || at < previous {
+				t.Fatalf("%q is missing or comes before the section that must precede it in the skill for %s", heading, host.Name)
+			}
+			previous = at
 		}
-		previous = at
 	}
 }
 
 func TestTheOverseerSkillNamesNoSocratesReviewInvocation(t *testing.T) {
-	if found := regexp.MustCompile(`(?i)socrates\s+review`).FindString(skill.Document(skillkit.ClaudeCode)); found != "" {
-		t.Errorf("the skill names %q, and how a ticket is reviewed is the overseer's own", found)
+	for _, one := range skill.All() {
+		if found := regexp.MustCompile(`(?i)socrates\s+review`).FindString(one.Rendered()); found != "" {
+			t.Errorf("the skill for %s names %q, and how a ticket is reviewed is the overseer's own", one.Host.Name, found)
+		}
 	}
 }
 
@@ -348,8 +367,10 @@ func TestTheOverseerSkillNamesNoNamespaceButImplement(t *testing.T) {
 		if tool.Namespace == "implement" {
 			continue
 		}
-		if found := regexp.MustCompile(`(?i)socrates\s+` + regexp.QuoteMeta(tool.Namespace) + `\b`).FindString(skill.Document(skillkit.ClaudeCode)); found != "" {
-			t.Errorf("the skill names %q, and it drives no other namespace", found)
+		for _, one := range skill.All() {
+			if found := regexp.MustCompile(`(?i)socrates\s+` + regexp.QuoteMeta(tool.Namespace) + `\b`).FindString(one.Rendered()); found != "" {
+				t.Errorf("the skill for %s names %q, and it drives no other namespace", one.Host.Name, found)
+			}
 		}
 	}
 }
@@ -357,9 +378,11 @@ func TestTheOverseerSkillNamesNoNamespaceButImplement(t *testing.T) {
 func TestTheOverseerSkillNamesNoOtherSkill(t *testing.T) {
 	allowed := map[string]bool{skill.Name: true, skill.AgentName: true}
 
-	for _, named := range regexp.MustCompile(`socrates-[a-z]+(-[a-z]+)*`).FindAllString(skill.Document(skillkit.ClaudeCode), -1) {
-		if !allowed[named] {
-			t.Errorf("the skill names %q, and an overseer invokes no skill", named)
+	for _, one := range skill.All() {
+		for _, named := range regexp.MustCompile(`socrates-[a-z]+(-[a-z]+)*`).FindAllString(one.Rendered(), -1) {
+			if !allowed[named] {
+				t.Errorf("the skill for %s names %q, and an overseer invokes no skill", one.Host.Name, named)
+			}
 		}
 	}
 }
