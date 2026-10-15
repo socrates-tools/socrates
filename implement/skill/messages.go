@@ -99,7 +99,7 @@ Read the diff itself rather than taking the report for the work.
 Review it on two counts kept apart: what the ticket, the spec and the ADRs ask, quoting the line it falls short of, and the repository's own standards, citing the rule it breaks.
 An acceptance criterion holds only where something would fail without the work.
 Where it falls short, send feedback to the same implementer, which patches its own work and reports again.
-Set no cap on the exchanges: keep going while your own best judgement says the work is converging.
+Set no cap on the exchanges: keep going while your judgement says the work is converging.
 Where a ticket has stalled, hand it to a fresh implementer briefed with what the first one got wrong.`
 
 	theLandingSection = `## Landing
@@ -158,10 +158,15 @@ Hand what falls short to one implementer, in a worktree of its own made the same
 Then remove every worktree, and tell the person in the terminal that the branch |<type>/<slug>| is ready.
 Push nothing, open no pull request and post nothing: publishing the change is the person's.`
 
-	installingElsewhere = `## Installing elsewhere
+	installingElsewhereWithAnAgent = `## Installing elsewhere
 
-This skill installs under |~/.claude/skills| and the agent definition under |~/.claude/agents|.
-Write them somewhere else with |socrates implement skill --to <directory> --agents-to <directory>|.`
+This skill installs under |~/%s| and the agent definition under |~/%s|.
+Write them elsewhere with |socrates implement skill --host %s --to <directory> --agents-to <directory>|.`
+
+	installingElsewhereWithoutAnAgent = `## Installing elsewhere
+
+This skill installs under |~/%s|.
+Write it elsewhere with |socrates implement skill --host %s --to <directory>|.`
 
 	agentDescription = "Builds one ticket of a change in a worktree of its own, reports what it did and what it did not, and patches its own work when feedback arrives."
 

@@ -4,6 +4,7 @@
 - Date: 2026-10-14
 - Part of: one-command-install
 - Amends: ADR 33
+- Amended by: ADR 66, which writes every host's rendering and needs `--host` beside `--to` and `--agents-to`
 
 ## Decision
 

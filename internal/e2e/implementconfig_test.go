@@ -391,8 +391,8 @@ func TestImplementSkillWritesTheSettingsInForceUnderAgentsToAndRecordsTheLastPla
 	first, second := t.TempDir(), t.TempDir()
 
 	for _, directory := range []string{first, second} {
-		if _, failures, code := session.Top("implement", "skill", "--agents-to", directory); code != exit.NothingAsked {
-			t.Fatalf("socrates implement skill --agents-to %s exited %d: %s", directory, code, failures)
+		if _, failures, code := session.Top("implement", "skill", "--host", skillkit.ClaudeCode.Flag, "--agents-to", directory); code != exit.NothingAsked {
+			t.Fatalf("socrates implement skill --host claude --agents-to %s exited %d: %s", directory, code, failures)
 		}
 	}
 

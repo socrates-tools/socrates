@@ -1,6 +1,7 @@
 package skill
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,8 +29,15 @@ func Binaries() []string {
 func Document(host skillkit.Host) string {
 	parts := []string{skillkit.FrontMatter(host, Name, description), purpose, theWritesNoCodeSection, theStartingSection, theDefaultBranchSection,
 		theChangesBranchSection, theFrontierSection, theWorktreesSection, theReviewSection, theLandingSection,
-		theStatusSection, theResumingSection, thePersonSection, theLastReadSection, installingElsewhere}
+		theStatusSection, theResumingSection, thePersonSection, theLastReadSection, installingElsewhere(host)}
 	return strings.ReplaceAll(strings.Join(parts, "\n\n")+"\n", skillkit.InlineCodeMarker, skillkit.CodeMarker)
+}
+
+func installingElsewhere(host skillkit.Host) string {
+	if host == skillkit.ClaudeCode {
+		return fmt.Sprintf(installingElsewhereWithAnAgent, filepath.ToSlash(host.SkillsDirectory), filepath.ToSlash(host.AgentsDirectory), host.Flag)
+	}
+	return fmt.Sprintf(installingElsewhereWithoutAnAgent, filepath.ToSlash(host.SkillsDirectory), host.Flag)
 }
 
 func For(host skillkit.Host) []skillkit.Skill {

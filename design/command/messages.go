@@ -6,7 +6,7 @@ const (
 	rootShort  = "A second workflow: interview a person, leave a spec behind, and cut it into tickets"
 	skillShort = "Install the skills that teach a coding session to drive a design and cut its tickets"
 
-	toUsage = "the skills directory to write to, instead of the one under your home directory"
+	toUsage = "the skills directory to write to, which needs --host to say whose rendering it holds"
 
 	skillInvocation = "socrates design skill"
 

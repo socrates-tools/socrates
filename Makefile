@@ -52,9 +52,11 @@ help:
 	@printf '  make %s\n' $(TARGETS)
 
 skill:
-	go run ./cmd/socrates review skill --to .claude/skills
-	go run ./cmd/socrates design skill --to .claude/skills
-	home=$$(mktemp -d); trap 'rm -rf "$$home"' EXIT; SOCRATES_HOME=$$home go run ./cmd/socrates implement skill --to .claude/skills --agents-to .claude/agents
+	go run ./cmd/socrates review skill --host claude --to .claude/skills
+	go run ./cmd/socrates review skill --host codex --to .agents/skills
+	go run ./cmd/socrates design skill --host claude --to .claude/skills
+	go run ./cmd/socrates design skill --host codex --to .agents/skills
+	home=$$(mktemp -d); trap 'rm -rf "$$home"' EXIT; SOCRATES_HOME=$$home go run ./cmd/socrates implement skill --host claude --to .claude/skills --agents-to .claude/agents; SOCRATES_HOME=$$home go run ./cmd/socrates implement skill --host codex --to .agents/skills
 
 assets:
 	cd agora/web && pnpm install --frozen-lockfile && node build.mjs

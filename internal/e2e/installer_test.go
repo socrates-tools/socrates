@@ -249,7 +249,10 @@ func assertInstalled(t *testing.T, done installation, served *release) {
 	written := writtenUnder(t, done.home)
 	for _, one := range allSkills() {
 		if written[installedKey(one.Host, one.Name)] != one.Rendered() {
-			t.Errorf("the installer left %s out, or installed something other than what its source generates", one.Name)
+			t.Errorf("the installer left %s out for %s, or installed something other than what its source generates", one.Name, one.Host.Name)
+		}
+		if one.Host.PolicyFile != "" && written[installedPolicyKey(one.Host, one.Name)] != skillkit.PolicyDocument {
+			t.Errorf("the installer left %s out of %s's rendering of %s", one.Host.PolicyFile, one.Host.Name, one.Name)
 		}
 	}
 	if _, held := written[installedAgentKey(skillkit.ClaudeCode)]; !held {

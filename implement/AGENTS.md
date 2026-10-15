@@ -22,8 +22,8 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 
 **The implement skill**
 
-- `socrates-implement` is rendered by `implement/skill`, installed by `socrates implement skill` under the skills directory or `--to` beside the agent definition, carries `disable-model-invocation: true` through `internal/skill`'s front matter, and is held to a ceiling of its own.
-- The committed copy at `.claude/skills/socrates-implement/SKILL.md` must match what the package renders, and `make skill` writes it.
+- `socrates-implement` is rendered by `implement/skill` once per host, installed by `socrates implement skill` under each host's skills directory or under `--to` with `--host`, is person-only by each host's own switch through `internal/skill`, and is held to a ceiling of its own.
+- The committed copies at `.claude/skills/socrates-implement/SKILL.md` and `.agents/skills/socrates-implement/SKILL.md` must match what the package renders, and `make skill` writes them.
 - Every invocation it names exists in the binary with the flags it names, and it names only `socrates implement` ones.
 - It names no `socrates review` invocation and no other skill, and tells the overseer to invoke no skill, per ADR 49.
 - The overseer writes no code, edits only the main ticket's status table, and settles every coding question by her own judgement.

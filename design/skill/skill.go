@@ -1,6 +1,8 @@
 package skill
 
 import (
+	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/socrates-tools/socrates/internal/skill"
@@ -25,11 +27,15 @@ func Binaries() []string {
 
 func Document(host skill.Host) string {
 	return assembled(skill.FrontMatter(host, Name, description), purpose, theRoundsSection, pageTemplate, theSettledSection, theFactsSection,
-		theGlossarySection, theSeamsSection, theSpecSection, theDecisionsSection, theFrontierEmptiesSection, theEndingSection, installingElsewhere)
+		theGlossarySection, theSeamsSection, theSpecSection, theDecisionsSection, theFrontierEmptiesSection, theEndingSection, installingElsewhere(host))
 }
 
 func assembled(parts ...string) string {
 	return strings.ReplaceAll(strings.Join(parts, "\n\n")+"\n", skill.InlineCodeMarker, skill.CodeMarker)
+}
+
+func installingElsewhere(host skill.Host) string {
+	return fmt.Sprintf(installingElsewhereTemplate, filepath.ToSlash(host.SkillsDirectory), host.Flag)
 }
 
 func For(host skill.Host) []skill.Skill {

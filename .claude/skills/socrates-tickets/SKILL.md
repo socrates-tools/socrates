@@ -165,4 +165,4 @@ Say what was written and where, and say that the folder must be committed before
 ## Installing elsewhere
 
 This document installs under `~/.claude/skills` beside `socrates-design`.
-Write both somewhere else instead with `socrates design skill --to <directory>`.
+Write both somewhere else instead with `socrates design skill --host claude --to <directory>`.

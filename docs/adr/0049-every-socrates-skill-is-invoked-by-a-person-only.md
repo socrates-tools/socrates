@@ -3,6 +3,7 @@
 - Status: accepted
 - Date: 2026-10-01
 - Part of: socrates-implement
+- Amended by: ADR 67, which gives each host its own switch, `disable-model-invocation` for Claude Code and `agents/openai.yaml` for Codex
 
 ## Decision
 

@@ -24,29 +24,73 @@ func installedAgentKey(host skillkit.Host) string {
 	return filepath.ToSlash(filepath.Join(host.AgentsDirectory, implementskill.AgentFileName()))
 }
 
+func installedPolicyKey(host skillkit.Host, name string) string {
+	return filepath.ToSlash(filepath.Join(host.SkillsDirectory, name, host.PolicyFile))
+}
+
+func hostRoots() []string {
+	var roots []string
+	for _, host := range skillkit.Hosts() {
+		for _, directory := range []string{host.SkillsDirectory, host.AgentsDirectory} {
+			if root := filepath.Dir(directory); !slices.Contains(roots, root) {
+				roots = append(roots, root)
+			}
+		}
+	}
+	return roots
+}
+
+func pathWithout(t *testing.T, session *harness.Session, binary string) string {
+	t.Helper()
+
+	var path string
+	for _, entry := range session.Environment() {
+		if value, found := strings.CutPrefix(entry, "PATH="); found {
+			path = value
+		}
+	}
+
+	var kept []string
+	for _, directory := range filepath.SplitList(path) {
+		if _, err := os.Stat(filepath.Join(directory, binary)); err != nil {
+			kept = append(kept, directory)
+		}
+	}
+	return "PATH=" + strings.Join(kept, string(os.PathListSeparator))
+}
+
+func writtenIn(t *testing.T, root string) map[string]string {
+	t.Helper()
+
+	written := map[string]string{}
+	walked := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil || entry.IsDir() {
+			return err
+		}
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		relative, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		written[filepath.ToSlash(relative)] = string(content)
+		return nil
+	})
+	if walked != nil && !os.IsNotExist(walked) {
+		t.Fatalf("reading what was written under %s: %v", root, walked)
+	}
+	return written
+}
+
 func writtenUnder(t *testing.T, home string) map[string]string {
 	t.Helper()
 
 	written := map[string]string{}
-	for _, host := range skillkit.Hosts() {
-		root := filepath.Join(home, host.ConfigurationDirectory)
-		walked := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
-			if err != nil || entry.IsDir() {
-				return err
-			}
-			content, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-			relative, err := filepath.Rel(home, path)
-			if err != nil {
-				return err
-			}
-			written[filepath.ToSlash(relative)] = string(content)
-			return nil
-		})
-		if walked != nil && !os.IsNotExist(walked) {
-			t.Fatalf("reading what was written under %s: %v", root, walked)
+	for _, relativeRoot := range hostRoots() {
+		for path, content := range writtenIn(t, filepath.Join(home, relativeRoot)) {
+			written[filepath.ToSlash(filepath.Join(relativeRoot, path))] = content
 		}
 	}
 	return written
@@ -109,6 +153,27 @@ func TestOneCommandInstallsEverySkillEveryNamespaceOffers(t *testing.T) {
 	}
 	if _, held := written[installedAgentKey(skillkit.ClaudeCode)]; !held {
 		t.Errorf("socrates skill left out the implementer's agent definition")
+	}
+}
+
+func TestOneCommandWritesEveryHostsRenderingWhateverIsOnPath(t *testing.T) {
+	t.Parallel()
+	session := harness.Start(t)
+	withoutCodex := pathWithout(t, session, "codex")
+
+	printed, failures, code := session.TopWith([]string{withoutCodex}, "skill")
+	if code != 0 {
+		t.Fatalf("socrates skill exited %d: %s\n%s", code, failures, printed)
+	}
+
+	written := writtenUnder(t, session.UserHome)
+	for _, one := range allSkills() {
+		if written[installedKey(one.Host, one.Name)] != one.Rendered() {
+			t.Errorf("socrates skill with no codex on PATH did not write %s for %s as the package renders it", one.Name, one.Host.Name)
+		}
+		if one.Host.PolicyFile != "" && written[installedPolicyKey(one.Host, one.Name)] != skillkit.PolicyDocument {
+			t.Errorf("socrates skill did not write %s beside %s for %s", one.Host.PolicyFile, one.Name, one.Host.Name)
+		}
 	}
 }
 

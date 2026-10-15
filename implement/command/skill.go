@@ -2,6 +2,7 @@ package command
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/socrates-tools/socrates/implement/config"
 	"github.com/socrates-tools/socrates/implement/skill"
@@ -10,31 +11,38 @@ import (
 )
 
 func newSkillCommand() *cobra.Command {
-	var target, agentsTarget string
+	var host, target, agentsTarget string
 
 	command := &cobra.Command{
 		Use:   "skill",
 		Short: skillShort,
 		Args:  cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
+			hosts, err := skillkit.Selected(host,
+				skillkit.Directory{Flag: skillkit.ToFlag, Value: target},
+				skillkit.Directory{Flag: skillkit.AgentsToFlag, Value: agentsTarget})
+			if err != nil {
+				return err
+			}
+
 			stated, err := config.Load()
 			if err != nil {
 				return err
 			}
 
-			if target == "" {
-				chosen, err := skillkit.UserDirectory(skillkit.ClaudeCode, skillInvocation)
-				if err != nil {
-					return err
-				}
-				target = chosen
-			}
-
-			written, err := skillkit.Install(target, skill.For(skillkit.ClaudeCode), skillInvocation)
+			written, err := skillkit.InstallFor(hosts, target, skillInvocation, skill.For)
 			if err != nil {
 				return err
 			}
 
+			out := command.OutOrStdout()
+			for _, installed := range written {
+				fmt.Fprintln(out, installed.Announcement())
+			}
+
+			if !slices.Contains(hosts, skillkit.ClaudeCode) {
+				return nil
+			}
 			if agentsTarget == "" {
 				chosen, err := skill.AgentsDirectory(skillkit.ClaudeCode)
 				if err != nil {
@@ -42,21 +50,17 @@ func newSkillCommand() *cobra.Command {
 				}
 				agentsTarget = chosen
 			}
-
 			path, err := skill.Install(agentsTarget, stated)
 			if err != nil {
 				return err
-			}
-			out := command.OutOrStdout()
-			for _, installed := range written {
-				fmt.Fprintln(out, installed.Announcement())
 			}
 			fmt.Fprintf(out, installedTheAgent+"\n", skill.AgentName, path)
 			return nil
 		},
 	}
 
-	command.Flags().StringVar(&target, "to", "", toUsage)
-	command.Flags().StringVar(&agentsTarget, "agents-to", "", agentsToUsage)
+	command.Flags().StringVar(&host, skillkit.HostFlag, "", skillkit.HostUsage())
+	command.Flags().StringVar(&target, skillkit.ToFlag, "", toUsage)
+	command.Flags().StringVar(&agentsTarget, skillkit.AgentsToFlag, "", agentsToUsage)
 	return command
 }

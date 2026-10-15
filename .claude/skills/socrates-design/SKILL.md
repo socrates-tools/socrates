@@ -189,4 +189,4 @@ Name each one and what it was asking, so whoever picks the spec up next can see 
 ## Installing elsewhere
 
 This document installs under `~/.claude/skills` by default.
-Write it somewhere else instead with `socrates design skill --to <directory>`.
+Write it somewhere else instead with `socrates design skill --host claude --to <directory>`.

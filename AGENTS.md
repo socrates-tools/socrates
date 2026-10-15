@@ -76,7 +76,9 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`, or in th
 
 **The skill**
 
-- Every skill any namespace ships carries `disable-model-invocation: true`, stated once in `internal/skill` and rendered into every skill's front matter, and the suite fails over every committed `socrates-*` skill and over everything `socrates <namespace> skill` installs, for each namespace in `convention.Tools` whose tree holds `skill`, rather than over a list, per ADR 49.
+- Every skill any namespace ships is person-only by its host's own switch, stated once in `internal/skill`, per ADR 49 as amended by ADR 67.
+  Claude Code's rendering carries `disable-model-invocation: true` in its front matter, and Codex's carries `agents/openai.yaml` beside it holding `policy.allow_implicit_invocation: false`.
+  The suite fails over every committed skill under `.claude/skills` and `.agents/skills` and over everything `socrates <namespace> skill` installs, for each namespace in `convention.Tools` whose tree holds `skill`, rather than over a list, and fails where a Codex skill loses its `openai.yaml` as it fails where a Claude Code skill loses its field.
 
 **The settings menu**
 

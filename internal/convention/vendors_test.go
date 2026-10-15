@@ -1,6 +1,7 @@
 package convention_test
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -94,5 +95,22 @@ func TestTheSecurityPolicyNamesEveryReviewerCLIThatCarriesTheChangeToItsVendor(t
 		if !strings.Contains(section, "`"+name+"`") {
 			t.Errorf("%s says where your code goes and never names %s, which review drives and which sends the change to its vendor", convention.SecurityPolicyFile, name)
 		}
+	}
+}
+
+func TestAVendorNameIsStatedOnlyWhereTheVendorsOrTheHostsAreStated(t *testing.T) {
+	root := t.TempDir()
+	named := "package x\n\nconst name = \"claude\"\n"
+	writePackaged(t, filepath.Join(root, filepath.FromSlash(convention.VendorStatementFile)), named)
+	writePackaged(t, filepath.Join(root, filepath.FromSlash(convention.HostStatementFile)), named)
+	writePackaged(t, filepath.Join(root, "internal", "skill", "other.go"), named)
+	writePackaged(t, filepath.Join(root, "design", "skill", "host.go"), named)
+
+	copies, err := convention.VendorsNamedOutsideTheStatement(root, []string{"claude"})
+	if err != nil {
+		t.Fatalf("reading what names a reviewer CLI: %v", err)
+	}
+	if len(copies) != 2 || !strings.HasPrefix(copies[0], filepath.Join("design", "skill", "host.go")) || !strings.HasPrefix(copies[1], filepath.Join("internal", "skill", "other.go")) {
+		t.Errorf("a vendor name was reported at %v, want only the two files that are neither statement", copies)
 	}
 }

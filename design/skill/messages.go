@@ -211,10 +211,10 @@ Name each one and what it was asking, so whoever picks the spec up next can see 
 
 	installingHeading = "## Installing elsewhere"
 
-	installingElsewhere = installingHeading + `
+	installingElsewhereTemplate = installingHeading + `
 
-This document installs under |~/.claude/skills| by default.
-Write it somewhere else instead with |socrates design skill --to <directory>|.`
+This document installs under |~/%s| by default.
+Write it somewhere else instead with |socrates design skill --host %s --to <directory>|.`
 )
 
 const (
@@ -392,8 +392,8 @@ Each criterion names what somebody would observe were it false, and is false at 
 Leave the tickets uncommitted, as a design leaves its spec: committing is the person's.
 Say what was written and where, and say that the folder must be committed before any ticket is handed out, because an implementer working in a worktree of its own reads only what is committed.`
 
-	ticketsInstallingElsewhere = installingHeading + `
+	ticketsInstallingElsewhereTemplate = installingHeading + `
 
-This document installs under |~/.claude/skills| beside |socrates-design|.
-Write both somewhere else instead with |socrates design skill --to <directory>|.`
+This document installs under |~/%s| beside |socrates-design|.
+Write both somewhere else instead with |socrates design skill --host %s --to <directory>|.`
 )

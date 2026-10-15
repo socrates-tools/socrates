@@ -9,22 +9,19 @@ import (
 )
 
 func newSkillCommand() *cobra.Command {
-	var target string
+	var target, host string
 
 	command := &cobra.Command{
 		Use:   "skill",
 		Short: skillShort,
 		Args:  cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
-			if target == "" {
-				chosen, err := skillkit.UserDirectory(skillkit.ClaudeCode, skillInvocation)
-				if err != nil {
-					return err
-				}
-				target = chosen
+			hosts, err := skillkit.Selected(host, skillkit.Directory{Flag: skillkit.ToFlag, Value: target})
+			if err != nil {
+				return err
 			}
 
-			written, err := skillkit.Install(target, skill.For(skillkit.ClaudeCode), skillInvocation)
+			written, err := skillkit.InstallFor(hosts, target, skillInvocation, skill.For)
 			if err != nil {
 				return err
 			}
@@ -37,6 +34,7 @@ func newSkillCommand() *cobra.Command {
 		},
 	}
 
-	command.Flags().StringVar(&target, "to", "", toUsage)
+	command.Flags().StringVar(&host, skillkit.HostFlag, "", skillkit.HostUsage())
+	command.Flags().StringVar(&target, skillkit.ToFlag, "", toUsage)
 	return command
 }

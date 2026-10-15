@@ -12,12 +12,15 @@ import (
 	"strings"
 )
 
-const VendorStatementFile = "review/agent/vendor.go"
+const (
+	VendorStatementFile = "review/agent/vendor.go"
+	HostStatementFile   = "internal/skill/host.go"
+)
 
 func VendorsNamedOutsideTheStatement(root string, named []string) ([]string, error) {
 	var copies []string
 
-	statement := filepath.FromSlash(VendorStatementFile)
+	statements := []string{filepath.FromSlash(VendorStatementFile), filepath.FromSlash(HostStatementFile)}
 
 	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
@@ -37,7 +40,7 @@ func VendorsNamedOutsideTheStatement(root string, named []string) ([]string, err
 		if relErr != nil {
 			return relErr
 		}
-		if relative == statement {
+		if slices.Contains(statements, relative) {
 			return nil
 		}
 

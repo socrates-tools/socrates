@@ -107,10 +107,148 @@ func TestFrontMatterCarriesThePersonOnlyFieldAndTheNameAndDescription(t *testing
 	}
 }
 
-func TestClaudeCodeIsTheOnlyHostStated(t *testing.T) {
+func TestClaudeCodeAndCodexAreTheHostsStated(t *testing.T) {
 	hosts := skill.Hosts()
-	if len(hosts) != 1 || hosts[0] != skill.ClaudeCode {
-		t.Errorf("Hosts() = %+v, want only Claude Code", hosts)
+	if len(hosts) != 2 || hosts[0] != skill.ClaudeCode || hosts[1] != skill.Codex {
+		t.Errorf("Hosts() = %+v, want Claude Code and then Codex", hosts)
+	}
+}
+
+func TestCodexStatesItsDirectoriesAndHowAPersonStartsASkill(t *testing.T) {
+	home := filepath.Join("some", "home")
+	if got, want := skill.UserDirectoryUnder(skill.Codex, home), filepath.Join(home, ".agents", "skills"); got != want {
+		t.Errorf("Codex's skills directory is %q, want %q", got, want)
+	}
+	if got, want := skill.Codex.AgentsDirectoryUnder(home), filepath.Join(home, ".codex", "agents"); got != want {
+		t.Errorf("Codex's agents directory is %q, want %q", got, want)
+	}
+	if got, want := skill.Codex.Starts("socrates-x"), "$socrates-x"; got != want {
+		t.Errorf("Codex starts a skill with %q, want %q", got, want)
+	}
+}
+
+func TestAHostIsFoundByTheValueOfTheHostFlag(t *testing.T) {
+	for _, host := range skill.Hosts() {
+		found, ok := skill.HostFlagged(host.Flag)
+		if !ok || found != host {
+			t.Errorf("HostFlagged(%q) = %+v, %t, want %+v", host.Flag, found, ok, host)
+		}
+	}
+	if _, ok := skill.HostFlagged("emacs"); ok {
+		t.Error("HostFlagged found a host for a value no host states")
+	}
+}
+
+func TestCodexFrontMatterCarriesTheNameAndTheDescriptionAndNothingElse(t *testing.T) {
+	got := skill.FrontMatter(skill.Codex, "socrates-x", "Does x.")
+	want := "---\nname: socrates-x\ndescription: Does x.\n---"
+	if got != want {
+		t.Errorf("front matter is %q, want %q", got, want)
+	}
+}
+
+func TestInstallWritesThePolicyBesideACodexSkillAndBesideNoOther(t *testing.T) {
+	codexDirectory := t.TempDir()
+	claudeDirectory := t.TempDir()
+	codexSkill := skill.Skill{Name: "one", Host: skill.Codex, Document: func(host skill.Host) string { return skill.FrontMatter(host, "one", "x") + "\n" }, Ceiling: 100}
+	claudeSkill := skill.Skill{Name: "one", Host: skill.ClaudeCode, Document: func(host skill.Host) string { return skill.FrontMatter(host, "one", "x") + "\n" }, Ceiling: 100}
+
+	if _, err := skill.Install(codexDirectory, []skill.Skill{codexSkill}, fixtureInvocation); err != nil {
+		t.Fatalf("installing for Codex: %v", err)
+	}
+	if _, err := skill.Install(claudeDirectory, []skill.Skill{claudeSkill}, fixtureInvocation); err != nil {
+		t.Fatalf("installing for Claude Code: %v", err)
+	}
+
+	policy, err := os.ReadFile(filepath.Join(codexDirectory, "one", "agents", "openai.yaml"))
+	if err != nil {
+		t.Fatalf("Codex's skill has no agents/openai.yaml beside it: %v", err)
+	}
+	if want := "policy:\n  allow_implicit_invocation: false\n"; string(policy) != want {
+		t.Errorf("agents/openai.yaml holds %q, want %q", policy, want)
+	}
+	if _, err := os.Stat(filepath.Join(claudeDirectory, "one", "agents")); !os.IsNotExist(err) {
+		t.Errorf("Claude Code's skill has an agents directory beside it: %v", err)
+	}
+}
+
+func TestCodexReadsItsPersonOnlySwitchFromThePolicyBesideTheSkill(t *testing.T) {
+	installed := func(t *testing.T, policy *string) string {
+		t.Helper()
+		directory := t.TempDir()
+		if err := os.WriteFile(filepath.Join(directory, skill.FileName), []byte(skill.FrontMatter(skill.Codex, "x", "x")+"\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if policy != nil {
+			if err := os.MkdirAll(filepath.Join(directory, "agents"), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(directory, "agents", "openai.yaml"), []byte(*policy), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+		return directory
+	}
+	held := "policy:\n  allow_implicit_invocation: false\n"
+	allowed := "policy:\n  allow_implicit_invocation: true\n"
+	silent := "policy: {}\n"
+	broken := "policy: [\n"
+
+	if !skill.Codex.PersonOnly(installed(t, &held)) {
+		t.Error("Codex does not read a skill whose policy forbids implicit invocation as person-only")
+	}
+	for name, policy := range map[string]*string{"no policy file": nil, "an allowing policy": &allowed, "a policy that says nothing": &silent, "a policy that cannot be read": &broken} {
+		if skill.Codex.PersonOnly(installed(t, policy)) {
+			t.Errorf("Codex reads a skill with %s as person-only", name)
+		}
+	}
+}
+
+func TestCodexDoesNotReadClaudeCodesFieldAsItsSwitchNorClaudeCodeTheCodexPolicy(t *testing.T) {
+	directory := t.TempDir()
+	if err := os.WriteFile(filepath.Join(directory, skill.FileName), []byte(skill.FrontMatter(skill.ClaudeCode, "x", "x")+"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if skill.Codex.PersonOnly(directory) {
+		t.Error("Codex reads Claude Code's front matter field as its own switch")
+	}
+
+	other := t.TempDir()
+	if err := os.WriteFile(filepath.Join(other, skill.FileName), []byte(skill.FrontMatter(skill.Codex, "x", "x")+"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(other, "agents"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(other, "agents", "openai.yaml"), []byte("policy:\n  allow_implicit_invocation: false\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if skill.ClaudeCode.PersonOnly(other) {
+		t.Error("Claude Code reads Codex's policy as its own switch")
+	}
+}
+
+func TestAHostIsChosenFromTheHostFlagAndTheDirectoriesNamed(t *testing.T) {
+	everyHost, err := skill.Selected("")
+	if err != nil || len(everyHost) != len(skill.Hosts()) {
+		t.Errorf("no host named and no directory chosen selected %v, %v, want every host", everyHost, err)
+	}
+
+	only, err := skill.Selected(skill.Codex.Flag, skill.Directory{Flag: "to", Value: "somewhere"})
+	if err != nil || len(only) != 1 || only[0] != skill.Codex {
+		t.Errorf("--host codex with --to selected %v, %v, want only Codex", only, err)
+	}
+
+	for _, directory := range []skill.Directory{{Flag: "to", Value: "somewhere"}, {Flag: "agents-to", Value: "somewhere"}} {
+		_, err = skill.Selected("", directory)
+		if err == nil || !strings.Contains(err.Error(), "--host") || !strings.Contains(err.Error(), "--"+directory.Flag) {
+			t.Errorf("--%s without --host was not refused naming both flags: %v", directory.Flag, err)
+		}
+	}
+
+	_, err = skill.Selected("emacs")
+	if err == nil || !strings.Contains(err.Error(), "emacs") || !strings.Contains(err.Error(), "--host codex") {
+		t.Errorf("--host emacs was not refused naming the hosts there are: %v", err)
 	}
 }
 
@@ -134,7 +272,7 @@ func TestAnInstalledSkillIsAnnouncedWithHowItsHostStartsIt(t *testing.T) {
 	}
 }
 
-func TestAHostReadsItsOwnPersonOnlySwitchFromAnInstalledSkill(t *testing.T) {
+func TestClaudeCodeReadsItsOwnPersonOnlySwitchFromAnInstalledSkill(t *testing.T) {
 	held := t.TempDir()
 	open := t.TempDir()
 	if err := os.WriteFile(filepath.Join(held, skill.FileName), []byte(skill.FrontMatter(skill.ClaudeCode, "held", "x")+"\n"), 0o644); err != nil {

@@ -89,9 +89,9 @@ func TestInstallingElsewhere(t *testing.T) {
 	session := harness.Start(t)
 	target := t.TempDir()
 
-	printed, failures, code := session.Socrates("skill", "--to", target)
+	printed, failures, code := session.Socrates("skill", "--host", skillkit.ClaudeCode.Flag, "--to", target)
 	if code != 0 {
-		t.Fatalf("socrates review skill --to exited %d: %s", code, failures)
+		t.Fatalf("socrates review skill --host claude --to exited %d: %s", code, failures)
 	}
 
 	elsewhere := filepath.Join(target, skill.Name, skillkit.FileName)
@@ -445,9 +445,9 @@ func TestRegeneratingIsOneCommand(t *testing.T) {
 	session := harness.Start(t)
 	target := t.TempDir()
 
-	printed, failures, code := session.Socrates("skill", "--to", target)
+	printed, failures, code := session.Socrates("skill", "--host", skillkit.ClaudeCode.Flag, "--to", target)
 	if code != 0 {
-		t.Fatalf("socrates review skill --to exited %d: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates review skill --host claude --to exited %d: %s\n%s", code, failures, printed)
 	}
 
 	written := session.File(filepath.Join(target, skill.Name, skillkit.FileName))
@@ -471,7 +471,7 @@ func TestBothSkillsAreInstalled(t *testing.T) {
 	}
 
 	for _, one := range skill.All() {
-		path := filepath.Join(skillkit.ClaudeCode.SkillsDirectoryUnder(home), one.Name, skillkit.FileName)
+		path := filepath.Join(one.Host.SkillsDirectoryUnder(home), one.Name, skillkit.FileName)
 
 		if !strings.Contains(printed, path) {
 			t.Errorf("socrates review skill does not say it wrote %s:\n%s", path, printed)
@@ -500,7 +500,7 @@ func TestBothDesignSkillsAreInstalled(t *testing.T) {
 	}
 
 	for _, one := range designskill.All() {
-		path := filepath.Join(skillkit.ClaudeCode.SkillsDirectoryUnder(home), one.Name, skillkit.FileName)
+		path := filepath.Join(one.Host.SkillsDirectoryUnder(home), one.Name, skillkit.FileName)
 
 		if !strings.Contains(printed, path) {
 			t.Errorf("socrates design skill does not say it wrote %s:\n%s", path, printed)
@@ -508,7 +508,7 @@ func TestBothDesignSkillsAreInstalled(t *testing.T) {
 		if written := session.File(path); written != one.Rendered() {
 			t.Errorf("what was installed at %s is not what the skill's source generates", path)
 		}
-		if committed := session.File(filepath.Join(skillkit.ClaudeCode.SkillsDirectoryUnder(source.Root(t)), one.Name, skillkit.FileName)); committed != one.Rendered() {
+		if committed := session.File(filepath.Join(one.Host.SkillsDirectoryUnder(source.Root(t)), one.Name, skillkit.FileName)); committed != one.Rendered() {
 			t.Errorf("the committed copy of %s is not what its source generates: run make skill", one.Name)
 		}
 	}
@@ -548,7 +548,7 @@ func TestTheOverseerSkillIsInstalledBesideTheDefinitionUnderTheDirectoriesNamed(
 	session := harness.Start(t)
 	skills, agents := t.TempDir(), t.TempDir()
 
-	printed, failures, code := session.Top("implement", "skill", "--to", skills, "--agents-to", agents)
+	printed, failures, code := session.Top("implement", "skill", "--host", skillkit.ClaudeCode.Flag, "--to", skills, "--agents-to", agents)
 	if code != 0 {
 		t.Fatalf("socrates implement skill exited %d: %s\n%s", code, failures, printed)
 	}
@@ -558,5 +558,31 @@ func TestTheOverseerSkillIsInstalledBesideTheDefinitionUnderTheDirectoriesNamed(
 	}
 	if _, err := os.Stat(filepath.Join(agents, implementskill.AgentFileName())); err != nil {
 		t.Errorf("the agent definition is not beside the skill under --agents-to: %v", err)
+	}
+}
+
+func TestEveryHostsFrontMatterCarriesItsOwnKeysAndNoOthers(t *testing.T) {
+	t.Parallel()
+
+	for _, one := range allSkills() {
+		front, _, found := strings.Cut(strings.TrimPrefix(one.Rendered(), "---\n"), "\n---\n")
+		if !found {
+			t.Fatalf("%s for %s has no front matter", one.Name, one.Host.Name)
+		}
+
+		var keys []string
+		for _, line := range strings.Split(front, "\n") {
+			key, _, _ := strings.Cut(line, ":")
+			keys = append(keys, key)
+		}
+
+		want := []string{"name", "description"}
+		if one.Host.PersonOnlyField != "" {
+			key, _, _ := strings.Cut(one.Host.PersonOnlyField, ":")
+			want = append(want, key)
+		}
+		if !slices.Equal(keys, want) {
+			t.Errorf("%s for %s has front matter keys %v, want %v", one.Name, one.Host.Name, keys, want)
+		}
 	}
 }

@@ -30,7 +30,7 @@ const (
 	droppedUsage     = "the finding is true and is not being raised, and --reason says what was decided against"
 	reasonUsage      = "why the rejected finding is wrong or what was decided about it, or - to read it from standard input"
 	noteUsage        = "what was done about the fixed finding, or - to read it from standard input"
-	toUsage          = "the skills directory to write to, instead of the one under your home directory"
+	toUsage          = "the skills directory to write to, which needs --host to say whose rendering it holds"
 
 	skillInvocation = "socrates review skill"
 

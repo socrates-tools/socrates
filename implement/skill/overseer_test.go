@@ -21,8 +21,12 @@ func TestTheOverseerSkillIsHeldToACeilingOfItsOwn(t *testing.T) {
 
 func TestTheOverseerSkillCarriesEachHostsPersonOnlySwitch(t *testing.T) {
 	for _, one := range skill.All() {
-		if !one.Host.CarriesPersonOnly(one.Rendered()) {
-			t.Errorf("the skill rendered for %s does not carry %s, so a model could start an overseer", one.Host.Name, one.Host.PersonOnlyField)
+		directory := t.TempDir()
+		if _, err := skillkit.Install(directory, []skillkit.Skill{one}, skillkit.Dispatcher+" implement skill"); err != nil {
+			t.Fatalf("installing the skill rendered for %s: %v", one.Host.Name, err)
+		}
+		if !one.Host.PersonOnly(filepath.Join(directory, one.Name)) {
+			t.Errorf("the skill rendered for %s does not carry its person-only switch once installed, so a model could start an overseer", one.Host.Name)
 		}
 	}
 }
