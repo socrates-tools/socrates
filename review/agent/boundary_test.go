@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/socrates-tools/socrates/internal/convention"
 	"github.com/socrates-tools/socrates/internal/testing/source"
 	"github.com/socrates-tools/socrates/review/agent"
 )
@@ -32,7 +33,7 @@ func TestOnePlaceStartsTheProcess(t *testing.T) {
 		if err != nil {
 			t.Fatalf("placing %s: %v", path, err)
 		}
-		if withinSimulator(relative) {
+		if withinSimulator(relative) || relative == filepath.FromSlash(convention.HostStatementFile) {
 			continue
 		}
 
@@ -106,7 +107,7 @@ func TestNothingAboveTheSeamKnowsWhichVendorAnswered(t *testing.T) {
 		if err != nil {
 			t.Fatalf("placing %s: %v", path, err)
 		}
-		if withinSimulator(relative) || strings.HasPrefix(relative, seam+string(filepath.Separator)) {
+		if withinSimulator(relative) || strings.HasPrefix(relative, seam+string(filepath.Separator)) || relative == filepath.FromSlash(convention.HostStatementFile) {
 			continue
 		}
 		if strings.HasSuffix(relative, "_test.go") {

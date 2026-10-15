@@ -9,6 +9,7 @@ import (
 	"github.com/socrates-tools/socrates/implement/config"
 	"github.com/socrates-tools/socrates/implement/skill"
 	"github.com/socrates-tools/socrates/internal/exit"
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 	"github.com/socrates-tools/socrates/internal/testing/harness"
 )
 
@@ -24,7 +25,7 @@ func installedDefinitionIn(t *testing.T, session *harness.Session) string {
 	t.Helper()
 
 	directory := t.TempDir()
-	if _, failures, code := session.Top("implement", "skill", "--agents-to", directory); code != exit.NothingAsked {
+	if _, failures, code := session.Top("implement", "skill", "--host", skillkit.ClaudeCode.Flag, "--agents-to", directory); code != exit.NothingAsked {
 		t.Fatalf("socrates implement skill exited %d: %s", code, failures)
 	}
 	return filepath.Join(directory, skill.AgentFileName())

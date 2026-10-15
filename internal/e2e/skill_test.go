@@ -140,9 +140,9 @@ func TestADirectoryThatCannotBeWritten(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = os.Chmod(sealed, 0o700) })
 
-	printed, failures, code := session.Socrates("skill", "--to", sealed)
+	printed, failures, code := session.Socrates("skill", "--host", skillkit.ClaudeCode.Flag, "--to", sealed)
 	if code != 3 {
-		t.Fatalf("socrates review skill --to a directory it cannot write exited %d, want 3: %s\n%s", code, failures, printed)
+		t.Fatalf("socrates review skill --host claude --to a directory it cannot write exited %d, want 3: %s\n%s", code, failures, printed)
 	}
 	if !strings.Contains(failures, sealed) {
 		t.Errorf("the refusal does not name the directory: %s", failures)
