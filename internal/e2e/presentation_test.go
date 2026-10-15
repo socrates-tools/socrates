@@ -394,6 +394,41 @@ func TestTheMarkIsSaidRatherThanPainted(t *testing.T) {
 	}
 }
 
+const readingTheMarkedMeaning = `(() => {
+  const option = document.querySelector('.decision[data-decision="c-2"] .option[data-recommended="yes"]');
+  const mark = option ? option.querySelector('.option-mark') : null;
+  const meaning = option ? option.querySelector('.option-meaning') : null;
+  if (!mark || !meaning) return { found: false };
+  return {
+    found: true,
+    meaningRight: meaning.getBoundingClientRect().right,
+    markRight: mark.getBoundingClientRect().right,
+  };
+})()`
+
+type markedMeaning struct {
+	Found        bool    `json:"found"`
+	MeaningRight float64 `json:"meaningRight"`
+	MarkRight    float64 `json:"markRight"`
+}
+
+func TestAtANarrowWidthTheMeaningOfAMarkedOptionRunsUnderTheMark(t *testing.T) {
+	t.Parallel()
+	_, page := read(t, twoDecisionDocument)
+
+	page.narrow(360, 780)
+
+	var read markedMeaning
+	page.evaluate(readingTheMarkedMeaning, &read)
+
+	if !read.Found {
+		t.Fatal("the page marks no option with a meaning, and the document marks one")
+	}
+	if read.MeaningRight < read.MarkRight-1 {
+		t.Errorf("at 360px the meaning of the marked option ends at %vpx and the mark at %vpx, leaving the width under the mark empty", read.MeaningRight, read.MarkRight)
+	}
+}
+
 const contrastFloor = 4.5
 
 var measuringTheContrast = `(() => {
