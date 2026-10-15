@@ -8,6 +8,27 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-15
+
+### Changed
+
+- **Claude Code's skills and agent definition are installed under `$CLAUDE_CONFIG_DIR`.**
+  Where you set it, an install and `socrates skill` now write there, which is where Claude Code reads them, rather than to `~/.claude`, which it does not.
+  Where it is unset, nothing moves.
+- **`--to` and `--agents-to` need `--host` beside them.**
+  A directory holds one host's rendering, so `socrates review skill --to <dir>` is refused until you say whose, as `--host claude` or `--host codex`.
+  If a script of yours passes `--to` alone, add `--host claude` to keep what it installed before.
+- **The page draws *Recommended* in sea and *Your call* in Aegean blue.**
+  Both were terracotta, so on one card they read as one signal.
+- **On a narrow screen an option's meaning uses the whole width of the option.**
+  It used to stop short of the *Recommended* mark and wrap into a narrow column beside empty space.
+
+### Notes
+
+- An install also writes Codex's copies of every skill under `~/.agents/skills` and the implementer as a Codex role under the Codex agents directory.
+  Codex as a host is being built and is not yet supported, so nothing in Claude Code changes because of them.
+- `socrates implement config` and `socrates implement configure` show the Codex implementer's model and effort beside Claude Code's, and they apply only once Codex is supported.
+
 ## [0.4.0] - 2026-10-14
 
 ### Added
@@ -169,7 +190,8 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.5.0
 [0.4.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.4.0
 [0.3.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.3.0
 [0.2.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.2.0
