@@ -94,3 +94,19 @@ func TestEachHostsOverseerIsHeldToItsOwnCeiling(t *testing.T) {
 		}
 	}
 }
+
+func TestOnlyClaudeCodesInstallingElsewhereNamesClaudeConfigDirForTheSkillAndTheDefinition(t *testing.T) {
+	for _, one := range skill.All() {
+		_, installing, _ := strings.Cut(one.Rendered(), "## Installing elsewhere")
+
+		if one.Host == skillkit.ClaudeCode {
+			for _, want := range []string{"$CLAUDE_CONFIG_DIR/skills", "$CLAUDE_CONFIG_DIR/agents"} {
+				if !strings.Contains(installing, want) {
+					t.Errorf("%s for Claude Code does not say %s under Installing elsewhere:\n%s", one.Name, want, installing)
+				}
+			}
+		} else if strings.Contains(one.Rendered(), "CLAUDE_CONFIG_DIR") {
+			t.Errorf("%s for %s names CLAUDE_CONFIG_DIR", one.Name, one.Host.Name)
+		}
+	}
+}

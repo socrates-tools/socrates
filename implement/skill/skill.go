@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	OverseerCeilings = skillkit.Ceilings{skillkit.ClaudeCode: 10500, skillkit.Codex: 11306}
+	OverseerCeilings = skillkit.Ceilings{skillkit.ClaudeCode: 10600, skillkit.Codex: 11307}
 	AgentCeilings    = skillkit.Ceilings{skillkit.ClaudeCode: 1700, skillkit.Codex: 1750}
 )
 
@@ -60,19 +60,11 @@ func hostSection(host skillkit.Host) string {
 }
 
 func installingElsewhere(host skillkit.Host) string {
-	return fmt.Sprintf(installingElsewhereTemplate, filepath.ToSlash(host.SkillsDirectory), AgentKind(host), whereAgentsInstall(host), host.Flag)
+	return fmt.Sprintf(installingElsewhereTemplate, host.SkillsLocation(), AgentKind(host), host.AgentsLocation(), host.Flag)
 }
 
 func AgentKind(host skillkit.Host) string {
 	return agentKinds[host]
-}
-
-func whereAgentsInstall(host skillkit.Host) string {
-	under := "~/" + filepath.ToSlash(host.AgentsDirectory)
-	if host.ConfigurationVariable == "" {
-		return fmt.Sprintf(codeSpan, under)
-	}
-	return fmt.Sprintf(agentsUnderAVariable, host.ConfigurationVariable, filepath.Base(host.AgentsDirectory), under)
 }
 
 func For(host skillkit.Host) []skillkit.Skill {
@@ -149,7 +141,7 @@ func CodexRoleFor(stated config.Config) string {
 }
 
 func AgentsDirectory(host skillkit.Host) (string, error) {
-	if stated := os.Getenv(host.ConfigurationVariable); host.ConfigurationVariable != "" && stated != "" {
+	if stated := host.ConfigurationStated(); stated != "" {
 		return filepath.Join(stated, filepath.Base(host.AgentsDirectory)), nil
 	}
 	home, err := os.UserHomeDir()

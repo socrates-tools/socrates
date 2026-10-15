@@ -93,7 +93,7 @@ func installed(t *testing.T, root string) (string, string) {
 	home := t.TempDir()
 	command := exec.Command("make", "install")
 	command.Dir = root
-	command.Env = append(append(os.Environ(), source.Toolchain()...), "GOBIN="+directory, "HOME="+home, "CODEX_HOME=")
+	command.Env = append(append(os.Environ(), source.Toolchain()...), "GOBIN="+directory, "HOME="+home, "CLAUDE_CONFIG_DIR=", "CODEX_HOME=")
 
 	var failures bytes.Buffer
 	command.Stderr = &failures

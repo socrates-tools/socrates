@@ -22,6 +22,9 @@ const (
 
 	hostUsage = "write only the rendering for this host, %s, to its own directory, instead of every host's"
 
+	locationUnderAVariable = "|$%s/%s|, or |~/%s| where it is unset"
+	locationUnderTheHome   = "|~/%s|"
+
 	noHomeDirectory = "the skill installs under a home directory by default, and none could be found: %s. Name a directory to write it to with %s --host and --to"
 )
 

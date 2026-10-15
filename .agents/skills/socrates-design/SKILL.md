@@ -193,5 +193,5 @@ Name each one and what it was asking, so whoever picks the spec up next can see 
 
 ## Installing elsewhere
 
-This document installs under `~/.agents/skills` by default.
+This document installs under `~/.agents/skills`.
 Write it somewhere else instead with `socrates design skill --host codex --to <directory>`.

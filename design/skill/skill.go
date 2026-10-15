@@ -2,7 +2,6 @@ package skill
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/socrates-tools/socrates/internal/skill"
 )
@@ -14,7 +13,7 @@ const (
 
 var (
 	Ceilings        = skill.Ceilings{skill.ClaudeCode: 13300, skill.Codex: 13662}
-	TicketsCeilings = skill.Ceilings{skill.ClaudeCode: 9800, skill.Codex: 10016}
+	TicketsCeilings = skill.Ceilings{skill.ClaudeCode: 9800, skill.Codex: 10017}
 )
 
 var Namespaces = map[string]string{
@@ -36,7 +35,7 @@ func assembled(parts ...string) string {
 }
 
 func installingElsewhere(host skill.Host) string {
-	return fmt.Sprintf(installingElsewhereTemplate, filepath.ToSlash(host.SkillsDirectory), host.Flag)
+	return fmt.Sprintf(installingElsewhereTemplate, host.SkillsLocation(), host.Flag)
 }
 
 func For(host skill.Host) []skill.Skill {

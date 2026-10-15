@@ -26,3 +26,17 @@ func TestEachHostsRenderingNamesItsOwnDirectoryAndHostWhereItSaysToInstallElsewh
 		}
 	}
 }
+
+func TestOnlyClaudeCodesInstallingElsewhereNamesClaudeConfigDir(t *testing.T) {
+	for _, one := range skill.All() {
+		installing := sectionOf(t, one.Rendered(), "## Installing elsewhere")
+		named := strings.Contains(installing, "$CLAUDE_CONFIG_DIR/skills")
+
+		if one.Host == skillkit.ClaudeCode && !named {
+			t.Errorf("%s for Claude Code does not say its skills go under $CLAUDE_CONFIG_DIR/skills where it is set:\n%s", one.Name, installing)
+		}
+		if one.Host != skillkit.ClaudeCode && strings.Contains(one.Rendered(), "CLAUDE_CONFIG_DIR") {
+			t.Errorf("%s for %s names CLAUDE_CONFIG_DIR", one.Name, one.Host.Name)
+		}
+	}
+}

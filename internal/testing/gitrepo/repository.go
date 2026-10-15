@@ -29,6 +29,7 @@ func NewEnvironment(t *testing.T) Environment {
 		Variables: []string{
 			"TMPDIR=" + t.TempDir(),
 			"HOME=" + home,
+			"CLAUDE_CONFIG_DIR=",
 			"CODEX_HOME=",
 			"GIT_CONFIG_GLOBAL=" + os.DevNull,
 			"GIT_CONFIG_SYSTEM=" + os.DevNull,

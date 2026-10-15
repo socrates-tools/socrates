@@ -292,3 +292,30 @@ func TestClaudeCodeReadsItsOwnPersonOnlySwitchFromAnInstalledSkill(t *testing.T)
 		t.Error("Claude Code reads a directory holding no skill as person-only")
 	}
 }
+
+func TestClaudeCodesSkillsDirectoryFollowsClaudeConfigDirAndFallsBackToTheHomeDirectory(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	t.Setenv("CLAUDE_CONFIG_DIR", "")
+	if got, err := skill.UserDirectory(skill.ClaudeCode, fixtureInvocation); err != nil || got != filepath.Join(home, ".claude", "skills") {
+		t.Errorf("with CLAUDE_CONFIG_DIR unset the directory is %s (error %v), want it under ~/.claude", got, err)
+	}
+
+	stated := t.TempDir()
+	t.Setenv("CLAUDE_CONFIG_DIR", stated)
+	if got, err := skill.UserDirectory(skill.ClaudeCode, fixtureInvocation); err != nil || got != filepath.Join(stated, "skills") {
+		t.Errorf("with CLAUDE_CONFIG_DIR set the directory is %s (error %v), want %s", got, err, filepath.Join(stated, "skills"))
+	}
+}
+
+func TestCodexsSkillsDirectoryIgnoresBothConfigurationVariables(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("CLAUDE_CONFIG_DIR", t.TempDir())
+	t.Setenv("CODEX_HOME", t.TempDir())
+
+	if got, err := skill.UserDirectory(skill.Codex, fixtureInvocation); err != nil || got != filepath.Join(home, ".agents", "skills") {
+		t.Errorf("Codex's skills directory is %s (error %v), want it under ~/.agents", got, err)
+	}
+}

@@ -164,5 +164,5 @@ Say what was written and where, and say that the folder must be committed before
 
 ## Installing elsewhere
 
-This document installs under `~/.claude/skills` beside `socrates-design`.
+This document installs beside `socrates-design`, under `$CLAUDE_CONFIG_DIR/skills`, or `~/.claude/skills` where it is unset.
 Write both somewhere else instead with `socrates design skill --host claude --to <directory>`.

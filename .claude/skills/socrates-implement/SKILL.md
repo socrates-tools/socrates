@@ -159,5 +159,5 @@ Push nothing, open no pull request and post nothing: publishing the change is th
 
 ## Installing elsewhere
 
-This skill installs under `~/.claude/skills` and the agent definition under `~/.claude/agents`.
+This skill installs under `$CLAUDE_CONFIG_DIR/skills`, or `~/.claude/skills` where it is unset, and the agent definition under `$CLAUDE_CONFIG_DIR/agents`, or `~/.claude/agents` where it is unset.
 Write them elsewhere with `socrates implement skill --host claude --to <directory> --agents-to <directory>`.

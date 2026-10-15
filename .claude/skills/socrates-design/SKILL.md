@@ -188,5 +188,5 @@ Name each one and what it was asking, so whoever picks the spec up next can see 
 
 ## Installing elsewhere
 
-This document installs under `~/.claude/skills` by default.
+This document installs under `$CLAUDE_CONFIG_DIR/skills`, or `~/.claude/skills` where it is unset.
 Write it somewhere else instead with `socrates design skill --host claude --to <directory>`.
