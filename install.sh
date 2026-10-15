@@ -24,13 +24,10 @@ release_url() {
 }
 
 fetch() {
-  if command -v curl >/dev/null 2>&1; then
-    curl -fsSL -o "$2" "$1"
-  elif command -v wget >/dev/null 2>&1; then
-    wget -q -O "$2" "$1"
-  else
-    refuse "neither curl nor wget is on PATH, and one is needed to download socrates: install either and run this again"
+  if ! command -v curl >/dev/null 2>&1; then
+    refuse "curl is not on PATH, and it is needed to download socrates: install curl and run this again"
   fi
+  curl -fsSL -o "$2" "$1"
 }
 
 download() {

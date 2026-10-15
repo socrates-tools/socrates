@@ -178,7 +178,9 @@ func toolsFor(t *testing.T, on machine) string {
 	for _, name := range toolsTheInstallerRuns {
 		linkTool(t, directory, name)
 	}
-	linkTool(t, directory, on.fetcher)
+	if on.fetcher != "" {
+		linkTool(t, directory, on.fetcher)
+	}
 	linkTool(t, directory, on.checksumTool)
 	writeTool(t, directory, "uname", fmt.Sprintf("case \"$1\" in -s) echo %s ;; -m) echo %s ;; *) echo %s ;; esac\n", on.kernel, on.hardware, on.kernel))
 	return directory
@@ -340,13 +342,18 @@ func TestTheInstallerChecksWithShasumWhereSha256sumIsAbsent(t *testing.T) {
 	assertInstalled(t, runInstaller(t, toolsFor(t, on), served), served)
 }
 
-func TestTheInstallerDownloadsWithWgetWhereCurlIsAbsent(t *testing.T) {
+func TestTheInstallerRefusesWhereCurlIsAbsent(t *testing.T) {
 	t.Parallel()
 	served := servedRelease(t, "linux_amd64")
 	on := onLinux()
-	on.fetcher = "wget"
+	on.fetcher = ""
 
-	assertInstalled(t, runInstaller(t, toolsFor(t, on), served), served)
+	done := runInstaller(t, toolsFor(t, on), served)
+
+	assertNothingInstalled(t, done)
+	if !strings.Contains(done.failures, "curl is not on PATH") || strings.Contains(done.failures, "wget") {
+		t.Errorf("the refusal does not name curl alone as what is missing:\n%s", done.failures)
+	}
 }
 
 func TestTheInstallerCreatesTheDirectoryAndSaysWhenItIsNotOnPath(t *testing.T) {
