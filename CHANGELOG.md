@@ -8,6 +8,25 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-16
+
+### Added
+
+- **socrates has a landing page at [socrates-tools.github.io/socrates](https://socrates-tools.github.io/socrates/).**
+  It is published with each release, and the README links to it.
+
+### Changed
+
+- **What was settled in earlier rounds arrives folded.**
+  A later design round used to open with every earlier answer listed above the first question still open, and the list grew with each round.
+  It now shows one line saying how many were settled, and pressing it, or the entry in the index, unfolds them.
+  A page holding nothing but what was settled still shows it unfolded.
+
+### Removed
+
+- **The installer no longer downloads with `wget`.**
+  It needs `curl`, which macOS ships and every Linux and WSL distribution socrates supports can install, and on a machine without it the installer stops and says so before writing anything.
+
 ## [0.5.0] - 2026-10-15
 
 ### Changed
@@ -190,7 +209,8 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.6.0
 [0.5.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.5.0
 [0.4.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.4.0
 [0.3.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.3.0
