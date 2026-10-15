@@ -3,6 +3,7 @@ package e2e_test
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -324,5 +325,158 @@ func TestImplementConfigureTakesNoArguments(t *testing.T) {
 	_, failures, code := session.Top("implement", "configure", "extra")
 	if code != exit.Unusable || !strings.Contains(failures, "socrates implement configure") {
 		t.Errorf("an argument exited %d with %q", code, failures)
+	}
+}
+
+func installedCodexRoleIn(t *testing.T, session *harness.Session) string {
+	t.Helper()
+
+	directory := t.TempDir()
+	if _, failures, code := session.Top("implement", "skill", "--host", skillkit.Codex.Flag, "--agents-to", directory); code != exit.NothingAsked {
+		t.Fatalf("socrates implement skill --host codex exited %d: %s", code, failures)
+	}
+	return filepath.Join(directory, skill.CodexRoleFileName())
+}
+
+func TestImplementConfigureOffersACodexModelTakingATypedIdentifierOrTheDefaultAndACodexEffortOfferingCodexsEfforts(t *testing.T) {
+	t.Parallel()
+	session := harness.Start(t)
+
+	menu := openImplementMenu(session)
+	menu.MoveTo("roles.implementer.codex.model")
+	menu.Type(harness.Enter)
+	model := menu.Await("use the default")
+	menu.Type(harness.Escape)
+	menu.AwaitSettling()
+	menu.MoveTo("roles.implementer.codex.effort")
+	menu.Type(harness.Enter)
+	effort := menu.Await("use the default")
+	menu.Type(harness.Escape)
+	menu.AwaitSettling()
+	menu.Type("q")
+	menu.Wait()
+
+	offered := optionsIn(model)
+	if len(offered) != 2 || offered[1] != "use the default" {
+		t.Errorf("the Codex model row offers %v, want a typed identifier and use the default", offered)
+	}
+	for _, each := range config.CodexEfforts() {
+		if !slices.Contains(optionsIn(effort), each) {
+			t.Errorf("the Codex effort row offers no %s:\n%s", each, effort)
+		}
+	}
+}
+
+func TestImplementConfigureRewritesTheInstalledCodexRoleAtOnceAndLeavesClaudeCodesDefinitionAlone(t *testing.T) {
+	t.Parallel()
+	session := harness.Start(t)
+	path := implementConfigurationPath(session)
+	definition := installedDefinitionIn(t, session)
+	role := installedCodexRoleIn(t, session)
+	atInstall := session.File(definition)
+
+	menu := openImplementMenu(session)
+	menu.MoveTo("roles.implementer.codex.model")
+	menu.Type(harness.Enter)
+	menu.Await("use the default")
+	typeValue(menu, "gpt-5.5")
+	menu.Await(path)
+	if written := session.File(role); !strings.Contains(written, "model = \"gpt-5.5\"\n") {
+		t.Errorf("the role does not state the Codex model that was confirmed:\n%s", written)
+	}
+
+	menu.MoveTo("roles.implementer.codex.effort")
+	menu.Type(harness.Enter)
+	menu.Await("use the default")
+	chooseOption(t, menu, "ultra")
+	drawn := menu.AwaitSettling()
+	menu.Type("q")
+	menu.Wait()
+
+	written := session.File(role)
+	for _, want := range []string{"model = \"gpt-5.5\"\n", "model_reasoning_effort = \"ultra\"\n"} {
+		if !strings.Contains(written, want) {
+			t.Errorf("the role does not state %q:\n%s", want, written)
+		}
+	}
+	if !strings.Contains(drawn, role) {
+		t.Errorf("the menu does not say which role it rewrote:\n%s", drawn)
+	}
+	if session.File(definition) != atInstall {
+		t.Error("confirming a Codex setting rewrote Claude Code's definition")
+	}
+}
+
+func TestImplementConfigureUsingTheDefaultForTheCodexModelTakesTheModelLineOutOfTheRole(t *testing.T) {
+	t.Parallel()
+	session := harness.Start(t)
+	path := implementConfigurationPath(session)
+	stateImplementConfiguration(t, session, "roles:\n  implementer:\n    codex:\n      model: gpt-5.5\n")
+	role := installedCodexRoleIn(t, session)
+	if !strings.Contains(session.File(role), "model = \"gpt-5.5\"") {
+		t.Fatalf("the role installed from the file does not state its model:\n%s", session.File(role))
+	}
+
+	menu := openImplementMenu(session)
+	menu.MoveTo("roles.implementer.codex.model")
+	menu.Type(harness.Enter)
+	menu.Await("use the default")
+	chooseOption(t, menu, "use the default")
+	menu.Await("now uses the default")
+	menu.Type("q")
+	menu.Wait()
+
+	if strings.Contains(session.File(role), "\nmodel = ") {
+		t.Errorf("the role still carries a model line:\n%s", session.File(role))
+	}
+	if held := fileAt(t, path); strings.Contains(held, "gpt-5.5") {
+		t.Errorf("the file still holds the model: %q", held)
+	}
+}
+
+func TestImplementConfigureRewritesTheInstalledClaudeCodeDefinitionAndLeavesTheCodexRoleAlone(t *testing.T) {
+	t.Parallel()
+	session := harness.Start(t)
+	definition := installedDefinitionIn(t, session)
+	role := installedCodexRoleIn(t, session)
+	atInstall := session.File(role)
+
+	menu := openImplementMenu(session)
+	menu.MoveTo("roles.implementer.model")
+	menu.Type(harness.Enter)
+	menu.Await("use the default")
+	chooseOption(t, menu, "opus")
+	menu.AwaitSettling()
+	menu.Type("q")
+	menu.Wait()
+
+	if !strings.Contains(session.File(definition), "model: opus\n") {
+		t.Errorf("the definition was not rewritten:\n%s", session.File(definition))
+	}
+	if session.File(role) != atInstall {
+		t.Error("confirming a Claude Code setting rewrote the Codex role")
+	}
+}
+
+func TestImplementConfigureWithNoCodexRoleInstalledWritesTheSettingAndNamesSocratesImplementSkill(t *testing.T) {
+	t.Parallel()
+	session := harness.Start(t)
+	path := implementConfigurationPath(session)
+	installedDefinitionIn(t, session)
+
+	menu := openImplementMenu(session)
+	menu.MoveTo("roles.implementer.codex.effort")
+	menu.Type(harness.Enter)
+	menu.Await("use the default")
+	chooseOption(t, menu, "low")
+	drawn := menu.Await(path)
+	menu.Type("q")
+	menu.Wait()
+
+	if !strings.Contains(drawn, "socrates implement skill") || !strings.Contains(drawn, "Codex") {
+		t.Errorf("the menu does not say which command writes the Codex role:\n%s", drawn)
+	}
+	if held := fileAt(t, path); !strings.Contains(held, "effort: low") {
+		t.Errorf("the file holds %q, and the setting is written whether or not a role is installed", held)
 	}
 }

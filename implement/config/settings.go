@@ -32,6 +32,8 @@ const (
 	concurrencyKey   = "concurrency"
 	modelKey         = "roles.implementer.model"
 	effortKey        = "roles.implementer.effort"
+	codexModelKey    = "roles.implementer.codex.model"
+	codexEffortKey   = "roles.implementer.codex.effort"
 	defaultBranchKey = "default_branch"
 )
 
@@ -48,10 +50,18 @@ func (c Config) Settings() []Setting {
 	model.Choices = ModelAliases()
 	model.Typeable = true
 
+	codexEffort := inForce(codexEffortKey, c.Roles.Implementer.Codex.Effort, DefaultCodexEffort)
+	codexEffort.Choices = CodexEfforts()
+
+	codexModel := inForce(codexModelKey, c.Roles.Implementer.Codex.Model, "")
+	codexModel.Typeable = true
+
 	return []Setting{
 		inForce(concurrencyKey, stated, strconv.Itoa(DefaultConcurrency)),
 		model,
 		effort,
+		codexModel,
+		codexEffort,
 	}
 }
 
@@ -81,6 +91,14 @@ func (c Config) Implementer() Role {
 	}
 	if role.Effort == "" {
 		role.Effort = DefaultEffort
+	}
+	return role
+}
+
+func (c Config) CodexImplementer() CodexRole {
+	role := c.Roles.Implementer.Codex
+	if role.Effort == "" {
+		role.Effort = DefaultCodexEffort
 	}
 	return role
 }

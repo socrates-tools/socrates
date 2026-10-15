@@ -33,10 +33,10 @@ func TestEverySettingGetsOneLineOfItsOwnEndingInWhereItCameFrom(t *testing.T) {
 		keys = append(keys, fields[0])
 		sources = append(sources, fields[len(fields)-1])
 	}
-	if diff := cmp.Diff([]string{"concurrency", "roles.implementer.model", "roles.implementer.effort"}, keys); diff != "" {
+	if diff := cmp.Diff([]string{"concurrency", "roles.implementer.model", "roles.implementer.effort", "roles.implementer.codex.model", "roles.implementer.codex.effort"}, keys); diff != "" {
 		t.Errorf("the keys reported differ from the settings (-want +got):\n%s", diff)
 	}
-	if diff := cmp.Diff([]string{"set", "default", "default"}, sources); diff != "" {
+	if diff := cmp.Diff([]string{"set", "default", "default", "default", "default"}, sources); diff != "" {
 		t.Errorf("where each setting came from differs (-want +got):\n%s", diff)
 	}
 }
@@ -44,11 +44,11 @@ func TestEverySettingGetsOneLineOfItsOwnEndingInWhereItCameFrom(t *testing.T) {
 func TestTheColumnsLineUp(t *testing.T) {
 	lines := config.ReportAt("config.yaml", config.Config{}).Lines()[2:]
 
-	value := strings.Index(lines[0], "4")
+	source := strings.LastIndex(lines[0], "default")
 	for _, line := range lines {
 		fields := strings.Fields(line)
-		if at := strings.Index(line, fields[1]); at != value {
-			t.Errorf("the line %q starts its value at %d, and the first line started at %d", line, at, value)
+		if at := strings.LastIndex(line, fields[len(fields)-1]); at != source {
+			t.Errorf("the line %q starts its source at %d, and the first line started at %d", line, at, source)
 		}
 	}
 }

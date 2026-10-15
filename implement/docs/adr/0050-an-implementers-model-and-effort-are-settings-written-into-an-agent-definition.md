@@ -3,6 +3,7 @@
 - Status: accepted
 - Date: 2026-10-01
 - Part of: socrates-implement
+- Amended by: ADR 68, which gives a Codex implementer settings of its own, `roles.implementer.codex.model` and `roles.implementer.codex.effort`, rewritten into the Codex role beside this definition
 
 ## Decision
 

@@ -49,6 +49,9 @@ roles:
   implementer:
     model: claude-opus-4-1
     effort: max
+    codex:
+      model: gpt-5.5
+      effort: ultra
 `))
 	if err != nil {
 		t.Fatalf("loading a configuration file naming every setting: %v", err)
@@ -56,9 +59,11 @@ roles:
 
 	reported := valuesOf(loaded.Settings())
 	want := map[string]string{
-		"concurrency":              "2",
-		"roles.implementer.model":  "claude-opus-4-1",
-		"roles.implementer.effort": "max",
+		"concurrency":                    "2",
+		"roles.implementer.model":        "claude-opus-4-1",
+		"roles.implementer.effort":       "max",
+		"roles.implementer.codex.model":  "gpt-5.5",
+		"roles.implementer.codex.effort": "ultra",
 	}
 	if diff := cmp.Diff(want, reported); diff != "" {
 		t.Errorf("what the file states is not what is in force (-want +got):\n%s", diff)
@@ -67,11 +72,14 @@ roles:
 
 func TestAValueOutOfRangeIsRefusedNamingTheFile(t *testing.T) {
 	for name, content := range map[string]string{
-		"a concurrency of zero":      "concurrency: 0\n",
-		"a negative concurrency":     "concurrency: -3\n",
-		"a fractional concurrency":   "concurrency: 2.5\n",
-		"an effort that is unknown":  "roles:\n  implementer:\n    effort: extreme\n",
-		"a model with a space in it": "roles:\n  implementer:\n    model: \"claude opus\"\n",
+		"a concurrency of zero":               "concurrency: 0\n",
+		"a negative concurrency":              "concurrency: -3\n",
+		"a fractional concurrency":            "concurrency: 2.5\n",
+		"an effort that is unknown":           "roles:\n  implementer:\n    effort: extreme\n",
+		"a model with a space in it":          "roles:\n  implementer:\n    model: \"claude opus\"\n",
+		"a codex effort that is unknown":      "roles:\n  implementer:\n    codex:\n      effort: extreme\n",
+		"a claude code effort codex has only": "roles:\n  implementer:\n    effort: ultra\n",
+		"a codex model with a space in it":    "roles:\n  implementer:\n    codex:\n      model: \"gpt 5\"\n",
 	} {
 		t.Run(name, func(t *testing.T) {
 			path := write(t, content)
@@ -89,9 +97,10 @@ func TestAValueOutOfRangeIsRefusedNamingTheFile(t *testing.T) {
 
 func TestAFieldTheFileDoesNotHaveIsRefusedNamingTheFile(t *testing.T) {
 	for name, content := range map[string]string{
-		"a top-level field":   "parallelism: 3\n",
-		"a role that is not":  "roles:\n  reviewer:\n    model: sonnet\n",
-		"a field of the role": "roles:\n  implementer:\n    temperature: 1\n",
+		"a top-level field":         "parallelism: 3\n",
+		"a role that is not":        "roles:\n  reviewer:\n    model: sonnet\n",
+		"a field of the role":       "roles:\n  implementer:\n    temperature: 1\n",
+		"a field of the codex role": "roles:\n  implementer:\n    codex:\n      temperature: 1\n",
 	} {
 		t.Run(name, func(t *testing.T) {
 			path := write(t, content)
@@ -134,7 +143,7 @@ func TestEverySettingIsReportedInTheOrderTheFileIsWritten(t *testing.T) {
 	for _, setting := range (config.Config{}).Settings() {
 		keys = append(keys, setting.Key)
 	}
-	want := []string{"concurrency", "roles.implementer.model", "roles.implementer.effort"}
+	want := []string{"concurrency", "roles.implementer.model", "roles.implementer.effort", "roles.implementer.codex.model", "roles.implementer.codex.effort"}
 	if diff := cmp.Diff(want, keys); diff != "" {
 		t.Errorf("what socrates implement reports differs from what the file holds (-want +got):\n%s", diff)
 	}
@@ -202,15 +211,19 @@ func TestTheDefaultsAreTheOnesTheSpecStates(t *testing.T) {
 	}
 }
 
-func TestOnlyTheModelAndTheEffortOfferValues(t *testing.T) {
+func TestEachHostsEffortOffersValuesAndEachModelAlsoTakesAFullIdentifierTyped(t *testing.T) {
+	offering := map[string]bool{
+		"roles.implementer.effort":       true,
+		"roles.implementer.model":        true,
+		"roles.implementer.codex.effort": true,
+	}
+	typeable := map[string]bool{"roles.implementer.model": true, "roles.implementer.codex.model": true}
 	for _, setting := range (config.Config{}).Settings() {
-		offered := len(setting.Choices) > 0
-		wanted := setting.Key == "roles.implementer.effort" || setting.Key == "roles.implementer.model"
-		if offered != wanted {
-			t.Errorf("%s offers %v, and only the model and the effort have values to offer", setting.Key, setting.Choices)
+		if offered := len(setting.Choices) > 0; offered != offering[setting.Key] {
+			t.Errorf("%s offers %v", setting.Key, setting.Choices)
 		}
-		if setting.Typeable != (setting.Key == "roles.implementer.model") {
-			t.Errorf("%s is typeable %v, and only the model also takes a full identifier", setting.Key, setting.Typeable)
+		if setting.Typeable != typeable[setting.Key] {
+			t.Errorf("%s is typeable %v", setting.Key, setting.Typeable)
 		}
 	}
 	if diff := cmp.Diff([]string{"sonnet", "opus", "haiku", "fable", "inherit"}, config.ModelAliases()); diff != "" {
@@ -220,13 +233,50 @@ func TestOnlyTheModelAndTheEffortOfferValues(t *testing.T) {
 	if diff := cmp.Diff(want, config.Efforts()); diff != "" {
 		t.Errorf("the efforts offered differ from the ones the spec states (-want +got):\n%s", diff)
 	}
+	wantCodex := []string{"none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"}
+	if diff := cmp.Diff(wantCodex, config.CodexEfforts()); diff != "" {
+		t.Errorf("the Codex efforts offered differ from the ones the spec states (-want +got):\n%s", diff)
+	}
+}
+
+func TestWithNoCodexSettingsTheCodexImplementerHasNoModelAndTheDefaultEffort(t *testing.T) {
+	role := (config.Config{}).CodexImplementer()
+
+	if role.Model != "" || role.Effort != "high" {
+		t.Errorf("the Codex implementer is %+v, want no model and effort high", role)
+	}
+}
+
+func TestTheCodexImplementerCarriesWhatTheFileStatesAndNothingOfClaudeCodes(t *testing.T) {
+	loaded, err := config.LoadFrom(write(t, "roles:\n  implementer:\n    model: opus\n    effort: max\n    codex:\n      model: gpt-5.5\n"))
+	if err != nil {
+		t.Fatalf("loading: %v", err)
+	}
+
+	if role := loaded.CodexImplementer(); role.Model != "gpt-5.5" || role.Effort != "high" {
+		t.Errorf("the Codex implementer is %+v, want gpt-5.5 at high", role)
+	}
+	if role := loaded.Implementer(); role.Model != "opus" || role.Effort != "max" {
+		t.Errorf("Claude Code's implementer is %+v, want opus at max", role)
+	}
+}
+
+func TestEveryCodexEffortTheSpecNamesIsAccepted(t *testing.T) {
+	for _, effort := range []string{"none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"} {
+		content := "roles:\n  implementer:\n    codex:\n      effort: " + effort + "\n"
+		if _, err := config.LoadFrom(write(t, content)); err != nil {
+			t.Errorf("a Codex effort of %s is refused: %v", effort, err)
+		}
+	}
 }
 
 func defaultsThatDrifted(reported []config.Setting) []string {
 	owners := map[string]string{
-		"concurrency":              strconv.Itoa(config.DefaultConcurrency),
-		"roles.implementer.model":  config.DefaultModel,
-		"roles.implementer.effort": config.DefaultEffort,
+		"concurrency":                    strconv.Itoa(config.DefaultConcurrency),
+		"roles.implementer.model":        config.DefaultModel,
+		"roles.implementer.effort":       config.DefaultEffort,
+		"roles.implementer.codex.model":  "",
+		"roles.implementer.codex.effort": config.DefaultCodexEffort,
 	}
 
 	var drifted []string

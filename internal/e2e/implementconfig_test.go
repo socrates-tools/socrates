@@ -36,6 +36,9 @@ func implementSettingsIn(t *testing.T, printed string) map[string][2]string {
 	reported := map[string][2]string{}
 	for line := range strings.SplitSeq(printed, "\n") {
 		fields := strings.Fields(line)
+		if len(fields) == 2 && fields[0] != "default_branch" {
+			fields = []string{fields[0], "", fields[1]}
+		}
 		if len(fields) != 3 {
 			continue
 		}
@@ -44,7 +47,7 @@ func implementSettingsIn(t *testing.T, printed string) map[string][2]string {
 	return reported
 }
 
-func TestImplementConfigWithNoFileReportsTheThreeSettingsAtTheirDefaults(t *testing.T) {
+func TestImplementConfigWithNoFileReportsEverySettingAtItsDefault(t *testing.T) {
 	t.Parallel()
 	session := harness.Start(t)
 
@@ -57,6 +60,9 @@ func TestImplementConfigWithNoFileReportsTheThreeSettingsAtTheirDefaults(t *test
 		"concurrency":              {"4", string(config.Default)},
 		"roles.implementer.model":  {"sonnet", string(config.Default)},
 		"roles.implementer.effort": {"high", string(config.Default)},
+
+		"roles.implementer.codex.model":  {"", string(config.Default)},
+		"roles.implementer.codex.effort": {"high", string(config.Default)},
 	}
 	if diff := cmp.Diff(want, implementSettingsIn(t, printed)); diff != "" {
 		t.Errorf("what socrates implement config reports differs (-want +got):\n%s", diff)
@@ -72,7 +78,7 @@ func TestImplementConfigWithNoFileReportsTheThreeSettingsAtTheirDefaults(t *test
 func TestImplementConfigReportsWhatAPersonWroteAsSet(t *testing.T) {
 	t.Parallel()
 	session := harness.Start(t)
-	stateImplementConfiguration(t, session, "concurrency: 2\nroles:\n  implementer:\n    effort: max\n")
+	stateImplementConfiguration(t, session, "concurrency: 2\nroles:\n  implementer:\n    effort: max\n    codex:\n      model: gpt-5.5\n")
 
 	printed, failures, code := session.Top("implement", "config")
 	if code != exit.NothingAsked {
@@ -83,6 +89,9 @@ func TestImplementConfigReportsWhatAPersonWroteAsSet(t *testing.T) {
 		"concurrency":              {"2", string(config.Set)},
 		"roles.implementer.model":  {"sonnet", string(config.Default)},
 		"roles.implementer.effort": {"max", string(config.Set)},
+
+		"roles.implementer.codex.model":  {"gpt-5.5", string(config.Set)},
+		"roles.implementer.codex.effort": {"high", string(config.Default)},
 	}
 	if diff := cmp.Diff(want, implementSettingsIn(t, printed)); diff != "" {
 		t.Errorf("what socrates implement config reports differs (-want +got):\n%s", diff)
@@ -92,9 +101,10 @@ func TestImplementConfigReportsWhatAPersonWroteAsSet(t *testing.T) {
 func TestImplementConfigRefusesAValueOutOfRangeAndAFieldItDoesNotHaveNamingTheFile(t *testing.T) {
 	t.Parallel()
 	for name, content := range map[string]string{
-		"a concurrency of zero": "concurrency: 0\n",
-		"an unknown effort":     "roles:\n  implementer:\n    effort: extreme\n",
-		"an unknown field":      "parallelism: 3\n",
+		"a concurrency of zero":   "concurrency: 0\n",
+		"an unknown effort":       "roles:\n  implementer:\n    effort: extreme\n",
+		"an unknown Codex effort": "roles:\n  implementer:\n    codex:\n      effort: extreme\n",
+		"an unknown field":        "parallelism: 3\n",
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

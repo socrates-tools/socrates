@@ -15,6 +15,7 @@ import (
 const (
 	defaultBranchKey = "default_branch"
 	rolesPrefix      = "roles"
+	codexRolePrefix  = "roles.implementer.codex"
 )
 
 func Run(ctx context.Context, in io.Reader, out io.Writer, repository string) error {
@@ -82,18 +83,44 @@ func followedBy(path string) func(setting settingsmenu.Setting) (string, error) 
 		if err != nil {
 			return "", err
 		}
-		installed, wasInstalled, err := skill.Reinstall(skillkit.ClaudeCode, loaded)
-		if err != nil {
-			return "", err
+		if shapesTheCodexRole(setting.Key) {
+			return rewritingTheCodexRole(loaded)
 		}
-		if !wasInstalled {
-			return definitionNotInstalled, nil
-		}
-		role := loaded.Implementer()
-		return fmt.Sprintf(definitionRewritten, installed, role.Model, role.Effort), nil
+		return rewritingTheDefinition(loaded)
 	}
+}
+
+func rewritingTheDefinition(loaded config.Config) (string, error) {
+	installed, wasInstalled, err := skill.Reinstall(skillkit.ClaudeCode, loaded)
+	if err != nil {
+		return "", err
+	}
+	if !wasInstalled {
+		return definitionNotInstalled, nil
+	}
+	role := loaded.Implementer()
+	return fmt.Sprintf(definitionRewritten, installed, role.Model, role.Effort), nil
+}
+
+func rewritingTheCodexRole(loaded config.Config) (string, error) {
+	installed, wasInstalled, err := skill.Reinstall(skillkit.Codex, loaded)
+	if err != nil {
+		return "", err
+	}
+	if !wasInstalled {
+		return codexRoleNotInstalled, nil
+	}
+	role := loaded.CodexImplementer()
+	if role.Model == "" {
+		return fmt.Sprintf(codexRoleRewrittenOnTheSessionsModel, installed, role.Effort), nil
+	}
+	return fmt.Sprintf(codexRoleRewritten, installed, role.Model, role.Effort), nil
 }
 
 func shapesTheDefinition(key string) bool {
 	return key == rolesPrefix || strings.HasPrefix(key, rolesPrefix+".")
+}
+
+func shapesTheCodexRole(key string) bool {
+	return strings.HasPrefix(key, codexRolePrefix)
 }

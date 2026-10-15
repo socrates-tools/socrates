@@ -30,8 +30,14 @@ const defaultBranchesKey = "default_branches"
 
 var efforts = []string{"low", "medium", "high", "xhigh", "max"}
 
+var codexEfforts = []string{"none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"}
+
 func Efforts() []string {
 	return slices.Clone(efforts)
+}
+
+func CodexEfforts() []string {
+	return slices.Clone(codexEfforts)
 }
 
 type Config struct {
@@ -73,6 +79,12 @@ type Roles struct {
 }
 
 type Role struct {
+	Model  string    `yaml:"model"`
+	Effort string    `yaml:"effort"`
+	Codex  CodexRole `yaml:"codex"`
+}
+
+type CodexRole struct {
 	Model  string `yaml:"model"`
 	Effort string `yaml:"effort"`
 }
@@ -127,6 +139,12 @@ func (c Config) validate() error {
 	}
 	if effort := c.Roles.Implementer.Effort; effort != "" && !slices.Contains(efforts, effort) {
 		return fmt.Errorf(unknownEffort, effort, efforts)
+	}
+	if strings.ContainsAny(c.Roles.Implementer.Codex.Model, " \t\r\n") {
+		return fmt.Errorf(codexModelHasWhitespace, c.Roles.Implementer.Codex.Model)
+	}
+	if effort := c.Roles.Implementer.Codex.Effort; effort != "" && !slices.Contains(codexEfforts, effort) {
+		return fmt.Errorf(unknownCodexEffort, effort, codexEfforts)
 	}
 	for repository, branch := range c.DefaultBranches {
 		if !filepath.IsAbs(repository) {

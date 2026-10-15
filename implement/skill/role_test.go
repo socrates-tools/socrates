@@ -228,3 +228,74 @@ func TestCodexsAgentsDirectoryFollowsCodexHomeAndFallsBackToTheHomeDirectory(t *
 		t.Errorf("with CODEX_HOME set the directory is %s (error %v), want %s", got, err, filepath.Join(stated, "agents"))
 	}
 }
+
+func statedForCodex(model, effort string) config.Config {
+	return config.Config{Roles: config.Roles{Implementer: config.Role{Codex: config.CodexRole{Model: model, Effort: effort}}}}
+}
+
+func TestTheCodexRoleFollowsTheCodexSettingsAndIgnoresClaudeCodes(t *testing.T) {
+	cases := map[string]struct {
+		stated        config.Config
+		model, effort string
+	}{
+		"nothing set":                     {config.Config{}, "", "high"},
+		"only Claude Code's set":          {stated("opus", "max"), "", "high"},
+		"a Codex model and effort set":    {statedForCodex("gpt-5.5", "xhigh"), "gpt-5.5", "xhigh"},
+		"a Codex effort set and no model": {statedForCodex("", "ultra"), "", "ultra"},
+		"both hosts set apart":            {config.Config{Roles: config.Roles{Implementer: config.Role{Model: "haiku", Effort: "low", Codex: config.CodexRole{Model: "gpt-5.5", Effort: "none"}}}}, "gpt-5.5", "none"},
+	}
+	for name, one := range cases {
+		t.Run(name, func(t *testing.T) {
+			read := roleRead(t, skill.CodexRoleFor(one.stated))
+
+			model, stated := read["model"]
+			if one.model == "" && stated {
+				t.Errorf("the role carries model %v where none is set", model)
+			}
+			if one.model != "" && model != one.model {
+				t.Errorf("the role carries model %v, want %s", model, one.model)
+			}
+			if read["model_reasoning_effort"] != one.effort {
+				t.Errorf("the role carries effort %v, want %s", read["model_reasoning_effort"], one.effort)
+			}
+		})
+	}
+}
+
+func TestInstallingForCodexWritesTheCodexSettingsInForce(t *testing.T) {
+	t.Setenv(state.HomeVariable, t.TempDir())
+	directory := filepath.Join(t.TempDir(), "agents")
+
+	path, err := skill.Install(skillkit.Codex, directory, statedForCodex("gpt-5.5", "low"))
+	if err != nil {
+		t.Fatalf("installing: %v", err)
+	}
+
+	written, _ := os.ReadFile(path)
+	if read := roleRead(t, string(written)); read["model"] != "gpt-5.5" || read["model_reasoning_effort"] != "low" {
+		t.Errorf("what was written carries %v and %v, want gpt-5.5 and low", read["model"], read["model_reasoning_effort"])
+	}
+}
+
+func TestReinstallingForCodexWritesTheNewSettingsAndLeavesClaudeCodesDefinitionAsItWas(t *testing.T) {
+	t.Setenv(state.HomeVariable, t.TempDir())
+	claudes, codexes := filepath.Join(t.TempDir(), "claude"), filepath.Join(t.TempDir(), "codex")
+	for host, directory := range map[skillkit.Host]string{skillkit.ClaudeCode: claudes, skillkit.Codex: codexes} {
+		if _, err := skill.Install(host, directory, config.Config{}); err != nil {
+			t.Fatalf("installing for %s: %v", host.Name, err)
+		}
+	}
+
+	path, rewrote, err := skill.Reinstall(skillkit.Codex, statedForCodex("gpt-5.5", "max"))
+	if err != nil || !rewrote {
+		t.Fatalf("reinstalling wrote %v with error %v", rewrote, err)
+	}
+	written, _ := os.ReadFile(path)
+	if read := roleRead(t, string(written)); read["model"] != "gpt-5.5" || read["model_reasoning_effort"] != "max" {
+		t.Errorf("the role carries %v and %v, want gpt-5.5 and max", read["model"], read["model_reasoning_effort"])
+	}
+	untouched, _ := os.ReadFile(filepath.Join(claudes, skill.AgentFileName()))
+	if string(untouched) != skill.DefaultDefinition() {
+		t.Errorf("reinstalling for Codex changed Claude Code's definition:\n%s", untouched)
+	}
+}

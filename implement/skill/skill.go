@@ -143,6 +143,11 @@ func DefinitionFor(stated config.Config) string {
 	return Definition(role.Model, role.Effort)
 }
 
+func CodexRoleFor(stated config.Config) string {
+	role := stated.CodexImplementer()
+	return CodexRole(role.Model, role.Effort)
+}
+
 func AgentsDirectory(host skillkit.Host) (string, error) {
 	if stated := os.Getenv(host.ConfigurationVariable); host.ConfigurationVariable != "" && stated != "" {
 		return filepath.Join(stated, filepath.Base(host.AgentsDirectory)), nil
@@ -175,7 +180,7 @@ func WithAgentFiles() []skillkit.Skill {
 
 func agentFor(host skillkit.Host, stated config.Config) string {
 	if host == skillkit.Codex {
-		return DefaultCodexRole()
+		return CodexRoleFor(stated)
 	}
 	return DefinitionFor(stated)
 }

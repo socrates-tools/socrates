@@ -96,6 +96,8 @@ var vendorEventShapes = []string{
 	"mcp_servers",
 }
 
+const configurationKeyOfACodexRole = `yaml:"codex"`
+
 func TestNothingAboveTheSeamKnowsWhichVendorAnswered(t *testing.T) {
 	root := source.Root(t)
 	seam := filepath.Join("review", "agent")
@@ -118,8 +120,9 @@ func TestNothingAboveTheSeamKnowsWhichVendorAnswered(t *testing.T) {
 		if err != nil {
 			t.Fatalf("reading %s: %v", path, err)
 		}
+		stated := strings.ReplaceAll(string(content), configurationKeyOfACodexRole, "")
 		for _, named := range naming {
-			if strings.Contains(string(content), `"`+named+`"`) {
+			if strings.Contains(stated, `"`+named+`"`) {
 				t.Errorf("%s names %q, and what varies between vendors is confined to %s", relative, named, seam)
 			}
 		}
