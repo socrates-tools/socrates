@@ -9,7 +9,7 @@ require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/charmbracelet/x/ansi v0.11.9
 	github.com/chromedp/cdproto v0.157.9
-	github.com/chromedp/chromedp v0.20.1
+	github.com/chromedp/chromedp v0.21.0
 	github.com/creack/pty v1.1.24
 	github.com/google/go-cmp v0.7.0
 	github.com/rogpeppe/go-internal v1.16.0
