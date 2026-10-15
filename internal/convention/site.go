@@ -7,7 +7,10 @@ import (
 	"strings"
 )
 
-const LandingPage = "site/index.html"
+const (
+	LandingPage        = "site/index.html"
+	LandingPageAddress = "https://" + Organisation + ".github.io/" + Suite + "/"
+)
 
 var installCommand = regexp.MustCompile(`(?m)^curl -fsSL \S+/` + regexp.QuoteMeta(InstallerFile) + ` \| sh$`)
 

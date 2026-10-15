@@ -2,6 +2,7 @@ package convention_test
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -47,5 +48,16 @@ func TestTheReadmesInstallCommandDrawnAcrossMarkupIsStated(t *testing.T) {
 	}
 	if len(unstated) != 0 {
 		t.Errorf("a landing page drawing the command across highlighting was read as omitting %v", unstated)
+	}
+}
+
+func TestTheReadmeLeadsToTheLandingPage(t *testing.T) {
+	front, err := convention.Document(source.Root(t), convention.FrontDocumentFile)
+	if err != nil {
+		t.Fatalf("reading %s: %v", convention.FrontDocumentFile, err)
+	}
+
+	if !strings.Contains(front, convention.LandingPageAddress) {
+		t.Errorf("%s does not link to %s, so a person who arrives at the repository never finds the landing page", convention.FrontDocumentFile, convention.LandingPageAddress)
 	}
 }

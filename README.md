@@ -5,6 +5,10 @@
 <h1 align="center">socrates</h1>
 
 <p align="center">
+  <a href="https://socrates-tools.github.io/socrates/">socrates-tools.github.io/socrates</a>
+</p>
+
+<p align="center">
   <a href="https://scorecard.dev/viewer/?uri=github.com/socrates-tools/socrates"><img src="https://api.scorecard.dev/projects/github.com/socrates-tools/socrates/badge" alt="OpenSSF Scorecard"></a>
 </p>
 
