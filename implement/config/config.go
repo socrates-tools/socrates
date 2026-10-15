@@ -22,6 +22,8 @@ const (
 	DefaultConcurrency = 4
 	DefaultModel       = "sonnet"
 	DefaultEffort      = "high"
+
+	DefaultCodexEffort = "high"
 )
 
 const defaultBranchesKey = "default_branches"

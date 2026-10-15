@@ -56,7 +56,7 @@ skill:
 	go run ./cmd/socrates review skill --host codex --to .agents/skills
 	go run ./cmd/socrates design skill --host claude --to .claude/skills
 	go run ./cmd/socrates design skill --host codex --to .agents/skills
-	home=$$(mktemp -d); trap 'rm -rf "$$home"' EXIT; SOCRATES_HOME=$$home go run ./cmd/socrates implement skill --host claude --to .claude/skills --agents-to .claude/agents; SOCRATES_HOME=$$home go run ./cmd/socrates implement skill --host codex --to .agents/skills
+	home=$$(mktemp -d); trap 'rm -rf "$$home"' EXIT; SOCRATES_HOME=$$home go run ./cmd/socrates implement skill --host claude --to .claude/skills --agents-to .claude/agents; SOCRATES_HOME=$$home go run ./cmd/socrates implement skill --host codex --to .agents/skills --agents-to .codex/agents
 
 assets:
 	cd agora/web && pnpm install --frozen-lockfile && node build.mjs

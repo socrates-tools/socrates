@@ -21,7 +21,7 @@ func installedKey(host skillkit.Host, name string) string {
 }
 
 func installedAgentKey(host skillkit.Host) string {
-	return filepath.ToSlash(filepath.Join(host.AgentsDirectory, implementskill.AgentFileName()))
+	return filepath.ToSlash(filepath.Join(host.AgentsDirectory, implementskill.AgentFileNameFor(host)))
 }
 
 func installedPolicyKey(host skillkit.Host, name string) string {
@@ -151,8 +151,10 @@ func TestOneCommandInstallsEverySkillEveryNamespaceOffers(t *testing.T) {
 			t.Errorf("socrates skill left out %s", one.Name)
 		}
 	}
-	if _, held := written[installedAgentKey(skillkit.ClaudeCode)]; !held {
-		t.Errorf("socrates skill left out the implementer's agent definition")
+	for _, host := range skillkit.Hosts() {
+		if _, held := written[installedAgentKey(host)]; !held {
+			t.Errorf("socrates skill left out the implementer's agent file for %s", host.Name)
+		}
 	}
 }
 
@@ -174,6 +176,32 @@ func TestOneCommandWritesEveryHostsRenderingWhateverIsOnPath(t *testing.T) {
 		if one.Host.PolicyFile != "" && written[installedPolicyKey(one.Host, one.Name)] != skillkit.PolicyDocument {
 			t.Errorf("socrates skill did not write %s beside %s for %s", one.Host.PolicyFile, one.Name, one.Host.Name)
 		}
+	}
+}
+
+func TestOneCommandWritesTheCodexRoleUnderCodexHomeWhereItIsSetAndUnderTheHomeWhereItIsNot(t *testing.T) {
+	t.Parallel()
+	session := harness.Start(t)
+
+	if printed, failures, code := session.Top("implement", "skill"); code != 0 {
+		t.Fatalf("socrates implement skill exited %d: %s\n%s", code, failures, printed)
+	}
+	if written := session.File(filepath.Join(session.UserHome, skillkit.Codex.AgentsDirectory, implementskill.CodexRoleFileName())); written != implementskill.DefaultCodexRole() {
+		t.Errorf("with CODEX_HOME unset the role under ~/.codex/agents is not what the package renders:\n%s", written)
+	}
+
+	stated := filepath.Join(t.TempDir(), "not", "yet", "there")
+	if printed, failures, code := session.TopWith([]string{"CODEX_HOME=" + stated}, "implement", "skill"); code != 0 {
+		t.Fatalf("socrates implement skill with CODEX_HOME exited %d: %s\n%s", code, failures, printed)
+	} else if path := filepath.Join(stated, "agents", implementskill.CodexRoleFileName()); !strings.Contains(printed, path) {
+		t.Errorf("socrates implement skill does not say it wrote %s:\n%s", path, printed)
+	}
+	if written := session.File(filepath.Join(stated, "agents", implementskill.CodexRoleFileName())); written != implementskill.DefaultCodexRole() {
+		t.Errorf("with CODEX_HOME set the role under it is not what the package renders:\n%s", written)
+	}
+	record := session.File(filepath.Join(session.Root, "implement", implementskill.RecordFile))
+	if !strings.Contains(record, filepath.Join(stated, "agents")) {
+		t.Errorf("the record does not name the Codex agents directory under CODEX_HOME:\n%s", record)
 	}
 }
 

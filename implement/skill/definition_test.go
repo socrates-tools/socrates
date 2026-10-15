@@ -131,7 +131,7 @@ func TestInstallingWritesUnderTheNamedDirectoryAndRecordsIt(t *testing.T) {
 	t.Setenv(state.HomeVariable, t.TempDir())
 	directory := filepath.Join(t.TempDir(), "agents")
 
-	path, err := skill.Install(directory, stated("opus", "low"))
+	path, err := skill.Install(skillkit.ClaudeCode, directory, stated("opus", "low"))
 	if err != nil {
 		t.Fatalf("installing: %v", err)
 	}
@@ -147,7 +147,7 @@ func TestInstallingWritesUnderTheNamedDirectoryAndRecordsIt(t *testing.T) {
 		t.Errorf("what was written states model %q and effort %q, want opus and low", fields["model"], fields["effort"])
 	}
 
-	recorded, installed, err := skill.Recorded()
+	recorded, installed, err := skill.Recorded(skillkit.ClaudeCode)
 	if err != nil || !installed || recorded != directory {
 		t.Errorf("the record holds %q (installed %v, error %v), want %q", recorded, installed, err, directory)
 	}
@@ -159,12 +159,12 @@ func TestASecondInstallSomewhereElseReplacesTheRecord(t *testing.T) {
 	second := filepath.Join(t.TempDir(), "second")
 
 	for _, directory := range []string{first, second} {
-		if _, err := skill.Install(directory, config.Config{}); err != nil {
+		if _, err := skill.Install(skillkit.ClaudeCode, directory, config.Config{}); err != nil {
 			t.Fatalf("installing into %s: %v", directory, err)
 		}
 	}
 
-	if recorded, _, _ := skill.Recorded(); recorded != second {
+	if recorded, _, _ := skill.Recorded(skillkit.ClaudeCode); recorded != second {
 		t.Errorf("the record holds %q after a second install into %q", recorded, second)
 	}
 }
@@ -172,10 +172,10 @@ func TestASecondInstallSomewhereElseReplacesTheRecord(t *testing.T) {
 func TestNothingIsRecordedWhereNothingWasInstalled(t *testing.T) {
 	t.Setenv(state.HomeVariable, t.TempDir())
 
-	if recorded, installed, err := skill.Recorded(); err != nil || installed {
+	if recorded, installed, err := skill.Recorded(skillkit.ClaudeCode); err != nil || installed {
 		t.Errorf("the record holds %q (installed %v, error %v) before anything was installed", recorded, installed, err)
 	}
-	if _, rewrote, err := skill.Reinstall(config.Config{}); err != nil || rewrote {
+	if _, rewrote, err := skill.Reinstall(skillkit.ClaudeCode, config.Config{}); err != nil || rewrote {
 		t.Errorf("reinstalling wrote something (%v, error %v) where nothing was installed", rewrote, err)
 	}
 }
@@ -183,11 +183,11 @@ func TestNothingIsRecordedWhereNothingWasInstalled(t *testing.T) {
 func TestReinstallingWritesTheDefinitionAgainWhereTheRecordSays(t *testing.T) {
 	t.Setenv(state.HomeVariable, t.TempDir())
 	directory := filepath.Join(t.TempDir(), "agents")
-	if _, err := skill.Install(directory, config.Config{}); err != nil {
+	if _, err := skill.Install(skillkit.ClaudeCode, directory, config.Config{}); err != nil {
 		t.Fatalf("installing: %v", err)
 	}
 
-	path, rewrote, err := skill.Reinstall(stated("haiku", "medium"))
+	path, rewrote, err := skill.Reinstall(skillkit.ClaudeCode, stated("haiku", "medium"))
 	if err != nil || !rewrote {
 		t.Fatalf("reinstalling wrote %v with error %v", rewrote, err)
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/socrates-tools/socrates/implement/config"
 	"github.com/socrates-tools/socrates/implement/skill"
 	"github.com/socrates-tools/socrates/internal/settingsmenu"
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 )
 
 const (
@@ -81,7 +82,7 @@ func followedBy(path string) func(setting settingsmenu.Setting) (string, error) 
 		if err != nil {
 			return "", err
 		}
-		installed, wasInstalled, err := skill.Reinstall(loaded)
+		installed, wasInstalled, err := skill.Reinstall(skillkit.ClaudeCode, loaded)
 		if err != nil {
 			return "", err
 		}

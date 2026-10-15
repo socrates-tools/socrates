@@ -2,7 +2,6 @@ package command
 
 import (
 	"fmt"
-	"slices"
 
 	"github.com/socrates-tools/socrates/implement/config"
 	"github.com/socrates-tools/socrates/implement/skill"
@@ -40,21 +39,21 @@ func newSkillCommand() *cobra.Command {
 				fmt.Fprintln(out, installed.Announcement())
 			}
 
-			if !slices.Contains(hosts, skillkit.ClaudeCode) {
-				return nil
-			}
-			if agentsTarget == "" {
-				chosen, err := skill.AgentsDirectory(skillkit.ClaudeCode)
+			for _, installing := range hosts {
+				directory := agentsTarget
+				if directory == "" {
+					chosen, err := skill.AgentsDirectory(installing)
+					if err != nil {
+						return err
+					}
+					directory = chosen
+				}
+				path, err := skill.Install(installing, directory, stated)
 				if err != nil {
 					return err
 				}
-				agentsTarget = chosen
+				fmt.Fprintf(out, installedTheAgent+"\n", skill.AgentName, skill.AgentKind(installing), path)
 			}
-			path, err := skill.Install(agentsTarget, stated)
-			if err != nil {
-				return err
-			}
-			fmt.Fprintf(out, installedTheAgent+"\n", skill.AgentName, path)
 			return nil
 		},
 	}

@@ -1,9 +1,19 @@
 package skill
 
+import skillkit "github.com/socrates-tools/socrates/internal/skill"
+
+var agentKinds = map[skillkit.Host]string{
+	skillkit.ClaudeCode: "agent definition",
+	skillkit.Codex:      "role",
+}
+
 const description = "Land a change's tickets through implementers while you stay free to talk, with a session that writes no code. Use when a spec's tickets are cut and ready to be built."
 
 const (
 	namesNoAgentsDirectory = "it names no agents directory"
+
+	codeSpan             = "|%s|"
+	agentsUnderAVariable = "|$%s/%s|, or |%s| where it is unset"
 
 	purpose = `# socrates implement
 
@@ -158,15 +168,10 @@ Hand what falls short to one implementer, in a worktree of its own made the same
 Then remove every worktree, and tell the person in the terminal that the branch |<type>/<slug>| is ready.
 Push nothing, open no pull request and post nothing: publishing the change is the person's.`
 
-	installingElsewhereWithAnAgent = `## Installing elsewhere
+	installingElsewhereTemplate = `## Installing elsewhere
 
-This skill installs under |~/%s| and the agent definition under |~/%s|.
+This skill installs under |~/%s| and the %s under %s.
 Write them elsewhere with |socrates implement skill --host %s --to <directory> --agents-to <directory>|.`
-
-	installingElsewhereWithoutAnAgent = `## Installing elsewhere
-
-This skill installs under |~/%s|.
-Write it elsewhere with |socrates implement skill --host %s --to <directory>|.`
 
 	agentDescription = "Builds one ticket of a change in a worktree of its own, reports what it did and what it did not, and patches its own work when feedback arrives."
 

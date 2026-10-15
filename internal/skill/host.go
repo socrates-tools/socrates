@@ -22,8 +22,10 @@ type Host struct {
 	Starter         string
 	SkillsDirectory string
 	AgentsDirectory string
-	PersonOnlyField string
-	PolicyFile      string
+
+	ConfigurationVariable string
+	PersonOnlyField       string
+	PolicyFile            string
 }
 
 var ClaudeCode = Host{
@@ -42,6 +44,8 @@ var Codex = Host{
 	SkillsDirectory: filepath.Join(".agents", "skills"),
 	AgentsDirectory: filepath.Join(".codex", "agents"),
 	PolicyFile:      filepath.Join("agents", "openai.yaml"),
+
+	ConfigurationVariable: "CODEX_HOME",
 }
 
 func Hosts() []Host {

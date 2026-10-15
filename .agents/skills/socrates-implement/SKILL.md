@@ -158,5 +158,5 @@ Push nothing, open no pull request and post nothing: publishing the change is th
 
 ## Installing elsewhere
 
-This skill installs under `~/.agents/skills`.
-Write it elsewhere with `socrates implement skill --host codex --to <directory>`.
+This skill installs under `~/.agents/skills` and the role under `$CODEX_HOME/agents`, or `~/.codex/agents` where it is unset.
+Write them elsewhere with `socrates implement skill --host codex --to <directory> --agents-to <directory>`.

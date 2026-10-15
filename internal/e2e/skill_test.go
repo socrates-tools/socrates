@@ -561,6 +561,31 @@ func TestTheOverseerSkillIsInstalledBesideTheDefinitionUnderTheDirectoriesNamed(
 	}
 }
 
+func TestACodexHostWithAnAgentsDirectoryWritesTheRoleThereAndNothingElse(t *testing.T) {
+	t.Parallel()
+	session := harness.Start(t)
+	agents := filepath.Join(t.TempDir(), "agents")
+
+	printed, failures, code := session.Top("implement", "skill", "--host", skillkit.Codex.Flag, "--agents-to", agents)
+	if code != 0 {
+		t.Fatalf("socrates implement skill --host codex --agents-to exited %d: %s\n%s", code, failures, printed)
+	}
+
+	role := filepath.Join(agents, implementskill.CodexRoleFileName())
+	if written := session.File(role); written != implementskill.DefaultCodexRole() {
+		t.Errorf("what was installed at %s is not what the role's source generates", role)
+	}
+	if !strings.Contains(printed, role) {
+		t.Errorf("socrates implement skill does not say it wrote %s:\n%s", role, printed)
+	}
+	if written := writtenIn(t, agents); len(written) != 1 {
+		t.Errorf("--host codex --agents-to wrote %v, want the role alone", slices.Sorted(maps.Keys(written)))
+	}
+	if _, claude := writtenUnder(t, session.UserHome)[installedAgentKey(skillkit.ClaudeCode)]; claude {
+		t.Error("--host codex wrote Claude Code's agent definition")
+	}
+}
+
 func TestEveryHostsFrontMatterCarriesItsOwnKeysAndNoOthers(t *testing.T) {
 	t.Parallel()
 

@@ -12,7 +12,7 @@ This file is implement's layout and invariants.
 
 - `implement/command` - the command tree: `config`, `configure`, `default-branch` and `skill`, which installs the overseer's skill and the implementer's agent definition.
 - `implement/configure` - the menu over implement's settings: its labels and its refusals, the model aliases it offers, the default branch row inside a repository, and rewriting the installed agent definition after a model or an effort is confirmed, built on `internal/settingsmenu`.
-- `implement/skill` - the source of the `socrates-implement` skill and of the implementer's agent definition, installing both, and the record of where the definition was installed.
+- `implement/skill` - the source of the `socrates-implement` skill and of the implementer's agent definition and Codex role, installing them, and the record of where the definition was installed.
 - `implement/config` - the one optional configuration file implement reads, every setting it holds, the default each falls back to, the default branch each repository's features start from and how a repository is named, by the top level of its main worktree, and the report `socrates implement config` prints.
 
 ## Invariants
@@ -48,7 +48,14 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - It names no `socrates` command, read against every namespace in `convention.Tools`.
 - It never uses `git stash`, and where the repository states no way of testing it writes each test before the code and watches it fail.
 - It is held to a ceiling of its own.
-- Where it was written is recorded in `~/.socrates/implement/installed.yaml`, a second install elsewhere replaces the record, and `config.yaml` never holds it.
+- Where it was written is recorded in `~/.socrates/implement/installed.yaml`, one directory per host, a second install elsewhere for a host replaces that host's entry only, a record holding one `agents_directory` is read as Claude Code's, and `config.yaml` never holds it.
+
+**The implementer's Codex role**
+
+- `implement/skill` renders `socrates-implementer.toml` beside the definition, and the committed copy at `.codex/agents/socrates-implementer.toml` must match what it renders at the defaults.
+- It holds `name`, `description`, `developer_instructions`, `model_reasoning_effort` and, where a model is set, `model`, and no other key, read as TOML, because Codex refuses a role file holding a key it does not know.
+- Its instructions are the definition's, it names no `socrates` command, and it is held to a ceiling of its own.
+- It installs under `$CODEX_HOME/agents`, `~/.codex/agents` where `CODEX_HOME` is unset, creating the directory, and `--host codex --agents-to <directory>` writes it there.
 
 **The default branch**
 

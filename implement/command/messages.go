@@ -17,7 +17,7 @@ const (
 	skillInvocation   = "socrates implement skill"
 	toUsage           = "the skills directory to write to, which needs --host to say whose rendering it holds"
 	agentsToUsage     = "the agents directory to write to, which needs --host to say whose definition it holds"
-	installedTheAgent = "the %s agent definition is at %s, and the overseer can spawn it from there"
+	installedTheAgent = "the %s %s is at %s, and the overseer can spawn it from there"
 
 	notACommand               = "%q is not a socrates implement command: run socrates implement --help to see what socrates implement does"
 	unusableFlag              = "%s: run socrates implement --help to see what socrates implement accepts"

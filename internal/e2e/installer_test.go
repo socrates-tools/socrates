@@ -255,8 +255,10 @@ func assertInstalled(t *testing.T, done installation, served *release) {
 			t.Errorf("the installer left %s out of %s's rendering of %s", one.Host.PolicyFile, one.Host.Name, one.Name)
 		}
 	}
-	if _, held := written[installedAgentKey(skillkit.ClaudeCode)]; !held {
-		t.Error("the installer left the implementer's agent definition out")
+	for _, host := range skillkit.Hosts() {
+		if _, held := written[installedAgentKey(host)]; !held {
+			t.Errorf("the installer left the implementer's agent file out for %s", host.Name)
+		}
 	}
 	if !strings.Contains(done.printed, done.binary()) {
 		t.Errorf("the installer does not say where the binary went:\n%s", done.printed)
