@@ -85,7 +85,7 @@ func TestAnIllustrationNamedRelativeToTheDocumentsFolderIsServedFromTheSession(t
 	if answered.code != http.StatusOK {
 		t.Fatalf("the illustration was answered with %d", answered.code)
 	}
-	if answered.body != theDrawing {
+	if answered.body != theDrawing+theHeightScript {
 		t.Errorf("the illustration came back as %q, want the file as written", answered.body)
 	}
 	if media := answered.header.Get("content-type"); media != "text/html; charset=utf-8" {
@@ -183,7 +183,7 @@ func TestADecisionIdentifierWithASlashStillNamesItsIllustration(t *testing.T) {
 	read.Decisions[1].ID = "c/2 ../x"
 	held := servingFrom(t, read, folder)
 
-	if answered := held.responseTo(t, held.drawing("c/2 ../x", "q3.html")); answered.code != http.StatusOK || answered.body != theDrawing {
+	if answered := held.responseTo(t, held.drawing("c/2 ../x", "q3.html")); answered.code != http.StatusOK || answered.body != theDrawing+theHeightScript {
 		t.Errorf("an illustration of a decision whose identifier holds a slash was answered with %d", answered.code)
 	}
 }
@@ -267,7 +267,7 @@ func TestARevisionCopiesTheDrawingAfreshAndTheOldCopyGoes(t *testing.T) {
 		t.Fatalf("revising the document: %v", err)
 	}
 
-	if answered := held.responseTo(t, held.drawing("c-2", "q3.html")); answered.body != edited {
+	if answered := held.responseTo(t, held.drawing("c-2", "q3.html")); answered.body != edited+theHeightScript {
 		t.Errorf("a revision served %q, want the drawing as it now is on disk", answered.body)
 	}
 	second := copies()
@@ -300,7 +300,7 @@ func TestARevisionWhoseIllustrationCannotBeCopiedChangesNothing(t *testing.T) {
 		t.Fatal("a revision naming a drawing that does not exist was taken")
 	}
 
-	if answered := held.responseTo(t, held.drawing("c-2", "q3.html")); answered.code != http.StatusOK || answered.body != theDrawing {
+	if answered := held.responseTo(t, held.drawing("c-2", "q3.html")); answered.code != http.StatusOK || answered.body != theDrawing+theHeightScript {
 		t.Errorf("a refused revision disturbed the drawing being served: %d", answered.code)
 	}
 }

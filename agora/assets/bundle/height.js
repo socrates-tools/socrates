@@ -1,0 +1,1 @@
+(()=>{var t=null;function n(){let e=Math.ceil(document.documentElement.getBoundingClientRect().height);e!==t&&(t=e,parent.postMessage(e,"*"))}var o=new ResizeObserver(n);o.observe(document.documentElement);o.observe(document.body);n();})();

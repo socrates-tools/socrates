@@ -42,7 +42,7 @@ func TestTheCommittedBundleIsWhatItsSourceBuilds(t *testing.T) {
 
 func TestTheBundleHoldsWhatThePageAsksFor(t *testing.T) {
 	// scenario: Rendering needs no network
-	for _, asked := range []string{"surface.css", "surface.js", "tokens.css"} {
+	for _, asked := range []string{"surface.css", "surface.js", "tokens.css", "height.js"} {
 		held, err := fs.ReadFile(assets.Files(), asked)
 		if err != nil {
 			t.Errorf("the bundle holds no %s, and the page asks for it: %v", asked, err)
@@ -78,12 +78,14 @@ func TestNothingInTheBundleReachesAHost(t *testing.T) {
 		}
 	}
 
-	client, err := fs.ReadFile(assets.Files(), "surface.js")
-	if err != nil {
-		t.Fatalf("reading the client: %v", err)
-	}
-	for _, reaching := range absoluteRequest.FindAllString(string(client), -1) {
-		t.Errorf("the client requests %q, and the page reaches nothing outside the surface", reaching)
+	for _, named := range []string{"surface.js", "height.js"} {
+		client, err := fs.ReadFile(assets.Files(), named)
+		if err != nil {
+			t.Fatalf("reading %s: %v", named, err)
+		}
+		for _, reaching := range absoluteRequest.FindAllString(string(client), -1) {
+			t.Errorf("%s requests %q, and the page reaches nothing outside the surface", named, reaching)
+		}
 	}
 }
 

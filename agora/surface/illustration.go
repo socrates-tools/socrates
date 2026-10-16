@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -22,8 +23,12 @@ const (
 
 	IllustrationCeiling = 16 << 20
 
+	heightScript = `<script src="/assets/height.js"></script>`
+
 	admittedHosts = "https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com"
 )
+
+var closingBody = regexp.MustCompile(`(?i)</body`)
 
 var htmlExtensions = []string{".html", ".htm"}
 
@@ -158,6 +163,7 @@ func copyDrawing(within string, one drawing) error {
 		var contents []byte
 		if file == one.file {
 			contents, err = os.ReadFile(one.source)
+			contents = endingWithTheHeightScript(contents)
 		} else {
 			contents, err = folder.ReadFile(file)
 		}
@@ -174,6 +180,14 @@ func copyDrawing(within string, one drawing) error {
 		}
 	}
 	return nil
+}
+
+func endingWithTheHeightScript(document []byte) []byte {
+	at := len(document)
+	if closings := closingBody.FindAllIndex(document, -1); len(closings) > 0 {
+		at = closings[len(closings)-1][0]
+	}
+	return slices.Concat(document[:at], []byte(heightScript), document[at:])
 }
 
 func forgetCopy(session, copied string) error {

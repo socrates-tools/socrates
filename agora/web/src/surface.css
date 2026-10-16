@@ -947,7 +947,7 @@ span.entry-link .entry-name {
 .drawing {
   display: block;
   width: 100%;
-  height: 24rem;
+  height: min(var(--drawing-height, 24rem), 100vh);
   border: 0;
   background: var(--surface-card);
 }

@@ -721,6 +721,20 @@ function followTheExpanding() {
   })
 }
 
+function followTheDrawingHeights() {
+  window.addEventListener('message', (event) => {
+    const height = event.data
+    if (typeof height !== 'number' || !Number.isFinite(height) || height < 0) {
+      return
+    }
+    for (const frame of document.querySelectorAll('iframe.drawing')) {
+      if (frame.contentWindow === event.source) {
+        frame.style.setProperty('--drawing-height', `${height}px`)
+      }
+    }
+  })
+}
+
 wideEnoughForThePanel.addEventListener('change', placeTheComposer)
 document.addEventListener('scroll', scheduleMarkingTheDecisionInView, true)
 window.addEventListener('resize', scheduleMarkingTheDecisionInView)
@@ -728,4 +742,5 @@ bind()
 takeUpWhetherItIsOver()
 followTheMarks()
 followTheExpanding()
+followTheDrawingHeights()
 follow()
