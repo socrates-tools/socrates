@@ -10,6 +10,8 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [0.8.0] - 2026-10-16
 
+0.7.0 was tagged but never published, so this is the first release that carries its changes too: read its entry below as well if you have 0.6.0.
+
 ### Added
 
 - **An illustration can be anything HTML can draw.**
@@ -34,6 +36,11 @@ While the major version is `0`, a minor release may change the surface half in w
 - **A decision's `fragment` and the document's `stylesheet` are gone.**
   A document still naming either is refused, naming the field.
   Write the drawing as an HTML file and name it with `illustration.path` instead.
+
+### Fixed
+
+- **A link in the index no longer lands under the top bar.**
+  Below 960px, a link to what was settled or to a decision, scrolled to the top of the window, could sit under the bar, so pressing it did nothing.
 
 ## [0.7.0] - 2026-10-16
 
