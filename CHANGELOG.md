@@ -8,6 +8,33 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-16
+
+### Added
+
+- **An illustration can be anything HTML can draw.**
+  A decision names an HTML file with `"illustration": {"path": "q3.html"}`, and the card draws it in a sandboxed frame.
+  A relative path resolves against the document's folder, or against the working directory when the document arrives on standard input.
+  The images, stylesheets and fonts it references are copied with it, so real screenshots, charts and interactive prototypes appear on the card itself.
+  A drawing may load scripts, styles and fonts from cdnjs, jsDelivr and unpkg, and it can send nothing anywhere.
+- **A drawing can look like the page.**
+  Linking `/assets/tokens.css` gives it the page's own colours and fonts.
+- **A frame grows to its drawing, up to the window's height, and can be expanded over the whole window.**
+  Escape, the close button or a press on the backdrop closes it, and the drawing keeps its state.
+- **socrates review's skill shows a UI finding as a before/after pair.**
+  The agent captures the screenshots with whatever browser it has, and describes the change in words where it has none.
+
+### Changed
+
+- **The page now sends nothing beyond this machine, rather than reaching nowhere beyond it.**
+  Opening a page that carries an illustration may fetch a library from one of those three hosts, and that host sees the request for it.
+
+### Removed
+
+- **A decision's `fragment` and the document's `stylesheet` are gone.**
+  A document still naming either is refused, naming the field.
+  Write the drawing as an HTML file and name it with `illustration.path` instead.
+
 ## [0.7.0] - 2026-10-16
 
 ### Added
@@ -227,7 +254,8 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.8.0
 [0.7.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.7.0
 [0.6.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.6.0
 [0.5.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.5.0
