@@ -8,9 +8,9 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
-## [0.8.0] - 2026-10-16
+## [0.8.1] - 2026-10-16
 
-0.7.0 was tagged but never published, so this is the first release that carries its changes too: read its entry below as well if you have 0.6.0.
+0.7.0 and 0.8.0 were tagged but never published, so this is the first release since 0.6.0: read the 0.7.0 entry below as well if you have 0.6.0.
 
 ### Added
 
@@ -261,8 +261,8 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.8.0...HEAD
-[0.8.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.8.0
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/socrates-tools/socrates/releases/tag/v0.8.1
 [0.7.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.7.0
 [0.6.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.6.0
 [0.5.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.5.0
