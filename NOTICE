@@ -222,7 +222,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ==============================================================================
-charm.land/bubbletea/v2 v2.0.9
+charm.land/bubbletea/v2 v2.1.0
 Linked into cmd/socrates.
 MIT License.
 ==============================================================================
@@ -278,7 +278,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ==============================================================================
-github.com/charmbracelet/ultraviolet v0.0.0-20260703014108-f5a850f9c2b7
+github.com/charmbracelet/ultraviolet v0.0.0-20261008173134-6b8d4baf91b4
 Linked into cmd/socrates.
 Pinned to a commit rather than a tag, because the module publishes none.
 MIT License.
@@ -307,7 +307,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ==============================================================================
-github.com/charmbracelet/x/ansi v0.11.7
+github.com/charmbracelet/x/ansi v0.11.9
 Linked into cmd/socrates.
 MIT License.
 ==============================================================================
@@ -475,7 +475,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ==============================================================================
-github.com/lucasb-eyer/go-colorful v1.4.0
+github.com/lucasb-eyer/go-colorful v1.4.1
 Linked into cmd/socrates.
 MIT License.
 ==============================================================================
@@ -489,7 +489,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==============================================================================
-github.com/mattn/go-runewidth v0.0.23
+github.com/mattn/go-runewidth v0.0.30
 Linked into cmd/socrates.
 MIT License.
 ==============================================================================
@@ -789,9 +789,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
-github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e
+github.com/xo/terminfo v1.0.0
 Linked into cmd/socrates.
-Pinned to a commit rather than a tag, because the module publishes none.
 MIT License.
 ==============================================================================
 
@@ -946,7 +945,7 @@ rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
 ==============================================================================
-golang.org/x/sync v0.21.0
+golang.org/x/sync v0.22.0
 Linked into cmd/socrates.
 BSD 3-Clause License, with the additional patent grant that accompanies it.
 ==============================================================================
@@ -1003,7 +1002,7 @@ rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
 ==============================================================================
-golang.org/x/sys v0.47.0
+golang.org/x/sys v0.49.0
 Linked into cmd/socrates.
 BSD 3-Clause License, with the additional patent grant that accompanies it.
 ==============================================================================

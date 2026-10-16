@@ -97,17 +97,32 @@ func EmbeddedFilesWithoutANotice(embedded fs.FS, notice string) ([]string, error
 	return unaccounted, nil
 }
 
-func modulesNoticed(notice string) []string {
-	var named []string
+type noticeEntry struct {
+	Module  string
+	Version string
+	Text    string
+}
 
-	for _, section := range noticeSeparator.Split(notice, -1) {
+func noticeEntries(notice string) []noticeEntry {
+	var entries []noticeEntry
+
+	sections := noticeSeparator.Split(notice, -1)
+	for position, section := range sections {
 		lines := strings.Split(strings.TrimSpace(section), "\n")
-		if len(lines) < 2 || !strings.HasPrefix(lines[1], "Linked into ") {
+		if len(lines) < 2 || !strings.HasPrefix(lines[1], "Linked into ") || position+1 >= len(sections) {
 			continue
 		}
 		if fields := strings.Fields(lines[0]); len(fields) == 2 {
-			named = append(named, fields[0])
+			entries = append(entries, noticeEntry{Module: fields[0], Version: fields[1], Text: sections[position+1]})
 		}
+	}
+	return entries
+}
+
+func modulesNoticed(notice string) []string {
+	var named []string
+	for _, entry := range noticeEntries(notice) {
+		named = append(named, entry.Module)
 	}
 	return named
 }
@@ -134,4 +149,84 @@ func ModulesNoticedButNotLinked(linked []string, notice string) []string {
 	}
 	slices.Sort(stale)
 	return stale
+}
+
+type VersionDisagreement struct {
+	Module  string
+	Linked  string
+	Noticed string
+}
+
+func ModulesNoticedAtAnotherVersion(linked map[string]string, notice string) []VersionDisagreement {
+	var disagreeing []VersionDisagreement
+	for _, entry := range noticeEntries(notice) {
+		version, isLinked := linked[entry.Module]
+		if isLinked && version != entry.Version {
+			disagreeing = append(disagreeing, VersionDisagreement{Module: entry.Module, Linked: version, Noticed: entry.Version})
+		}
+	}
+	slices.SortFunc(disagreeing, func(a, b VersionDisagreement) int { return strings.Compare(a.Module, b.Module) })
+	return disagreeing
+}
+
+type LicenceDisagreement struct {
+	Module string
+	File   string
+}
+
+var licenceFileName = regexp.MustCompile(`(?i)^(licen[sc]e|patents|notice|copying)(\..*)?$`)
+
+func ModulesWhoseLicenceTheNoticeDoesNotCarry(directories map[string]string, notice string) ([]LicenceDisagreement, error) {
+	var disagreeing []LicenceDisagreement
+
+	for _, entry := range noticeEntries(notice) {
+		directory, isLinked := directories[entry.Module]
+		if !isLinked {
+			continue
+		}
+
+		files, err := licenceFilesIn(directory)
+		if err != nil {
+			return nil, fmt.Errorf("reading the licence files of %s: %w", entry.Module, err)
+		}
+		if len(files) == 0 {
+			disagreeing = append(disagreeing, LicenceDisagreement{Module: entry.Module})
+			continue
+		}
+
+		carried := withUnixLineEndings(entry.Text)
+		for _, file := range files {
+			held, err := os.ReadFile(filepath.Join(directory, file))
+			if err != nil {
+				return nil, fmt.Errorf("reading %s of %s: %w", file, entry.Module, err)
+			}
+			if !strings.Contains(carried, strings.TrimSpace(withUnixLineEndings(string(held)))) {
+				disagreeing = append(disagreeing, LicenceDisagreement{Module: entry.Module, File: file})
+			}
+		}
+	}
+
+	slices.SortFunc(disagreeing, func(a, b LicenceDisagreement) int {
+		return strings.Compare(a.Module+"\x00"+a.File, b.Module+"\x00"+b.File)
+	})
+	return disagreeing, nil
+}
+
+func licenceFilesIn(directory string) ([]string, error) {
+	entries, err := os.ReadDir(directory)
+	if err != nil {
+		return nil, err
+	}
+
+	var files []string
+	for _, entry := range entries {
+		if entry.Type().IsRegular() && licenceFileName.MatchString(entry.Name()) {
+			files = append(files, entry.Name())
+		}
+	}
+	return files, nil
+}
+
+func withUnixLineEndings(text string) string {
+	return strings.ReplaceAll(text, "\r\n", "\n")
 }

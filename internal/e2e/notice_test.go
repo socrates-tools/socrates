@@ -134,7 +134,7 @@ func librariesTheClientBundles(t *testing.T) []string {
 	return bundled
 }
 
-func TestEveryModuleTheBinaryLinksIsNamedInTheNoticeAndNoOtherIs(t *testing.T) {
+func TestEveryModuleTheBinaryLinksIsNamedInTheNoticeAtTheVersionLinkedAndNoOtherIs(t *testing.T) {
 	t.Parallel()
 	notice := rootDocument(t, convention.NoticeFile)
 
@@ -143,10 +143,47 @@ func TestEveryModuleTheBinaryLinksIsNamedInTheNoticeAndNoOtherIs(t *testing.T) {
 		t.Fatalf("the binary links no module, so this test proves nothing")
 	}
 
-	for _, module := range convention.ModulesWithoutANotice(linked, notice) {
+	paths := make([]string, 0, len(linked))
+	versions := make(map[string]string, len(linked))
+	for _, module := range linked {
+		paths = append(paths, module.Path)
+		versions[module.Path] = module.Version
+	}
+
+	for _, module := range convention.ModulesWithoutANotice(paths, notice) {
 		t.Errorf("%s names no %s, and the binary links it in", convention.NoticeFile, module)
 	}
-	for _, module := range convention.ModulesNoticedButNotLinked(linked, notice) {
+	for _, module := range convention.ModulesNoticedButNotLinked(paths, notice) {
 		t.Errorf("%s names %s as linked into the binary, and it is not", convention.NoticeFile, module)
+	}
+	for _, disagreement := range convention.ModulesNoticedAtAnotherVersion(versions, notice) {
+		t.Errorf("%s names %s at %s, and the binary links %s: change the version on its entry to %s, and replace its licence text with the module's own at that version if that text changed", convention.NoticeFile, disagreement.Module, disagreement.Noticed, disagreement.Linked, disagreement.Linked)
+	}
+}
+
+func TestEveryLicenceFileOfAModuleTheBinaryLinksIsCarriedByItsNoticeEntry(t *testing.T) {
+	t.Parallel()
+	notice := rootDocument(t, convention.NoticeFile)
+
+	linked := source.LinkedModules(t, "./cmd/socrates")
+	if len(linked) == 0 {
+		t.Fatalf("the binary links no module, so this test proves nothing")
+	}
+
+	directories := make(map[string]string, len(linked))
+	for _, module := range linked {
+		directories[module.Path] = module.Directory
+	}
+
+	disagreements, err := convention.ModulesWhoseLicenceTheNoticeDoesNotCarry(directories, notice)
+	if err != nil {
+		t.Fatalf("reading the licence files of the linked modules: %v", err)
+	}
+	for _, disagreement := range disagreements {
+		if disagreement.File == "" {
+			t.Errorf("%s holds no licence file in %s, so this test cannot check its entry in %s: state its licence by hand and extend the check", disagreement.Module, directories[disagreement.Module], convention.NoticeFile)
+			continue
+		}
+		t.Errorf("the entry for %s in %s does not carry %s as the linked version publishes it: copy the file from %s into the entry unchanged", disagreement.Module, convention.NoticeFile, disagreement.File, directories[disagreement.Module])
 	}
 }

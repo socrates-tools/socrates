@@ -205,10 +205,16 @@ func RunSharingBuilds(m *testing.M) int {
 	return code
 }
 
-func LinkedModules(t *testing.T, target string) []string {
+type LinkedModule struct {
+	Path      string
+	Version   string
+	Directory string
+}
+
+func LinkedModules(t *testing.T, target string) []LinkedModule {
 	t.Helper()
 
-	command := exec.Command("go", "list", "-deps", "-f", "{{with .Module}}{{if not .Main}}{{.Path}}{{end}}{{end}}", target)
+	command := exec.Command("go", "list", "-deps", "-f", `{{with .Module}}{{if not .Main}}{{.Path}}{{"\t"}}{{.Version}}{{"\t"}}{{.Dir}}{{end}}{{end}}`, target)
 	command.Dir = Root(t)
 	command.Env = append(os.Environ(), toolchain...)
 
@@ -219,12 +225,17 @@ func LinkedModules(t *testing.T, target string) []string {
 		t.Fatalf("listing the modules %s links: %v: %s", target, err, failures.String())
 	}
 
-	var linked []string
-	for _, module := range strings.Fields(out.String()) {
-		if !slices.Contains(linked, module) {
+	var linked []LinkedModule
+	for _, line := range strings.Split(out.String(), "\n") {
+		fields := strings.Split(strings.TrimSpace(line), "\t")
+		if len(fields) != 3 {
+			continue
+		}
+		module := LinkedModule{Path: fields[0], Version: fields[1], Directory: fields[2]}
+		if !slices.ContainsFunc(linked, func(held LinkedModule) bool { return held.Path == module.Path }) {
 			linked = append(linked, module)
 		}
 	}
-	slices.Sort(linked)
+	slices.SortFunc(linked, func(a, b LinkedModule) int { return strings.Compare(a.Path, b.Path) })
 	return linked
 }
