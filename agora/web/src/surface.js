@@ -556,6 +556,7 @@ async function take(revision) {
   }
 
   closeConfirmation()
+  releaseEverythingBehind()
   standing.replaceWith(replacing)
   document.body.dataset.revision = String(revision)
   document.body.dataset.over = read.body.dataset.over
@@ -658,11 +659,32 @@ function expandedStage() {
   return document.querySelector('.drawing-stage[data-expanded]')
 }
 
+let madeInert = []
+
+function holdEverythingBehind(stage) {
+  for (let ancestor = stage; ancestor !== document.documentElement; ancestor = ancestor.parentElement) {
+    for (const sibling of ancestor.parentElement.children) {
+      if (sibling !== ancestor && !sibling.inert) {
+        sibling.inert = true
+        madeInert.push(sibling)
+      }
+    }
+  }
+}
+
+function releaseEverythingBehind() {
+  for (const held of madeInert) {
+    held.inert = false
+  }
+  madeInert = []
+}
+
 function expand(control) {
   const stage = control.closest('.evidence').querySelector('.drawing-stage')
   stage.style.height = `${stage.getBoundingClientRect().height}px`
   stage.dataset.expanded = ''
   control.setAttribute('aria-expanded', 'true')
+  holdEverythingBehind(stage)
   hideTheTip()
   stage.querySelector('.drawing-close').focus()
 }
@@ -675,6 +697,7 @@ function collapse() {
   const control = stage.closest('.evidence').querySelector('.expand')
   delete stage.dataset.expanded
   stage.style.height = ''
+  releaseEverythingBehind()
   control.setAttribute('aria-expanded', 'false')
   control.focus()
 }

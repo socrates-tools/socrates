@@ -230,3 +230,56 @@ func TestTheExpandControlSaysWhatItDoesOnHoverOnFocusAndToAScreenReader(t *testi
 		t.Errorf("focusing the expand control shows %+v, want it to say what it does", focused)
 	}
 }
+
+const whereTheFocusIs = `(() => {
+  const held = document.activeElement;
+  return { behind: held !== document.body && !held.closest('.drawing-stage'), named: held.className || held.tagName };
+})()`
+
+type focusAt struct {
+	Behind bool   `json:"behind"`
+	Named  string `json:"named"`
+}
+
+func TestTabFromTheCloseButtonNeverLandsOnAControlBehindTheExpandedDrawing(t *testing.T) {
+	// scenario: While a drawing is expanded, nothing behind it can be reached by Tab, and closing makes it reachable again
+	t.Parallel()
+	page := aPageWithACountingDrawing(t)
+
+	page.click(expandControl)
+	for press := 1; press <= 6; press++ {
+		page.press(kb.Tab)
+		var at focusAt
+		page.evaluate(whereTheFocusIs, &at)
+		if at.Behind {
+			t.Fatalf("tab press %d from the close button put the cursor on %q, a control behind the dimmed page", press, at.Named)
+		}
+	}
+
+	page.press(kb.Escape)
+	page.evaluate(`document.querySelector('.decision[data-decision="c-1"] .choice').focus()`, nil)
+	var back focusAt
+	page.evaluate(whereTheFocusIs, &back)
+	if back.Named == "BODY" || !back.Behind {
+		t.Errorf("after closing, the controls behind the drawing cannot take the cursor again: %+v", back)
+	}
+}
+
+func TestARevisionTakenWhileADrawingIsExpandedLeavesNothingOnThePageUnreachable(t *testing.T) {
+	// scenario: A revision taken while a drawing is expanded leaves nothing on the page unreachable
+	t.Parallel()
+	held := standing(t)
+	aDrawing(t, held, "counting.html", drawingWithACounter)
+	written := illustrating(t, oneDecisionDocument, "counting.html")
+	page := opening(t, held.serve(written))
+
+	page.click(expandControl)
+	held.serveAgain(strings.Replace(written, "one thing to settle", "one thing, revised", 1))
+	page.waitFor(`document.body.dataset.revision === '2'`)
+
+	var unreachable int
+	page.evaluate(`document.querySelectorAll('[inert]').length`, &unreachable)
+	if unreachable != 0 {
+		t.Errorf("%d elements are still unreachable after a revision replaced the expanded drawing", unreachable)
+	}
+}
