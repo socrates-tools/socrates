@@ -34,6 +34,8 @@ const (
 	SendsToTheVendor = "sends the change to"
 	NotAffiliated    = "not affiliated"
 
+	DrawingSendsNothing = "a drawing sends nothing"
+
 	namedToBeExplained = 3
 )
 
@@ -228,6 +230,26 @@ func ReachUnstated(root string) ([]string, error) {
 		case !itself && !vendor:
 			unstated = append(unstated, fmt.Sprintf("%s states neither half of where what socrates review reads goes, and silence there is read as unknown", named))
 		}
+	}
+	return unstated, nil
+}
+
+var DrawingHosts = []string{"cdnjs.cloudflare.com", "cdn.jsdelivr.net", "unpkg.com"}
+
+func DrawingReachUnstated(root string) ([]string, error) {
+	held, err := Document(root, SecurityPolicyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var unstated []string
+	for _, host := range DrawingHosts {
+		if !strings.Contains(held, host) {
+			unstated = append(unstated, fmt.Sprintf("%s never names %s as a host a drawing may load from", SecurityPolicyFile, host))
+		}
+	}
+	if !strings.Contains(held, DrawingSendsNothing) {
+		unstated = append(unstated, fmt.Sprintf("%s never says %q", SecurityPolicyFile, DrawingSendsNothing))
 	}
 	return unstated, nil
 }

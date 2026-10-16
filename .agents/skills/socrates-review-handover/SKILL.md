@@ -33,7 +33,7 @@ Never paste findings into the terminal.
 Every round that reached a result goes on a page.
 Write a document for the round and serve it: `socrates agora serve --document ./round.json` prints the loopback address of its page.
 Give the person that address and one sentence on what it holds.
-The page is served on this machine and reaches nowhere beyond it. A findings document quotes the code it was written about, so it goes to no other machine and is put in front of nobody else.
+The page is served on this machine and sends nothing beyond it. A findings document quotes the code it was written about, so it goes to no other machine and is put in front of nobody else.
 
 `socrates review findings` prints a line beginning "awaits a person" on exactly the rounds that need one.
 Where that line is present, wait for the person.
@@ -101,7 +101,16 @@ It travels beside the evidence rather than inside it, in a field of its own:
 
 An illustration is an HTML file you write and name by path.
 A relative path resolves against the folder of the document.
-The file is drawn in a sandboxed frame on the card.
+The file is drawn in a sandboxed frame on the card: its script runs, but it cannot reach the page or write into the answer.
+The frame grows to its drawing and can be expanded to fill the window.
+Write the files it references beside it, inside its folder, 16 MiB at most in all: HTML, CSS, JavaScript, JSON, SVG, PNG, JPEG, WebP, GIF, WOFF or WOFF2.
+A reference outside the file's folder, a missing file, a type not served or a total over the cap refuses the document, naming the decision and the file.
+A drawing may load scripts, styles and fonts from cdnjs.cloudflare.com, cdn.jsdelivr.net and unpkg.com and nowhere else, and it sends nothing anywhere.
+To look like the page, load /assets/tokens.css as a stylesheet.
+
+A finding decided by looking carries a before and after drawing: capture the screen before the change and after it with whatever browser you have, save the screenshots beside the HTML file, and lay the two side by side in it.
+Where you have no browser, say what changed in words.
+socrates review captures nothing itself.
 
 Give every finding in the round a card of its own.
 Shorten no finding, reduce none of them to a list, and omit none.

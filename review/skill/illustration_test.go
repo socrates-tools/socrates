@@ -68,7 +68,7 @@ func TestTheSkillNamesTheIllustrationAsAnHTMLFileDrawnInASandboxedFrame(t *testi
 		}
 	}
 
-	for _, retired := range []string{"fragment", "markup", "allowlist", "stylesheet"} {
+	for _, retired := range []string{"fragment", "markup", "allowlist", `"stylesheet"`} {
 		if strings.Contains(strings.ToLower(document), retired) {
 			t.Errorf("the skill still mentions %q, and an illustration is an HTML file named by path", retired)
 		}
@@ -92,6 +92,65 @@ func TestHowToIllustrateIsStatedBesideWhenTo(t *testing.T) {
 	for _, judged := range []string{barLine(t, showing), barLine(t, drawing), "not otherwise", "only where"} {
 		if strings.Contains(beside, judged) {
 			t.Errorf("the mechanism restates %q, and the copy beside the mechanism is the one that gets softened:\n%s", judged, beside)
+		}
+	}
+}
+
+func TestTheSkillTeachesWhatAnIllustrationBringsAndWhatIsRefused(t *testing.T) {
+	// scenario: Both skills teach the drawn illustration
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
+
+	for _, said := range []string{
+		"write the files it references beside it",
+		"16 mib at most in all",
+		"html, css, javascript, json, svg, png, jpeg, webp, gif, woff or woff2",
+		"a reference outside the file's folder, a missing file, a type not served or a total over the cap refuses the document, naming the decision and the file",
+		"cdnjs.cloudflare.com, cdn.jsdelivr.net and unpkg.com",
+		"sends nothing anywhere",
+		"/assets/tokens.css",
+		"the frame grows to its drawing and can be expanded to fill the window",
+	} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so a drawing could be written that agora refuses or cannot show:\n%s", said, page)
+		}
+	}
+}
+
+func TestAFindingDecidedByLookingCarriesABeforeAndAfterDrawingOrWordsWhereThereIsNoBrowser(t *testing.T) {
+	// scenario: A UI finding is drawn as a before and after pair
+	document := skill.Document(skillkit.ClaudeCode)
+	mechanism := strings.Index(document, "A decision may also carry one illustration")
+	rest := strings.Index(document, "Give every finding in the round a card of its own.")
+	if mechanism < 0 || rest < mechanism {
+		t.Fatal("the skill states the mechanism nowhere")
+	}
+	beside := strings.ToLower(document[mechanism:rest])
+
+	for _, said := range []string{
+		"a finding decided by looking carries a before and after drawing",
+		"capture the screen before the change and after it with whatever browser you have",
+		"save the screenshots beside the html file",
+		"side by side",
+		"where you have no browser, say what changed in words",
+		"socrates review captures nothing itself",
+	} {
+		if !strings.Contains(beside, said) {
+			t.Errorf("the mechanism does not say %q, so a finding decided by looking is described instead of shown:\n%s", said, beside)
+		}
+	}
+}
+
+func TestThePageSendsNothingBeyondThisMachineAndNoLongerSaysItReachesNowhere(t *testing.T) {
+	// scenario: The network promise is restated everywhere it was stated
+	for name, document := range map[string]string{
+		"review":   skill.Document(skillkit.ClaudeCode),
+		"handover": skill.HandoverDocument(skillkit.ClaudeCode),
+	} {
+		if !strings.Contains(document, "The page is served on this machine and sends nothing beyond it.") {
+			t.Errorf("the %s skill does not promise that the page sends nothing beyond this machine", name)
+		}
+		if strings.Contains(document, "reaches nowhere") {
+			t.Errorf("the %s skill still says the page reaches nowhere beyond this machine, and a drawing may load from three CDNs", name)
 		}
 	}
 }

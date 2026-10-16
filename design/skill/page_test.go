@@ -153,9 +153,50 @@ func TestTheSkillNamesTheIllustrationAsAnHTMLFileDrawnInASandboxedFrame(t *testi
 	}
 
 	document := strings.ToLower(skill.Document(skillkit.ClaudeCode))
-	for _, retired := range []string{"fragment", "markup", "allowlist", "stylesheet"} {
+	for _, retired := range []string{"fragment", "markup", "allowlist", `"stylesheet"`} {
 		if strings.Contains(document, retired) {
 			t.Errorf("the skill still mentions %q, and an illustration is an HTML file named by path", retired)
 		}
+	}
+}
+
+func TestTheSkillTeachesWhatAnIllustrationBringsAndWhatIsRefused(t *testing.T) {
+	// scenario: Both skills teach the drawn illustration
+	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
+
+	for _, said := range []string{
+		"write the files it references beside it",
+		"16 mib at most in all",
+		"html, css, javascript, json, svg, png, jpeg, webp, gif, woff or woff2",
+		"a reference outside the file's folder, a missing file, a type not served or a total over the cap refuses the document, naming the decision and the file",
+		"cdnjs.cloudflare.com, cdn.jsdelivr.net and unpkg.com",
+		"sends nothing anywhere",
+		"/assets/tokens.css",
+		"the frame grows to its drawing and can be expanded to fill the window",
+	} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so a drawing could be written that agora refuses or cannot show:\n%s", said, page)
+		}
+	}
+}
+
+func TestAPrototypesResultCanBeThePrototypeItself(t *testing.T) {
+	// scenario: Both skills teach the drawn illustration
+	document := strings.ToLower(skill.Document(skillkit.ClaudeCode))
+
+	if !strings.Contains(document, "a prototype's result can be the prototype itself") {
+		t.Errorf("the skill does not say a prototype can be the illustration, so a prototype's shape is described rather than shown:\n%s", document)
+	}
+}
+
+func TestThePageSendsNothingBeyondThisMachineAndNoLongerSaysItReachesNowhere(t *testing.T) {
+	// scenario: The network promise is restated everywhere it was stated
+	document := skill.Document(skillkit.ClaudeCode)
+
+	if !strings.Contains(document, "The page is served on this machine and sends nothing beyond it.") {
+		t.Errorf("the skill does not promise that the page sends nothing beyond this machine:\n%s", document)
+	}
+	if strings.Contains(document, "reaches nowhere") {
+		t.Errorf("the skill still says the page reaches nowhere beyond this machine, and a drawing may load from three CDNs")
 	}
 }

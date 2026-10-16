@@ -32,7 +32,7 @@ A question whose answer depends on one still open belongs to a later round, once
 
 Never interview a person in the terminal.
 Put the round on a page: `socrates agora serve --document ./round.json` prints the loopback address of its page.
-The page is served on this machine and reaches nowhere beyond it.
+The page is served on this machine and sends nothing beyond it.
 
 The document is one decision per question in the round:
 
@@ -59,7 +59,12 @@ A decision may also carry one illustration, an HTML file you write and name by p
     {"illustration": {"path": "q3.html"}}
 
 A relative path resolves against the folder of the document, or against the working directory where the document is piped in.
-The file is drawn in a sandboxed frame on the card.
+The file is drawn in a sandboxed frame on the card: its script runs, but it cannot reach the page or write into the answer.
+The frame grows to its drawing and can be expanded to fill the window.
+Write the files it references beside it, inside its folder, 16 MiB at most in all: HTML, CSS, JavaScript, JSON, SVG, PNG, JPEG, WebP, GIF, WOFF or WOFF2.
+A reference outside the file's folder, a missing file, a type not served or a total over the cap refuses the document, naming the decision and the file.
+A drawing may load scripts, styles and fonts from cdnjs.cloudflare.com, cdn.jsdelivr.net and unpkg.com and nowhere else, and it sends nothing anywhere.
+To look like the page, load /assets/tokens.css as a stylesheet.
 
 Draw one where the choice is a shape: a layout, an arrangement of panels, a screen recognised by its structure rather than by a description of it.
 Skip it where the choice is a name, a threshold or a policy, anything a sentence already carries in full.
@@ -136,6 +141,7 @@ The Rejected section is built from those options.
 Where a card cannot settle a question in words, build a prototype that answers that one question.
 Write it outside the repository, in a temporary directory.
 Put what it showed on the card, as an illustration where it is a shape, and remove it once the question is settled.
+A prototype's result can be the prototype itself: name its HTML file as the illustration.
 The spec keeps the snippet that states the decision, trimmed to it and marked as coming from the prototype.
 
 ## Writing the spec

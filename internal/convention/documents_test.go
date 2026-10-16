@@ -166,6 +166,37 @@ func TestStatingOnlyTheFlatteringHalfOfTheReachIsReported(t *testing.T) {
 	}
 }
 
+func TestTheSecurityPolicyNamesWhatADrawingMayLoadFromAndSaysItSendsNothing(t *testing.T) {
+	// scenario: SECURITY.md names the three hosts a drawing may load from
+	unstated, err := convention.DrawingReachUnstated(source.Root(t))
+	if err != nil {
+		t.Fatalf("reading %s: %v", convention.SecurityPolicyFile, err)
+	}
+	for _, said := range unstated {
+		t.Error(said)
+	}
+}
+
+func TestASecurityPolicyNamingTwoOfTheThreeHostsOrNoPromiseToSendNothingIsReported(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, convention.SecurityPolicyFile),
+		"# Security\n\nA drawing loads from cdnjs.cloudflare.com and cdn.jsdelivr.net.\n")
+
+	unstated, err := convention.DrawingReachUnstated(root)
+	if err != nil {
+		t.Fatalf("reading a fabricated policy: %v", err)
+	}
+	if len(unstated) != 2 {
+		t.Fatalf("a policy naming two hosts and no promise reported %d complaints: %v", len(unstated), unstated)
+	}
+	if !strings.Contains(unstated[0], "unpkg.com") {
+		t.Errorf("the complaint about the missing host is %q", unstated[0])
+	}
+	if !strings.Contains(unstated[1], convention.DrawingSendsNothing) {
+		t.Errorf("the complaint about the missing promise is %q", unstated[1])
+	}
+}
+
 func TestAReporterHasAPrivateChannel(t *testing.T) {
 	gaps, err := convention.SecurityPolicyGaps(source.Root(t))
 	if err != nil {
