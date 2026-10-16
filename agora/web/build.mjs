@@ -36,7 +36,7 @@ rmSync(bundle, { recursive: true, force: true })
 mkdirSync(bundle, { recursive: true })
 
 await build({
-  entryPoints: [join(here, 'src', 'surface.js'), join(here, 'src', 'surface.css')],
+  entryPoints: [join(here, 'src', 'surface.js'), join(here, 'src', 'surface.css'), join(here, 'src', 'tokens.css')],
   bundle: true,
   minify: true,
   format: 'iife',

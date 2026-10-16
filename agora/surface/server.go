@@ -31,6 +31,9 @@ const (
 	BodyCeiling = 1 << 20
 
 	assetPrefix = "/assets/"
+
+	tokensAsset      = "tokens.css"
+	fontsAssetFolder = "fonts/"
 )
 
 type Opened struct {
@@ -335,7 +338,14 @@ func (s *Server) page(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (s *Server) asset(writer http.ResponseWriter, request *http.Request) {
+	if readableByAFrame(strings.TrimPrefix(request.URL.Path, assetPrefix)) {
+		writer.Header().Set("access-control-allow-origin", "*")
+	}
 	http.StripPrefix(assetPrefix, http.FileServerFS(assets.Files())).ServeHTTP(writer, request)
+}
+
+func readableByAFrame(asset string) bool {
+	return asset == tokensAsset || strings.HasPrefix(asset, fontsAssetFolder)
 }
 
 func (s *Server) live(writer http.ResponseWriter, request *http.Request) {

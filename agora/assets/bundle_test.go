@@ -42,7 +42,7 @@ func TestTheCommittedBundleIsWhatItsSourceBuilds(t *testing.T) {
 
 func TestTheBundleHoldsWhatThePageAsksFor(t *testing.T) {
 	// scenario: Rendering needs no network
-	for _, asked := range []string{"surface.css", "surface.js"} {
+	for _, asked := range []string{"surface.css", "surface.js", "tokens.css"} {
 		held, err := fs.ReadFile(assets.Files(), asked)
 		if err != nil {
 			t.Errorf("the bundle holds no %s, and the page asks for it: %v", asked, err)
@@ -68,12 +68,14 @@ var absoluteRequest = regexp.MustCompile("(fetch|EventSource|WebSocket|importScr
 
 func TestNothingInTheBundleReachesAHost(t *testing.T) {
 	// scenario: The page reaches nothing
-	style, err := fs.ReadFile(assets.Files(), "surface.css")
-	if err != nil {
-		t.Fatalf("reading the stylesheet: %v", err)
-	}
-	for _, reaching := range absoluteStyleReference.FindAllString(string(style), -1) {
-		t.Errorf("the stylesheet fetches %q, and the page reaches nothing outside the surface", reaching)
+	for _, named := range []string{"surface.css", "tokens.css"} {
+		style, err := fs.ReadFile(assets.Files(), named)
+		if err != nil {
+			t.Fatalf("reading %s: %v", named, err)
+		}
+		for _, reaching := range absoluteStyleReference.FindAllString(string(style), -1) {
+			t.Errorf("%s fetches %q, and the page reaches nothing outside the surface", named, reaching)
+		}
 	}
 
 	client, err := fs.ReadFile(assets.Files(), "surface.js")
