@@ -17,7 +17,7 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 76](../../../../agora/docs/adr/0
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1: An illustration is drawn in a sandboxed frame](1-an-illustration-is-drawn-in-a-sandboxed-frame.md) | None | pending |
+| [1: An illustration is drawn in a sandboxed frame](1-an-illustration-is-drawn-in-a-sandboxed-frame.md) | None | in progress |
 | [2.1: An illustration brings the files it references](2.1-an-illustration-brings-the-files-it-references.md) | 1 | pending |
 | [2.2: The frame grows to its drawing](2.2-the-frame-grows-to-its-drawing.md) | 1 | pending |
 | [2.3: A drawing expands to fill the window](2.3-a-drawing-expands-to-fill-the-window.md) | 1 | pending |
