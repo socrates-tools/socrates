@@ -23,7 +23,7 @@ function DecisionCard({ d, index, answer, onAnswer, locked, over }) {
   const single = d.mode === 'single';
   const pick = answer.pick, many = answer.many || [];
   return (
-    <Card id={'decision-' + d.id}>
+    <Card id={'decision-' + d.id} className="so-decision" style={{ scrollMarginTop: 'var(--space-6)' }}>
       <CardSection style={{ gap: 0 }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-2)' }}>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-micro)', fontWeight: 600, color: 'var(--fg-3)' }}>{String(index + 1).padStart(2, '0')}</span>
@@ -35,7 +35,7 @@ function DecisionCard({ d, index, answer, onAnswer, locked, over }) {
         <p style={{ margin: '4px 0 0', maxWidth: '62ch', color: 'var(--fg-2)', textWrap: 'pretty' }}>{d.meaning}</p>
         <div style={{ marginTop: 'var(--space-4)' }}><Evidence kind={d.evidence} /></div>
       </CardSection>
-      <CardSection tone="sunk" divided>
+      <CardSection tone="sunk" divided className="so-answer">
         <OptionGroup legend={single ? 'Choose one' : 'Choose as many as apply'} disabled={locked} style={{ opacity: locked ? 0.55 : 1 }}>
           {d.options.map((o, i) => single
             ? <Option key={i} name={'choice-' + d.id} label={o.label} meaning={o.meaning} recommended={o.recommended} checked={pick === i} onChange={() => onAnswer({ ...answer, pick: i })} />

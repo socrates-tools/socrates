@@ -8,6 +8,8 @@ function inject() {
   s.textContent = `.so-entry{display:grid;grid-template-columns:var(--check-size) minmax(0,1fr);column-gap:10px;row-gap:0;align-items:center;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid transparent;text-decoration:none;color:var(--fg-1);transition:background var(--duration-fast),border-color var(--duration-fast);}
 a.so-entry:hover{background:var(--surface-hover);color:var(--fg-1);}
 .so-entry--settled{border:1px dashed var(--border-control);color:var(--fg-2);}
+.so-entry--current{background:var(--surface-card);border-color:var(--border);box-shadow:var(--shadow-card);}
+a.so-entry--current:hover{background:var(--surface-card);}
 a.so-entry--settled:hover{background:transparent;border-color:var(--border-hover);}
 .so-entry:focus-visible{outline:none;box-shadow:var(--ring-focus);}`;
   document.head.appendChild(s);
@@ -16,12 +18,12 @@ a.so-entry--settled:hover{background:transparent;border-color:var(--border-hover
 import { Check } from '../marks/Check.jsx';
 import { Mark } from '../marks/Mark.jsx';
 
-export function IndexEntry({ name, location, answered = 'no', severity, href, variant = 'decision', detail }) {
+export function IndexEntry({ name, location, answered = 'no', severity, href, variant = 'decision', detail, current = false }) {
   inject();
   const settled = variant === 'settled';
   const Tag = href ? 'a' : 'span';
   return (
-    <Tag href={href} className={'so-entry' + (settled ? ' so-entry--settled' : '')}>
+    <Tag href={href} aria-current={current ? 'location' : undefined} className={'so-entry' + (settled ? ' so-entry--settled' : '') + (current ? ' so-entry--current' : '')}>
       <Check state={settled ? 'yes' : answered} tone={settled ? 'resolved' : 'accent'} />
       <span style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
         <span style={{ fontSize: settled ? 'var(--text-small)' : 'var(--text-rail)', fontWeight: 700, overflowWrap: 'anywhere', color: href || settled ? 'var(--fg-1)' : 'var(--fg-2)' }}>{name}</span>

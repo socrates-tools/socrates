@@ -8,9 +8,7 @@
   --aegean-700: #0E4A8C;
   --aegean-800: #0B3D73;
 
-  /* Clay - terracotta. Recommendation and "your call", used sparingly. */
-  --clay-50: #F8E8DF;
-  --clay-500: #B4532D;
+  /* Clay - terracotta. Calls in code only; the brand mark carries its own clay. */
   --clay-600: #A3471F;
 
   /* Limestone - whitewashed neutrals for ground, surfaces and rules. */
@@ -79,11 +77,6 @@
   --accent-ring: var(--aegean-200);
   --selection: var(--aegean-300);
 
-  /* Semantic: clay */
-  --clay: var(--clay-500);
-  --clay-ink: var(--clay-600);
-  --clay-wash: var(--clay-50);
-
   /* Semantic: recommendation (sea) and your call (Aegean wash) */
   --recommended: var(--sea-600);
   --recommended-wash: var(--sea-50);
@@ -112,7 +105,7 @@
 
   /* Code tokens */
   --token-keyword: var(--aegean-600);
-  --token-call: var(--clay-500);
+  --token-call: var(--clay-600);
   --token-type: var(--sea-600);
   --token-string: var(--olive-600);
   --token-number: var(--ochre-700);

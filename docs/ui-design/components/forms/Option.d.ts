@@ -10,7 +10,7 @@ export interface OptionProps {
   type?: 'radio' | 'checkbox' | 'none';
   label?: React.ReactNode;
   meaning?: React.ReactNode;
-  /** Adds the clay Recommended tag. A recommended option arrives checked. */
+  /** Adds the sea Recommended tag (`recommended` on `recommended-wash`). A recommended option arrives checked. */
   recommended?: boolean;
   checked?: boolean;
   disabled?: boolean;

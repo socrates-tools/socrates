@@ -12,5 +12,7 @@ export interface IndexEntryProps {
   variant?: 'decision' | 'settled';
   /** Second line in body type (settled names) instead of a mono location. */
   detail?: React.ReactNode;
+  /** The decision currently in view: white row with a hairline, `aria-current="location"`. @default false */
+  current?: boolean;
 }
 export function IndexEntry(props: IndexEntryProps): JSX.Element;

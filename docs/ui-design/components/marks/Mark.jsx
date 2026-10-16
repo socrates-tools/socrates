@@ -6,14 +6,13 @@ const KNOWN = {
   error: { tone: 'error', icon: 'circle-alert', label: 'Error', title: 'Severity: Error', hint: 'Likely wrong; the change should not land as it is.' },
   warning: { tone: 'warning', icon: 'triangle-alert', label: 'Warning', title: 'Severity: Warning', hint: 'Worth a look; may be fine.' },
   info: { tone: 'neutral', icon: 'info', label: 'Info', title: 'Severity: Info', hint: 'No action expected.' },
-  'needs a person': { tone: 'clay', icon: 'user', label: 'Your call', title: 'Your call', hint: 'Only a person can decide this. The reviewer will not answer it.' },
+  'needs a person': { tone: 'call', icon: 'user', label: 'Your call', title: 'Your call', hint: 'Only a person can decide this. The reviewer will not answer it.' },
   'can be patched': { tone: 'neutral', icon: 'wrench', label: 'Author can patch', title: 'Author can patch', hint: 'The session that wrote the change can fix this without you.' },
   informational: { tone: 'neutral', icon: 'eye', label: 'For information', title: 'For information', hint: 'Nothing to decide.' },
 };
 const TONES = {
   error: ['var(--state-error-wash)', 'var(--state-error)'],
   warning: ['var(--state-warning-wash)', 'var(--state-warning)'],
-  clay: ['var(--clay-wash)', 'var(--clay-ink)'],
   recommended: ['var(--recommended-wash)', 'var(--recommended)'],
   call: ['var(--your-call-wash)', 'var(--your-call)'],
   neutral: ['var(--surface-muted)', 'var(--fg-2)'],

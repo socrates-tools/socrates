@@ -1,8 +1,17 @@
-<!-- @dsCard group="Spacing" viewport="700x230" name="Layout" subtitle="Page, rail and column" -->
+<!-- @dsCard group="Spacing" viewport="700x290" name="Layout" subtitle="App shell: top bar, navigation, main, reply panel" -->
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
 <style>body{margin:0;padding:24px;background:var(--bg-page);font-family:var(--font-body);color:var(--fg-1);}
 .row{display:flex;flex-wrap:wrap;gap:12px;} .sw{width:96px;display:flex;flex-direction:column;gap:6px;} .chip{height:64px;border-radius:12px;border:1px solid var(--border);}
-.n{font-size:12px;font-weight:700;} .v{font-family:var(--font-mono);font-size:12px;color:var(--fg-3);} </style></head><body><div style="border:1px dashed var(--border-control);border-radius:12px;padding:12px;">
-<div style="height:24px;border-radius:6px;background:var(--surface-muted);display:flex;align-items:center;padding:0 8px;" class="v">top bar · 56px · sticky · blur 12px</div>
-<div style="display:grid;grid-template-columns:132fr 24fr 420fr;margin-top:12px;"><div style="height:96px;border-radius:8px;background:var(--accent-wash);display:flex;align-items:center;justify-content:center;" class="v">rail 240</div><div style="display:flex;align-items:center;justify-content:center;" class="v">32</div><div style="height:96px;border-radius:8px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;" class="v">column ≤ 800 · cards 16 apart · pad 24</div></div>
-<div class="v" style="margin-top:8px">page max 1200 · gutter 24 · top 40 · bottom 64</div></div></body></html>
+.n{font-size:12px;font-weight:700;} .v{font-family:var(--font-mono);font-size:12px;color:var(--fg-3);} </style></head><body><div style="border:1px dashed var(--border-control);border-radius:12px;overflow:hidden;">
+<div style="height:28px;background:var(--surface-muted);display:flex;align-items:center;padding:0 10px;border-bottom:1px solid var(--border);" class="v">top bar · 56px · full width · wordmark │ title … status</div>
+<div style="display:grid;grid-template-columns:96fr 300fr 122fr;height:176px;">
+<div style="background:var(--surface-sunk);border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;text-align:center;" class="v"><span>navigation</span><span>272 · scrolls</span></div>
+<div style="padding:10px;display:flex;flex-direction:column;gap:6px;">
+<div style="height:24px;border-bottom:1px solid var(--border);display:flex;align-items:center;" class="v">page header · pad 32</div>
+<div style="flex:1;border-radius:8px;background:#fff;border:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;"><div style="flex:3;display:flex;align-items:center;justify-content:center;" class="v">what was seen · full width</div><div style="flex:2;background:var(--surface-sunk);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;" class="v">answering band</div></div>
+<div class="v" style="text-align:center">cards 16 apart · up to 1600 · scrolls</div></div>
+<div style="background:var(--surface-sunk);border-left:1px solid var(--border);display:flex;flex-direction:column;">
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;text-align:center;" class="v"><span>reply panel</span><span>344 · summary scrolls</span></div>
+<div style="height:58px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;text-align:center;" class="v">message + send<br>pinned</div></div>
+</div></div>
+<div class="v" style="margin-top:8px">reply panel from 1280 · stacks below 960</div></body></html>

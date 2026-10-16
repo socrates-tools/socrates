@@ -6,4 +6,4 @@ Severity / audience chip on a finding - severity first, then audience.
 <Mark value="warning" compact />
 ```
 
-Only "needs a person" is clay. Every chip carries its hint as a tooltip and aria-label.
+"needs a person" (Your call) is Aegean ink on the Aegean wash (`your-call` on `your-call-wash`), so it never reads as an error (ADR 70). Every chip carries its hint as a tooltip and aria-label.

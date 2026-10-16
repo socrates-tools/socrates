@@ -15,7 +15,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLElement> {
 export function Card(props: CardProps): JSX.Element;
 
 /** A 32px-padded band inside a Card; sunk + divided for the answering area. */
-export interface CardSectionProps {
+export interface CardSectionProps extends React.HTMLAttributes<HTMLDivElement> {
   tone?: 'default' | 'sunk';
   divided?: boolean;
   children?: React.ReactNode;

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-/** Labelled free-text answer ("In your own words", "Anything to say to whoever asked"). */
+/** Labelled free-text answer ("In your own words", "Message (optional)"). */
 export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: React.ReactNode;
   /** @default 2 */

@@ -18,7 +18,6 @@ Where this folder and the shipped page disagree, the shipped page is right: `ago
 - `agora/render/icons.go`, `marks.go`, `audiences.go`, `messages.go`: icons, marks, tooltip copy.
 - `agora/document/testdata/source.json`: sample content.
 - `agora/web/fonts/`: Cinzel, Manrope and JetBrains Mono, which `fonts/` here copies byte for byte.
-- `Agora Redesign.dc.html`: the mock this system was extracted from.
 
 ---
 
@@ -48,7 +47,7 @@ Where this folder and the shipped page disagree, the shipped page is right: `ago
 - **Palette:** Greek coast.
   **Aegean** `#1259A8` is the one accent: what you choose, what you press, links, focus.
   **Sea** `#0B6E79` on `#E2F0F1` marks *Recommended*, and *Your call* is Aegean ink on the Aegean wash `#E8F0FA`, so neither reads as an error, per ADR 70.
-  **Clay** `#B4532D`/`#A3471F` stays in the brand mark and the calls in code.
+  **Clay** `#A3471F` (`--clay-600`) colours only the calls in code (`--token-call`); the brand mark carries its own clay.
   **Limestone** neutrals (`#F6F2EA` page, `#FFFFFF` cards, `#FBF9F5` sunk bands) carry the ground.
   **Ink** navy `#14283C` is all body text.
   States: olive (resolved), cinnabar (error), ochre (warning), always as ink on a pale wash.
@@ -59,13 +58,14 @@ Where this folder and the shipped page disagree, the shipped page is right: `ago
   **12px is the floor** for any text.
 - **Spacing:** 4px base.
   The rhythm is 4 / 8 / 12 / 16 / 24 / 32.
-  Cards are 24px padded and 16px apart; options are 8px apart and 12×16 padded; the rail and column sit 32px apart.
+  Cards are 24px padded and 16px apart; options are 8px apart and 12×16 padded; the main area is padded 32px inside the shell.
   Controls are 36px tall.
-  Everything left-aligns to the 24px gutter shared by the top bar, title and rail.
-- **Layout:** 1200px page and a 56px sticky top bar, wordmark left and status right.
-  Below it, a full-width title and preamble.
-  Then a 240px sticky rail beside a column of up to 800px.
-  The two wrap to one column when narrow.
+  The top bar holds a 24px gutter; the navigation and reply panel are padded 16px and 24px.
+- **Layout:** an app shell that uses the whole window (`ui_kits/review-page/layout.css`).
+  A full-width 56px top bar: wordmark, then the exchange title as a breadcrumb, status right.
+  Below it, a 272px left navigation (`--sidebar-width`) on the sunk surface, the main area, and from 1280px a 344px reply panel on the right (`--panel-width`) with the message box and send buttons pinned at its bottom; navigation, main area and panel scroll on their own.
+  The main area opens with a page header (counts, title, preamble) divided by a hairline; decision cards run its full width (up to 1600px), with what was seen across the whole card and the answering band below it, so code and diffs get the room.
+  Below 1280px the composer closes the decisions column; below 960px everything stacks into one scrolling column.
 - **Backgrounds:** flat limestone.
   No gradients, textures, photos or illustrations.
   Cards sit on the ground with a hairline border.
@@ -120,5 +120,6 @@ Where this folder and the shipped page disagree, the shipped page is right: `ago
   - `surfaces/`: Card, CardSection, Notice.
   - `navigation/`: TopBar, IndexEntry.
   - `feedback/`: Dialog, Tooltip.
-- `ui_kits/review-page/`: the interactive decisions page (open / sent / confirm / over / nothing to answer).
+- `ui_kits/review-page/`: the interactive decisions page as an app shell (open / sent / confirm / over / nothing to answer); `layout.css` holds the shell grid and breakpoints.
+- `Socrates Landing.dc.html`: the landing page design that `site/` serves; it carries its own runtime.
 - `assets/dev/preview-fallback.js`: lets specimen cards and the kit render from the component sources before the bundle is compiled.

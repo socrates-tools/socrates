@@ -8,9 +8,9 @@ export function Card({ as = 'article', tone = 'default', children, style, ...res
   );
 }
 
-export function CardSection({ tone = 'default', divided = false, children, style }) {
+export function CardSection({ tone = 'default', divided = false, children, style, ...rest }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', padding: 'var(--card-pad)', borderTop: divided ? '1px solid var(--border)' : 0,
-      background: tone === 'sunk' ? 'var(--surface-sunk)' : 'transparent', ...style }}>{children}</div>
+      background: tone === 'sunk' ? 'var(--surface-sunk)' : 'transparent', ...style }} {...rest}>{children}</div>
   );
 }

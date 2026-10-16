@@ -17,9 +17,9 @@
   --page-max: 1200px;
   --gutter: 24px;
   --topbar-height: 56px;
-  --rail-width: 240px;
+  --sidebar-width: 272px;  /* app shell: left navigation */
+  --panel-width: 344px;    /* app shell: right reply panel */
   --column-max: 800px;
-  --layout-gap: 32px;
   --card-pad: 24px;
   --stack-cards: 16px;
   --sticky-offset: 80px;

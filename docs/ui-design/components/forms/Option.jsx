@@ -21,7 +21,7 @@ export function Option({ type = 'radio', label, meaning, recommended = false, ch
         {checked && box && <Icon name="check" size={10} />}
       </span>
       <span style={{ gridColumn: 2, fontWeight: 700, lineHeight: 'var(--leading-control)', color: none ? 'var(--fg-2)' : 'var(--fg-1)', overflowWrap: 'anywhere' }}>{label ?? (none ? 'None of these' : '')}</span>
-      {recommended && <Tag tone="clay" style={{ gridColumn: 3, gridRow: 1, alignSelf: 'center' }}>Recommended</Tag>}
+      {recommended && <Tag tone="recommended" style={{ gridColumn: 3, gridRow: 1, alignSelf: 'center' }}>Recommended</Tag>}
       {meaning && <span style={{ gridColumn: 2, color: 'var(--fg-2)', fontSize: 'var(--text-small)', lineHeight: 'var(--leading-control)', overflowWrap: 'anywhere' }}>{meaning}</span>}
     </label>
   );

@@ -9,6 +9,34 @@ function said(d, a) {
   return d.name + ': ' + ([...chosen, w && '“' + w + '”'].filter(Boolean).join(', ') || 'nothing');
 }
 
+function useMedia(query) {
+  const [on, setOn] = React.useState(() => window.matchMedia(query).matches);
+  React.useEffect(() => {
+    const mq = window.matchMedia(query), f = () => setOn(mq.matches);
+    mq.addEventListener('change', f); f();
+    return () => mq.removeEventListener('change', f);
+  }, [query]);
+  return on;
+}
+
+// The decision card nearest the top of the main area, for the navigation's current row.
+function useCurrent(ids) {
+  const [current, setCurrent] = React.useState(ids[0]);
+  React.useEffect(() => {
+    const seen = new Map();
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => seen.set(e.target.id.replace('decision-', ''), e.isIntersecting));
+      const first = ids.find(id => seen.get(id));
+      if (first) setCurrent(first);
+    }, { rootMargin: '-15% 0px -55% 0px' });
+    ids.forEach(id => { const el = document.getElementById('decision-' + id); if (el) io.observe(el); });
+    return () => io.disconnect();
+  }, [ids.join(',')]);
+  return current;
+}
+
+// App shell: full-width top bar; left navigation; main area with the page header and decisions;
+// the reply panel on the right from 1280px (below that the composer closes the decisions column).
 function ReviewPage({ data, initial = 'open', showSettled = true }) {
   const { TopBar, Notice, Dialog, Button, Card } = window.SO;
   const init = () => Object.fromEntries(data.decisions.map(d => [d.id, d.mode === 'single' ? { pick: d.options.findIndex(o => o.recommended) } : { many: [] }]));
@@ -17,6 +45,7 @@ function ReviewPage({ data, initial = 'open', showSettled = true }) {
   const [ends, setEnds] = React.useState(false);
   const [message, setMessage] = React.useState('');
   React.useEffect(() => { setPhase(initial === 'over' ? 'over' : 'open'); setEnds(false); }, [initial]);
+  const wide = useMedia('(min-width: 1280px)');
   const nothing = initial === 'nothing';
   const over = phase === 'over' || (phase === 'sent' && ends);
   const decisions = nothing ? [] : data.decisions;
@@ -26,29 +55,37 @@ function ReviewPage({ data, initial = 'open', showSettled = true }) {
   const send = (fin) => { setEnds(fin); setPhase(blanks.length ? 'confirm' : 'sent'); };
   const status = nothing ? 'nothing' : over ? 'over' : phase === 'sent' ? 'sent' : 'open';
   const locked = over || phase === 'sent';
+  const current = useCurrent(decisions.map(d => d.id));
+  const composer = (layout) => <Composer layout={layout} phase={phase === 'confirm' ? 'open' : phase} ends={ends} receipt={decisions.map(d => said(d, answers[d.id]))} answered={decisions.map(d => answered[d.id])} message={message} setMessage={setMessage} onSend={send} onAmend={() => setPhase('open')} />;
+  const meta = nothing ? 'Nothing to answer' : [decisions.length + ' open', settled.length ? settled.length + ' settled earlier' : null].filter(Boolean).join(' · ');
 
   return (
-    <div>
-      <TopBar status={status} />
-      <main style={{ maxWidth: 'var(--page-max)', margin: '0 auto', padding: 'var(--space-10) var(--gutter) var(--space-16, 64px)' }}>
-        <section style={{ paddingBottom: 'var(--space-8)' }}>
-          <h1 style={{ margin: 0, fontSize: 'var(--text-display)', fontWeight: 700, lineHeight: 'var(--leading-display)', letterSpacing: 'var(--tracking-display)', textWrap: 'balance' }}>{data.title}</h1>
-          <p style={{ margin: '8px 0 0', color: 'var(--fg-2)', fontSize: 'var(--text-lead)', lineHeight: 'var(--leading-lead)', textWrap: 'pretty' }}>{data.preamble}</p>
-          {over && <Notice style={{ marginTop: 'var(--space-4)' }} title="The exchange is over. Nothing further will be sent from this page." />}
-        </section>
-        {nothing ? (
-          <Card as="section" style={{ padding: 'var(--card-pad)' }}><p style={{ margin: 0, color: 'var(--fg-2)' }}>There is nothing on this page to answer, and nobody is waiting on it.</p></Card>
-        ) : (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--layout-gap)', alignItems: 'flex-start' }}>
-            <Rail decisions={decisions} answers={answered} settled={settled} />
-            <div style={{ flex: '1 1 560px', minWidth: 0, maxWidth: 'var(--column-max)', display: 'flex', flexDirection: 'column', gap: 'var(--stack-cards)' }}>
-              {settled.length > 0 && <><SettledPanel settled={settled} /><span style={{ paddingTop: 4, fontSize: 'var(--text-micro)', fontWeight: 700, letterSpacing: 'var(--tracking-overline)', textTransform: 'uppercase', color: 'var(--fg-3)' }}>Still open</span></>}
-              {decisions.map((d, i) => <DecisionCard key={d.id} d={d} index={i} answer={answers[d.id]} locked={locked} over={over} onAnswer={a => setAnswers(s => ({ ...s, [d.id]: a }))} />)}
-              {!over && <Composer phase={phase === 'confirm' ? 'open' : phase} ends={ends} receipt={decisions.map(d => said(d, answers[d.id]))} message={message} setMessage={setMessage} onSend={send} onAmend={() => setPhase('open')} />}
-            </div>
+    <div className="so-app">
+      <TopBar fluid status={status} leading={<span className="so-crumb"><span>{data.title}</span></span>} />
+      <div className="so-shell">
+        {!nothing && <Rail decisions={decisions} answers={answered} settled={settled} current={current} />}
+        <main className="so-main" style={nothing ? { gridColumn: '1 / -1' } : undefined}>
+          <div className="so-main-inner">
+            <header className="so-pagehead">
+              <span className="so-meta">{meta}</span>
+              <h1>{data.title}</h1>
+              <p>{data.preamble}</p>
+              {over && <Notice style={{ marginTop: 'var(--space-2)' }} title="The exchange is over. Nothing further will be sent from this page." />}
+            </header>
+            {nothing ? (
+              <Card as="section" style={{ padding: 'var(--card-pad)', maxWidth: 'var(--column-max)' }}><p style={{ margin: 0, color: 'var(--fg-2)' }}>There is nothing on this page to answer, and nobody is waiting on it.</p></Card>
+            ) : (
+              <div className="so-decisions">
+                {settled.length > 0 && <SettledPanel settled={settled} />}
+                {settled.length > 0 && <span className="so-overline" style={{ padding: '4px 0 0' }}>Still open</span>}
+                {decisions.map((d, i) => <DecisionCard key={d.id} d={d} index={i} answer={answers[d.id]} locked={locked} over={over} onAnswer={a => setAnswers(s => ({ ...s, [d.id]: a }))} />)}
+                {!over && !wide && composer('inline')}
+              </div>
+            )}
           </div>
-        )}
-      </main>
+        </main>
+        {!nothing && !over && wide && composer('panel')}
+      </div>
       <Dialog open={phase === 'confirm'} onClose={() => setPhase('open')} title={blanks.length === 1 ? '1 decision is blank' : blanks.length + ' decisions are blank'}
         actions={<><Button variant="ghost" onClick={() => setPhase('open')}>Go back and answer</Button><Button onClick={() => setPhase('sent')}>Send anyway</Button></>}>
         <p style={{ margin: 0 }}>A decision left blank goes as nothing. Whoever asked will see no answer to it.</p>

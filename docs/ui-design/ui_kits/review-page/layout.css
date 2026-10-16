@@ -1,0 +1,47 @@
+/* App shell for the review page: full-width top bar, left navigation, main area, right reply panel.
+   Narrow (< 960px): one scrolling column, navigation above the decisions.
+   960px and up: the shell fills the window; navigation, main and the reply panel's summary each scroll on their own.
+   1280px and up: the reply panel joins on the right; its message box and send buttons stay pinned at its bottom. */
+
+.so-app { min-height: 100vh; display: flex; flex-direction: column; }
+.so-shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); }
+
+.so-sidebar { position: relative; display: flex; flex-direction: column; gap: var(--space-6); padding: var(--space-6) var(--gutter); background: var(--surface-sunk); border-bottom: 1px solid var(--border); }
+.so-sidebar-group { display: flex; flex-direction: column; gap: 2px; }
+.so-overline { display: block; padding: 0 10px var(--space-2); font-size: var(--text-micro); font-weight: 700; letter-spacing: var(--tracking-overline); text-transform: uppercase; color: var(--fg-3); }
+.so-overline span { font-weight: 500; letter-spacing: 0; }
+
+.so-main { position: relative; min-width: 0; padding: var(--space-8) var(--gutter) var(--space-16); }
+.so-main-inner { max-width: 1600px; display: flex; flex-direction: column; gap: var(--space-8); }
+.so-pagehead { display: flex; flex-direction: column; gap: var(--space-2); padding-bottom: var(--space-6); border-bottom: 1px solid var(--border); }
+.so-pagehead h1 { margin: 0; font-size: var(--text-display); font-weight: 700; line-height: var(--leading-display); letter-spacing: var(--tracking-display); text-wrap: balance; }
+.so-pagehead p { margin: 0; max-width: 72ch; color: var(--fg-2); font-size: var(--text-lead); line-height: var(--leading-lead); text-wrap: pretty; }
+.so-meta { font-size: var(--text-small); color: var(--fg-3); }
+
+.so-panel { display: none; }
+.so-crumb { display: flex; align-items: center; gap: var(--space-3); min-width: 0; font-size: var(--text-small); font-weight: 600; color: var(--fg-2); }
+.so-crumb::before { content: ''; width: 1px; height: 20px; background: var(--border-control); flex-shrink: 0; }
+.so-crumb span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Decisions: each card runs the full width of the main area. What was seen (question, evidence) takes the
+   whole width so code and diffs get as much room as possible; the answering band sits below it. */
+.so-decisions { display: flex; flex-direction: column; gap: var(--stack-cards); }
+
+@media (min-width: 960px) {
+  /* Fill the window (or the frame the page sits in): the shell is as tall as its container, not 100vh,
+     so an embedding frame that grows to fit does not leave the panel footer floating mid-way. */
+  html, body, #root { height: 100%; }
+  .so-app { height: 100%; min-height: 0; overflow: hidden; }
+  .so-shell { min-height: 0; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
+  .so-sidebar { overflow-y: auto; padding: var(--space-6) var(--space-4); border-bottom: 0; border-right: 1px solid var(--border); }
+  .so-sidebar > * { flex-shrink: 0; }  /* a long list of decisions scrolls the navigation instead of squeezing its sections */
+  .so-main { overflow-y: auto; padding: var(--space-8) var(--space-8) var(--space-16); scroll-padding-top: var(--space-6); }
+}
+
+@media (min-width: 1280px) {
+  .so-shell { grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--panel-width); }
+  .so-panel { position: relative; display: flex; flex-direction: column; min-height: 0; background: var(--surface-sunk); border-left: 1px solid var(--border); }
+  .so-panel-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-6); }
+  .so-panel-body > * { flex-shrink: 0; }  /* the summary keeps its full height and the body scrolls, rather than the card clipping its rows */
+  .so-panel-foot { flex-shrink: 0; display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4) var(--space-6) var(--space-6); border-top: 1px solid var(--border); }
+}
