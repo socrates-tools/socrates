@@ -609,6 +609,8 @@ function showTheTipFor(mark) {
   held.hidden = false
 }
 
+const markSelector = '.mark, .expand'
+
 function hideTheTip() {
   tippedMark = null
   const held = tip()
@@ -627,29 +629,73 @@ function followTheScroll() {
 
 function followTheMarks() {
   document.addEventListener('mouseover', (event) => {
-    const mark = event.target.closest?.('.mark')
+    const mark = event.target.closest?.(markSelector)
     if (mark) {
       showTheTipFor(mark)
     }
   })
   document.addEventListener('mouseout', (event) => {
-    const mark = event.target.closest?.('.mark')
+    const mark = event.target.closest?.(markSelector)
     if (mark && !mark.contains(event.relatedTarget)) {
       hideTheTip()
     }
   })
   document.addEventListener('focusin', (event) => {
-    const mark = event.target.closest?.('.mark')
+    const mark = event.target.closest?.(markSelector)
     if (mark) {
       showTheTipFor(mark)
     }
   })
   document.addEventListener('focusout', (event) => {
-    if (event.target.closest?.('.mark')) {
+    if (event.target.closest?.(markSelector)) {
       hideTheTip()
     }
   })
   window.addEventListener('scroll', followTheScroll, true)
+}
+
+function expandedStage() {
+  return document.querySelector('.drawing-stage[data-expanded]')
+}
+
+function expand(control) {
+  const stage = control.closest('.evidence').querySelector('.drawing-stage')
+  stage.style.height = `${stage.getBoundingClientRect().height}px`
+  stage.dataset.expanded = ''
+  control.setAttribute('aria-expanded', 'true')
+  hideTheTip()
+  stage.querySelector('.drawing-close').focus()
+}
+
+function collapse() {
+  const stage = expandedStage()
+  if (!stage) {
+    return
+  }
+  const control = stage.closest('.evidence').querySelector('.expand')
+  delete stage.dataset.expanded
+  stage.style.height = ''
+  control.setAttribute('aria-expanded', 'false')
+  control.focus()
+}
+
+function followTheExpanding() {
+  document.addEventListener('click', (event) => {
+    const control = event.target.closest?.('.expand')
+    if (control) {
+      expand(control)
+      return
+    }
+    if (event.target.closest?.('.drawing-close, .drawing-backdrop')) {
+      collapse()
+    }
+  })
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && expandedStage()) {
+      event.preventDefault()
+      collapse()
+    }
+  })
 }
 
 wideEnoughForThePanel.addEventListener('change', placeTheComposer)
@@ -658,4 +704,5 @@ window.addEventListener('resize', scheduleMarkingTheDecisionInView)
 bind()
 takeUpWhetherItIsOver()
 followTheMarks()
+followTheExpanding()
 follow()

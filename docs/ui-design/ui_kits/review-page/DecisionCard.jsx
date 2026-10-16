@@ -13,7 +13,7 @@ function Evidence({ kind }) {
         { left: { kind: 'absent' }, right: { n: 13, kind: 'added', text: <>    mu.<Tok kind="call">Unlock</Tok>()</> } },
         { left: { n: 12, text: '}' }, right: { n: 14, text: '}' } },
       ]} />
-      <Illustration><div style={{ border: '1px solid #d8d2c4', padding: '0.75rem' }}><div style={{ display: 'flex', gap: '0.75rem' }}><span style={{ color: '#6f6a5e' }}>Writes</span><span>one line each</span></div></div></Illustration>
+      <Illustration height="6rem"><div style={{ border: '1px solid #d8d2c4', padding: '0.75rem' }}><div style={{ display: 'flex', gap: '0.75rem' }}><span style={{ color: '#6f6a5e' }}>Writes</span><span>one line each</span></div></div></Illustration>
     </div>
   );
 }

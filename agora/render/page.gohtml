@@ -11,6 +11,7 @@
 </head>
 <body data-base="{{.Base}}" data-token="{{.Token}}" data-revision="{{.Revision}}" data-over="{{if .Over}}yes{{else}}no{{end}}">
 {{define "check"}}<svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square" aria-hidden="true" focusable="false"><polyline points="20 6 9 17 4 12"/></svg>{{end}}
+{{define "expand"}}<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg>{{end}}
 {{define "mark"}}<span class="mark {{.Kind}}"{{if eq .Kind "severity"}} data-severity="{{.Value}}"{{else}} data-audience="{{.Value}}"{{end}} data-tone="{{.Tone}}" data-title="{{.Title}}" data-hint="{{.Hint}}" role="img" aria-label="{{.Spoken}}"{{if .Focusable}} tabindex="0"{{end}}>{{.Drawn}}{{if .Named}}<span class="mark-name">{{.Name}}</span>{{end}}</span>{{end}}
 {{define "entry"}}<span class="answered" data-answered="{{if .Decided}}{{if .Answered}}yes{{else}}no{{end}}{{else}}none{{end}}" aria-hidden="true">{{template "check"}}</span>
 <span class="entry-heading"><span class="entry-name">{{.Name}}</span>{{with .Severity}}{{template "mark" .}}{{end}}</span>
@@ -150,8 +151,12 @@
 
 {{with .Drawing}}
 <div class="evidence illustrated">
-<div class="evidence-heading"><span class="evidence-label">illustration</span></div>
+<div class="evidence-heading"><span class="evidence-label">illustration</span><button class="expand" data-part="viewing" type="button" aria-label="Expand illustration" aria-expanded="false" data-title="Expand illustration" data-hint="Lays the drawing over the whole window. Escape closes it.">{{template "expand"}}</button></div>
+<div class="drawing-stage">
+<div class="drawing-backdrop"></div>
 <iframe class="drawing" sandbox="allow-scripts" src="{{.Source}}" title="{{.Title}}"></iframe>
+<button class="drawing-close" data-part="viewing" type="button">Close</button>
+</div>
 </div>
 {{end}}
 </div>

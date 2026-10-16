@@ -12,7 +12,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-const answering, sending = "answering", "sending"
+const answering, sending, viewing = "answering", "sending", "viewing"
 
 func oneDecision(mode document.Mode) document.Document {
 	return document.Document{
@@ -637,8 +637,8 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 	var parts []string
 	for _, control := range elements(page, "input", "textarea", "button", "select", "form", "output", "dialog") {
 		part := attribute(control, "data-part")
-		if part != answering && part != sending {
-			t.Errorf("the page offers a <%s class=%q> that is part of neither answering nor sending", control.Data, attribute(control, "class"))
+		if part != answering && part != sending && part != viewing {
+			t.Errorf("the page offers a <%s class=%q> that is part of none of answering, sending or viewing", control.Data, attribute(control, "class"))
 			continue
 		}
 		parts = append(parts, part+" "+attribute(control, "class"))
@@ -662,6 +662,8 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 		"sending receipt",
 		"sending send",
 		"sending send-anyway",
+		"viewing drawing-close",
+		"viewing expand",
 	}
 	if !slices.Equal(want, parts) {
 		t.Errorf("the controls the page offers are %v, want %v", parts, want)

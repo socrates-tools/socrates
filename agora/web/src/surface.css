@@ -1123,6 +1123,67 @@ span.entry-link .entry-name {
   background: var(--surface-card);
 }
 
+.expand {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: var(--radius-box);
+  color: var(--fg-2);
+}
+
+.expand:hover {
+  background: var(--surface-muted);
+  color: var(--fg-1);
+}
+
+.expand .icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.drawing-backdrop,
+.drawing-close {
+  display: none;
+}
+
+.drawing-stage[data-expanded] .drawing-backdrop {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.drawing-stage[data-expanded] .drawing {
+  position: fixed;
+  top: 56px;
+  left: 16px;
+  z-index: 51;
+  width: calc(100vw - 32px);
+  height: calc(100vh - 72px) !important;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dialog);
+}
+
+.drawing-stage[data-expanded] .drawing-close {
+  display: inline-flex;
+  position: fixed;
+  top: 8px;
+  right: 16px;
+  z-index: 52;
+  background: var(--surface-card);
+  border-color: var(--rule);
+  box-shadow: var(--shadow-dialog);
+}
+
+html:has(.drawing-stage[data-expanded]) {
+  overflow: hidden;
+}
+
 .answering {
   display: flex;
   flex-direction: column;
