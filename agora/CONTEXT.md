@@ -14,7 +14,7 @@ agora knows nothing about what a caller's document is about, beyond the three au
 - **mark**: the icon a severity or an audience is drawn as, saying what it means on hover, on focus and to a screen reader.
 - **settled answer**: what a document carries of a question already answered elsewhere: its question, the labels chosen and the words. Shown ahead of the decisions, read rather than answered, and never sent.
 - **option**: one answer to a decision. It carries the command it becomes, or none, and a decision does not mix the two: a person choosing between the options of one decision is choosing between things of the same kind. The surface composes a command and never runs one. The control that takes none of them is not an option: it carries no command, and leaves the decision with nothing selected.
-- **illustration**: the one fragment a decision may carry, painted by the document's own stylesheet, contained so nothing in it reaches the page's own controls.
+- **illustration**: the one HTML document a decision may carry, drawn in a frame of its own that reaches neither the page nor the network beyond the CDNs it names. Not a fragment, and not painted by the document.
 - **session**: what the surface mints so that a page and its routes are served under a path holding it.
 - **exchange**: the delivery of a document and the collection of what a person answered. It holds at most one uncollected answer, and a later one replaces it. The last answer collected is kept in the session's directory, and `agora poll --last` prints it again.
 - **answer**: what one submit carries: every decision the person answered, anything they wrote, and whether it ends the exchange.
