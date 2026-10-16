@@ -41,7 +41,7 @@
 @media (min-width: 1280px) {
   .so-shell { grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--panel-width); }
   .so-panel { position: relative; display: flex; flex-direction: column; min-height: 0; background: var(--surface-sunk); border-left: 1px solid var(--border); }
-  .so-panel-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-6); }
+  .so-panel-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-6) var(--space-4); }
   .so-panel-body > * { flex-shrink: 0; }  /* the summary keeps its full height and the body scrolls, rather than the card clipping its rows */
-  .so-panel-foot { flex-shrink: 0; display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4) var(--space-6) var(--space-6); border-top: 1px solid var(--border); }
+  .so-panel-foot { flex-shrink: 0; display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4) var(--space-4) var(--space-6); border-top: 1px solid var(--border); }
 }

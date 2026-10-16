@@ -63,7 +63,7 @@ Where this folder and the shipped page disagree, the shipped page is right: `ago
   The top bar holds a 24px gutter; the navigation and reply panel are padded 16px and 24px.
 - **Layout:** an app shell that uses the whole window (`ui_kits/review-page/layout.css`).
   A full-width 56px top bar: wordmark, then the exchange title as a breadcrumb, status right.
-  Below it, a 272px left navigation (`--sidebar-width`) on the sunk surface, the main area, and from 1280px a 344px reply panel on the right (`--panel-width`) with the message box and send buttons pinned at its bottom; navigation, main area and panel scroll on their own.
+  Below it, a 272px left navigation (`--sidebar-width`) on the sunk surface, the main area, and from 1280px a 304px reply panel on the right (`--panel-width`) with the message box and send buttons pinned at its bottom; navigation, main area and panel scroll on their own.
   The main area opens with a page header (counts, title, preamble) divided by a hairline; decision cards run its full width (up to 1600px), with what was seen across the whole card and the answering band below it, so code and diffs get the room.
   Below 1280px the composer closes the decisions column; below 960px everything stacks into one scrolling column.
 - **Backgrounds:** flat limestone.

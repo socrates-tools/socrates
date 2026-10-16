@@ -10,7 +10,7 @@ Layout: an app shell that uses the whole window.
 - A full-width top bar (`TopBar fluid`): wordmark, the exchange title as a breadcrumb, status on the right.
 - A left navigation (`sidebar-width`, 272px) on the sunk surface: progress, the open decisions with the one in view marked `current`, and the settled-earlier link. It scrolls on its own.
 - The main area: a page header (counts, title, preamble), then the settled panel and the decision cards at full width. What was seen (question, evidence) gets the card's whole width so code and diffs have room; the answering band sits below it.
-- From 1280px, a right reply panel (`panel-width`, 344px): an answer summary at the top (it scrolls), and the message box and the two send buttons, side by side ("Send and finish", then the primary "Send and wait"), pinned at the bottom, always in reach. Below 1280px the composer closes the decisions column instead.
+- From 1280px, a right reply panel (`panel-width`, 304px): an answer summary at the top (it scrolls), and the message box and the two send buttons, side by side ("Send and finish", then the primary "Send and wait"), pinned at the bottom, always in reach. Below 1280px the composer closes the decisions column instead.
 - Below 960px everything stacks into one scrolling column, navigation first.
 
 Files

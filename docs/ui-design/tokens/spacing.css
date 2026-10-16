@@ -18,7 +18,7 @@
   --gutter: 24px;
   --topbar-height: 56px;
   --sidebar-width: 272px;  /* app shell: left navigation */
-  --panel-width: 344px;    /* app shell: right reply panel */
+  --panel-width: 304px;    /* app shell: right reply panel */
   --column-max: 800px;
   --card-pad: 24px;
   --stack-cards: 16px;

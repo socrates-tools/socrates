@@ -28,8 +28,8 @@ function Composer({ layout = 'inline', phase, ends, receipt, answered = [], mess
         <div className="so-panel-foot">
           {field}
           <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-            <Button variant="secondary" onClick={() => onSend(true)} style={{ flex: '1 1 0', minWidth: 0 }}>Send and finish</Button>
-            <Button onClick={() => onSend(false)} style={{ flex: '1 1 0', minWidth: 0 }}>Send and wait</Button>
+            <Button variant="secondary" onClick={() => onSend(true)} style={{ flex: '1 1 auto' }}>Send and finish</Button>
+            <Button onClick={() => onSend(false)} style={{ flex: '1 1 auto' }}>Send and wait</Button>
           </div>
           {note}
         </div>

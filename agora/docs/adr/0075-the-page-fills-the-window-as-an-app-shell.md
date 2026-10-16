@@ -15,8 +15,9 @@ Below it the navigation is a 272px column on the sunk surface, the decisions tak
 The decisions open with a page header that counts what is open and what was settled, then the title and the preamble, divided from the cards by a hairline.
 The navigation marks the decision nearest the top of the window as current.
 
-From 1280px a 344px reply panel joins on the right.
+From 1280px a 304px reply panel joins on the right.
 It summarises what will go, one line per decision as the person answers, and keeps the message and both presses pinned at its bottom, so sending is always in reach.
+It is padded 16px at its sides rather than 24px, the narrowest at which both presses still fit side by side, so it takes as little of the decisions' width as it can.
 Once something is sent the receipt takes the summary's place, and the way back to amending is pinned where the presses were.
 Below 1280px the same composer closes the decisions instead, and below 960px everything stacks into one column that scrolls with the window, navigation first.
 There is one composer, which the page moves between the panel and the end of the decisions as the window crosses 1280px, so what a person typed goes with it.

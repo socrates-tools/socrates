@@ -251,3 +251,34 @@ func TestAnEntryLandsItsCardAtTheTopOfTheDecisions(t *testing.T) {
 		t.Errorf("following the entry left the card %vpx below the top of the decisions, and it lands the card at their top", apart)
 	}
 }
+
+const howThePanelHoldsThePresses = `(() => {
+  const panel = document.querySelector('.panel').getBoundingClientRect();
+  const sends = document.querySelector('.panel .sends');
+  const send = document.querySelector('.send').getBoundingClientRect();
+  const finish = document.querySelector('.finish').getBoundingClientRect();
+  return {
+    width: panel.width,
+    sameRow: send.top === finish.top,
+    fits: sends.scrollWidth <= sends.clientWidth && finish.left >= panel.left && send.right <= panel.right,
+  };
+})()`
+
+func TestTheReplyPanelIsThreeHundredAndFourWideAndHoldsBothPressesOnOneRow(t *testing.T) {
+	t.Parallel()
+	page := openingAt(t, twoDecisionDocument, aWindowWideEnoughForThePanel, aShortWindow)
+
+	var read struct {
+		Width   float64 `json:"width"`
+		SameRow bool    `json:"sameRow"`
+		Fits    bool    `json:"fits"`
+	}
+	page.evaluate(howThePanelHoldsThePresses, &read)
+
+	if read.Width != 304 {
+		t.Errorf("the reply panel is %vpx wide, and it is 304px", read.Width)
+	}
+	if !read.SameRow || !read.Fits {
+		t.Errorf("the presses in the reply panel sit %+v, and both fit side by side inside it", read)
+	}
+}
