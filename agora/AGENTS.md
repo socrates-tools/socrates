@@ -65,6 +65,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - The copy brings every relative `src`, `href` and `srcset` of the HTML and every relative `url(...)` and `@import` of any CSS it reaches, and leaves an absolute reference, one naming a scheme and a fragment alone as they are.
   A reference leaving the HTML file's folder, a file that is missing or of a type outside HTML, CSS, JavaScript, JSON, SVG, PNG, JPEG, WebP, GIF, WOFF and WOFF2, and files totalling over 16 MiB are each refused before anything is written or served, naming the decision and the file.
 - The page reads one thing from a frame: a finite non-negative number posted by that card's own frame window, which sets that frame's height, capped at the window's height.
+  The page asks each frame for it once with a fixed word, so a post that came before the page was listening is not lost.
   Anything else posted to the page, whether a value of another type, a number from a window that is not that frame, or a message from the page itself, changes nothing, so a drawing has no channel into an answer, per ADR 76.
 - Delivery happens once, waiting is bounded, collection is per session, and the server stops once it has held no session for the idle period.
 - An exchange holds at most one uncollected answer, and a later submit replaces it rather than queueing behind it, so what a caller collects is a person's last word.

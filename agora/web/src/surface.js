@@ -735,6 +735,12 @@ function followTheDrawingHeights() {
   })
 }
 
+function askTheDrawingsForTheirHeights() {
+  for (const frame of document.querySelectorAll('iframe.drawing')) {
+    frame.contentWindow.postMessage('agora-height', '*')
+  }
+}
+
 wideEnoughForThePanel.addEventListener('change', placeTheComposer)
 document.addEventListener('scroll', scheduleMarkingTheDecisionInView, true)
 window.addEventListener('resize', scheduleMarkingTheDecisionInView)
@@ -743,4 +749,5 @@ takeUpWhetherItIsOver()
 followTheMarks()
 followTheExpanding()
 followTheDrawingHeights()
+askTheDrawingsForTheirHeights()
 follow()

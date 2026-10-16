@@ -204,3 +204,15 @@ func illustratingBoth(t *testing.T, base, first, second string) string {
 	}
 	return string(raw)
 }
+
+func TestAFrameAskedForItsHeightPostsItAgainEvenWhenItHasNotChanged(t *testing.T) {
+	// scenario: A drawing whose first post came before the page was listening still gets its height
+	t.Parallel()
+	page := aPageDrawing(t, 2)
+	page.narrow(1280, 900)
+	page.waitForTheFrameToBe(200)
+
+	page.evaluate(frameOfC1+`.style.removeProperty('--drawing-height'); `+frameOfC1+`.contentWindow.postMessage('agora-height', '*'); true`, nil)
+
+	page.waitForTheFrameToBe(200)
+}

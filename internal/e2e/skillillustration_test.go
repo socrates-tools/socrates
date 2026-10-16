@@ -38,7 +38,7 @@ func TestTheIllustrationEachSkillShowsIsServedWithoutRefusal(t *testing.T) {
 			}
 			defer func() { _ = answered.Body.Close() }()
 			served, _ := io.ReadAll(answered.Body)
-			if answered.StatusCode != http.StatusOK || string(served) != "<!doctype html><p>drawn</p>" {
+			if answered.StatusCode != http.StatusOK || string(served) != `<!doctype html><p>drawn</p><script src="/assets/height.js"></script>` {
 				t.Errorf("the illustration the %s skill shows was answered with %d: %s", name, answered.StatusCode, served)
 			}
 		})
