@@ -19,7 +19,7 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 76](../../../../agora/docs/adr/0
 | --- | --- | --- |
 | [1: An illustration is drawn in a sandboxed frame](1-an-illustration-is-drawn-in-a-sandboxed-frame.md) | None | done |
 | [2.1: An illustration brings the files it references](2.1-an-illustration-brings-the-files-it-references.md) | 1 | done |
-| [2.2: The frame grows to its drawing](2.2-the-frame-grows-to-its-drawing.md) | 1 | in progress |
+| [2.2: The frame grows to its drawing](2.2-the-frame-grows-to-its-drawing.md) | 1 | done |
 | [2.3: A drawing expands to fill the window](2.3-a-drawing-expands-to-fill-the-window.md) | 1 | done |
 | [2.4: A drawing may link the page's tokens](2.4-a-drawing-may-link-the-page-tokens.md) | 1 | done |
 | [3: Both skills teach the drawn illustration](3-both-skills-teach-the-drawn-illustration.md) | 2.1, 2.4 | done |
