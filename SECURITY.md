@@ -29,6 +29,11 @@ socrates review spawns the reviewer CLI you configured, and that CLI sends the c
 Your diff, the file contents a reviewer reads and the one line of intent you chose to state go there, under the terms your account carries.
 A finding about that channel is a finding about the CLI rather than about socrates review, and belongs with its vendor.
 
+agora's page also draws an illustration, an HTML file a caller wrote, in a frame sandboxed without `allow-same-origin`.
+A drawing may load scripts, styles and fonts from three hosts: `cdnjs.cloudflare.com`, `cdn.jsdelivr.net` and `unpkg.com`.
+It may load from nowhere else, and a drawing sends nothing: the policy it is served under names nothing for connecting, framing or submitting a form, so what it holds goes to none of those hosts or anywhere else.
+Opening a page that carries an illustration may fetch a library from one of those three hosts, and that host sees the request for it.
+
 ## What socrates review defends against
 
 These are the promises, and each is held by a test that fails when it stops holding rather than by care:
