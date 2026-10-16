@@ -14,6 +14,7 @@ import (
 
 func newPollCommand(code *int) *cobra.Command {
 	var session string
+	var last bool
 
 	command := &cobra.Command{
 		Use:   "poll",
@@ -22,6 +23,10 @@ func newPollCommand(code *int) *cobra.Command {
 		RunE: func(command *cobra.Command, _ []string) error {
 			if session == "" {
 				return refusal.New(nameTheSession, "poll")
+			}
+
+			if last {
+				return printTheLastCollected(command, session)
 			}
 
 			open, err := whereTheSurfaceStands(command)
@@ -38,18 +43,33 @@ func newPollCommand(code *int) *cobra.Command {
 				*code = exit.SomethingAsked
 				return nil
 			}
-
-			written, err := json.MarshalIndent(read, "", "  ")
-			if err != nil {
-				return fmt.Errorf(writingTheAnswer, err)
-			}
-			fmt.Fprintln(command.OutOrStdout(), string(bytes.TrimSpace(written)))
-			return nil
+			return printAnswered(command, read)
 		},
 	}
 
 	command.Flags().StringVar(&session, sessionFlag, "", sessionUsage)
+	command.Flags().BoolVar(&last, lastFlag, false, lastUsage)
 	return command
+}
+
+func printTheLastCollected(command *cobra.Command, session string) error {
+	read, collected, err := surface.ReadAnswer(session)
+	if err != nil {
+		return err
+	}
+	if !collected {
+		return refusal.New(nothingWasCollected, session, session)
+	}
+	return printAnswered(command, read)
+}
+
+func printAnswered(command *cobra.Command, read surface.Answered) error {
+	written, err := json.MarshalIndent(read, "", "  ")
+	if err != nil {
+		return fmt.Errorf(writingTheAnswer, err)
+	}
+	fmt.Fprintln(command.OutOrStdout(), string(bytes.TrimSpace(written)))
+	return nil
 }
 
 func newEndCommand() *cobra.Command {

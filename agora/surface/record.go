@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/socrates-tools/socrates/internal/refusal"
 )
 
 const (
@@ -56,7 +58,7 @@ func WriteRecord(open Record) error {
 	if err != nil {
 		return fmt.Errorf(writingTheRecord, err)
 	}
-	return replace(path, append(written, '\n'))
+	return replace(path, append(written, '\n'), writingTheRecord)
 }
 
 func ReadRecord() (Record, error) {
@@ -114,7 +116,7 @@ func WritePage(open Page, raw []byte) error {
 	if err != nil {
 		return fmt.Errorf(writingTheSession, err)
 	}
-	if err := replace(filepath.Join(within, pageFile), append(written, '\n')); err != nil {
+	if err := replace(filepath.Join(within, pageFile), append(written, '\n'), writingTheSession); err != nil {
 		return err
 	}
 	return WriteDocument(open.Session, raw)
@@ -145,22 +147,58 @@ func ForgetPage(session string) error {
 	return nil
 }
 
-func replace(path string, written []byte) error {
+func WriteAnswer(session string, answered Answered) error {
+	path, err := AnswerPath(session)
+	if err != nil {
+		return err
+	}
+	written, err := json.MarshalIndent(answered, "", "  ")
+	if err != nil {
+		return fmt.Errorf(writingTheAnswer, err)
+	}
+	return replace(path, append(written, '\n'), writingTheAnswer)
+}
+
+func ReadAnswer(session string) (Answered, bool, error) {
+	if filepath.Base(session) != session || !filepath.IsLocal(session) {
+		return Answered{}, false, refusal.New(sessionIsNotAName, session)
+	}
+	path, err := AnswerPath(session)
+	if err != nil {
+		return Answered{}, false, err
+	}
+
+	held, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return Answered{}, false, nil
+	}
+	if err != nil {
+		return Answered{}, false, fmt.Errorf(readingTheKeptAnswer, err)
+	}
+
+	var answered Answered
+	if err := json.Unmarshal(held, &answered); err != nil {
+		return Answered{}, false, fmt.Errorf(readingTheKeptAnswer, err)
+	}
+	return answered, true, nil
+}
+
+func replace(path string, written []byte, failure string) error {
 	beside, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*")
 	if err != nil {
-		return fmt.Errorf(writingTheRecord, err)
+		return fmt.Errorf(failure, err)
 	}
 	defer func() { _ = os.Remove(beside.Name()) }()
 
 	if _, err := beside.Write(written); err != nil {
 		_ = beside.Close()
-		return fmt.Errorf(writingTheRecord, err)
+		return fmt.Errorf(failure, err)
 	}
 	if err := beside.Close(); err != nil {
-		return fmt.Errorf(writingTheRecord, err)
+		return fmt.Errorf(failure, err)
 	}
 	if err := os.Rename(beside.Name(), path); err != nil {
-		return fmt.Errorf(writingTheRecord, err)
+		return fmt.Errorf(failure, err)
 	}
 	return nil
 }

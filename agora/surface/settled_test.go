@@ -21,7 +21,7 @@ func answeredAndCollected(t *testing.T, held *standing, sent surface.Sent) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	if _, arrived := held.exchange(t).Await(ctx, time.Second); !arrived {
+	if _, arrived, err := held.exchange(t).Await(ctx, time.Second, keptAnywhere); err != nil || !arrived {
 		t.Fatal("the answer the page sent was never collected")
 	}
 }

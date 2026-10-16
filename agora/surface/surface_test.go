@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/fs"
 	"net"
@@ -447,6 +448,33 @@ func TestDeliveryHappensOnce(t *testing.T) {
 	}
 }
 
+func TestAnAnswerTheSessionCouldNotKeepIsLeftUncollected(t *testing.T) {
+	exchange := surface.NewExchange(twoDecisions(), time.Now())
+	if _, err := exchange.Receive(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}, Message: "kept for later"}); err != nil {
+		t.Fatalf("sending an answer: %v", err)
+	}
+
+	diskIsFull := errors.New("no space left on device")
+	_, arrived, err := exchange.Await(context.Background(), time.Second, func(surface.Answered) error { return diskIsFull })
+	if !errors.Is(err, diskIsFull) {
+		t.Errorf("collecting an answer the session could not keep reported %v, want %v", err, diskIsFull)
+	}
+	if arrived {
+		t.Errorf("an answer the session could not keep was handed back")
+	}
+	if _, _, uncollected := exchange.Standing(); !uncollected {
+		t.Fatalf("an answer the session could not keep is no longer held uncollected")
+	}
+
+	read, arrived, err := exchange.Await(context.Background(), time.Second, keptAnywhere)
+	if err != nil || !arrived {
+		t.Fatalf("the next collection did not take the answer the session could not keep: arrived %v, %v", arrived, err)
+	}
+	if read.Message != "kept for later" {
+		t.Errorf("the next collection took %q", read.Message)
+	}
+}
+
 func TestASecondAnswerBeforeCollectionReplacesTheFirst(t *testing.T) {
 	held := serving(t, twoDecisions(), 0)
 
@@ -541,8 +569,10 @@ func TestTheSurfaceRunsNothingAndWritesOnlyItsOwnState(t *testing.T) {
 		t.Fatal("an answer was sent and nothing was delivered")
 	}
 
-	if diff := cmp.Diff(before, within(t, held.home)); diff != "" {
-		t.Errorf("an answer arriving wrote outside the surface's own state (-before +after):\n%s", diff)
+	kept := append(slices.Clone(before), filepath.Join("sessions", held.session, "answer.json"))
+	slices.Sort(kept)
+	if diff := cmp.Diff(kept, within(t, held.home)); diff != "" {
+		t.Errorf("an answer being collected wrote other than the answer its own session keeps (-want +after):\n%s", diff)
 	}
 }
 

@@ -71,7 +71,8 @@ func (c *Caller) Await(ctx context.Context, session string, within time.Duration
 		return Answered{}, false, nil
 	}
 	if answered.StatusCode != http.StatusOK {
-		return Answered{}, false, fmt.Errorf(surfaceAnsweredWith, answered.StatusCode)
+		said, _ := io.ReadAll(io.LimitReader(answered.Body, BodyCeiling))
+		return Answered{}, false, fmt.Errorf(surfaceRefused, answered.StatusCode, bytes.TrimSpace(said))
 	}
 
 	var read Answered

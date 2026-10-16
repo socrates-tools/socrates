@@ -171,27 +171,31 @@ func (e *Exchange) Receive(sent Sent) (Answered, error) {
 	return answered, nil
 }
 
-func (e *Exchange) Await(ctx context.Context, within time.Duration) (Answered, bool) {
+func (e *Exchange) Await(ctx context.Context, within time.Duration, keep func(Answered) error) (Answered, bool, error) {
 	deadline := time.After(within)
 
 	for {
 		e.mu.Lock()
 		if e.uncollectedLocked() {
 			taken := *e.uncollected
+			if err := keep(taken); err != nil {
+				e.mu.Unlock()
+				return Answered{}, false, err
+			}
 			e.uncollected = nil
 			e.holdCollectedLocked(taken)
 			e.notify()
 			e.mu.Unlock()
-			return taken, true
+			return taken, true, nil
 		}
 		waiting := e.changed
 		e.mu.Unlock()
 
 		select {
 		case <-ctx.Done():
-			return Answered{}, false
+			return Answered{}, false, nil
 		case <-deadline:
-			return Answered{}, false
+			return Answered{}, false, nil
 		case <-waiting:
 		}
 	}

@@ -20,6 +20,7 @@ const (
 	answerCarriesNoToken    = "an answer carries the token the page was served with"
 	requestCarriesNoControl = "this is asked of the surface itself, and it is asked by whoever started it"
 
+	sessionIsNotAName         = "%q is not a session: a session is the name at the end of the address agora serve printed. Pass that name to --session and run the command again"
 	surfaceHoldsNoSuchSession = "the surface holds no session %q. A session comes into existence only when agora serve is given none, so run agora serve without --session to open one"
 	portIsHeldByAnotherRoot   = "an agora surface of the root %s holds %s and agora will not take that port from it. Move this surface with %s in %s or with %s, and run the command again"
 	surfaceStandsWithNoRecord = "an agora surface of this root stands, and what it is reached with was not written beside it. Stop that surface and run the command again"
@@ -36,6 +37,8 @@ const (
 	writingTheSession    = "writing the session: %w"
 	forgettingTheSession = "forgetting the session: %w"
 	writingTheDocument   = "writing the document: %w"
+	writingTheAnswer     = "keeping what the person answered in the session before handing it back: %w"
+	readingTheKeptAnswer = "reading the answer the session kept: %w"
 	openingTheSession    = "opening a session on the surface: %w"
 	noSurfaceIsOpen      = "no surface is open. Run agora serve with a document and try again"
 

@@ -11,12 +11,17 @@ import (
 	"github.com/socrates-tools/socrates/agora/surface"
 )
 
+func keptAnywhere(surface.Answered) error { return nil }
+
 func TestNobodyAnswers(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		exchange := surface.NewExchange(twoDecisions(), time.Now())
 		started := time.Now()
 
-		read, arrived := exchange.Await(context.Background(), surface.PollDeadline)
+		read, arrived, err := exchange.Await(context.Background(), surface.PollDeadline, keptAnywhere)
+		if err != nil {
+			t.Fatalf("waiting on the exchange: %v", err)
+		}
 
 		if arrived {
 			t.Fatalf("nobody answered and something was delivered: %+v", read)
@@ -39,7 +44,10 @@ func TestAWaitThatIsAnsweredReturnsBeforeItsBound(t *testing.T) {
 			}
 		}()
 
-		read, arrived := exchange.Await(context.Background(), surface.PollDeadline)
+		read, arrived, err := exchange.Await(context.Background(), surface.PollDeadline, keptAnywhere)
+		if err != nil {
+			t.Fatalf("waiting on the exchange: %v", err)
+		}
 
 		if !arrived {
 			t.Fatal("an answer sent within the bound was not delivered")

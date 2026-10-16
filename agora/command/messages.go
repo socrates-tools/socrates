@@ -5,12 +5,13 @@ const toolName = "agora"
 const (
 	rootShort  = "Put a decision in front of a person and hand back what they answered"
 	serveShort = "Serve one document as a page of its own on a loopback address, and return"
-	pollShort  = "Wait for the person to send on one page, and print what they answered"
+	pollShort  = "Wait for the person to send on one page and print what they answered, or print it again with --last"
 	endShort   = "Close the exchange one page is holding"
 	stopShort  = "Shut the surface down, taking every page with it, and free the port"
 
 	documentUsage = "the document to serve, or - to read it from standard input"
 	addressUsage  = "the loopback address to bind, such as 127.0.0.1:0"
+	lastUsage     = "print again what the last poll of this session printed, without waiting, even once the surface has stopped"
 	sessionUsage  = "the session to write to, as it appears at the end of the address socrates agora serve printed"
 
 	notACommand               = "%q is not a socrates agora command: run socrates agora --help to see what socrates agora does"
@@ -26,5 +27,6 @@ const (
 
 	surfaceNeverAnswered = "the surface did not answer within %s, so nothing is being served. Run the command again"
 	nobodyAnswered       = "nobody answered"
+	nothingWasCollected  = "no poll has printed an answer from the session %q yet, so there is nothing to print again. Run socrates agora poll --session %s to wait for one"
 	writingTheAnswer     = "writing out what came back: %w"
 )

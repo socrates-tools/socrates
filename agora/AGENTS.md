@@ -9,7 +9,7 @@ This file is agora's layout and invariants.
 
 ## Layout
 
-- `agora/command` - the command tree: `serve`, `poll`, `end`, `stop`, and nothing else.
+- `agora/command` - the command tree: `serve`, `poll` (which prints the last collected answer again with `--last`), `end`, `stop`, and nothing else.
 - `agora/config` - the one optional configuration file agora reads, which holds the `surface` block and nothing of review's.
 - `agora/document` - what a caller writes for the surface to render, what it copies rather than accepts, and the languages the page can highlight.
 - `agora/sanitise` - a caller's HTML fragment reduced to a fixed allowlist, and every name it carries prefixed.
@@ -61,6 +61,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - What a caller paints is contained by the illustration, so a rule inside one decides nothing about where the page's own controls land.
 - Delivery happens once, waiting is bounded, collection is per session, and the server stops once it has held no session for the idle period.
 - An exchange holds at most one uncollected answer, and a later submit replaces it rather than queueing behind it, so what a caller collects is a person's last word.
+- A collected answer is written to its session's directory before it is handed back, and one the session could not keep stays uncollected, so `agora poll --last` prints again what the last poll printed, without waiting and without the surface, per ADR 73.
 - Collecting an answer is visible to the page, so the way back from a receipt is offered exactly while it would still reach the caller.
 - Nothing carries across a revision: not a selection, not a typed word, not the message, not the receipt and not an open confirmation, because a decision's identifier is unique only inside the document that names it.
 - A revision settling an identifier the exchange collected an answer for states the question, the labels and the words that were collected, exactly, or is refused before it is written or served, per ADR 59.

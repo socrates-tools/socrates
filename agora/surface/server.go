@@ -405,7 +405,14 @@ func (s *Server) deliver(writer http.ResponseWriter, request *http.Request, one 
 	one.exchange.Reading(1, time.Now())
 	defer one.exchange.Reading(-1, time.Now())
 
-	answered, arrived := one.exchange.Await(request.Context(), within)
+	session := request.PathValue("session")
+	answered, arrived, err := one.exchange.Await(request.Context(), within, func(taken Answered) error {
+		return WriteAnswer(session, taken)
+	})
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	writer.Header().Set("content-type", "application/json")
 	if !arrived {
 		writer.WriteHeader(http.StatusNoContent)

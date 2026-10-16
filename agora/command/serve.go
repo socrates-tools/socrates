@@ -24,6 +24,7 @@ const (
 	standardInput   = "-"
 	addressFlag     = "address"
 	sessionFlag     = "session"
+	lastFlag        = "last"
 
 	reachInterval = 20 * time.Millisecond
 	reachDeadline = 20 * time.Second
