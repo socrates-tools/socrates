@@ -10,7 +10,7 @@ const standing = {
   sent: 'Sent, waiting for a reply',
   over: 'Exchange over',
 }
-const clearanceBelowTheBar = 32
+const wideEnoughForThePanel = window.matchMedia('(min-width: 1280px)')
 let closed = false
 let awaitingCollection = false
 
@@ -23,7 +23,7 @@ function base() {
 }
 
 function surface() {
-  return document.querySelector('main.surface')
+  return document.querySelector('.surface')
 }
 
 function decisionNamed(identifier) {
@@ -107,20 +107,84 @@ function countAnswered() {
   if (bar) {
     bar.value = answered
   }
+  summarise()
+}
+
+function summarise() {
+  const summary = document.querySelector('.summary')
+  const check = document.querySelector('.decision .attribution .answered .check')
+  if (!summary || !check) {
+    return
+  }
+  clear(summary)
+  cards().forEach((card) => {
+    const row = document.createElement('li')
+    row.className = 'summary-row'
+    const mark = document.createElement('span')
+    mark.className = 'answered'
+    mark.setAttribute('aria-hidden', 'true')
+    mark.appendChild(check.cloneNode(true))
+    markAnswered(mark, answeredIn(card))
+    const said = document.createElement('span')
+    said.className = 'summary-said'
+    said.textContent = saying(card, chosenIn(card), wordsIn(card))
+    row.append(mark, said)
+    summary.appendChild(row)
+  })
+}
+
+function placeTheComposer() {
+  const composer = document.querySelector('.composer')
+  const panel = document.querySelector('.panel')
+  const decisions = document.querySelector('.main-inner')
+  if (!composer || !panel || !decisions) {
+    return
+  }
+  const home = wideEnoughForThePanel.matches ? panel : decisions
+  if (composer.parentElement === home) {
+    return
+  }
+  const focused = composer.contains(document.activeElement) ? document.activeElement : null
+  home.appendChild(composer)
+  if (focused) {
+    focused.focus({ preventScroll: true })
+  }
+}
+
+const whereADecisionIsInView = 0.3
+let markingScheduled = false
+
+function markTheDecisionInView() {
+  markingScheduled = false
+  const held = cards()
+  if (held.length === 0) {
+    return
+  }
+  const line = window.innerHeight * whereADecisionIsInView
+  const passed = held.filter((card) => card.getBoundingClientRect().top <= line)
+  const current = passed.length > 0 ? passed[passed.length - 1] : held[0]
+  document.querySelectorAll('a.entry-link').forEach((link) => {
+    if (link.dataset.decision === current.dataset.decision) {
+      link.setAttribute('aria-current', 'location')
+    } else {
+      link.removeAttribute('aria-current')
+    }
+  })
+}
+
+function scheduleMarkingTheDecisionInView() {
+  if (!markingScheduled) {
+    markingScheduled = true
+    window.requestAnimationFrame(markTheDecisionInView)
+  }
 }
 
 function prefersLessMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-function heightOfTheBar() {
-  const bar = document.querySelector('.topbar')
-  return bar ? bar.getBoundingClientRect().height : 0
-}
-
 function scrollTo(target, smoothly) {
-  const top = target.getBoundingClientRect().top + window.scrollY - heightOfTheBar() - clearanceBelowTheBar
-  window.scrollTo({ top, behavior: smoothly && !prefersLessMotion() ? 'smooth' : 'auto' })
+  target.scrollIntoView({ block: 'start', behavior: smoothly && !prefersLessMotion() ? 'smooth' : 'auto' })
 }
 
 function firstControlOf(card) {
@@ -255,13 +319,19 @@ function labelAt(card, position) {
   return label ? label.textContent.trim() : String(position)
 }
 
+function saying(card, positions, words) {
+  const chosen = positions.map((position) => labelAt(card, position))
+  const said = words.trim()
+  const answer = said ? chosen.concat(said) : chosen
+  return `${nameOf(card)}: ${answer.length > 0 ? answer.join(', ') : 'nothing'}`
+}
+
 function describe(decision) {
   const card = document.querySelector(`.decision${decisionNamed(decision.id)}`)
-  const name = card ? nameOf(card) : decision.id
-  const chosen = decision.chosen.map((position) => labelAt(card, position))
-  const said = decision.words.trim()
-  const answer = said ? chosen.concat(said) : chosen
-  return `${name}: ${answer.join(', ')}`
+  if (!card) {
+    return `${decision.id}: ${decision.chosen.concat(decision.words.trim()).filter(Boolean).join(', ')}`
+  }
+  return saying(card, decision.chosen, decision.words)
 }
 
 function showReceipt(sent, ends) {
@@ -448,7 +518,9 @@ function bind() {
       leadToWhatWasSettled()
     })
   }
+  placeTheComposer()
   countAnswered()
+  markTheDecisionInView()
   document.querySelectorAll('pre code[class^="language-"]').forEach((block) => {
     if (block.textContent.trim()) {
       hljs.highlightElement(block)
@@ -477,7 +549,7 @@ async function take(revision) {
 
   const written = await answered.text()
   const read = new DOMParser().parseFromString(written, 'text/html')
-  const replacing = read.querySelector('main.surface')
+  const replacing = read.querySelector('.surface')
   const standing = surface()
   if (!replacing || !standing) {
     return
@@ -580,6 +652,9 @@ function followTheMarks() {
   window.addEventListener('scroll', followTheScroll, true)
 }
 
+wideEnoughForThePanel.addEventListener('change', placeTheComposer)
+document.addEventListener('scroll', scheduleMarkingTheDecisionInView, true)
+window.addEventListener('resize', scheduleMarkingTheDecisionInView)
 bind()
 takeUpWhetherItIsOver()
 followTheMarks()

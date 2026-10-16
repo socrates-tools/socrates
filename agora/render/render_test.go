@@ -709,7 +709,7 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 		"answering words-field",
 		"sending amend",
 		"sending confirmation",
-		"sending exchange",
+		"sending exchange shell",
 		"sending finish",
 		"sending go-back",
 		"sending message-field",

@@ -49,6 +49,8 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - What was settled is rendered ahead of every open question, offers no control, is counted by nothing and is never sent, and an identifier is either settled or still open, per ADR 46.
 - What was settled arrives folded while a question is still open, and unfolded when nothing is, per ADR 72.
 - The order is the surface's, so no field of a document reaches it, and a page with nothing to answer offers neither control and says so.
+- From 960px the page fills the window and only its navigation and its decisions scroll, the navigation marks the decision in view, and from 1280px a reply panel summarises what will go and keeps the message and both presses in reach, per ADR 75.
+  There is one composer, and below 1280px it closes the decisions.
 - Every decision carries a free-text field that no document field can remove, including one that offers no options.
 - The option a document marks arrives chosen, a decision that marks none arrives with nothing chosen, and a decision offering options also offers taking none of them, which is not an option, carries no command and leaves the decision with nothing chosen.
 - What the controls hold at the submit is what is sent, so nothing is committed per decision, a decision holding no selection and no words is omitted, and a decision left blank is named before either press sends.

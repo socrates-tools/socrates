@@ -138,7 +138,7 @@ func TestTheEmbeddedStylesheetPaints(t *testing.T) {
 
 const whatTheFrameCarries = `(() => {
   const chrome = [
-    'body', 'main.surface', '.heading h1', '.preamble',
+    'body', '.surface', '.heading h1', '.preamble',
     '.decision', '.attribution .name', '.question', '.meaning',
     '.options legend', '.option-label', '.option-meaning', '.words-label',
     '.bar', '.choice', '.message-label', '.send', '.finish', '.sends-meaning', '.state',
@@ -347,7 +347,7 @@ const narrowPainting = `(() => {
   return {
     painted: true,
     height: panel.getBoundingClientRect().height,
-    within: box.clientWidth <= document.querySelector('main.surface').clientWidth + 1 &&
+    within: box.clientWidth <= document.querySelector('.surface').clientWidth + 1 &&
       (style.overflowX === 'auto' || style.overflowX === 'scroll'),
   };
 })()`

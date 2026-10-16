@@ -158,7 +158,7 @@ const narrowly = `(() => {
   const page = document.documentElement;
   const hunk = document.querySelector('.hunk');
   const drawn = document.querySelector('.illustration svg');
-  const surface = document.querySelector('main.surface');
+  const surface = document.querySelector('.surface');
   return {
     pageScroll: page.scrollWidth - page.clientWidth,
     hunkOverflows: hunk ? getComputedStyle(hunk).overflowX : '',

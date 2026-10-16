@@ -16,22 +16,16 @@
 {{define "entry"}}<span class="answered" data-answered="{{if .Decided}}{{if .Answered}}yes{{else}}no{{end}}{{else}}none{{end}}" aria-hidden="true">{{template "check"}}</span>
 <span class="entry-heading"><span class="entry-name">{{.Name}}</span>{{with .Severity}}{{template "mark" .}}{{end}}</span>
 {{if .Location}}<span class="location">{{.Location}}</span>{{end}}{{end}}
-<main class="surface">
+<div class="surface">
 <header class="topbar">
 <div class="topbar-inner">
 <span class="brand"><img class="brand-mark" src="/assets/socrates-mark.svg" width="28" height="28" alt=""><span class="wordmark">socrates</span></span>
+<span class="crumb"><span class="crumb-title">{{.Title}}</span></span>
 <span class="status" data-status="{{if not .Decisions}}nothing{{else if .Over}}over{{else}}open{{end}}"><span class="status-dot" aria-hidden="true"></span><span class="status-said">{{if not .Decisions}}Nothing to answer{{else if .Over}}Exchange over{{else}}Open{{end}}</span></span>
 </div>
 </header>
 
-<div class="page">
-<header class="heading">
-<h1>{{.Title}}</h1>
-{{if .Preamble}}<p class="preamble">{{.Preamble}}</p>{{end}}
-<p class="over-notice" role="status"{{if not (and .Over .Decisions)}} hidden{{end}}><span class="notice-dot" aria-hidden="true"></span><span class="over-notice-said">The exchange is over. Nothing further will be sent from this page.</span></p>
-</header>
-
-<div class="layout">
+{{if .Decisions}}<form class="exchange shell" data-part="sending">{{else}}<div class="shell">{{end}}
 {{if .Index}}
 <nav class="index" aria-label="What was seen">
 <div class="progress">
@@ -41,6 +35,8 @@
 <progress class="progress-bar" max="{{len .Decisions}}" value="{{.AnsweredCount}}" aria-hidden="true"></progress>
 {{end}}
 </div>
+<div class="index-group">
+{{if .Decisions}}<span class="overline">{{if eq (len .Index) (len .Decisions)}}Still open{{else}}What was seen{{end}} <span class="overline-count">· {{len .Index}}</span></span>{{end}}
 <ol class="entries">
 {{range .Index}}
 <li class="entry">
@@ -48,17 +44,29 @@
 </li>
 {{end}}
 </ol>
+</div>
 {{if .Settled}}
+<div class="index-group">
+<span class="overline">Settled earlier <span class="overline-count">· {{len .Settled}}</span></span>
 <a class="settled-link" href="#settled">
 <span class="settled-check">{{template "check"}}</span>
 <span class="settled-link-count">{{len .Settled}} settled earlier</span>
 <span class="settled-link-names">{{range $at, $answer := .Settled}}{{if $at}}, {{end}}{{$answer.Name}}{{end}}</span>
 </a>
+</div>
 {{end}}
 </nav>
 {{end}}
 
-<div class="column">
+<main class="main">
+<div class="main-inner">
+<header class="heading">
+<span class="meta">{{if .Decisions}}{{len .Decisions}} open{{if .Settled}} · {{len .Settled}} settled earlier{{end}}{{else}}Nothing to answer{{end}}</span>
+<h1>{{.Title}}</h1>
+{{if .Preamble}}<p class="preamble">{{.Preamble}}</p>{{end}}
+<p class="over-notice" role="status"{{if not (and .Over .Decisions)}} hidden{{end}}><span class="notice-dot" aria-hidden="true"></span><span class="over-notice-said">The exchange is over. Nothing further will be sent from this page.</span></p>
+</header>
+
 {{if .Settled}}
 <details class="settled" id="settled"{{if not .Decisions}} open{{end}}>
 <summary class="settled-summary">
@@ -93,7 +101,6 @@
 {{end}}
 
 {{if .Decisions}}
-<form class="exchange" data-part="sending">
 <ol class="decisions">
 {{range .Decisions}}
 <li class="decision" id="decision-{{.ID}}" data-decision="{{.ID}}" data-mode="{{.Mode}}" data-state="{{if $.Over}}closed{{else}}open{{end}}">
@@ -200,7 +207,7 @@
 </span>
 </output>
 <div class="sends">
-<button class="send" data-part="sending" type="submit" data-ends="no"{{if .Over}} disabled{{end}}>Send and wait for a reply</button>
+<button class="send" data-part="sending" type="submit" data-ends="no"{{if .Over}} disabled{{end}}>Send and wait<span class="send-more"> for a reply</span></button>
 <button class="finish" data-part="sending" type="submit" data-ends="yes"{{if .Over}} disabled{{end}}>Send and finish</button>
 </div>
 <p class="sends-meaning">Sending waits for a reply on this page. Finishing sends and closes the exchange.</p>
@@ -208,6 +215,20 @@
 <p class="state" role="status" aria-live="polite" data-tone="{{if .Over}}over{{else}}quiet{{end}}">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
 </footer>
 </section>
+{{else}}
+<section class="nothing">
+<p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>
+</section>
+{{end}}
+</div>
+</main>
+{{if .Decisions}}
+<aside class="panel" aria-label="Reply">
+<div class="panel-body">
+<span class="overline">Answer summary</span>
+<ol class="summary"></ol>
+</div>
+</aside>
 </form>
 
 <dialog class="confirmation" data-part="sending" aria-labelledby="confirmation-heading">
@@ -220,14 +241,9 @@
 </div>
 </dialog>
 {{else}}
-<section class="nothing">
-<p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>
-</section>
+</div>
 {{end}}
 </div>
-</div>
-</div>
-</main>
 <div class="tooltip" id="tooltip" role="tooltip" hidden><span class="tooltip-title"></span><span class="tooltip-hint"></span></div>
 <script src="/assets/surface.js"></script>
 </body>

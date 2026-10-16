@@ -1089,7 +1089,7 @@ const nothingToAnswerDocument = `{
 }`
 
 const framing = `(() => {
-  const surface = getComputedStyle(document.querySelector('main.surface'));
+  const surface = getComputedStyle(document.querySelector('.surface'));
   const heading = getComputedStyle(document.querySelector('.heading h1'));
   const entry = getComputedStyle(document.querySelector('.entry'));
   return {
@@ -1230,25 +1230,23 @@ const longPreambleDocument = `{
 
 const whereEachPartOfThePageEnds = `(() => {
   const right = (selector) => document.querySelector(selector).getBoundingClientRect().right;
-  return { title: right('.heading h1'), preamble: right('.preamble'), status: right('.status'), index: right('.index'), cards: right('.column') };
+  return { title: right('.heading h1'), status: right('.status'), cards: right('.decisions') };
 })()`
 
 type rightEdges struct {
-	Title    float64 `json:"title"`
-	Preamble float64 `json:"preamble"`
-	Status   float64 `json:"status"`
-	Index    float64 `json:"index"`
-	Cards    float64 `json:"cards"`
+	Title  float64 `json:"title"`
+	Status float64 `json:"status"`
+	Cards  float64 `json:"cards"`
 }
 
-func TestEveryPartOfThePageEndsWhereTheCardsEnd(t *testing.T) {
+func TestEveryPartOfAStackedPageEndsWhereTheCardsEnd(t *testing.T) {
 	t.Parallel()
 	for _, window := range []struct {
 		width   int
 		aligned []string
 	}{
-		{width: 1600, aligned: []string{"title", "preamble", "status"}},
-		{width: 900, aligned: []string{"title", "preamble", "status", "index"}},
+		{width: 900, aligned: []string{"title", "status"}},
+		{width: 600, aligned: []string{"title", "status"}},
 	} {
 		held := standing(t)
 		page := opening(t, held.serve(longPreambleDocument), chromedp.WindowSize(window.width, 1000))
@@ -1256,7 +1254,7 @@ func TestEveryPartOfThePageEndsWhereTheCardsEnd(t *testing.T) {
 		var edges rightEdges
 		page.evaluate(whereEachPartOfThePageEnds, &edges)
 
-		ending := map[string]float64{"title": edges.Title, "preamble": edges.Preamble, "status": edges.Status, "index": edges.Index}
+		ending := map[string]float64{"title": edges.Title, "status": edges.Status}
 		for _, part := range window.aligned {
 			if apart := edges.Cards - ending[part]; apart > 1 || apart < -1 {
 				t.Errorf("in a window %dpx wide the %s ends at %vpx and the cards at %vpx, and the page has one right edge", window.width, part, ending[part], edges.Cards)
