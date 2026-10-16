@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -202,4 +203,28 @@ func RunSharingBuilds(m *testing.M) int {
 		_ = os.RemoveAll(sharedDirectory)
 	}
 	return code
+}
+
+func LinkedModules(t *testing.T, target string) []string {
+	t.Helper()
+
+	command := exec.Command("go", "list", "-deps", "-f", "{{with .Module}}{{if not .Main}}{{.Path}}{{end}}{{end}}", target)
+	command.Dir = Root(t)
+	command.Env = append(os.Environ(), toolchain...)
+
+	var out, failures bytes.Buffer
+	command.Stdout = &out
+	command.Stderr = &failures
+	if err := command.Run(); err != nil {
+		t.Fatalf("listing the modules %s links: %v: %s", target, err, failures.String())
+	}
+
+	var linked []string
+	for _, module := range strings.Fields(out.String()) {
+		if !slices.Contains(linked, module) {
+			linked = append(linked, module)
+		}
+	}
+	slices.Sort(linked)
+	return linked
 }
