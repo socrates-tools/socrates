@@ -49,7 +49,13 @@ func servingFrom(t *testing.T, read document.Document, base string) *standing {
 	return held
 }
 
-func (s *standing) responseTo(t *testing.T, address string) (*http.Response, string) {
+type response struct {
+	code   int
+	header http.Header
+	body   string
+}
+
+func (s *standing) responseTo(t *testing.T, address string) response {
 	t.Helper()
 
 	answered, err := http.Get(address)
@@ -62,7 +68,7 @@ func (s *standing) responseTo(t *testing.T, address string) (*http.Response, str
 	if err != nil {
 		t.Fatalf("reading what the surface said: %v", err)
 	}
-	return answered, string(said)
+	return response{code: answered.StatusCode, header: answered.Header, body: string(said)}
 }
 
 func (s *standing) drawing(decision, file string) string {
@@ -74,15 +80,15 @@ func TestAnIllustrationNamedRelativeToTheDocumentsFolderIsServedFromTheSession(t
 	folder := aFolderHolding(t, map[string]string{"drawings/q3.html": theDrawing})
 	held := servingFrom(t, illustrated("drawings/q3.html"), folder)
 
-	answered, said := held.responseTo(t, held.drawing("c-2", "q3.html"))
+	answered := held.responseTo(t, held.drawing("c-2", "q3.html"))
 
-	if answered.StatusCode != http.StatusOK {
-		t.Fatalf("the illustration was answered with %d", answered.StatusCode)
+	if answered.code != http.StatusOK {
+		t.Fatalf("the illustration was answered with %d", answered.code)
 	}
-	if said != theDrawing {
-		t.Errorf("the illustration came back as %q, want the file as written", said)
+	if answered.body != theDrawing {
+		t.Errorf("the illustration came back as %q, want the file as written", answered.body)
 	}
-	if media := answered.Header.Get("content-type"); media != "text/html; charset=utf-8" {
+	if media := answered.header.Get("content-type"); media != "text/html; charset=utf-8" {
 		t.Errorf("the illustration was served as %q", media)
 	}
 }
@@ -91,8 +97,8 @@ func TestAnIllustrationNamedByAnAbsolutePathIsServed(t *testing.T) {
 	folder := aFolderHolding(t, map[string]string{"q3.html": theDrawing})
 	held := servingFrom(t, illustrated(filepath.Join(folder, "q3.html")), "")
 
-	if answered, _ := held.responseTo(t, held.drawing("c-2", "q3.html")); answered.StatusCode != http.StatusOK {
-		t.Errorf("an illustration named by an absolute path was answered with %d", answered.StatusCode)
+	if answered := held.responseTo(t, held.drawing("c-2", "q3.html")); answered.code != http.StatusOK {
+		t.Errorf("an illustration named by an absolute path was answered with %d", answered.code)
 	}
 }
 
@@ -108,8 +114,8 @@ func TestEveryResponseOfTheIllustrationRouteCarriesTheSandboxAndThePolicy(t *tes
 		"a session never held": held.at(surface.SessionPrefix + "fedcba9876543210/illustrations/c-2/q3.html"),
 	} {
 		t.Run(named, func(t *testing.T) {
-			answered, _ := held.responseTo(t, address)
-			policy := answered.Header.Get("content-security-policy")
+			answered := held.responseTo(t, address)
+			policy := answered.header.Get("content-security-policy")
 
 			if !strings.HasPrefix(policy, "sandbox allow-scripts;") {
 				t.Errorf("the policy does not open with the sandbox:\n%s", policy)
@@ -134,10 +140,10 @@ func TestEveryResponseOfTheIllustrationRouteCarriesTheSandboxAndThePolicy(t *tes
 					t.Errorf("%s names a remote host:\n%s", directive, policy)
 				}
 			}
-			if sniffing := answered.Header.Get("x-content-type-options"); sniffing != "nosniff" {
+			if sniffing := answered.header.Get("x-content-type-options"); sniffing != "nosniff" {
 				t.Errorf("x-content-type-options is %q, want nosniff", sniffing)
 			}
-			if caching := answered.Header.Get("cache-control"); caching != "no-store" {
+			if caching := answered.header.Get("cache-control"); caching != "no-store" {
 				t.Errorf("cache-control is %q, want no-store", caching)
 			}
 		})
@@ -164,8 +170,8 @@ func TestTheIllustrationRouteServesOnlyWhatTheCopyHolds(t *testing.T) {
 		"a type the surface does not serve":     held.drawing("c-2", "q3.exe"),
 	} {
 		t.Run(named, func(t *testing.T) {
-			if answered, _ := held.responseTo(t, address); answered.StatusCode != http.StatusNotFound {
-				t.Errorf("%s was answered with %d, want %d", named, answered.StatusCode, http.StatusNotFound)
+			if answered := held.responseTo(t, address); answered.code != http.StatusNotFound {
+				t.Errorf("%s was answered with %d, want %d", named, answered.code, http.StatusNotFound)
 			}
 		})
 	}
@@ -177,8 +183,8 @@ func TestADecisionIdentifierWithASlashStillNamesItsIllustration(t *testing.T) {
 	read.Decisions[1].ID = "c/2 ../x"
 	held := servingFrom(t, read, folder)
 
-	if answered, said := held.responseTo(t, held.drawing("c/2 ../x", "q3.html")); answered.StatusCode != http.StatusOK || said != theDrawing {
-		t.Errorf("an illustration of a decision whose identifier holds a slash was answered with %d", answered.StatusCode)
+	if answered := held.responseTo(t, held.drawing("c/2 ../x", "q3.html")); answered.code != http.StatusOK || answered.body != theDrawing {
+		t.Errorf("an illustration of a decision whose identifier holds a slash was answered with %d", answered.code)
 	}
 }
 
@@ -261,8 +267,8 @@ func TestARevisionCopiesTheDrawingAfreshAndTheOldCopyGoes(t *testing.T) {
 		t.Fatalf("revising the document: %v", err)
 	}
 
-	if _, said := held.responseTo(t, held.drawing("c-2", "q3.html")); said != edited {
-		t.Errorf("a revision served %q, want the drawing as it now is on disk", said)
+	if answered := held.responseTo(t, held.drawing("c-2", "q3.html")); answered.body != edited {
+		t.Errorf("a revision served %q, want the drawing as it now is on disk", answered.body)
 	}
 	second := copies()
 	if len(second) != 1 || second[0] == first[0] {
@@ -279,8 +285,8 @@ func TestARevisionNamingNoIllustrationRemovesTheCopy(t *testing.T) {
 		t.Fatalf("revising the document: %v", err)
 	}
 
-	if answered, _ := held.responseTo(t, held.drawing("c-2", "q3.html")); answered.StatusCode != http.StatusNotFound {
-		t.Errorf("a drawing the revision no longer names was answered with %d", answered.StatusCode)
+	if answered := held.responseTo(t, held.drawing("c-2", "q3.html")); answered.code != http.StatusNotFound {
+		t.Errorf("a drawing the revision no longer names was answered with %d", answered.code)
 	}
 }
 
@@ -294,7 +300,7 @@ func TestARevisionWhoseIllustrationCannotBeCopiedChangesNothing(t *testing.T) {
 		t.Fatal("a revision naming a drawing that does not exist was taken")
 	}
 
-	if answered, said := held.responseTo(t, held.drawing("c-2", "q3.html")); answered.StatusCode != http.StatusOK || said != theDrawing {
-		t.Errorf("a refused revision disturbed the drawing being served: %d", answered.StatusCode)
+	if answered := held.responseTo(t, held.drawing("c-2", "q3.html")); answered.code != http.StatusOK || answered.body != theDrawing {
+		t.Errorf("a refused revision disturbed the drawing being served: %d", answered.code)
 	}
 }

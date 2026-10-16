@@ -92,15 +92,6 @@ func text(node *html.Node) string {
 	return written.String()
 }
 
-func within(node *html.Node, named string) *html.Node {
-	for _, held := range elements(node, "div") {
-		if held != node && hasClass(held, named) {
-			return held
-		}
-	}
-	return nil
-}
-
 func policyOf(t *testing.T, page *html.Node) string {
 	t.Helper()
 
