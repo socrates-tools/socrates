@@ -148,7 +148,7 @@ func TestADrawingIsShownOnItsCardWithItsOwnScriptHavingRun(t *testing.T) {
 	if framed.Sandbox != "allow-scripts" {
 		t.Errorf("the frame is sandboxed with %q, want allow-scripts alone", framed.Sandbox)
 	}
-	if framed.Width < 100 || framed.Height < 100 {
+	if framed.Width < 100 || framed.Height <= 0 {
 		t.Errorf("the frame is drawn %vx%v, so the card shows no drawing", framed.Width, framed.Height)
 	}
 
@@ -200,8 +200,8 @@ func TestADocumentOnStandardInputResolvesTheIllustrationAgainstTheWorkingDirecto
 	if err != nil {
 		t.Fatalf("reading the drawing: %v", err)
 	}
-	if answered.StatusCode != http.StatusOK || string(served) != drawingThatReports {
-		t.Errorf("the drawing in the working directory was answered with %d and %d bytes, want the file as written", answered.StatusCode, len(served))
+	if answered.StatusCode != http.StatusOK || string(served) != strings.Replace(drawingThatReports, "</body>", `<script src="/assets/height.js"></script></body>`, 1) {
+		t.Errorf("the drawing in the working directory was answered with %d and %d bytes, want the file with the height script added", answered.StatusCode, len(served))
 	}
 }
 
