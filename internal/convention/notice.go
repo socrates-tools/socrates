@@ -96,3 +96,42 @@ func EmbeddedFilesWithoutANotice(embedded fs.FS, notice string) ([]string, error
 	slices.Sort(unaccounted)
 	return unaccounted, nil
 }
+
+func modulesNoticed(notice string) []string {
+	var named []string
+
+	for _, section := range noticeSeparator.Split(notice, -1) {
+		lines := strings.Split(strings.TrimSpace(section), "\n")
+		if len(lines) < 2 || !strings.HasPrefix(lines[1], "Linked into ") {
+			continue
+		}
+		if fields := strings.Fields(lines[0]); len(fields) == 2 {
+			named = append(named, fields[0])
+		}
+	}
+	return named
+}
+
+func ModulesWithoutANotice(linked []string, notice string) []string {
+	noticed := modulesNoticed(notice)
+
+	var missing []string
+	for _, module := range linked {
+		if !slices.Contains(noticed, module) {
+			missing = append(missing, module)
+		}
+	}
+	slices.Sort(missing)
+	return missing
+}
+
+func ModulesNoticedButNotLinked(linked []string, notice string) []string {
+	var stale []string
+	for _, module := range modulesNoticed(notice) {
+		if !slices.Contains(linked, module) {
+			stale = append(stale, module)
+		}
+	}
+	slices.Sort(stale)
+	return stale
+}

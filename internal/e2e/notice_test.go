@@ -133,3 +133,20 @@ func librariesTheClientBundles(t *testing.T) []string {
 	}
 	return bundled
 }
+
+func TestEveryModuleTheBinaryLinksIsNamedInTheNoticeAndNoOtherIs(t *testing.T) {
+	t.Parallel()
+	notice := rootDocument(t, convention.NoticeFile)
+
+	linked := source.LinkedModules(t, "./cmd/socrates")
+	if len(linked) == 0 {
+		t.Fatalf("the binary links no module, so this test proves nothing")
+	}
+
+	for _, module := range convention.ModulesWithoutANotice(linked, notice) {
+		t.Errorf("%s names no %s, and the binary links it in", convention.NoticeFile, module)
+	}
+	for _, module := range convention.ModulesNoticedButNotLinked(linked, notice) {
+		t.Errorf("%s names %s as linked into the binary, and it is not", convention.NoticeFile, module)
+	}
+}

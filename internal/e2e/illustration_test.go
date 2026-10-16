@@ -1,8 +1,12 @@
 package e2e_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"io"
 	"net"
 	"net/http"
@@ -413,5 +417,110 @@ func TestServingTheSameDocumentAgainShowsTheEditedDrawing(t *testing.T) {
 
 	if reported := page.askTheDrawing(); reported["text"] != "$9,999.00" {
 		t.Errorf("after serving again the drawing reports %v, want the edited file", reported)
+	}
+}
+
+const drawingWithItsFiles = `<!doctype html>
+<html><head>
+<link rel="stylesheet" href="css/site.css">
+</head><body>
+<div class="shots"><img id="before" src="shots/before.png" alt="before"><img id="after" src="shots/after.png" alt="after"></div>
+<p id="imported">imported</p>
+<p id="backed">backed</p>
+<script>
+const loaded = (image) => new Promise((resolve) => { image.onload = () => resolve(image.naturalWidth); image.onerror = () => resolve(0); if (image.complete) resolve(image.naturalWidth); });
+const backgroundOf = (id) => new Promise((resolve) => {
+  const named = getComputedStyle(document.getElementById(id)).backgroundImage;
+  const address = named.slice(named.indexOf('"') + 1, named.lastIndexOf('"'));
+  const image = new Image();
+  image.onload = () => resolve(image.naturalWidth);
+  image.onerror = () => resolve(0);
+  image.src = address;
+});
+window.addEventListener('message', async () => {
+  parent.postMessage({
+    before: await loaded(document.getElementById('before')),
+    after: await loaded(document.getElementById('after')),
+    appliedColour: getComputedStyle(document.getElementById('backed')).color,
+    importedColour: getComputedStyle(document.getElementById('imported')).color,
+    backgroundWidth: await backgroundOf('backed'),
+  }, '*');
+});
+</script>
+</body></html>`
+
+func aScreenshot(t *testing.T, held *surfaced, name string, shade color.RGBA) {
+	t.Helper()
+
+	picture := image.NewRGBA(image.Rect(0, 0, 160, 100))
+	for x := range 160 {
+		for y := range 100 {
+			picture.Set(x, y, shade)
+		}
+	}
+	var encoded bytes.Buffer
+	if err := png.Encode(&encoded, picture); err != nil {
+		t.Fatalf("encoding the screenshot %s: %v", name, err)
+	}
+
+	path := filepath.Join(held.where, name)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatalf("making the folder of %s: %v", name, err)
+	}
+	if err := os.WriteFile(path, encoded.Bytes(), 0o644); err != nil {
+		t.Fatalf("writing the screenshot %s: %v", name, err)
+	}
+}
+
+func TestADrawingShowsItsTwoScreenshotsAndAppliesTheStylesheetItLinks(t *testing.T) {
+	// scenario: A drawing showing two PNG screenshots side by side, referenced relatively, renders both on its card
+	// scenario: A stylesheet the HTML links, its url background and its import are all copied and applied
+	t.Parallel()
+	held := standing(t)
+	aScreenshot(t, held, "drawings/shots/before.png", color.RGBA{R: 200, A: 255})
+	aScreenshot(t, held, "drawings/shots/after.png", color.RGBA{G: 200, A: 255})
+	aScreenshot(t, held, "drawings/img/backdrop.png", color.RGBA{B: 200, A: 255})
+	aDrawing(t, held, "drawings/q3.html", drawingWithItsFiles)
+	aDrawing(t, held, "drawings/css/site.css", `@import "imported.css"; #backed { color: rgb(1, 2, 3); background: url("../img/backdrop.png") }`)
+	aDrawing(t, held, "drawings/css/imported.css", `#imported { color: rgb(4, 5, 6) }`)
+
+	page := opening(t, held.serve(illustrating(t, oneDecisionDocument, "drawings/q3.html")))
+	reported := page.askTheDrawing()
+
+	for _, shown := range []string{"before", "after"} {
+		if width, _ := reported[shown].(float64); width != 160 {
+			t.Errorf("the %s screenshot is %v pixels wide in the frame, want 160", shown, reported[shown])
+		}
+	}
+	if reported["appliedColour"] != "rgb(1, 2, 3)" {
+		t.Errorf("the linked stylesheet painted %v, want rgb(1, 2, 3)", reported["appliedColour"])
+	}
+	if reported["importedColour"] != "rgb(4, 5, 6)" {
+		t.Errorf("the imported stylesheet painted %v, want rgb(4, 5, 6)", reported["importedColour"])
+	}
+	if width, _ := reported["backgroundWidth"].(float64); width != 160 {
+		t.Errorf("the stylesheet's url background is %v pixels wide, want 160", reported["backgroundWidth"])
+	}
+}
+
+func TestADrawingReferencingAFileOutsideItsFolderIsRefusedBeforeAnythingIsServed(t *testing.T) {
+	// scenario: A reference such as ../secret.png is refused naming the decision and the reference
+	t.Parallel()
+	held := standing(t)
+	aScreenshot(t, held, "secret.png", color.RGBA{A: 255})
+	aDrawing(t, held, "drawings/q3.html", `<img src="../secret.png">`)
+
+	printed, failures, code := held.reading(illustrating(t, oneDecisionDocument, "drawings/q3.html"), "serve", "--document", "-")
+
+	if code == exit.NothingAsked {
+		t.Fatalf("a drawing reaching outside its folder was served at %q", strings.TrimSpace(printed))
+	}
+	for _, named := range []string{"c-1", "../secret.png"} {
+		if !strings.Contains(failures, named) {
+			t.Errorf("the refusal does not name %q: %s", named, failures)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
+		t.Error("a refused document left a surface behind")
 	}
 }

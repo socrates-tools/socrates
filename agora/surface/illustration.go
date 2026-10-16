@@ -48,6 +48,7 @@ type drawing struct {
 	decision string
 	source   string
 	file     string
+	files    []string
 }
 
 func EncodeBase(base string) string {
@@ -94,15 +95,19 @@ func drawingsOf(read document.Document, base string) ([]drawing, error) {
 		if !found.Mode().IsRegular() {
 			return nil, refusal.New(illustrationIsNotAFile, decision.ID, path)
 		}
-		if found.Size() > IllustrationCeiling {
-			return nil, refusal.New(illustrationIsTooLarge, decision.ID, path, found.Size(), IllustrationCeiling)
+
+		entry := render.BaseName(path)
+		files, err := gatherFiles(decision.ID, path, source, entry)
+		if err != nil {
+			return nil, err
 		}
 
 		drawings = append(drawings, drawing{
 			position: position,
 			decision: decision.ID,
 			source:   source,
-			file:     render.BaseName(path),
+			file:     entry,
+			files:    files,
 		})
 	}
 	return drawings, nil
@@ -134,23 +139,41 @@ func copyIllustrations(session string, read document.Document, base string) (str
 	}
 
 	for _, one := range drawings {
-		contents, err := os.ReadFile(one.source)
-		if err != nil {
+		if err := copyDrawing(within, one); err != nil {
 			_ = forgetCopy(session, copied)
-			return "", refusal.New(illustrationCannotBeRead, one.decision, one.source, err)
-		}
-
-		folder := filepath.Join(within, strconv.Itoa(one.position))
-		if err := os.MkdirAll(folder, 0o700); err != nil {
-			_ = forgetCopy(session, copied)
-			return "", fmt.Errorf(copyingTheIllustration, err)
-		}
-		if err := os.WriteFile(filepath.Join(folder, one.file), contents, 0o600); err != nil {
-			_ = forgetCopy(session, copied)
-			return "", fmt.Errorf(copyingTheIllustration, err)
+			return "", err
 		}
 	}
 	return copied, nil
+}
+
+func copyDrawing(within string, one drawing) error {
+	folder, err := os.OpenRoot(filepath.Dir(one.source))
+	if err != nil {
+		return refusal.New(illustrationCannotBeRead, one.decision, one.source, err)
+	}
+	defer func() { _ = folder.Close() }()
+
+	for _, file := range one.files {
+		var contents []byte
+		if file == one.file {
+			contents, err = os.ReadFile(one.source)
+		} else {
+			contents, err = folder.ReadFile(file)
+		}
+		if err != nil {
+			return refusal.New(illustrationCannotBeRead, one.decision, file, err)
+		}
+
+		destination := filepath.Join(within, strconv.Itoa(one.position), filepath.FromSlash(file))
+		if err := os.MkdirAll(filepath.Dir(destination), 0o700); err != nil {
+			return fmt.Errorf(copyingTheIllustration, err)
+		}
+		if err := os.WriteFile(destination, contents, 0o600); err != nil {
+			return fmt.Errorf(copyingTheIllustration, err)
+		}
+	}
+	return nil
 }
 
 func forgetCopy(session, copied string) error {
