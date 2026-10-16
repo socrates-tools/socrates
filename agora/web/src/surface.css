@@ -320,6 +320,7 @@ pre,
 
 .settled-link,
 .entry-link {
+  scroll-margin-top: var(--landing-clearance);
   display: grid;
   grid-template-columns: var(--check-size) minmax(0, 1fr);
   column-gap: 10px;

@@ -197,6 +197,25 @@ func TestWhatWasSettledArrivesFoldedAndOpensFromItsHeadingOrTheIndex(t *testing.
 	page.waitFor(answersShown)
 }
 
+func TestTheIndexLinkToWhatWasSettledIsNotLeftUnderTheTopBarWhenItIsScrolledToTheTopOfTheWindow(t *testing.T) {
+	t.Parallel()
+	_, page := read(t, settledDocument)
+
+	page.click(".settled-summary")
+	page.evaluate(`document.querySelector('.settled-link').scrollIntoView({ block: 'start' })`, nil)
+
+	var covered bool
+	page.evaluate(`(() => {
+		const link = document.querySelector('.settled-link')
+		const box = link.getBoundingClientRect()
+		const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)
+		return !link.contains(hit)
+	})()`, &covered)
+	if covered {
+		t.Error("the link to what was settled, scrolled to the top of the window, sits under the top bar and a press on it lands on the bar")
+	}
+}
+
 const quotedIdentifierDocument = `{
   "title": "one thing to settle",
   "decisions": [
