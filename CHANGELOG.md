@@ -8,6 +8,24 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-16
+
+### Added
+
+- **`socrates agora poll --session <session> --last` prints the last answer again.**
+  It prints what the last poll of that session printed, in the same form, without waiting and even once the surface has stopped.
+  If an agent's output was cut short, by a pipe through `tail` or by its own process ending, the person no longer has to answer the page again.
+
+### Changed
+
+- **A person's answer is kept in its session before `poll` prints it.**
+  It is written to `answer.json` in the session's directory under `~/.socrates/agora/sessions/`, and it goes when the surface collects the session after 45 minutes with nobody reading it.
+  If it cannot be written, `poll` fails and the answer waits for the next poll rather than being handed out unkept.
+- **The page fills the window.**
+  From 960px wide, the navigation and the decisions scroll on their own beside each other, the navigation marks the decision in view, and the top bar carries the page's title.
+  From 1280px a reply panel on the right lists what will go as the person answers, and keeps the message and both buttons in reach however far down they are.
+  Below 960px the page is one column, as before.
+
 ## [0.6.0] - 2026-10-16
 
 ### Added
@@ -209,7 +227,8 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.7.0
 [0.6.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.6.0
 [0.5.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.5.0
 [0.4.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.4.0
