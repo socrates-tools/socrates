@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	"github.com/socrates-tools/socrates/agora/surface"
+	"github.com/socrates-tools/socrates/internal/platform"
 )
 
 const (
@@ -213,16 +214,42 @@ type LinkedModule struct {
 
 func LinkedModules(t *testing.T, target string) []LinkedModule {
 	t.Helper()
+	return LinkedModulesIn(t, Root(t), target)
+}
 
+func LinkedModulesIn(t *testing.T, root, target string) []LinkedModule {
+	t.Helper()
+
+	perBuild := make(map[string][]LinkedModule)
+	for _, build := range platform.Builds() {
+		linked, err := listLinkedModules(root, target, build)
+		if err != nil {
+			t.Fatalf("listing the modules %s links for %s: %v", target, buildName(build), err)
+		}
+		perBuild[buildName(build)] = linked
+	}
+
+	merged, err := mergeLinkedModulesOfEveryBuild(perBuild)
+	if err != nil {
+		t.Fatalf("listing the modules %s links: %v", target, err)
+	}
+	return merged
+}
+
+func buildName(build platform.Build) string {
+	return build.OperatingSystem + "/" + build.Architecture
+}
+
+func listLinkedModules(root, target string, build platform.Build) ([]LinkedModule, error) {
 	command := exec.Command("go", "list", "-deps", "-f", `{{with .Module}}{{if not .Main}}{{.Path}}{{"\t"}}{{.Version}}{{"\t"}}{{.Dir}}{{end}}{{end}}`, target)
-	command.Dir = Root(t)
-	command.Env = append(os.Environ(), toolchain...)
+	command.Dir = root
+	command.Env = append(append(os.Environ(), toolchain...), "GOOS="+build.OperatingSystem, "GOARCH="+build.Architecture, "CGO_ENABLED=0")
 
 	var out, failures bytes.Buffer
 	command.Stdout = &out
 	command.Stderr = &failures
 	if err := command.Run(); err != nil {
-		t.Fatalf("listing the modules %s links: %v: %s", target, err, failures.String())
+		return nil, fmt.Errorf("%w: %s", err, failures.String())
 	}
 
 	var linked []LinkedModule
@@ -231,11 +258,33 @@ func LinkedModules(t *testing.T, target string) []LinkedModule {
 		if len(fields) != 3 {
 			continue
 		}
-		module := LinkedModule{Path: fields[0], Version: fields[1], Directory: fields[2]}
-		if !slices.ContainsFunc(linked, func(held LinkedModule) bool { return held.Path == module.Path }) {
-			linked = append(linked, module)
+		linked = append(linked, LinkedModule{Path: fields[0], Version: fields[1], Directory: fields[2]})
+	}
+	return linked, nil
+}
+
+func mergeLinkedModulesOfEveryBuild(perBuild map[string][]LinkedModule) ([]LinkedModule, error) {
+	builds := make([]string, 0, len(perBuild))
+	for build := range perBuild {
+		builds = append(builds, build)
+	}
+	slices.Sort(builds)
+
+	var merged []LinkedModule
+	linkedFor := make(map[string]string)
+	for _, build := range builds {
+		for _, module := range perBuild[build] {
+			position := slices.IndexFunc(merged, func(held LinkedModule) bool { return held.Path == module.Path })
+			if position < 0 {
+				merged = append(merged, module)
+				linkedFor[module.Path] = build
+				continue
+			}
+			if merged[position].Version != module.Version {
+				return nil, fmt.Errorf("%s is linked at %s for %s and at %s for %s", module.Path, merged[position].Version, linkedFor[module.Path], module.Version, build)
+			}
 		}
 	}
-	slices.SortFunc(linked, func(a, b LinkedModule) int { return strings.Compare(a.Path, b.Path) })
-	return linked
+	slices.SortFunc(merged, func(a, b LinkedModule) int { return strings.Compare(a.Path, b.Path) })
+	return merged, nil
 }

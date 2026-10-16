@@ -15,9 +15,15 @@ type Platform struct {
 	OperatingSystem           string
 	Name                      string
 	Runner                    string
+	Architectures             []string
 	ReapsByProcessGroup       bool
 	FilesystemEnforcesTheSeal bool
 	TheSuiteRunsThere         bool
+}
+
+type Build struct {
+	OperatingSystem string
+	Architecture    string
 }
 
 type Target struct {
@@ -34,6 +40,7 @@ var stated = []Platform{
 		OperatingSystem:           "linux",
 		Name:                      "Linux",
 		Runner:                    "ubuntu-latest",
+		Architectures:             []string{"amd64", "arm64"},
 		ReapsByProcessGroup:       true,
 		FilesystemEnforcesTheSeal: true,
 		TheSuiteRunsThere:         true,
@@ -42,6 +49,7 @@ var stated = []Platform{
 		OperatingSystem:           "darwin",
 		Name:                      "macOS",
 		Runner:                    "macos-latest",
+		Architectures:             []string{"amd64", "arm64"},
 		ReapsByProcessGroup:       true,
 		FilesystemEnforcesTheSeal: true,
 		TheSuiteRunsThere:         true,
@@ -64,6 +72,29 @@ func OperatingSystems() []string {
 		named = append(named, one.OperatingSystem)
 	}
 	return named
+}
+
+func Architectures() []string {
+	var named []string
+	for _, one := range Supported() {
+		for _, architecture := range one.Architectures {
+			if !slices.Contains(named, architecture) {
+				named = append(named, architecture)
+			}
+		}
+	}
+	slices.Sort(named)
+	return named
+}
+
+func Builds() []Build {
+	var builds []Build
+	for _, one := range Supported() {
+		for _, architecture := range one.Architectures {
+			builds = append(builds, Build{OperatingSystem: one.OperatingSystem, Architecture: architecture})
+		}
+	}
+	return builds
 }
 
 func Names() []string {

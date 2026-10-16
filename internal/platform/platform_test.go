@@ -2,6 +2,7 @@ package platform_test
 
 import (
 	"runtime"
+	"slices"
 	"testing"
 
 	"github.com/socrates-tools/socrates/internal/convention"
@@ -45,5 +46,30 @@ func TestAPlatformQualifiesOnTheGuaranteesRatherThanOnCompiling(t *testing.T) {
 func TestAReviewIsSupportedOnlyWhereTheSetAndTheBuildAgree(t *testing.T) {
 	if platform.ReviewIsSupported() != (process.ReapsByGroup && platform.Supports(platform.TheOneRunning())) {
 		t.Error("whether a review is supported is decided by something other than the stated set and what this build can reap")
+	}
+}
+
+func TestEveryBuildPairsASupportedSystemWithAnArchitectureItIsStatedFor(t *testing.T) {
+	builds := platform.Builds()
+
+	for _, system := range platform.OperatingSystems() {
+		var architectures []string
+		for _, build := range builds {
+			if build.OperatingSystem == system {
+				architectures = append(architectures, build.Architecture)
+			}
+		}
+		if len(architectures) == 0 {
+			t.Errorf("%s is supported and no build is stated for it", system)
+		}
+	}
+
+	for _, build := range builds {
+		if !platform.Supports(build.OperatingSystem) {
+			t.Errorf("a build is stated for %s, which is not supported", build.OperatingSystem)
+		}
+		if !slices.Contains(platform.Architectures(), build.Architecture) {
+			t.Errorf("a build is stated for %s, which is not among the architectures", build.Architecture)
+		}
 	}
 }

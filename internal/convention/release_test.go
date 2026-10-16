@@ -34,6 +34,22 @@ func TestTheReleaseMatrixIsTheSupportedSet(t *testing.T) {
 	}
 }
 
+func TestTheReleaseArchitecturesAreTheSupportedSet(t *testing.T) {
+	root := source.Root(t)
+
+	built, err := convention.ArchitecturesAReleaseBuilds(root)
+	if err != nil {
+		t.Fatalf("reading what a release builds: %v", err)
+	}
+	if len(built) == 0 {
+		t.Fatalf("%s builds for no architecture, so this check has nothing to compare and would pass forever", convention.ReleaseConfigurationFile)
+	}
+
+	for _, disagreeing := range convention.PlatformDisagreements(platform.Architectures(), built, convention.ReleaseConfigurationFile) {
+		t.Errorf("%s: a release builds the supported set and no others", disagreeing)
+	}
+}
+
 func TestATargetOutsideTheSupportedSetIsReported(t *testing.T) {
 	root := t.TempDir()
 	writeNested(t, filepath.Join(root, convention.ReleaseConfigurationFile),

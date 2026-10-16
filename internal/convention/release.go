@@ -19,6 +19,7 @@ type ReleaseBuild struct {
 	Binary           string
 	Compiles         string
 	OperatingSystems []string
+	Architectures    []string
 	Stamps           []string
 }
 
@@ -34,6 +35,7 @@ type releaseConfiguration struct {
 		Binary string   `yaml:"binary"`
 		Main   string   `yaml:"main"`
 		Goos   []string `yaml:"goos"`
+		Goarch []string `yaml:"goarch"`
 		Ldflag []string `yaml:"ldflags"`
 	} `yaml:"builds"`
 	Archives []struct {
@@ -58,6 +60,7 @@ func AReleaseBuilds(root string) ([]ReleaseBuild, error) {
 			Binary:           one.Binary,
 			Compiles:         one.Main,
 			OperatingSystems: slices.Clone(one.Goos),
+			Architectures:    slices.Clone(one.Goarch),
 			Stamps:           slices.Clone(one.Ldflag),
 		})
 	}
@@ -92,6 +95,24 @@ func OperatingSystemsAReleaseBuilds(root string) ([]string, error) {
 		for _, operating := range one.OperatingSystems {
 			if !slices.Contains(named, operating) {
 				named = append(named, operating)
+			}
+		}
+	}
+	slices.Sort(named)
+	return named, nil
+}
+
+func ArchitecturesAReleaseBuilds(root string) ([]string, error) {
+	building, err := AReleaseBuilds(root)
+	if err != nil {
+		return nil, err
+	}
+
+	var named []string
+	for _, one := range building {
+		for _, architecture := range one.Architectures {
+			if !slices.Contains(named, architecture) {
+				named = append(named, architecture)
 			}
 		}
 	}
