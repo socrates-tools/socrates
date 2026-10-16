@@ -51,8 +51,15 @@ const (
 	illustrationIsNotAFile   = "the illustration of decision %q names %q, which is not a file. Point it at the HTML file and run the command again"
 	illustrationCannotBeRead = "the illustration of decision %q names %q, which cannot be read: %v. Check the path and run the command again"
 	illustrationIsTooLarge   = "the illustration of decision %q names %q, which is %d bytes, and at most %d are copied. Edit it to fit and run the command again"
-	copyingTheIllustration   = "copying the illustration into the session: %w"
-	illustrationIsNotHere    = "the session holds no such file of an illustration"
+
+	illustrationFilesAreTooLarge         = "the illustration of decision %q brings %q, and its files then total %d bytes, where at most %d are copied. Remove that file or shrink it and run the command again"
+	illustrationReferenceLeavesItsFolder = "the illustration of decision %q references %q, which leaves the folder of %q. Move that file into the folder and run the command again"
+	illustrationReferenceDoesNotExist    = "the illustration of decision %q references %q, which does not exist. Check the reference and run the command again"
+	illustrationReferenceIsNotServed     = "the illustration of decision %q references %q, which is not an HTML, CSS, JavaScript, JSON, SVG, PNG, JPEG, WebP, GIF, WOFF or WOFF2 file. Use a file of one of those types and run the command again"
+	illustrationReferenceIsNotAFile      = "the illustration of decision %q references %q, which is not a file. Point it at a file and run the command again"
+	illustrationReferenceCannotBeRead    = "the illustration of decision %q references %q, which cannot be read: %v. Check the reference and run the command again"
+	copyingTheIllustration               = "copying the illustration into the session: %w"
+	illustrationIsNotHere                = "the session holds no such file of an illustration"
 
 	exchangeIsOver                 = "the exchange is over, and a closed exchange does not reopen"
 	answerNamesNoDecision          = "an answer names the decision %q, which this document does not hold"
