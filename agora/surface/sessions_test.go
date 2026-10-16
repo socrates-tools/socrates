@@ -18,7 +18,7 @@ func TestASessionTheSurfaceNeverMintedIsRefused(t *testing.T) {
 	held := serving(t, twoDecisions(), 0)
 	before := held.server.Holds()
 
-	err := held.server.Revise(neverMinted, oneOtherDecision(), written(t, oneOtherDecision()))
+	err := held.server.Revise(neverMinted, oneOtherDecision(), written(t, oneOtherDecision()), "")
 	if err == nil {
 		t.Fatalf("naming the session %q brought one into existence", neverMinted)
 	}
@@ -37,7 +37,7 @@ func TestASecondSessionHoldsItsOwnDocumentAndItsOwnToken(t *testing.T) {
 	// scenario: Two sessions are served at once and neither disturbs the other
 	held := serving(t, twoDecisions(), 0)
 
-	opened, err := held.server.Open(oneOtherDecision(), written(t, oneOtherDecision()))
+	opened, err := held.server.Open(oneOtherDecision(), written(t, oneOtherDecision()), "")
 	if err != nil {
 		t.Fatalf("opening a second session on a running surface: %v", err)
 	}

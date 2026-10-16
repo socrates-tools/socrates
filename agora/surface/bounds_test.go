@@ -73,8 +73,8 @@ const theIdlePeriod = time.Hour
 func TestAnIdleSessionIsCollectedAndTheOnesBeingReadAreNot(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		open := surface.NewSessions(time.Now())
-		open.Open("beingread", "one", twoDecisions(), time.Now())
-		open.Open("abandoned", "two", oneOtherDecision(), time.Now())
+		open.Open("beingread", "one", twoDecisions(), "", time.Now())
+		open.Open("abandoned", "two", oneOtherDecision(), "", time.Now())
 
 		read, standing := open.Exchange("beingread")
 		if !standing {
@@ -125,7 +125,7 @@ func TestAServerHoldingNoSessionStopsOnceItHasHeldNoneForTheIdlePeriod(t *testin
 	// scenario: An idle server stops
 	synctest.Test(t, func(t *testing.T) {
 		open := surface.NewSessions(time.Now())
-		open.Open("theonly", "one", twoDecisions(), time.Now())
+		open.Open("theonly", "one", twoDecisions(), "", time.Now())
 
 		time.Sleep(theIdlePeriod + time.Minute)
 		collected, empty := open.Collect(time.Now(), theIdlePeriod)

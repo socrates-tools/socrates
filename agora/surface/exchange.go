@@ -41,6 +41,7 @@ type Decided struct {
 type Exchange struct {
 	mu          sync.Mutex
 	read        document.Document
+	copied      string
 	revision    int
 	uncollected *Answered
 	answeredAt  int
@@ -72,6 +73,12 @@ func (e *Exchange) Document() (document.Document, int) {
 	return e.read, e.revision
 }
 
+func (e *Exchange) Illustrated() (document.Document, string) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	return e.read, e.copied
+}
+
 func (e *Exchange) Revise(read document.Document) int {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -79,14 +86,17 @@ func (e *Exchange) Revise(read document.Document) int {
 	return e.reviseLocked(read)
 }
 
-func (e *Exchange) ReviseAdmitted(read document.Document) (int, error) {
+func (e *Exchange) ReviseAdmitted(read document.Document, copied string) (string, error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
 	if err := e.admitsLocked(read); err != nil {
-		return 0, err
+		return "", err
 	}
-	return e.reviseLocked(read), nil
+	previous := e.copied
+	e.copied = copied
+	e.reviseLocked(read)
+	return previous, nil
 }
 
 func (e *Exchange) Admits(read document.Document) error {

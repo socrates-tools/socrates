@@ -45,6 +45,15 @@ const (
 	surfaceIsBeingReplaced = "the surface is being replaced by a newer build of socrates, and takes nothing more. Run the command again"
 	surfaceHoldsASession   = "the surface holds a session still being answered, and is not replaced until every session it holds is over"
 
+	illustrationHasNoFolder  = "the illustration of decision %q names %q, a path relative to a folder nothing stated. Give an absolute path and run the command again"
+	illustrationIsNotHTML    = "the illustration of decision %q names %q, which is not an HTML file. Point it at a file ending in .html and run the command again"
+	illustrationDoesNotExist = "the illustration of decision %q names %q, which does not exist. Check the path and run the command again"
+	illustrationIsNotAFile   = "the illustration of decision %q names %q, which is not a file. Point it at the HTML file and run the command again"
+	illustrationCannotBeRead = "the illustration of decision %q names %q, which cannot be read: %v. Check the path and run the command again"
+	illustrationIsTooLarge   = "the illustration of decision %q names %q, which is %d bytes, and at most %d are copied. Edit it to fit and run the command again"
+	copyingTheIllustration   = "copying the illustration into the session: %w"
+	illustrationIsNotHere    = "the session holds no such file of an illustration"
+
 	exchangeIsOver                 = "the exchange is over, and a closed exchange does not reopen"
 	answerNamesNoDecision          = "an answer names the decision %q, which this document does not hold"
 	settledOtherwiseThanCollected  = "the document settles %q with a %s other than the one this session collected for it, %q. Write the settled answer exactly as agora poll handed it back, or ask the question again as a decision, and run the command again"

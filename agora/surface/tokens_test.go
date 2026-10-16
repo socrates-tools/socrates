@@ -12,7 +12,7 @@ import (
 func TestOneSessionsTokenDoesNotAnswerForAnother(t *testing.T) {
 	held := serving(t, twoDecisions(), 0)
 
-	other, err := held.server.Open(oneOtherDecision(), written(t, oneOtherDecision()))
+	other, err := held.server.Open(oneOtherDecision(), written(t, oneOtherDecision()), "")
 	if err != nil {
 		t.Fatalf("opening a second session on a running surface: %v", err)
 	}

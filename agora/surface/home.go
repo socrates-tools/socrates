@@ -14,11 +14,12 @@ const (
 	BindField           = "surface.bind"
 	AddressOption       = "--address"
 
-	recordFile        = "surface.json"
-	sessionsDirectory = "sessions"
-	pageFile          = "session.json"
-	documentFile      = "document.json"
-	answerFile        = "answer.json"
+	recordFile             = "surface.json"
+	sessionsDirectory      = "sessions"
+	pageFile               = "session.json"
+	documentFile           = "document.json"
+	illustrationsDirectory = "illustrations"
+	answerFile             = "answer.json"
 )
 
 func Home() (string, error) {
@@ -78,4 +79,12 @@ func AnswerPath(session string) (string, error) {
 		return "", err
 	}
 	return filepath.Join(within, answerFile), nil
+}
+
+func IllustrationsPath(session, copy string) (string, error) {
+	within, err := SessionPath(session)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(within, illustrationsDirectory, copy), nil
 }

@@ -66,12 +66,12 @@ A decision you mark nothing on arrives with nothing chosen: marking nothing says
 A single-choice decision already renders a further control below its options, labelled *None of these*, which clears the selection and moves the cursor into the words field below it.
 Write the real options and nothing else, and never write that option yourself.
 
-A decision may also carry one illustration, painted by the document's own stylesheet, in a field of its own:
+A decision may also carry one illustration, an HTML file you write and name by path in a field of its own:
 
-    {"fragment": {"markup": "<figure>...</figure>"}}
+    {"illustration": {"path": "q3.html"}}
 
-State the look once for the whole document in |"stylesheet"|.
-The surface reduces both the markup and the stylesheet to an allowlist and scopes every selector it keeps to the illustration.
+A relative path resolves against the folder of the document, or against the working directory where the document is piped in.
+The file is drawn in a sandboxed frame on the card.
 
 Draw one where the choice is a shape: a layout, an arrangement of panels, a screen recognised by its structure rather than by a description of it.
 Skip it where the choice is a name, a threshold or a policy, anything a sentence already carries in full.

@@ -5,7 +5,6 @@ const (
 	moreThanOneDocument              = "the document is followed by more content than one document"
 	theDocumentStatesNothingFor      = "the document states no %q, so the page would have nothing to head it with"
 	theDocumentHoldsNothing          = "the document holds no decision, no source entry, no settled answer and no preamble, so the page would hold nothing under its title"
-	theStylesheetIsTooLarge          = "the document carries a stylesheet of %d bytes, and at most %d of one is embedded. Cut it to what the illustrations need"
 	decisionAt                       = "decision %d"
 	decisionNamed                    = "decision %q"
 	noIdentifier                     = "%s carries no identifier, so an answer could not be attached to it"

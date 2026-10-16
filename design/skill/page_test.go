@@ -63,7 +63,7 @@ func TestTheSkillSaysWhenAnIllustrationEarnsItsPlace(t *testing.T) {
 	page := sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading)
 
 	for _, said := range []string{
-		"A decision may also carry one illustration, painted by the document's own stylesheet",
+		"A decision may also carry one illustration, an HTML file you write and name by path",
 		"Draw one where the choice is a shape",
 		"Skip it where the choice is a name, a threshold or a policy",
 		"An illustration that only repeats what the words already said costs the person attention and costs the skill its ceiling for nothing",
@@ -134,6 +134,28 @@ func TestTheSkillNumbersQuestionsFromOneAndNamesEachQuestionN(t *testing.T) {
 		said = strings.ReplaceAll(said, "|", "`")
 		if !strings.Contains(page, said) {
 			t.Errorf("the page section does not say %q, so a session titles its cards q0, q1 rather than Question 1, Question 2:\n%s", said, page)
+		}
+	}
+}
+
+func TestTheSkillNamesTheIllustrationAsAnHTMLFileDrawnInASandboxedFrame(t *testing.T) {
+	// scenario: Both skills stop teaching the fragment
+	page := sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading)
+
+	for _, said := range []string{
+		`{"illustration": {"path": "q3.html"}}`,
+		"An HTML file you write and name by path",
+		"drawn in a sandboxed frame",
+	} {
+		if !strings.Contains(strings.ToLower(page), strings.ToLower(said)) {
+			t.Errorf("the page section does not say %q:\n%s", said, page)
+		}
+	}
+
+	document := strings.ToLower(skill.Document(skillkit.ClaudeCode))
+	for _, retired := range []string{"fragment", "markup", "allowlist", "stylesheet"} {
+		if strings.Contains(document, retired) {
+			t.Errorf("the skill still mentions %q, and an illustration is an HTML file named by path", retired)
 		}
 	}
 }

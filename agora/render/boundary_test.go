@@ -12,22 +12,17 @@ func TestTheRendererOpensNoSocketAndReadsNoClock(t *testing.T) {
 	renderer := filepath.Join("agora", "render")
 	allowed := []string{
 		"bytes",
-		"crypto/sha256",
 		"embed",
-		"encoding/base64",
 		"encoding/json",
 		"errors",
 		"fmt",
 		"html/template",
 		"io",
+		"net/url",
 		"slices",
 		"strconv",
 		"strings",
-		"github.com/tdewolff/parse/v2",
-		"github.com/tdewolff/parse/v2/css",
 		source.ModulePath + "/agora/document",
-		source.ModulePath + "/agora/sanitise",
-		source.ModulePath + "/agora/stylesheet",
 		"golang.org/x/net/html",
 		"golang.org/x/net/html/atom",
 	}

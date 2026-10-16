@@ -93,7 +93,7 @@ func oneRealReview(t *testing.T, vendor agent.Vendor) {
 			t.Fatalf("the surface bound %q, and it binds a loopback address only: %v", server.Address(), err)
 		}
 
-		opened, err := server.Open(read, raw)
+		opened, err := server.Open(read, raw, "")
 		if err != nil {
 			t.Fatalf("opening a session for what the real reviewer answered: %v", err)
 		}

@@ -356,50 +356,6 @@ func TestAWildcardBindIsRefusedByTheBinary(t *testing.T) {
 	}
 }
 
-func TestAFragmentOutsideTheAllowlistStillServes(t *testing.T) {
-	// scenario: A fragment outside the allowlist is stripped
-	t.Parallel()
-	held := standing(t)
-
-	var written map[string]any
-	if err := json.Unmarshal([]byte(oneDecisionDocument), &written); err != nil {
-		t.Fatalf("reading the document: %v", err)
-	}
-	decisions := written["decisions"].([]any)
-	decisions[0].(map[string]any)["fragment"] = map[string]any{
-		"markup": `<figure><script>fetch("https://elsewhere")</script><p onclick="steal()">drawn</p><form><input name="who"></form></figure>`,
-	}
-
-	raw, err := json.Marshal(written)
-	if err != nil {
-		t.Fatalf("writing the document: %v", err)
-	}
-
-	address := held.serve(string(raw))
-
-	answered, err := http.Get(address)
-	if err != nil {
-		t.Fatalf("reaching the surface: %v", err)
-	}
-	defer func() { _ = answered.Body.Close() }()
-
-	page, err := io.ReadAll(answered.Body)
-	if err != nil {
-		t.Fatalf("reading the page: %v", err)
-	}
-	if answered.StatusCode != http.StatusOK {
-		t.Fatalf("a document carrying a fragment was served with %d", answered.StatusCode)
-	}
-	for _, gone := range []string{"<script>", "onclick", "elsewhere", "steal(", `name="who"`} {
-		if strings.Contains(string(page), gone) {
-			t.Errorf("the page carries %q from the fragment it was given", gone)
-		}
-	}
-	if !strings.Contains(string(page), "drawn") {
-		t.Error("neutralising the fragment took the illustration with it")
-	}
-}
-
 const twoRecommendedDocument = `{
   "title": "one thing to settle",
   "decisions": [

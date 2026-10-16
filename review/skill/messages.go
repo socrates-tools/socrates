@@ -43,24 +43,11 @@ If the person wants to watch, tell them to run |socrates review watch| in anothe
 	theIllustration = `A decision may also carry one illustration.
 It travels beside the evidence rather than inside it, in a field of its own:
 
-    "fragment": {"markup": "<div class=\"panel\"><div class=\"row\">...</div></div>"}
+    "illustration": {"path": "q3.html"}
 
-An illustration takes one of two forms.
-Inline SVG is for a workflow: the surface renders the drawing you supplied and lays out nothing of its own.
-Markup the document's stylesheet paints is for a screen the person already knows, because what makes them recognise a panel is its structure, its controls and the words actually on it.
-
-State the look once for the whole document rather than once per decision:
-
-    "stylesheet": ".panel{border:1px solid #d8d2c4;padding:0.75rem}.row{display:flex;justify-content:space-between}"
-
-One stylesheet paints every illustration in it.
-
-The markup and the stylesheet are reduced to an allowlist before they are embedded, so do not write what will be dropped.
-The markup loses script, event handlers, remote references and form controls.
-The stylesheet loses imports, font faces, every property the allowlist does not name, and every value naming a resource.
-
-The surface scopes the stylesheet itself, and every selector it keeps is confined to the illustration.
-Write your selectors for the names your own markup carries, leave the scoping to the surface, and do not expect a rule you aimed at the page to reach the page.`
+An illustration is an HTML file you write and name by path.
+A relative path resolves against the folder of the document.
+The file is drawn in a sandboxed frame on the card.`
 
 	pageTemplate = pageHeading + `
 

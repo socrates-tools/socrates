@@ -1,28 +1,21 @@
 package render
 
 import (
-	"crypto/sha256"
 	_ "embed"
-	"encoding/base64"
 	"fmt"
 	"html/template"
+	"net/url"
 	"slices"
 	"strings"
 
 	"github.com/socrates-tools/socrates/agora/document"
-	"github.com/socrates-tools/socrates/agora/sanitise"
-	"github.com/socrates-tools/socrates/agora/stylesheet"
 )
 
 const (
-	PaintedClass = "painted"
-	NamePrefix   = "drawn-"
+	IllustrationRoute = "/illustrations/"
 
-	policy         = "default-src 'none'; style-src 'self'%s; style-src-attr 'none'; script-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'"
-	admittedByHash = " 'sha256-%s'"
+	policy = "default-src 'none'; style-src 'self'; style-src-attr 'none'; script-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'"
 )
-
-var Illustration = stylesheet.Scope{Selector: "." + PaintedClass, Prefix: NamePrefix}
 
 var mostSevereFirst = []string{"error", "warning", "info"}
 
@@ -41,17 +34,16 @@ type Frame struct {
 }
 
 type view struct {
-	Title      string
-	Preamble   string
-	Base       string
-	Token      string
-	Revision   int
-	Over       bool
-	Policy     string
-	Stylesheet template.CSS
-	Index      []entryView
-	Settled    []settledView
-	Decisions  []decisionView
+	Title     string
+	Preamble  string
+	Base      string
+	Token     string
+	Revision  int
+	Over      bool
+	Policy    string
+	Index     []entryView
+	Settled   []settledView
+	Decisions []decisionView
 }
 
 type entryView struct {
@@ -87,8 +79,13 @@ type decisionView struct {
 	Code     string
 	Diff     *Diff
 	Written  string
-	Fragment template.HTML
+	Drawing  *drawingView
 	Answered bool
+}
+
+type drawingView struct {
+	Source string
+	Title  string
 }
 
 type optionView struct {
@@ -107,22 +104,19 @@ func Page(read document.Document, frame Frame) (string, error) {
 }
 
 func viewOf(read document.Document, frame Frame) view {
-	painted := stylesheet.Reduce(read.Stylesheet, Illustration)
-
 	shown := view{
-		Title:      read.Title,
-		Preamble:   read.Preamble,
-		Base:       frame.Base,
-		Token:      frame.Token,
-		Revision:   frame.Revision,
-		Over:       frame.Over,
-		Policy:     policyAdmitting(painted),
-		Stylesheet: template.CSS(painted),
+		Title:    read.Title,
+		Preamble: read.Preamble,
+		Base:     frame.Base,
+		Token:    frame.Token,
+		Revision: frame.Revision,
+		Over:     frame.Over,
+		Policy:   policy,
 	}
 
 	answered := map[string]bool{}
 	for _, decision := range read.Decisions {
-		shown.Decisions = append(shown.Decisions, decisionViewOf(decision))
+		shown.Decisions = append(shown.Decisions, decisionViewOf(decision, frame))
 		answered[decision.ID] = arrivesAnswered(decision)
 	}
 
@@ -201,16 +195,7 @@ func nameOr(name, identifier string) string {
 	return name
 }
 
-func policyAdmitting(painted string) string {
-	if painted == "" {
-		return fmt.Sprintf(policy, "")
-	}
-
-	digest := sha256.Sum256([]byte(painted))
-	return fmt.Sprintf(policy, fmt.Sprintf(admittedByHash, base64.StdEncoding.EncodeToString(digest[:])))
-}
-
-func decisionViewOf(decision document.Decision) decisionView {
+func decisionViewOf(decision document.Decision, frame Frame) decisionView {
 	shown := decisionView{
 		ID:       decision.ID,
 		Name:     nameOr(decision.Name, decision.ID),
@@ -223,7 +208,6 @@ func decisionViewOf(decision document.Decision) decisionView {
 		Multiple: decision.Mode == document.Many,
 		Language: decision.Evidence.Language,
 		Code:     decision.Evidence.Code,
-		Fragment: template.HTML(sanitise.Fragment(decision.Fragment.Markup, NamePrefix)),
 		Answered: arrivesAnswered(decision),
 	}
 
@@ -232,8 +216,19 @@ func decisionViewOf(decision document.Decision) decisionView {
 		shown.Written = writtenIn(decision.Evidence.Language, patched)
 	}
 
+	if path := decision.Illustration.Path; path != "" {
+		shown.Drawing = &drawingView{
+			Source: frame.Base + IllustrationRoute + url.PathEscape(decision.ID) + "/" + url.PathEscape(BaseName(path)),
+			Title:  fmt.Sprintf(illustrationTitle, shown.Name),
+		}
+	}
+
 	shown.Options = optionsRead(decision.Options)
 	return shown
+}
+
+func BaseName(path string) string {
+	return path[strings.LastIndexAny(path, `/\`)+1:]
 }
 
 func writtenIn(stated string, patched Diff) string {

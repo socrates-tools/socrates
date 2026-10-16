@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -15,8 +14,7 @@ import (
 
 func whole() document.Document {
 	return document.Document{
-		Title:      "two things to settle",
-		Stylesheet: `.panel{border:1px solid #d8d2c4}`,
+		Title: "two things to settle",
 		Decisions: []document.Decision{{
 			ID:       "d-1",
 			Question: "does the cache belong here",
@@ -26,7 +24,7 @@ func whole() document.Document {
 				{Label: "keep it", Meaning: "the staleness is acceptable", Command: `agree d-1 --reason "the staleness is acceptable"`},
 				{Label: "drop it", Meaning: "correctness first", Command: `patch d-1`},
 			},
-			Fragment: document.Fragment{Markup: `<div class="panel">one call, one read</div>`},
+			Illustration: document.Illustration{Path: "cache.html"},
 		}},
 	}
 }
@@ -42,8 +40,7 @@ func raw(t *testing.T, written document.Document) []byte {
 }
 
 func briefly(read document.Document) string {
-	return fmt.Sprintf("title %q, %d decisions, %+v, a stylesheet of %d bytes",
-		read.Title, len(read.Decisions), read.Decisions, len(read.Stylesheet))
+	return fmt.Sprintf("title %q, %d decisions, %+v", read.Title, len(read.Decisions), read.Decisions)
 }
 
 func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
@@ -82,13 +79,6 @@ func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
 			named:  "a document holding nothing at all",
 			broken: func(d *document.Document) { d.Decisions = nil },
 			names:  []string{"decision", "source", "settled", "preamble"},
-		},
-		{
-			named: "a stylesheet larger than the stated size",
-			broken: func(d *document.Document) {
-				d.Stylesheet = strings.Repeat(".p{color:#222}", document.StylesheetCeiling)
-			},
-			names: []string{"stylesheet", strconv.Itoa(document.StylesheetCeiling)},
 		},
 	} {
 		t.Run(refused.named, func(t *testing.T) {
@@ -321,30 +311,61 @@ func TestADocumentThatMarksNothingIsUnaffected(t *testing.T) {
 	}
 }
 
-func TestAnIllustrationWrittenAsABareStringIsRefusedByName(t *testing.T) {
-	// scenario: An illustration the stylesheet paints survives neutralising
-	written := map[string]any{
-		"title": "one thing to settle",
-		"decisions": []any{map[string]any{
-			"id":       "d-1",
-			"question": "does the cache belong here",
-			"mode":     string(document.One),
-			"options":  []any{map[string]any{"label": "keep it", "command": "agree d-1"}},
-			"fragment": `<div class="panel">one call, one read</div>`,
-		}},
-	}
+func TestADocumentCarryingAFieldItDoesNotHaveIsRefusedNamingIt(t *testing.T) {
+	// scenario: A document carrying fragment or stylesheet is refused naming the field
+	for _, refused := range []struct {
+		field string
+		put   func(document map[string]any)
+	}{
+		{
+			field: "fragment",
+			put: func(document map[string]any) {
+				document["decisions"].([]any)[0].(map[string]any)["fragment"] = map[string]any{"markup": `<div class="panel">one call, one read</div>`}
+			},
+		},
+		{
+			field: "stylesheet",
+			put:   func(document map[string]any) { document["stylesheet"] = `.panel{border:1px solid #d8d2c4}` },
+		},
+	} {
+		t.Run(refused.field, func(t *testing.T) {
+			written := map[string]any{
+				"title": "one thing to settle",
+				"decisions": []any{map[string]any{
+					"id":       "d-1",
+					"question": "does the cache belong here",
+					"mode":     string(document.One),
+					"options":  []any{map[string]any{"label": "keep it", "command": "agree d-1"}},
+				}},
+			}
+			refused.put(written)
 
-	raw, err := json.Marshal(written)
+			encoded, err := json.Marshal(written)
+			if err != nil {
+				t.Fatalf("writing a document out: %v", err)
+			}
+
+			read, err := document.Read(encoded)
+			if err == nil {
+				t.Fatalf("a document carrying %s was read, and the document has no such field: %+v", refused.field, read)
+			}
+			if !strings.Contains(err.Error(), refused.field) {
+				t.Errorf("refusing a document carrying %s does not name the field: %v", refused.field, err)
+			}
+		})
+	}
+}
+
+func TestAnIllustrationNamedByPathIsRead(t *testing.T) {
+	written := whole()
+	written.Decisions[0].Illustration = document.Illustration{Path: "drawings/q3.html"}
+
+	read, err := document.Read(raw(t, written))
 	if err != nil {
-		t.Fatalf("writing a document out: %v", err)
+		t.Fatalf("reading a document whose illustration names a path: %v", err)
 	}
-
-	read, err := document.Read(raw)
-	if err == nil {
-		t.Fatalf("an illustration written as a bare string was read, and the field says what it is made of: %+v", read)
-	}
-	if !strings.Contains(err.Error(), "fragment") {
-		t.Errorf("refusing an illustration written as a bare string does not name the field: %v", err)
+	if got := read.Decisions[0].Illustration.Path; got != "drawings/q3.html" {
+		t.Errorf("the illustration reads back naming %q, want drawings/q3.html", got)
 	}
 }
 

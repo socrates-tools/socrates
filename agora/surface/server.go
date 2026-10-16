@@ -99,7 +99,7 @@ func (s *Server) Control() string {
 	return s.control
 }
 
-func (s *Server) Open(read document.Document, raw []byte) (Opened, error) {
+func (s *Server) Open(read document.Document, raw []byte, base string) (Opened, error) {
 	name, err := MintSession()
 	if err != nil {
 		return Opened{}, err
@@ -109,18 +109,24 @@ func (s *Server) Open(read document.Document, raw []byte) (Opened, error) {
 		return Opened{}, err
 	}
 
-	if err := WritePage(Page{Session: name, Address: s.address, Token: token}, raw); err != nil {
+	copied, err := copyIllustrations(name, read, base)
+	if err != nil {
 		return Opened{}, err
 	}
 
-	if !s.sessions.Open(name, token, read, time.Now()) {
+	if err := WritePage(Page{Session: name, Address: s.address, Token: token}, raw); err != nil {
+		_ = ForgetPage(name)
+		return Opened{}, err
+	}
+
+	if !s.sessions.Open(name, token, read, copied, time.Now()) {
 		_ = ForgetPage(name)
 		return Opened{}, refusal.New(surfaceIsBeingReplaced)
 	}
 	return Opened{Session: name, Token: token}, nil
 }
 
-func (s *Server) Revise(session string, read document.Document, raw []byte) error {
+func (s *Server) Revise(session string, read document.Document, raw []byte, base string) error {
 	one, standing := s.sessions.Exchange(session)
 	if !standing {
 		return refusal.New(surfaceHoldsNoSuchSession, session)
@@ -128,10 +134,25 @@ func (s *Server) Revise(session string, read document.Document, raw []byte) erro
 	if err := one.Admits(read); err != nil {
 		return err
 	}
-	if err := WriteDocument(session, raw); err != nil {
+	return s.revising(session, read, raw, base)
+}
+
+func (s *Server) revising(session string, read document.Document, raw []byte, base string) error {
+	copied, err := copyIllustrations(session, read, base)
+	if err != nil {
 		return err
 	}
-	return s.sessions.Revise(session, read)
+	if err := WriteDocument(session, raw); err != nil {
+		_ = forgetCopy(session, copied)
+		return err
+	}
+
+	previous, err := s.sessions.Revise(session, read, copied)
+	if err != nil {
+		_ = forgetCopy(session, copied)
+		return err
+	}
+	return forgetCopy(session, previous)
 }
 
 func (s *Server) Exchange(session string) (*Exchange, bool) {
@@ -208,6 +229,7 @@ func (s *Server) routes() http.Handler {
 	routed.HandleFunc("GET "+SessionPrefix+"{session}", s.page)
 	routed.HandleFunc("GET "+SessionPrefix+"{session}/{$}", s.page)
 	routed.HandleFunc("GET "+SessionPrefix+"{session}/live", s.live)
+	routed.HandleFunc("GET "+SessionPrefix+"{session}/illustrations/{decision}/{file...}", s.illustration)
 	routed.HandleFunc("POST "+SessionPrefix+"{session}/answer", s.guarded(s.answer))
 	routed.HandleFunc("GET "+SessionPrefix+"{session}/answer", s.guarded(s.deliver))
 	routed.HandleFunc("POST "+SessionPrefix+"{session}/document", s.guarded(s.revise))
@@ -277,9 +299,9 @@ func (s *Server) opening(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	opened, err := s.Open(read, raw)
+	opened, err := s.Open(read, raw, decodeBase(request.Header.Get(BaseHeader)))
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, err.Error(), refusedOrFailed(err))
 		return
 	}
 
@@ -436,13 +458,8 @@ func (s *Server) revise(writer http.ResponseWriter, request *http.Request, one *
 		http.Error(writer, err.Error(), http.StatusConflict)
 		return
 	}
-	if err := WriteDocument(request.PathValue("session"), raw); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if err := s.sessions.Revise(request.PathValue("session"), read); err != nil {
-		http.Error(writer, err.Error(), http.StatusConflict)
+	if err := s.revising(request.PathValue("session"), read, raw, decodeBase(request.Header.Get(BaseHeader))); err != nil {
+		http.Error(writer, err.Error(), refusedOrFailed(err))
 		return
 	}
 	writer.WriteHeader(http.StatusNoContent)
@@ -465,6 +482,13 @@ func (s *Server) retire(writer http.ResponseWriter, request *http.Request) {
 	}
 	writer.WriteHeader(http.StatusNoContent)
 	go s.Stop()
+}
+
+func refusedOrFailed(err error) int {
+	if refusal.Is(err) {
+		return http.StatusBadRequest
+	}
+	return http.StatusInternalServerError
 }
 
 func bodyWithin(writer http.ResponseWriter, request *http.Request) ([]byte, bool) {

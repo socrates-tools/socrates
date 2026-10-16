@@ -23,12 +23,13 @@ func Reach(open Record) *Caller {
 	return &Caller{open: open, reading: &http.Client{}}
 }
 
-func (c *Caller) Open(ctx context.Context, raw []byte) (Opened, error) {
+func (c *Caller) Open(ctx context.Context, raw []byte, base string) (Opened, error) {
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.at(SessionPrefix), bytes.NewReader(raw))
 	if err != nil {
 		return Opened{}, err
 	}
 	request.Header.Set(TokenHeader, c.open.Token)
+	request.Header.Set(BaseHeader, EncodeBase(base))
 	request.Header.Set("content-type", "application/json")
 
 	answered, err := c.reading.Do(request)
@@ -82,8 +83,8 @@ func (c *Caller) Await(ctx context.Context, session string, within time.Duration
 	return read, true, nil
 }
 
-func (c *Caller) Revise(ctx context.Context, session string, raw []byte) error {
-	return c.post(ctx, session, c.under(session, "/document"), raw)
+func (c *Caller) Revise(ctx context.Context, session string, raw []byte, base string) error {
+	return c.post(ctx, session, c.under(session, "/document"), raw, BaseHeader, EncodeBase(base))
 }
 
 func (c *Caller) End(ctx context.Context, session string) error {
@@ -118,13 +119,16 @@ func (c *Caller) Retire(ctx context.Context) (bool, error) {
 	}
 }
 
-func (c *Caller) post(ctx context.Context, session, address string, body []byte) error {
+func (c *Caller) post(ctx context.Context, session, address string, body []byte, headers ...string) error {
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, address, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
 	request.Header.Set(TokenHeader, c.open.Token)
 	request.Header.Set("content-type", "application/json")
+	for at := 0; at+1 < len(headers); at += 2 {
+		request.Header.Set(headers[at], headers[at+1])
+	}
 
 	answered, err := c.reading.Do(request)
 	if err != nil {

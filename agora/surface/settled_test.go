@@ -52,7 +52,7 @@ func TestASettledAnswerIsStatedAsTheSessionCollectedIt(t *testing.T) {
 	answeredAndCollected(t, held, theCacheQuestionAnswered())
 
 	revised := settling(asCollected())
-	if err := held.server.Revise(held.session, revised, written(t, revised)); err != nil {
+	if err := held.server.Revise(held.session, revised, written(t, revised), ""); err != nil {
 		t.Fatalf("a settled answer stated exactly as it was collected was refused: %v", err)
 	}
 	if served, _ := held.exchange(t).Document(); len(served.Settled) != 1 || served.Settled[0].Words != inThePersonsOwnWords {
@@ -88,7 +88,7 @@ func TestASettledAnswerRestatedOtherwiseThanCollectedIsRefused(t *testing.T) {
 			restated.change(&entry)
 			revised := settling(entry)
 
-			err := held.server.Revise(held.session, revised, written(t, revised))
+			err := held.server.Revise(held.session, revised, written(t, revised), "")
 			if err == nil {
 				t.Fatal("a settled answer that is not what the session collected was served")
 			}
@@ -112,7 +112,7 @@ func TestOnlyWhatTheSessionCollectedBindsWhatIsSettled(t *testing.T) {
 		held := serving(t, twoDecisions(), 0)
 
 		revised := settling(document.Settled{ID: "c-1", Question: "should the cache be read before the lock is taken", Words: "decided elsewhere"})
-		if err := held.server.Revise(held.session, revised, written(t, revised)); err != nil {
+		if err := held.server.Revise(held.session, revised, written(t, revised), ""); err != nil {
 			t.Errorf("a settled answer the surface holds nothing to compare with was refused: %v", err)
 		}
 	})
@@ -126,7 +126,7 @@ func TestOnlyWhatTheSessionCollectedBindsWhatIsSettled(t *testing.T) {
 		entry := asCollected()
 		entry.Words = "what the caller believes was answered"
 		revised := settling(entry)
-		if err := held.server.Revise(held.session, revised, written(t, revised)); err != nil {
+		if err := held.server.Revise(held.session, revised, written(t, revised), ""); err != nil {
 			t.Errorf("an answer the caller never collected decided what it may settle: %v", err)
 		}
 	})
@@ -140,7 +140,7 @@ func TestOnlyWhatTheSessionCollectedBindsWhatIsSettled(t *testing.T) {
 		answeredAndCollected(t, held, surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{1}, Words: answeredAgain}}})
 
 		stale := settling(asCollected())
-		if err := held.server.Revise(held.session, stale, written(t, stale)); err == nil {
+		if err := held.server.Revise(held.session, stale, written(t, stale), ""); err == nil {
 			t.Error("a settled answer stated as the first answer was served after the question was answered again")
 		}
 
@@ -148,7 +148,7 @@ func TestOnlyWhatTheSessionCollectedBindsWhatIsSettled(t *testing.T) {
 		latest.Chosen = []string{"leave it"}
 		latest.Words = answeredAgain
 		current := settling(latest)
-		if err := held.server.Revise(held.session, current, written(t, current)); err != nil {
+		if err := held.server.Revise(held.session, current, written(t, current), ""); err != nil {
 			t.Errorf("a settled answer stated as the last answer was refused: %v", err)
 		}
 	})

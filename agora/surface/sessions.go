@@ -25,31 +25,32 @@ func NewSessions(at time.Time) *Sessions {
 	return &Sessions{standing: map[string]*held{}, emptied: at}
 }
 
-func (s *Sessions) Open(name, token string, read document.Document, at time.Time) bool {
+func (s *Sessions) Open(name, token string, read document.Document, copied string, at time.Time) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if s.retired {
 		return false
 	}
-	s.standing[name] = &held{token: token, exchange: NewExchange(read, at)}
+	opened := NewExchange(read, at)
+	opened.copied = copied
+	s.standing[name] = &held{token: token, exchange: opened}
 	s.emptied = time.Time{}
 	return true
 }
 
-func (s *Sessions) Revise(name string, read document.Document) error {
+func (s *Sessions) Revise(name string, read document.Document, copied string) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if s.retired {
-		return refusal.New(surfaceIsBeingReplaced)
+		return "", refusal.New(surfaceIsBeingReplaced)
 	}
 	one, standing := s.standing[name]
 	if !standing {
-		return refusal.New(surfaceHoldsNoSuchSession, name)
+		return "", refusal.New(surfaceHoldsNoSuchSession, name)
 	}
-	_, err := one.exchange.ReviseAdmitted(read)
-	return err
+	return one.exchange.ReviseAdmitted(read, copied)
 }
 
 func (s *Sessions) Retire() bool {

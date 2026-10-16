@@ -90,7 +90,7 @@ func serving(t *testing.T, read document.Document, idle time.Duration) *standing
 	}
 	t.Cleanup(server.Stop)
 
-	opened, err := server.Open(read, written(t, read))
+	opened, err := server.Open(read, written(t, read), "")
 	if err != nil {
 		t.Fatalf("opening a session on the surface: %v", err)
 	}

@@ -46,7 +46,6 @@ var ContractsTestsRead = map[string]string{
 	filepath.Join("review", "findings", "verdict_test.go"):           "the direction the findings package may import in, which is a structural invariant of this module",
 	filepath.Join("review", "presentation", "boundary_test.go"):      "what the renderer may import and call, which is what makes it a function of the events and nothing else",
 	filepath.Join("agora", "render", "boundary_test.go"):             "what the page renderer may import, which is what keeps it a function of the document and nothing else",
-	filepath.Join("agora", "stylesheet", "boundary_test.go"):         "the rule that one file alone reaches the parser the reduction is built on, which is a structural invariant of this module",
 	filepath.Join("agora", "surface", "boundary_test.go"):            "the rule that the surface starts no process, which is a structural invariant of this module",
 	filepath.Join("internal", "version", "boundary_test.go"):         "the rule that what the binary says about itself is read from nothing at run time, which is a structural invariant of this module",
 }

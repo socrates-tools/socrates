@@ -51,87 +51,26 @@ func TestShowingAndDrawingAreSeparateLines(t *testing.T) {
 	}
 }
 
-func TestTheSkillNamesTheIllustrationAsSomethingADecisionMayCarry(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
+func TestTheSkillNamesTheIllustrationAsAnHTMLFileDrawnInASandboxedFrame(t *testing.T) {
+	// scenario: Both skills stop teaching the fragment
+	document := skill.Document(skillkit.ClaudeCode)
+	page := strings.ToLower(sectionOf(t, document, pageHeading))
 
 	for _, said := range []string{
 		"a decision may also carry one illustration",
 		"beside the evidence rather than inside it",
-		`"fragment": {"markup"`,
+		`"illustration": {"path": "q3.html"}`,
+		"an illustration is an html file you write and name by path",
+		"drawn in a sandboxed frame",
 	} {
 		if !strings.Contains(page, strings.ToLower(said)) {
 			t.Errorf("the page section does not say %q, so nothing says how an illustration reaches the page:\n%s", said, page)
 		}
 	}
-}
 
-func TestTheSkillSaysWhatFormsAnIllustrationTakes(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
-
-	for _, said := range []string{
-		"one of two forms",
-		"inline svg",
-		"is for a workflow",
-		"the document's stylesheet paints",
-		"a screen the person already knows",
-	} {
-		if !strings.Contains(page, said) {
-			t.Errorf("the page section does not say %q, so a session cannot tell which form is for what:\n%s", said, page)
-		}
-	}
-
-	document := strings.ToLower(skill.Document(skillkit.ClaudeCode))
-	for _, engine := range []string{
-		"mermaid", "graphviz", "plantuml", "kroki", "excalidraw",
-		"diagram engine", "lays it out for you", "renders it for you",
-	} {
-		if strings.Contains(document, engine) {
-			t.Errorf("the skill names %q, and the surface embeds no engine that would lay a drawing out", engine)
-		}
-	}
-}
-
-func TestTheSkillSaysTheLookIsStatedOncePerDocument(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
-
-	for _, said := range []string{
-		`"stylesheet"`,
-		"once for the whole document rather than once per decision",
-		"one stylesheet paints every illustration in it",
-	} {
-		if !strings.Contains(page, said) {
-			t.Errorf("the page section does not say %q, so a session repeats one look per decision:\n%s", said, page)
-		}
-	}
-}
-
-func TestTheSkillSaysWhatIsStrippedBeforeEitherIsEmbedded(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
-
-	for _, said := range []string{
-		"reduced to an allowlist before they are embedded",
-		"the markup loses script, event handlers, remote references and form controls",
-		"the stylesheet loses imports, font faces",
-		"every property the allowlist does not name",
-		"every value naming a resource",
-	} {
-		if !strings.Contains(page, said) {
-			t.Errorf("the page section does not say %q, so a session writes what will be dropped:\n%s", said, page)
-		}
-	}
-}
-
-func TestTheSkillSaysTheSurfaceDoesTheScoping(t *testing.T) {
-	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
-
-	for _, said := range []string{
-		"the surface scopes the stylesheet itself",
-		"confined to the illustration",
-		"leave the scoping to the surface",
-		"do not expect a rule you aimed at the page to reach the page",
-	} {
-		if !strings.Contains(page, said) {
-			t.Errorf("the page section does not say %q, so a session scopes its own selectors or expects one to reach the page:\n%s", said, page)
+	for _, retired := range []string{"fragment", "markup", "allowlist", "stylesheet"} {
+		if strings.Contains(strings.ToLower(document), retired) {
+			t.Errorf("the skill still mentions %q, and an illustration is an HTML file named by path", retired)
 		}
 	}
 }

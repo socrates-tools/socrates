@@ -88,7 +88,7 @@ func TestOneSessionLeftOpenBesideAnEndedOneKeepsTheSurface(t *testing.T) {
 	// scenario: A surface holding a session is reused and the session still answers
 	held := serving(t, twoDecisions(), 0)
 	held.exchange(t).End()
-	if _, err := held.server.Open(oneOtherDecision(), written(t, oneOtherDecision())); err != nil {
+	if _, err := held.server.Open(oneOtherDecision(), written(t, oneOtherDecision()), ""); err != nil {
 		t.Fatalf("opening a second session: %v", err)
 	}
 
@@ -105,10 +105,10 @@ func TestARetiredSurfaceTakesNoSessionAndReopensNone(t *testing.T) {
 		t.Fatalf("retiring was answered with %d", code)
 	}
 
-	if _, err := held.server.Open(oneOtherDecision(), written(t, oneOtherDecision())); err == nil {
+	if _, err := held.server.Open(oneOtherDecision(), written(t, oneOtherDecision()), ""); err == nil {
 		t.Error("a retired surface took a new session")
 	}
-	if err := held.server.Revise(held.session, oneOtherDecision(), written(t, oneOtherDecision())); err == nil {
+	if err := held.server.Revise(held.session, oneOtherDecision(), written(t, oneOtherDecision()), ""); err == nil {
 		t.Error("a retired surface reopened a session that was ended")
 	}
 	if !held.exchange(t).Over() {

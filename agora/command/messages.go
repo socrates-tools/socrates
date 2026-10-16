@@ -20,6 +20,7 @@ const (
 	nameTheSession            = "socrates agora %s is about one page and the surface holds more than one: pass --session with the session at the end of the address socrates agora serve printed"
 	noSurfaceHoldsThatSession = "no surface is open, so nothing holds the session %q. Run socrates agora serve without --session to open one"
 	readingTheDocument        = "reading the document: %w"
+	readingTheWorkingFolder   = "reading the folder this command was run in: %w"
 	readingThisBinary         = "reading which binary socrates is running as: %w"
 	startingTheSurface        = "starting the surface: %w"
 

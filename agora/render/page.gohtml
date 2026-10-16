@@ -8,7 +8,6 @@
 <title>{{.Title}}</title>
 <link rel="icon" type="image/svg+xml" href="/assets/socrates-mark.svg">
 <link rel="stylesheet" href="/assets/surface.css">
-{{if .Stylesheet}}<style>{{.Stylesheet}}</style>{{end}}
 </head>
 <body data-base="{{.Base}}" data-token="{{.Token}}" data-revision="{{.Revision}}" data-over="{{if .Over}}yes{{else}}no{{end}}">
 {{define "check"}}<svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square" aria-hidden="true" focusable="false"><polyline points="20 6 9 17 4 12"/></svg>{{end}}
@@ -115,7 +114,7 @@
 <h2 class="question">{{.Question}}</h2>
 {{if .Meaning}}<p class="meaning">{{.Meaning}}</p>{{end}}
 
-{{if or .Code .Diff .Fragment}}
+{{if or .Code .Diff .Drawing}}
 <div class="evidences">
 {{if .Code}}
 <div class="evidence code">
@@ -149,10 +148,10 @@
 </div>
 {{end}}
 
-{{if .Fragment}}
+{{with .Drawing}}
 <div class="evidence illustrated">
 <div class="evidence-heading"><span class="evidence-label">illustration</span></div>
-<div class="illustration"><div class="painted">{{.Fragment}}</div></div>
+<iframe class="drawing" sandbox="allow-scripts" src="{{.Source}}" title="{{.Title}}"></iframe>
 </div>
 {{end}}
 </div>

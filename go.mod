@@ -14,7 +14,6 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/rogpeppe/go-internal v1.16.0
 	github.com/spf13/cobra v1.10.2
-	github.com/tdewolff/parse/v2 v2.8.16
 	go.yaml.in/yaml/v3 v3.0.5
 	golang.org/x/net v0.61.0
 )

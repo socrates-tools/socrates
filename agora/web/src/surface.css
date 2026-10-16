@@ -1115,19 +1115,12 @@ span.entry-link .entry-name {
   color: var(--diff-added-mark);
 }
 
-.illustration {
-  padding: 12px;
-  max-height: 32rem;
-  overflow: auto;
-  background: var(--surface-card);
-  contain: layout paint style;
-}
-
-.illustration svg {
+.drawing {
   display: block;
-  margin: 0 auto;
-  max-width: 100%;
-  height: auto;
+  width: 100%;
+  height: 24rem;
+  border: 0;
+  background: var(--surface-card);
 }
 
 .answering {

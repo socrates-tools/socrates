@@ -12,11 +12,9 @@ This file is agora's layout and invariants.
 - `agora/command` - the command tree: `serve`, `poll` (which prints the last collected answer again with `--last`), `end`, `stop`, and nothing else.
 - `agora/config` - the one optional configuration file agora reads, which holds the `surface` block and nothing of review's.
 - `agora/document` - what a caller writes for the surface to render, what it copies rather than accepts, and the languages the page can highlight.
-- `agora/sanitise` - a caller's HTML fragment reduced to a fixed allowlist, and every name it carries prefixed.
-- `agora/stylesheet` - a caller's stylesheet read as a parse, reduced to a fixed allowlist, and scoped to the illustration.
 - `agora/render` - a document to one HTML page, the marks a severity and an audience are drawn as, and a patch to the rows of a split diff.
 - `agora/assets` - the built client bundle and fonts, embedded, and the stamp of their source.
-- `agora/surface` - the loopback server and its guards, the one address bound where nothing states one, the sessions it holds, what it writes about itself and about each page, the exchange, and the bounds on waiting.
+- `agora/surface` - the loopback server and its guards, the one address bound where nothing states one, the sessions it holds, what it writes about itself and about each page, the copy of each illustration and the route that serves it, the exchange, and the bounds on waiting.
 - `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
 
 ## Invariants
@@ -58,9 +56,12 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
   Going back, Escape and a press on the backdrop are one path: nothing is sent, the page is as it was, and the cursor returns to the button that raised it.
 - The languages the page highlights are the bundled library's common set, stated once and generated from `web/`, and a document naming one outside it is refused while one naming none renders as plain text.
 - Evidence written in markdown wraps at the width of its card rather than scrolling sideways, because it is prose a person reads whole, and code in any other language keeps its lines.
-- A caller's fragment is reduced to a fixed allowlist before it is embedded, and every name it carries is prefixed by the surface.
-- A caller's stylesheet is reduced from a parse that reached the end of its input, every selector it keeps is scoped to the illustration, and the page admits it by a hash of exactly the bytes it embedded.
-- What a caller paints is contained by the illustration, so a rule inside one decides nothing about where the page's own controls land.
+- An illustration is an HTML file a caller names by path, drawn in an iframe sandboxed with `allow-scripts` and without `allow-same-origin`, so its script runs in an opaque origin and reads neither the page, its token nor its storage, and cannot navigate the page or open a popup, per ADR 76.
+- The sandbox is stated again as a `Content-Security-Policy` header on every response of the illustration's route, beside `X-Content-Type-Options: nosniff`, so a drawing opened on its own is sandboxed as well.
+- That policy admits script, style and font from the route, the surface's own origin and three CDN hosts, admits image and media from the route and `data:`, and names nothing for connecting, framing, forms or the base, so a drawing may load a library and has no way to send what it holds anywhere, per ADR 77.
+- The page's own policy admits the frame and embeds nothing a caller wrote, so no caller markup and no caller stylesheet is reduced, scoped or hashed anywhere in agora.
+- A relative illustration path resolves against the document's folder, or against the working directory where the document arrives on standard input, and a path that is missing or names no HTML file is refused before anything is written or served, naming the decision and the path.
+- The surface copies the file into the session rather than reading the caller's tree after that, serves it from a read-only route by decision and file name, and a revision copies it afresh and removes the copy before it once the new one stands.
 - Delivery happens once, waiting is bounded, collection is per session, and the server stops once it has held no session for the idle period.
 - An exchange holds at most one uncollected answer, and a later submit replaces it rather than queueing behind it, so what a caller collects is a person's last word.
 - A collected answer is written to its session's directory before it is handed back, and one the session could not keep stays uncollected, so `agora poll --last` prints again what the last poll printed, without waiting and without the surface, per ADR 73.

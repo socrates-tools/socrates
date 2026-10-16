@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -77,10 +78,18 @@ func newServeCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if _, err := document.Read(raw); err != nil {
+			read, err := document.Read(raw)
+			if err != nil {
 				return err
 			}
-			return start(command, raw, address, stated{reachedAt: configured.ReachedAt, file: file}, session)
+			base, err := foldersOf(from)
+			if err != nil {
+				return err
+			}
+			if err := surface.CheckIllustrations(read, base); err != nil {
+				return err
+			}
+			return start(command, written{raw: raw, base: base}, address, stated{reachedAt: configured.ReachedAt, file: file}, session)
 		},
 	}
 
@@ -125,6 +134,27 @@ func readDocument(command *cobra.Command, from string) ([]byte, error) {
 	return raw, nil
 }
 
+func foldersOf(from string) (string, error) {
+	if from == standardInput {
+		folder, err := os.Getwd()
+		if err != nil {
+			return "", fmt.Errorf(readingTheWorkingFolder, err)
+		}
+		return folder, nil
+	}
+
+	folder, err := filepath.Abs(filepath.Dir(from))
+	if err != nil {
+		return "", fmt.Errorf(readingTheDocument, err)
+	}
+	return folder, nil
+}
+
+type written struct {
+	raw  []byte
+	base string
+}
+
 func hold(address string) error {
 	server, err := surface.Serve(address, surface.IdlePeriod)
 	if err != nil {
@@ -143,7 +173,7 @@ func hold(address string) error {
 	return surface.ForgetRecordOf(server.Control())
 }
 
-func start(command *cobra.Command, raw []byte, address string, said stated, session string) error {
+func start(command *cobra.Command, given written, address string, said stated, session string) error {
 	found, err := surface.Locate(command.Context(), address)
 	if err != nil {
 		return err
@@ -168,7 +198,7 @@ func start(command *cobra.Command, raw []byte, address string, said stated, sess
 		opening, cancel := context.WithTimeout(command.Context(), reachTimeout())
 		defer cancel()
 
-		named, err := onTheSurfaceStanding(opening, surface.Reach(open), raw, session)
+		named, err := onTheSurfaceStanding(opening, surface.Reach(open), given, session)
 		if err != nil {
 			return err
 		}
@@ -212,7 +242,7 @@ func start(command *cobra.Command, raw []byte, address string, said stated, sess
 	opening, cancel := context.WithTimeout(command.Context(), reachTimeout())
 	defer cancel()
 
-	opened, err := surface.Reach(open).Open(opening, raw)
+	opened, err := surface.Reach(open).Open(opening, given.raw, given.base)
 	if err != nil {
 		return err
 	}
@@ -266,15 +296,15 @@ func handOver(command *cobra.Command, open surface.Record, said stated, session 
 	fmt.Fprintf(command.ErrOrStderr(), pageOpensOnThisMachineOnly+"\n", open.Address, surface.ReachedAtField, said.file)
 }
 
-func onTheSurfaceStanding(ctx context.Context, caller *surface.Caller, raw []byte, session string) (string, error) {
+func onTheSurfaceStanding(ctx context.Context, caller *surface.Caller, given written, session string) (string, error) {
 	if session == "" {
-		opened, err := caller.Open(ctx, raw)
+		opened, err := caller.Open(ctx, given.raw, given.base)
 		if err != nil {
 			return "", err
 		}
 		return opened.Session, nil
 	}
-	if err := caller.Revise(ctx, session, raw); err != nil {
+	if err := caller.Revise(ctx, session, given.raw, given.base); err != nil {
 		return "", err
 	}
 	return session, nil

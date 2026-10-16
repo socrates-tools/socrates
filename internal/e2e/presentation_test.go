@@ -16,7 +16,6 @@ const measuringTheText = `(() => {
   const below = [];
   for (const held of document.querySelectorAll('body *')) {
     if (held.namespaceURI !== 'http://www.w3.org/1999/xhtml') continue;
-    if (held.closest('.illustration')) continue;
     const owns = Array.from(held.childNodes).some((node) => node.nodeType === 3 && node.textContent.trim());
     if (!owns) continue;
     const style = getComputedStyle(held);
@@ -157,15 +156,12 @@ func TestADecisionCanBeAnsweredWithoutAPointer(t *testing.T) {
 const narrowly = `(() => {
   const page = document.documentElement;
   const hunk = document.querySelector('.hunk');
-  const drawn = document.querySelector('.illustration svg');
   const surface = document.querySelector('.surface');
   return {
     pageScroll: page.scrollWidth - page.clientWidth,
     hunkOverflows: hunk ? getComputedStyle(hunk).overflowX : '',
     hunkWithin: hunk ? hunk.clientWidth <= surface.clientWidth : false,
     hunkHasContent: hunk ? hunk.scrollWidth > 0 : false,
-    drawnWithin: drawn ? drawn.getBoundingClientRect().width <= surface.clientWidth + 1 : false,
-    drawnVisible: drawn ? drawn.getBoundingClientRect().width > 0 : false,
   };
 })()`
 
@@ -174,8 +170,6 @@ type narrowed struct {
 	HunkOverflows  string  `json:"hunkOverflows"`
 	HunkWithin     bool    `json:"hunkWithin"`
 	HunkHasContent bool    `json:"hunkHasContent"`
-	DrawnWithin    bool    `json:"drawnWithin"`
-	DrawnVisible   bool    `json:"drawnVisible"`
 }
 
 func TestTheNarrowCaseDoesNotShrinkTheEvidenceToNothing(t *testing.T) {
@@ -195,9 +189,6 @@ func TestTheNarrowCaseDoesNotShrinkTheEvidenceToNothing(t *testing.T) {
 	}
 	if !read.HunkWithin || !read.HunkHasContent {
 		t.Errorf("at 360px the diff is not held within the page and legible: %+v", read)
-	}
-	if !read.DrawnVisible || !read.DrawnWithin {
-		t.Errorf("at 360px the illustration is not held within the page and legible: %+v", read)
 	}
 }
 
@@ -228,7 +219,6 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
 		Display   bool `json:"display"`
 		Mono      bool `json:"mono"`
 		Diff      bool `json:"diff"`
-		Drawn     bool `json:"drawn"`
 		Highlight int  `json:"highlight"`
 	}
 	page.evaluate(`({
@@ -236,7 +226,6 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
   display: document.fonts.check('40px "Cinzel"'),
   mono: document.fonts.check('16px "JetBrains Mono"'),
   diff: !!document.querySelector('.hunk .line[data-kind="added"]'),
-  drawn: !!document.querySelector('.illustration svg rect'),
   highlight: document.querySelectorAll('code.hljs .hljs-keyword, code.hljs .hljs-string, code.hljs .hljs-title').length,
 })`, &read)
 
@@ -245,9 +234,6 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
 	}
 	if !read.Diff {
 		t.Error("with no name resolution the diff did not render")
-	}
-	if !read.Drawn {
-		t.Error("with no name resolution the illustration did not render")
 	}
 	if read.Highlight == 0 {
 		t.Error("with no name resolution the highlighting did not render")
@@ -474,7 +460,6 @@ var measuringTheContrast = `(() => {
 
   for (const element of document.querySelectorAll('body *')) {
     if (element.namespaceURI !== 'http://www.w3.org/1999/xhtml') continue;
-    if (element.closest('.illustration')) continue;
     const style = getComputedStyle(element);
     if (style.display === 'none' || style.visibility === 'hidden') continue;
 

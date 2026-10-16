@@ -39,8 +39,7 @@
         "language": "go",
         "code": "entry, held := cache.Read(key)\nif held {\n\treturn entry\n}\n",
         "patch": ""
-      },
-      "fragment": {"markup": ""}
+      }
     },
     {
       "id": "c-2",
@@ -69,8 +68,7 @@
         "code": "",
         "patch": "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -10,4 +10,5 @@\n func Write(key string, entry Entry) {\n-\tstore[key] = entry\n+\tmu.Lock()\n+\tstore[key] = entry\n+\tmu.Unlock()\n }\n"
       },
-      "fragment": {"markup": "<div class=\"panel\"><div class=\"row\"><span class=\"label\">Writes</span><span class=\"value\">one line each</span></div></div>"}
+      "illustration": {"path": "writes.html"}
     }
-  ],
-  "stylesheet": ".panel{border:1px solid #d8d2c4;padding:0.75rem}.row{display:flex;gap:0.75rem}.label{color:#6f6a5e}"
+  ]
 }

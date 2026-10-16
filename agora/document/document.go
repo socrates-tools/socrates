@@ -22,15 +22,12 @@ func Modes() []Mode {
 	return slices.Clone(modes)
 }
 
-const StylesheetCeiling = 64 * 1024
-
 type Document struct {
-	Title      string     `json:"title"`
-	Preamble   string     `json:"preamble"`
-	Stylesheet string     `json:"stylesheet"`
-	Decisions  []Decision `json:"decisions"`
-	Source     []Entry    `json:"source"`
-	Settled    []Settled  `json:"settled"`
+	Title     string     `json:"title"`
+	Preamble  string     `json:"preamble"`
+	Decisions []Decision `json:"decisions"`
+	Source    []Entry    `json:"source"`
+	Settled   []Settled  `json:"settled"`
 }
 
 type Settled struct {
@@ -51,21 +48,21 @@ type Entry struct {
 }
 
 type Decision struct {
-	ID       string   `json:"id"`
-	Name     string   `json:"name"`
-	Severity string   `json:"severity"`
-	Audience string   `json:"audience"`
-	Location string   `json:"location"`
-	Question string   `json:"question"`
-	Meaning  string   `json:"meaning"`
-	Mode     Mode     `json:"mode"`
-	Options  []Option `json:"options"`
-	Evidence Evidence `json:"evidence"`
-	Fragment Fragment `json:"fragment"`
+	ID           string       `json:"id"`
+	Name         string       `json:"name"`
+	Severity     string       `json:"severity"`
+	Audience     string       `json:"audience"`
+	Location     string       `json:"location"`
+	Question     string       `json:"question"`
+	Meaning      string       `json:"meaning"`
+	Mode         Mode         `json:"mode"`
+	Options      []Option     `json:"options"`
+	Evidence     Evidence     `json:"evidence"`
+	Illustration Illustration `json:"illustration"`
 }
 
-type Fragment struct {
-	Markup string `json:"markup"`
+type Illustration struct {
+	Path string `json:"path"`
 }
 
 type Option struct {
@@ -105,9 +102,6 @@ func Validate(read Document) error {
 	}
 	if len(read.Decisions) == 0 && len(read.Source) == 0 && len(read.Settled) == 0 && strings.TrimSpace(read.Preamble) == "" {
 		return errors.New(theDocumentHoldsNothing)
-	}
-	if len(read.Stylesheet) > StylesheetCeiling {
-		return fmt.Errorf(theStylesheetIsTooLarge, len(read.Stylesheet), StylesheetCeiling)
 	}
 
 	cited, err := read.citedByIdentifier()
