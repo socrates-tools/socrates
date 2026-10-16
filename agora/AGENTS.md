@@ -28,7 +28,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 
 - It binds a loopback address; nothing widens it, and an address that is not one is refused before any server starts.
 - It binds one fixed port where nothing states one, and that port held by anything else is a refusal naming the port, `surface.bind` and `--address`, and no surface starts on another port.
-  The port is stated once, in `agora/surface` beside the guards that judge an address.
+  The port is stated once, in `agora/surface` beside the guards that judge an address, and every binary the suite builds is linked with a port of its own in its place, so no test reaches the port a real surface stands on, per ADR 74.
 - `serve`, `poll`, `end` and `stop` find the surface by asking the port who stands there, never by `surface.json` alone: the surface answers `/identity` with no token, that it is agora, the root it writes under and the build it was linked from, and a surface is trusted only when it answers as agora under this root.
   Where a committed bind names port 0 there is no port to ask, so the address `surface.json` records is asked instead and trusted on the same terms.
   A port held by an agora surface of another root is a refusal naming that root.

@@ -617,10 +617,10 @@ func TestAHeldAddressIsRefusedNamingTheWaysToMoveTheSurface(t *testing.T) {
 }
 
 func TestTheAddressBoundWhereNothingStatesOneIsOneLoopbackPort(t *testing.T) {
-	if surface.DefaultAddress != "127.0.0.1:24672" {
-		t.Errorf("the address bound where nothing states one is %q", surface.DefaultAddress)
+	if surface.DefaultAddress() != "127.0.0.1:24672" {
+		t.Errorf("the address bound where nothing states one is %q", surface.DefaultAddress())
 	}
-	if err := surface.CheckLoopback(surface.DefaultAddress); err != nil {
+	if err := surface.CheckLoopback(surface.DefaultAddress()); err != nil {
 		t.Errorf("the address bound where nothing states one is not one the surface will bind: %v", err)
 	}
 }

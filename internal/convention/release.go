@@ -510,3 +510,17 @@ func filesUploaded(script string) []string {
 	}
 	return uploaded
 }
+
+const StampedBuildPackage = "/internal/version"
+
+func StampsBeyondTheBuild(module string, building []ReleaseBuild) []string {
+	var beyond []string
+	for _, one := range building {
+		for _, named := range SymbolsAReleaseStamps(one.Stamps) {
+			if named != module+StampedBuildPackage {
+				beyond = append(beyond, one.Binary+": "+named)
+			}
+		}
+	}
+	return beyond
+}

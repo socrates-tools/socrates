@@ -4,13 +4,55 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"fmt"
+	"math/rand/v2"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/socrates-tools/socrates/agora/surface"
 )
+
+const (
+	suitesSurfaceRangeStart = 30000
+	suitesSurfaceRangeSize  = 2000
+	suitesSurfaceTries      = 200
+)
+
+var (
+	surfaceDefaultSymbol = reflect.TypeFor[surface.Record]().PkgPath() + ".defaultAddress"
+	suitesSurfaceAddress = sync.OnceValues(chooseTheSuitesSurfaceAddress)
+)
+
+func SurfaceDefaultAddress(t *testing.T) string {
+	t.Helper()
+
+	address, err := suitesSurfaceAddress()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return address
+}
+
+func chooseTheSuitesSurfaceAddress() (string, error) {
+	for range suitesSurfaceTries {
+		address := net.JoinHostPort("127.0.0.1", strconv.Itoa(suitesSurfaceRangeStart+rand.IntN(suitesSurfaceRangeSize)))
+		listener, err := net.Listen("tcp", address)
+		if err != nil {
+			continue
+		}
+		if err := listener.Close(); err != nil {
+			return "", fmt.Errorf("releasing the port chosen for the suite's surface: %w", err)
+		}
+		return address, nil
+	}
+	return "", fmt.Errorf("no loopback port in %d..%d is free for the surface the suite's binaries bind where nothing states one", suitesSurfaceRangeStart, suitesSurfaceRangeStart+suitesSurfaceRangeSize)
+}
 
 var toolchain = capture()
 
@@ -56,10 +98,13 @@ func BuildWithTags(t *testing.T, target, output string, tags ...string) {
 }
 
 func build(root, target, output string, tags []string, linkerFlags string) error {
-	arguments := []string{"build"}
-	if linkerFlags != "" {
-		arguments = append(arguments, "-ldflags", linkerFlags)
+	address, err := suitesSurfaceAddress()
+	if err != nil {
+		return err
 	}
+	linked := strings.TrimSpace(linkerFlags + " -X " + surfaceDefaultSymbol + "=" + address)
+
+	arguments := []string{"build", "-ldflags", linked}
 	if len(tags) > 0 {
 		arguments = append(arguments, "-tags", strings.Join(tags, ","))
 	}

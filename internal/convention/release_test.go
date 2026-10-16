@@ -290,6 +290,39 @@ func TestAReleaseStampsTheModulePathTheModuleDeclares(t *testing.T) {
 	}
 }
 
+func TestAReleaseStampsWhatItWasLinkedFromAndNothingElse(t *testing.T) {
+	root := source.Root(t)
+
+	declared, err := convention.ModulePath(root)
+	if err != nil {
+		t.Fatalf("reading the module path: %v", err)
+	}
+	building, err := convention.AReleaseBuilds(root)
+	if err != nil {
+		t.Fatalf("reading what a release builds: %v", err)
+	}
+
+	if beyond := convention.StampsBeyondTheBuild(declared, building); len(beyond) > 0 {
+		t.Errorf("%s stamps symbols outside %s, so a published binary could behave otherwise than the source states, such as binding the port the suite links in its tests: %v", convention.ReleaseConfigurationFile, declared+convention.StampedBuildPackage, beyond)
+	}
+}
+
+func TestAReleaseStampingTheSurfacesDefaultAddressIsReported(t *testing.T) {
+	const module = "example.test/socrates"
+	building := []convention.ReleaseBuild{{
+		Binary: "socrates",
+		Stamps: []string{
+			"-X " + module + "/internal/version.version={{ .Tag }}",
+			"-X " + module + "/agora/surface.defaultAddress=127.0.0.1:30001",
+		},
+	}}
+
+	want := []string{"socrates: " + module + "/agora/surface"}
+	if diff := cmp.Diff(want, convention.StampsBeyondTheBuild(module, building)); diff != "" {
+		t.Errorf("a release stamping the surface's default address was read otherwise (-want +got):\n%s", diff)
+	}
+}
+
 func TestTheSymbolsAReleaseStampsAreReadFromItsLinkerFlags(t *testing.T) {
 	named := convention.SymbolsAReleaseStamps([]string{
 		"-X " + hostedBy("github.com", "an-impostor", convention.Suite) + "/internal/version.version={{ .Tag }}",

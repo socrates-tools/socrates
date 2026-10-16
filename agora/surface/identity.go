@@ -120,7 +120,7 @@ func Locate(ctx context.Context, committed string) (Whereabouts, error) {
 
 func portToAsk(committed string) string {
 	if committed == "" {
-		return DefaultAddress
+		return DefaultAddress()
 	}
 	if _, port, err := net.SplitHostPort(committed); err != nil || port == "0" {
 		return ""

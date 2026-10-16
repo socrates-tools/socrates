@@ -19,7 +19,6 @@ import (
 	"github.com/socrates-tools/socrates/agora/surface"
 	"github.com/socrates-tools/socrates/internal/exit"
 	"github.com/socrates-tools/socrates/internal/state"
-	"github.com/socrates-tools/socrates/internal/testing/exclusive"
 	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
@@ -61,23 +60,40 @@ const (
 
 var claimedPorts sync.Map
 
-func aPortTheSuiteMayChoose(port int) bool {
-	return net.JoinHostPort("127.0.0.1", strconv.Itoa(port)) != surface.DefaultAddress
+func aPortTheSuiteMayChoose(t *testing.T, port int) bool {
+	address := net.JoinHostPort("127.0.0.1", strconv.Itoa(port))
+	return address != surface.DefaultAddress() && address != theSuitesDefault(t)
 }
 
-func TestNoFreePortTheSuiteChoosesIsTheDefault(t *testing.T) {
+func theSuitesDefault(t *testing.T) string {
+	t.Helper()
+	return source.SurfaceDefaultAddress(t)
+}
+
+func TestNoFreePortTheSuiteChoosesIsEitherDefault(t *testing.T) {
 	t.Parallel()
 
-	_, port, err := net.SplitHostPort(surface.DefaultAddress)
-	if err != nil {
-		t.Fatalf("reading the port the surface binds from %q: %v", surface.DefaultAddress, err)
+	for _, address := range []string{surface.DefaultAddress(), theSuitesDefault(t)} {
+		_, port, err := net.SplitHostPort(address)
+		if err != nil {
+			t.Fatalf("reading the port of %q: %v", address, err)
+		}
+		bound, err := strconv.Atoi(port)
+		if err != nil {
+			t.Fatalf("the port of %q is not a number: %v", address, err)
+		}
+		if aPortTheSuiteMayChoose(t, bound) {
+			t.Errorf("the suite may choose %d as a free port, and a surface binds it where nothing states one", bound)
+		}
 	}
-	bound, err := strconv.Atoi(port)
-	if err != nil {
-		t.Fatalf("the port of %q is not a number: %v", surface.DefaultAddress, err)
-	}
-	if aPortTheSuiteMayChoose(bound) {
-		t.Errorf("the suite may choose %d as a free port, and the surface binds it where nothing states one", bound)
+}
+
+func TestTheSuitesBinariesBindAPortNoRealSurfaceStandsOn(t *testing.T) {
+	// scenario: The suite never reaches the port a real surface stands on
+	t.Parallel()
+
+	if theSuitesDefault(t) == surface.DefaultAddress() {
+		t.Errorf("the binaries the suite builds bind %s where nothing states one, which is where a real surface stands", surface.DefaultAddress())
 	}
 }
 
@@ -86,7 +102,7 @@ func aFreeLoopbackAddress(t *testing.T) string {
 
 	for range privateRangeTries {
 		port := privateRangeStart + rand.IntN(privateRangeSize)
-		if !aPortTheSuiteMayChoose(port) {
+		if !aPortTheSuiteMayChoose(t, port) {
 			continue
 		}
 		if _, claimed := claimedPorts.LoadOrStore(port, struct{}{}); claimed {
@@ -175,25 +191,30 @@ func untilThePortIsFree(t *testing.T, address string) {
 	}
 }
 
-var defaultPortFreedAtTheEnd sync.Map
+var (
+	theSuitesDefaultPort        sync.Mutex
+	holdingTheSuitesDefaultPort sync.Map
+)
 
 func lockingTheDefaultPort(t *testing.T) {
 	t.Helper()
-	exclusive.Machine(t, "agora-default-port")
-	if _, already := defaultPortFreedAtTheEnd.LoadOrStore(t, struct{}{}); !already {
-		t.Cleanup(func() {
-			defaultPortFreedAtTheEnd.Delete(t)
-			untilThePortIsFree(t, surface.DefaultAddress)
-		})
+	if _, already := holdingTheSuitesDefaultPort.LoadOrStore(t, struct{}{}); already {
+		return
 	}
+	theSuitesDefaultPort.Lock()
+	t.Cleanup(func() {
+		defer theSuitesDefaultPort.Unlock()
+		defer holdingTheSuitesDefaultPort.Delete(t)
+		untilThePortIsFree(t, theSuitesDefault(t))
+	})
 }
 
 func requireTheFixedPortIsFree(t *testing.T) {
 	t.Helper()
 	lockingTheDefaultPort(t)
 
-	if somethingListensAt(surface.DefaultAddress) {
-		t.Skipf("something else holds %s, so what the surface binds when nothing states one cannot be read here", surface.DefaultAddress)
+	if somethingListensAt(theSuitesDefault(t)) {
+		t.Fatalf("something else holds %s, the port the suite's binaries bind where nothing states one", theSuitesDefault(t))
 	}
 }
 
@@ -201,9 +222,9 @@ func holdingTheDefaultPort(t *testing.T) {
 	t.Helper()
 	lockingTheDefaultPort(t)
 
-	listener, err := listeningOnceFree(surface.DefaultAddress)
+	listener, err := listeningOnceFree(theSuitesDefault(t))
 	if err != nil {
-		t.Skipf("something else already holds %s, so a held default port cannot be read here: %v", surface.DefaultAddress, err)
+		t.Fatalf("something else holds %s, the port the suite's binaries bind where nothing states one: %v", theSuitesDefault(t), err)
 	}
 	t.Cleanup(func() { _ = listener.Close() })
 }
@@ -273,13 +294,11 @@ func TestAStatedReachedAtAddressPinsThePortToo(t *testing.T) {
 	if code == 0 {
 		t.Fatalf("an operator stated where the surface is reached at, the default port is held, and a page was served at %q", printed)
 	}
-	if !strings.Contains(failures, surface.DefaultAddress) {
+	if !strings.Contains(failures, theSuitesDefault(t)) {
 		t.Errorf("refusing a held port an operator committed to does not name it: %s", failures)
 	}
-	held.startedNoSurface(surface.DefaultAddress)
+	held.startedNoSurface(theSuitesDefault(t))
 }
-
-const theDefaultAddress = "127.0.0.1:24672"
 
 func TestAHeldDefaultPortIsRefusedRatherThanWalkedPast(t *testing.T) {
 	t.Parallel()
@@ -292,12 +311,16 @@ func TestAHeldDefaultPortIsRefusedRatherThanWalkedPast(t *testing.T) {
 	if code == 0 {
 		t.Fatalf("the default port is held and a page was served at %q", printed)
 	}
-	for _, named := range []string{"24672", "surface.bind", "--address", held.agorasConfiguration()} {
+	_, port, err := net.SplitHostPort(theSuitesDefault(t))
+	if err != nil {
+		t.Fatalf("reading the port of %q: %v", theSuitesDefault(t), err)
+	}
+	for _, named := range []string{port, "surface.bind", "--address", held.agorasConfiguration()} {
 		if !strings.Contains(failures, named) {
 			t.Errorf("refusing a held default port does not name %s:\n%s", named, failures)
 		}
 	}
-	held.startedNoSurface(theDefaultAddress)
+	held.startedNoSurface(theSuitesDefault(t))
 }
 
 func TestTheDefaultBindIsAFixedLoopbackPort(t *testing.T) {
@@ -310,8 +333,8 @@ func TestTheDefaultBindIsAFixedLoopbackPort(t *testing.T) {
 	held.serve(oneDecisionDocument)
 	bound := held.record().Address
 
-	if bound != theDefaultAddress {
-		t.Fatalf("with nothing stated the surface bound %q, and the address it binds when nothing states one is %q", bound, theDefaultAddress)
+	if bound != theSuitesDefault(t) {
+		t.Fatalf("with nothing stated the surface bound %q, and the address it binds when nothing states one is %q", bound, theSuitesDefault(t))
 	}
 	host, _, err := net.SplitHostPort(bound)
 	if err != nil {
@@ -479,13 +502,13 @@ func TestThePortAnOperatorIsToldToForwardIsTheOneTheSurfaceBinds(t *testing.T) {
 	t.Parallel()
 	section := documentedForwarding(t)
 
-	_, port, err := net.SplitHostPort(surface.DefaultAddress)
+	_, port, err := net.SplitHostPort(surface.DefaultAddress())
 	if err != nil {
-		t.Fatalf("reading the port the surface binds from %q: %v", surface.DefaultAddress, err)
+		t.Fatalf("reading the port the surface binds from %q: %v", surface.DefaultAddress(), err)
 	}
 
-	if !strings.Contains(section, surface.DefaultAddress) {
-		t.Errorf("what an operator is told to forward does not name %s, which is what the surface binds:\n%s", surface.DefaultAddress, section)
+	if !strings.Contains(section, surface.DefaultAddress()) {
+		t.Errorf("what an operator is told to forward does not name %s, which is what the surface binds:\n%s", surface.DefaultAddress(), section)
 	}
 	if strings.Contains(strings.ToLower(section), "window") {
 		t.Errorf("what an operator is told to forward speaks of a window, and the surface binds one port:\n%s", section)
@@ -570,11 +593,11 @@ func TestWhatAPersonIsToldToForwardIsThePortTheSurfaceBinds(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("agora serve exited %d: %s", code, failures)
 	}
-	if !strings.Contains(failures, theDefaultAddress) {
-		t.Errorf("what a person is told to forward is %q, and the surface bound %s", failures, theDefaultAddress)
+	if !strings.Contains(failures, theSuitesDefault(t)) {
+		t.Errorf("what a person is told to forward is %q, and the surface bound %s", failures, theSuitesDefault(t))
 	}
-	if got := strings.TrimSpace(printed); !strings.HasPrefix(got, "http://"+theDefaultAddress+surface.SessionPrefix) {
-		t.Errorf("agora serve printed %q, and the surface bound %s", got, theDefaultAddress)
+	if got := strings.TrimSpace(printed); !strings.HasPrefix(got, "http://"+theSuitesDefault(t)+surface.SessionPrefix) {
+		t.Errorf("agora serve printed %q, and the surface bound %s", got, theSuitesDefault(t))
 	}
 }
 

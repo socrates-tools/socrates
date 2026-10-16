@@ -7,11 +7,13 @@ import (
 	"github.com/socrates-tools/socrates/internal/refusal"
 )
 
-const (
-	DefaultAddress = "127.0.0.1:24672"
+const localhostName = "localhost"
 
-	localhostName = "localhost"
-)
+var defaultAddress = "127.0.0.1:24672"
+
+func DefaultAddress() string {
+	return defaultAddress
+}
 
 func CheckLoopback(address string) error {
 	host, port, err := net.SplitHostPort(address)

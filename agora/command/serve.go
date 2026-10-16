@@ -85,7 +85,7 @@ func newServeCommand() *cobra.Command {
 	}
 
 	command.Flags().StringVar(&from, "document", "", documentUsage)
-	command.Flags().StringVar(&address, addressFlag, surface.DefaultAddress, addressUsage)
+	command.Flags().StringVar(&address, addressFlag, surface.DefaultAddress(), addressUsage)
 	command.Flags().StringVar(&session, sessionFlag, "", sessionUsage)
 	return command
 }
@@ -101,7 +101,7 @@ func aPortWasCommittedTo(command *cobra.Command, configured config.Surface) bool
 func whereToBind(committed, file string) (string, error) {
 	binding := committed
 	if binding == "" {
-		binding = surface.DefaultAddress
+		binding = surface.DefaultAddress()
 	}
 	if err := surface.CheckFree(binding, file); err != nil {
 		return "", err

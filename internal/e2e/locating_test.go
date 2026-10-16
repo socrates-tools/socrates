@@ -40,8 +40,8 @@ func TestAServeFindsTheSurfaceOnThePortWhateverTheRecordNames(t *testing.T) {
 	if code != exit.NothingAsked {
 		t.Fatalf("agora serve exited %d beside a record naming an address where nothing answers: %s", code, failures)
 	}
-	if !strings.HasPrefix(printed, "http://"+surface.DefaultAddress+surface.SessionPrefix) {
-		t.Errorf("agora serve printed %q, and the surface stands on %s", printed, surface.DefaultAddress)
+	if !strings.HasPrefix(printed, "http://"+theSuitesDefault(t)+surface.SessionPrefix) {
+		t.Errorf("agora serve printed %q, and the surface stands on %s", printed, theSuitesDefault(t))
 	}
 
 	held.opened = theSessionIn(t, strings.TrimSpace(printed))
@@ -62,7 +62,7 @@ func TestAStopStopsTheSurfaceOnThePortWhateverTheRecordNames(t *testing.T) {
 	if _, failures, code := held.run("stop"); code != exit.NothingAsked {
 		t.Fatalf("agora stop exited %d beside a record naming an address where nothing answers: %s", code, failures)
 	}
-	untilThePortIsFree(t, surface.DefaultAddress)
+	untilThePortIsFree(t, theSuitesDefault(t))
 }
 
 func TestAServeUnderOneRootRefusesAPortAnotherRootsSurfaceHolds(t *testing.T) {
@@ -77,9 +77,9 @@ func TestAServeUnderOneRootRefusesAPortAnotherRootsSurfaceHolds(t *testing.T) {
 
 	printed, failures, code := another.reading(oneDecisionDocument, another.serving()...)
 	if code == exit.NothingAsked {
-		t.Fatalf("a serve under another root was served at %q beside a surface holding %s", printed, surface.DefaultAddress)
+		t.Fatalf("a serve under another root was served at %q beside a surface holding %s", printed, theSuitesDefault(t))
 	}
-	for _, named := range []string{owner.home, surface.DefaultAddress, surface.BindField, surface.AddressOption} {
+	for _, named := range []string{owner.home, theSuitesDefault(t), surface.BindField, surface.AddressOption} {
 		if !strings.Contains(failures, named) {
 			t.Errorf("refusing a port another root's surface holds does not name %q: %s", named, failures)
 		}
@@ -105,7 +105,7 @@ func TestARefusedServeLeavesTheLiveSurfaceOfThisRootReachable(t *testing.T) {
 
 	printed, failures, code := mine.reading(oneDecisionDocument, mine.serving()...)
 	if code == exit.NothingAsked {
-		t.Fatalf("a serve was answered at %q beside another root holding %s", printed, surface.DefaultAddress)
+		t.Fatalf("a serve was answered at %q beside another root holding %s", printed, theSuitesDefault(t))
 	}
 	if !strings.Contains(failures, owner.home) {
 		t.Errorf("the refusal does not name the root holding the port: %s", failures)
