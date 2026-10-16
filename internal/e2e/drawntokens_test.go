@@ -88,7 +88,7 @@ func (r *reader) askTheDrawingAboutTokens(names []string) asTheDrawingSawIt {
 		r.t.Fatalf("writing the question: %v", err)
 	}
 	r.evaluate(`window.__reports = []; window.addEventListener('message', (event) => {
-  if (event.source === `+frameOfC1+`.contentWindow) window.__reports.push(event.data);
+  if (event.source === `+frameOfC1+`.contentWindow && typeof event.data === 'object') window.__reports.push(event.data);
 }); true`, nil)
 	r.waitFor(`(() => { ` + frameOfC1 + `.contentWindow.postMessage(` + string(asked) + `, '*'); return window.__reports.length > 0; })()`)
 

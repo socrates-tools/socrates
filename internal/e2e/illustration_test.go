@@ -122,7 +122,7 @@ func (r *reader) askTheDrawing() map[string]any {
 	r.t.Helper()
 
 	r.evaluate(`window.__reports = []; window.addEventListener('message', (event) => {
-  if (event.source === `+frameOfC1+`.contentWindow) window.__reports.push(event.data);
+  if (event.source === `+frameOfC1+`.contentWindow && typeof event.data === 'object') window.__reports.push(event.data);
 }); true`, nil)
 	r.waitFor(`(() => { ` + frameOfC1 + `.contentWindow.postMessage('report', '*'); return window.__reports.length > 0; })()`)
 

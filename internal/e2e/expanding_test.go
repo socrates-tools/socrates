@@ -75,7 +75,7 @@ func (r *reader) tellTheDrawing(message string) map[string]any {
 	r.evaluate(`window.__heard = null; if (!window.__listening) {
   window.__listening = true;
   window.addEventListener('message', (event) => {
-    if (event.source === `+frameOfC1+`.contentWindow) window.__heard = event.data;
+    if (event.source === `+frameOfC1+`.contentWindow && typeof event.data === 'object') window.__heard = event.data;
   });
 } true`, nil)
 	r.waitFor(`(() => { ` + frameOfC1 + `.contentWindow.postMessage('ask', '*'); return window.__heard !== null; })()`)
@@ -93,7 +93,9 @@ func aPageWithACountingDrawing(t *testing.T) *reader {
 
 	held := standing(t)
 	aDrawing(t, held, "counting.html", drawingWithACounter)
-	return opening(t, held.serve(illustrating(t, oneDecisionDocument, "counting.html")))
+	page := opening(t, held.serve(illustrating(t, oneDecisionDocument, "counting.html")))
+	page.waitFor(frameOfC1 + `.style.getPropertyValue('--drawing-height') !== ''`)
+	return page
 }
 
 func TestAnExpandedDrawingFillsTheWindowAtEveryWidthThePageSupports(t *testing.T) {
@@ -272,6 +274,7 @@ func TestARevisionTakenWhileADrawingIsExpandedLeavesNothingOnThePageUnreachable(
 	aDrawing(t, held, "counting.html", drawingWithACounter)
 	written := illustrating(t, oneDecisionDocument, "counting.html")
 	page := opening(t, held.serve(written))
+	page.waitFor(frameOfC1 + `.style.getPropertyValue('--drawing-height') !== ''`)
 
 	page.click(expandControl)
 	held.serveAgain(strings.Replace(written, "one thing to settle", "one thing, revised", 1))
