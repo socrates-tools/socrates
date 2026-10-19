@@ -168,6 +168,7 @@
 <fieldset class="options">
 <legend>{{if .Multiple}}Choose as many as apply{{else}}Choose one{{end}}</legend>
 {{$decision := .}}
+<div class="options-list">
 {{range .Options}}
 <label class="option"{{if .Recommended}} data-recommended="yes"{{end}}>
 <input class="choice" data-part="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}"{{if .Recommended}} checked{{end}}{{if $.Over}} disabled{{end}}>
@@ -183,6 +184,7 @@
 <span class="option-meaning">Write your own answer below, or leave this to whoever asked.</span>
 </label>
 {{end}}
+</div>
 </fieldset>
 {{end}}
 
