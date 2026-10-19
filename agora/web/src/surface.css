@@ -1038,7 +1038,7 @@ html:has(.drawing-stage[data-expanded]) {
 
 .options legend {
   padding: 0;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   font-size: var(--size-small);
   font-weight: 700;
 }
