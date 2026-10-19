@@ -2,6 +2,20 @@ import React from 'react';
 import { Icon } from '../brand/Icon.jsx';
 import { Tag } from '../marks/Tag.jsx';
 
+let _inj = false;
+function inject() {
+  if (_inj || typeof document === 'undefined') return;
+  _inj = true;
+  const st = document.createElement('style');
+  st.setAttribute('data-socrates', 'option-group');
+  // Options stack on phones, tablets and laptops; on a wide screen (1280px and up) whose group is at least
+  // 600px wide they sit two to a row, so a long list reads in pairs and takes half the height.
+  st.textContent = `.so-options{container-type:inline-size;margin:0;padding:0;border:0;min-width:0;}
+.so-options-list{display:flex;flex-direction:column;gap:var(--space-2);}
+@media (min-width: 1280px){@container (min-width: 600px){.so-options-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}}}`;
+  document.head.appendChild(st);
+}
+
 export function Option({ type = 'radio', label, meaning, recommended = false, checked = false, disabled = false, name, value, onChange, style }) {
   const none = type === 'none';
   const box = type === 'checkbox';
@@ -28,10 +42,11 @@ export function Option({ type = 'radio', label, meaning, recommended = false, ch
 }
 
 export function OptionGroup({ legend, children, disabled = false, style }) {
+  inject();
   return (
-    <fieldset disabled={disabled} style={{ margin: 0, padding: 0, border: 0, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', ...style }}>
+    <fieldset disabled={disabled} className="so-options" style={style}>
       {legend && <legend style={{ padding: 0, marginBottom: 'var(--space-3)', fontSize: 'var(--text-small)', fontWeight: 700 }}>{legend}</legend>}
-      {children}
+      <div className="so-options-list">{children}</div>
     </fieldset>
   );
 }

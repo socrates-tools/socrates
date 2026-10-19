@@ -9,3 +9,5 @@ Selectable answer card - the core of every decision. Wrap in OptionGroup.
 ```
 
 Selected = Aegean border + 1px ring + selected wash (no layout shift). Options are 8px apart.
+
+Options stack on phones, tablets and laptops. On a wide screen (1280px and up), once the group is at least 600px wide, OptionGroup lays them out two to a row, so a long list reads in pairs and takes half the height.

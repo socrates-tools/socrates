@@ -21,7 +21,7 @@ export interface OptionProps {
 }
 export function Option(props: OptionProps): JSX.Element;
 
-/** Fieldset wrapper with the "Choose one" / "Choose as many as apply" legend. */
+/** Fieldset wrapper with the "Choose one" / "Choose as many as apply" legend. Options stack; on screens 1280px and up, once the group is 600px wide, they sit two to a row. */
 export interface OptionGroupProps {
   legend?: React.ReactNode;
   disabled?: boolean;
