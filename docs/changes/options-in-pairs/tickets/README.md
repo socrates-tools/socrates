@@ -17,4 +17,4 @@ Spec: [../spec.md](../spec.md). Decisions: none.
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1-options-in-pairs](1-options-in-pairs.md) | None | in progress |
+| [1-options-in-pairs](1-options-in-pairs.md) | None | done |
