@@ -86,6 +86,14 @@ type blockView struct {
 	Code     string
 	Diff     *Diff
 	Written  string
+	Copy     *copyView
+}
+
+type copyView struct {
+	Label  string
+	Hint   string
+	Copied string
+	Failed string
 }
 
 type drawingView struct {
@@ -231,6 +239,9 @@ func blocksRead(written document.Evidence) []blockView {
 
 	for _, block := range written {
 		read := blockView{Caption: block.Caption, Language: block.Language, Code: block.Code}
+		if block.Code != "" {
+			read.Copy = &copyView{Label: copyLabel, Hint: copyHint, Copied: copiedWord, Failed: notCopied}
+		}
 		if block.Patch != "" {
 			patched := ReadPatch(block.Patch)
 			if patched.Empty() {

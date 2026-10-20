@@ -58,6 +58,8 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - Every code block of evidence wraps at the width of its card, whatever its language, and nothing in one scrolls sideways.
   A continuation line starts further in than the source line it continues, measured against that line's own indentation, so a wrapped line still reads as one line.
   The split diff of a patch is a table and keeps its own scroll.
+- Every code block of evidence offers a copy control that puts the code on the clipboard exactly as the document stated it, says what it does on hover, on focus and to a screen reader, confirms the copy where it was pressed, and sends nothing and changes nothing about the answer.
+  A patch's split diff offers none.
 - An illustration is an HTML file a caller names by path, drawn in an iframe sandboxed with `allow-scripts` and without `allow-same-origin`, so its script runs in an opaque origin and reads neither the page, its token nor its storage, and cannot navigate the page or open a popup, per ADR 76.
 - The sandbox is stated again as a `Content-Security-Policy` header on every response of the illustration's route, beside `X-Content-Type-Options: nosniff`, so a drawing opened on its own is sandboxed as well.
 - That policy admits script, style and font from the route, the surface's own origin and three CDN hosts, admits image and media from the route and `data:`, and names nothing for connecting, framing, forms or the base, so a drawing may load a library and has no way to send what it holds anywhere, per ADR 77.

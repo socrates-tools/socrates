@@ -964,7 +964,8 @@ span.entry-link .entry-name {
   background: var(--surface-card);
 }
 
-.expand {
+.expand,
+.copy {
   flex: none;
   width: 24px;
   height: 24px;
@@ -973,15 +974,45 @@ span.entry-link .entry-name {
   color: var(--fg-2);
 }
 
-.expand:hover {
+.expand:hover,
+.copy:hover {
   background: var(--surface-muted);
   color: var(--fg-1);
 }
 
-.expand .icon {
+.expand .icon,
+.copy .icon {
   display: block;
   width: 14px;
   height: 14px;
+}
+
+.copy-done,
+.copy[data-copied] .copy-icon,
+.copy[data-failed] .copy-icon {
+  display: none;
+}
+
+.copy[data-copied] .copy-done,
+.copy[data-failed] .copy-done {
+  display: block;
+}
+
+.copy[data-copied] {
+  color: var(--state-resolved);
+}
+
+.copy[data-failed] {
+  color: var(--state-warning);
+}
+
+.copy-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .drawing-backdrop,

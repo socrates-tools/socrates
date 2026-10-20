@@ -5,6 +5,11 @@ const (
 
 	illustrationTitle = "Illustration for %s"
 
+	copyLabel  = "Copy code"
+	copyHint   = "Puts this code on your clipboard, exactly as it was written. Nothing is sent."
+	copiedWord = "Copied"
+	notCopied  = "Could not copy"
+
 	severityErrorName   = "Error"
 	severityError       = "Severity: Error"
 	severityErrorHint   = "Likely wrong; the change should not land as it is."
