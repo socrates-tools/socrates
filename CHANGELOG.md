@@ -8,6 +8,37 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-20
+
+### Added
+
+- **A decision can show several pieces of code, each with a caption.**
+  `evidence` is a list of blocks, and each block holds code in a language or a patch, with an optional `caption`.
+  A design card comparing two shapes of an interface shows them as two named, highlighted blocks rather than a hand-drawn picture of code.
+- **Every code block offers a copy button.**
+  It puts the code on your clipboard exactly as it was written, and sends nothing anywhere.
+- **Every code block numbers its lines.**
+  A wrapped line is numbered once, and copying or selecting the code never picks up the numbers.
+- **A language can be named by any name highlight.js knows, aliases included.**
+  `tsx`, `jsx`, `ts`, `sh` and `yml` are accepted and highlighted where they used to be refused.
+- **socrates-design shows code through evidence.**
+  A design session puts code on a card as data, and keeps illustrations for layouts and screens.
+
+### Changed
+
+- **`evidence` must be a list.**
+  A document whose `evidence` is a single object is refused before anything is served, and the refusal says to write a list.
+  A block holding both code and a patch is refused too: write them as two blocks.
+  Run `socrates skill` again, because a skill installed from 0.8.1 still writes the object.
+- **Long lines of code wrap instead of scrolling sideways.**
+  A continued line starts further in than the line it continues, so it still reads as one line.
+  A patch's split diff keeps its own scroll.
+- **Code blocks are painted the white of their card.**
+- **On a wide window, options sit two to a row.**
+  From about 1290px, a decision's options, *None of these* included, read across and then down in the order the document lists them.
+- **The bar above an illustration no longer carries the word "illustration".**
+  It holds the expand button alone.
+
 ## [0.8.1] - 2026-10-16
 
 0.7.0 and 0.8.0 were tagged but never published, so this is the first release since 0.6.0: read the 0.7.0 entry below as well if you have 0.6.0.
@@ -261,7 +292,8 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.9.0
 [0.8.1]: https://github.com/socrates-tools/socrates/releases/tag/v0.8.1
 [0.7.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.7.0
 [0.6.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.6.0
