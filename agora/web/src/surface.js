@@ -522,6 +522,7 @@ function bind() {
   countAnswered()
   markTheDecisionInView()
   document.querySelectorAll('pre code[class^="language-"]').forEach((block) => {
+    statedCode.set(block, block.textContent)
     if (block.textContent.trim()) {
       hljs.highlightElement(block)
       hangTheLines(block)
@@ -529,6 +530,8 @@ function bind() {
   })
   document.querySelectorAll('.evidence.diff').forEach(colourTheLines)
 }
+
+const statedCode = new WeakMap()
 
 const columnsPerTab = 4
 
@@ -677,7 +680,7 @@ function showTheTipFor(mark) {
   held.hidden = false
 }
 
-const markSelector = '.mark, .expand'
+const markSelector = '.mark, .expand, .copy'
 
 function hideTheTip() {
   tippedMark = null
@@ -788,6 +791,60 @@ function followTheExpanding() {
   })
 }
 
+const confirmationLasts = 1600
+const confirmations = new WeakMap()
+
+function confirmTheCopy(control, outcome) {
+  const heading = control.closest('.evidence-heading')
+  const title = outcome === 'copied' ? control.dataset.copiedTitle : control.dataset.failedTitle
+  window.clearTimeout(confirmations.get(control))
+  if (control.dataset.copied === undefined && control.dataset.failed === undefined) {
+    control.dataset.restingTitle = control.dataset.title
+    control.dataset.restingHint = control.dataset.hint
+  }
+  delete control.dataset.copied
+  delete control.dataset.failed
+  control.dataset[outcome === 'copied' ? 'copied' : 'failed'] = 'yes'
+  control.dataset.title = title
+  control.dataset.hint = ''
+  heading.querySelector('.copy-status').textContent = title
+  if (tippedMark === control) {
+    showTheTipFor(control)
+  }
+  confirmations.set(
+    control,
+    window.setTimeout(() => {
+      delete control.dataset.copied
+      delete control.dataset.failed
+      control.dataset.title = control.dataset.restingTitle
+      control.dataset.hint = control.dataset.restingHint
+      heading.querySelector('.copy-status').textContent = ''
+      if (tippedMark === control) {
+        showTheTipFor(control)
+      }
+    }, confirmationLasts),
+  )
+}
+
+async function copyTheBlock(control) {
+  const code = control.closest('.evidence.code').querySelector('code')
+  try {
+    await navigator.clipboard.writeText(statedCode.get(code) ?? code.textContent)
+    confirmTheCopy(control, 'copied')
+  } catch {
+    confirmTheCopy(control, 'failed')
+  }
+}
+
+function followTheCopying() {
+  document.addEventListener('click', (event) => {
+    const control = event.target.closest?.('.copy')
+    if (control) {
+      copyTheBlock(control)
+    }
+  })
+}
+
 function followTheDrawingHeights() {
   window.addEventListener('message', (event) => {
     const height = event.data
@@ -815,6 +872,7 @@ bind()
 takeUpWhetherItIsOver()
 followTheMarks()
 followTheExpanding()
+followTheCopying()
 followTheDrawingHeights()
 askTheDrawingsForTheirHeights()
 follow()
