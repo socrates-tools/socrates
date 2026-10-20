@@ -21,5 +21,5 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 78](../../../../agora/docs/adr/0
 | [1.1: Evidence is a list of captioned blocks](1.1-evidence-as-a-list.md) | None | done |
 | [1.2: Every code block wraps its long lines](1.2-every-code-block-wraps.md) | None | done |
 | [1.3: Copy a code block](1.3-copy-a-code-block.md) | None | in progress |
-| [1.4: A language may be named by any name highlight.js answers to](1.4-language-aliases.md) | None | in progress |
-| [2: The design skill shows code through evidence](2-design-skill-teaches-evidence.md) | 1.1-evidence-as-a-list, 1.4-language-aliases | pending |
+| [1.4: A language may be named by any name highlight.js answers to](1.4-language-aliases.md) | None | done |
+| [2: The design skill shows code through evidence](2-design-skill-teaches-evidence.md) | 1.1-evidence-as-a-list, 1.4-language-aliases | in progress |

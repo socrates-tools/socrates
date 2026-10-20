@@ -50,7 +50,8 @@ await build({
 
 copyFileSync(join(here, 'brand', 'socrates-mark.svg'), join(bundle, 'socrates-mark.svg'))
 
-writeFileSync(languages, JSON.stringify(hljs.listLanguages().sort(), null, 2) + '\n')
+const answeredTo = [...new Set(hljs.listLanguages().flatMap((name) => [name, ...(hljs.getLanguage(name).aliases ?? [])]))].sort()
+writeFileSync(languages, JSON.stringify(answeredTo, null, 2) + '\n')
 writeFileSync(stamp, sum() + '\n')
 
 for (const path of within(bundle)) {

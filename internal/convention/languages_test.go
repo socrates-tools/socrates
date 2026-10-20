@@ -17,6 +17,15 @@ func TestTheLanguagesABundleRegistersAreReadFromIt(t *testing.T) {
 	}
 }
 
+const registeringWithAliases = `t.registerLanguage("typescript",e),t.registerLanguage("go",n);var e=()=>({name:"TypeScript",aliases:["ts","tsx","mts","cts"],keywords:{}}),n=()=>({name:"Go",aliases:["golang"]});`
+
+func TestTheAliasesALanguageRegistersAreReadWithTheLanguages(t *testing.T) {
+	want := []string{"cts", "go", "golang", "mts", "ts", "tsx", "typescript"}
+	if diff := cmp.Diff(want, convention.LanguagesTheBundleRegisters(registeringWithAliases)); diff != "" {
+		t.Errorf("what a minified bundle is read as answering to differs (-want +got):\n%s", diff)
+	}
+}
+
 func TestALanguageOnOneSideAndNotTheOtherIsReported(t *testing.T) {
 	registered := convention.LanguagesTheBundleRegisters(registering)
 

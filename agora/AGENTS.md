@@ -54,7 +54,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - What the controls hold at the submit is what is sent, so nothing is committed per decision, a decision holding no selection and no words is omitted, and a decision left blank is named before either press sends.
   Either press over a blank decision raises a modal dialog naming every one of them and takes no armed state, a press inside it is what sends, what is behind it is dimmed, and each of its names closes it and puts the cursor on that card's first control.
   Going back, Escape and a press on the backdrop are one path: nothing is sent, the page is as it was, and the cursor returns to the button that raised it.
-- The languages the page highlights are the bundled library's common set, stated once and generated from `web/`, and a document naming one outside it is refused while one naming none renders as plain text.
+- The languages the page highlights are the bundled library's common set and every alias it registers for them, stated once and generated from `web/`, and a document naming one outside them is refused while one naming none renders as plain text.
 - Every code block of evidence wraps at the width of its card, whatever its language, and nothing in one scrolls sideways.
   A continuation line starts further in than the source line it continues, measured against that line's own indentation, so a wrapped line still reads as one line.
   The split diff of a patch is a table and keeps its own scroll.

@@ -244,6 +244,38 @@ func TestEvidenceWithNoLanguageIsServed(t *testing.T) {
 	}
 }
 
+func TestALanguageNamedByAnAliasIsServed(t *testing.T) {
+	for _, alias := range []string{"tsx", "jsx", "ts", "sh", "yml"} {
+		t.Run(alias, func(t *testing.T) {
+			written := whole()
+			written.Decisions[0].Evidence = document.Evidence{{Language: alias, Code: "one line\n"}}
+
+			read, err := document.Read(raw(t, written))
+			if err != nil {
+				t.Fatalf("a document naming the alias %q is refused: %v", alias, err)
+			}
+			if read.Decisions[0].Evidence[0].Language != alias {
+				t.Errorf("a block naming %q came back naming %q", alias, read.Decisions[0].Evidence[0].Language)
+			}
+		})
+	}
+}
+
+func TestTheRefusalForAnUnknownLanguageListsTheAliasesAmongTheAcceptedNames(t *testing.T) {
+	written := whole()
+	written.Decisions[0].Evidence = document.Evidence{{Language: "prolog", Code: "read(X) :- lock(X).\n"}}
+
+	_, err := document.Read(raw(t, written))
+	if err == nil {
+		t.Fatal("a document naming a language highlight.js does not know validated")
+	}
+	for _, alias := range []string{"tsx", "jsx", "ts", "sh", "yml"} {
+		if !strings.Contains(err.Error(), alias) {
+			t.Errorf("the refusal does not list the accepted alias %q: %v", alias, err)
+		}
+	}
+}
+
 func TestEveryLanguageTheDocumentKnowsIsServed(t *testing.T) {
 	// scenario: The languages a caller actually passes are highlighted
 	known := document.Languages()
