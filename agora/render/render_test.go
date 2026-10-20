@@ -617,13 +617,13 @@ func everyCardCarriesTheField(page *html.Node) bool {
 func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 	read := citingASource()
 	read.Decisions[0].Illustration = document.Illustration{Path: "smuggled.html"}
-	read.Decisions[0].Evidence = document.Evidence{Patch: "--- a/x\n+++ b/x\n@@ -1,2 +1,2 @@\n-old\n+new\n"}
+	read.Decisions[0].Evidence = document.Evidence{{Patch: "--- a/x\n+++ b/x\n@@ -1,2 +1,2 @@\n-old\n+new\n"}}
 
 	multiple := read.Decisions[0]
 	multiple.ID = "c-4"
 	multiple.Mode = document.Many
 	multiple.Illustration = document.Illustration{}
-	multiple.Evidence = document.Evidence{}
+	multiple.Evidence = nil
 	read.Decisions = append(read.Decisions, multiple)
 
 	page := rendered(t, read)

@@ -72,7 +72,10 @@ type Option struct {
 	Recommended bool   `json:"recommended"`
 }
 
-type Evidence struct {
+type Evidence []Block
+
+type Block struct {
+	Caption  string `json:"caption"`
 	Language string `json:"language"`
 	Code     string `json:"code"`
 	Patch    string `json:"patch"`
@@ -80,6 +83,10 @@ type Evidence struct {
 
 func Read(raw []byte) (Document, error) {
 	var read Document
+
+	if err := refuseEvidenceWrittenAsAnObject(raw); err != nil {
+		return Document{}, err
+	}
 
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.DisallowUnknownFields()
@@ -94,6 +101,31 @@ func Read(raw []byte) (Document, error) {
 		return Document{}, err
 	}
 	return read.copiedFromSource(), nil
+}
+
+func refuseEvidenceWrittenAsAnObject(raw []byte) error {
+	var written struct {
+		Decisions []struct {
+			ID       string          `json:"id"`
+			Evidence json.RawMessage `json:"evidence"`
+		} `json:"decisions"`
+	}
+	if err := json.Unmarshal(raw, &written); err != nil {
+		return nil
+	}
+	for position, decision := range written.Decisions {
+		if bytes.HasPrefix(bytes.TrimSpace(decision.Evidence), []byte("{")) {
+			return fmt.Errorf(evidenceWrittenAsAnObject, decisionName(position, decision.ID))
+		}
+	}
+	return nil
+}
+
+func decisionName(position int, identifier string) string {
+	if identifier == "" {
+		return fmt.Sprintf(decisionAt, position+1)
+	}
+	return fmt.Sprintf(decisionNamed, identifier)
 }
 
 func Validate(read Document) error {
@@ -111,10 +143,7 @@ func Validate(read Document) error {
 
 	seen := map[string]bool{}
 	for position, decision := range read.Decisions {
-		named := fmt.Sprintf(decisionAt, position+1)
-		if decision.ID != "" {
-			named = fmt.Sprintf(decisionNamed, decision.ID)
-		}
+		named := decisionName(position, decision.ID)
 
 		if decision.ID == "" {
 			return fmt.Errorf(noIdentifier, named)
@@ -127,8 +156,10 @@ func Validate(read Document) error {
 		if strings.TrimSpace(decision.Question) == "" {
 			return fmt.Errorf(statesNothingFor, named, "question")
 		}
-		if stated := decision.Evidence.Language; stated != "" && !slices.Contains(languages, stated) {
-			return fmt.Errorf(unknownLanguage, named, stated, languages)
+		for shown, block := range decision.Evidence {
+			if err := validateBlock(named, shown+1, block); err != nil {
+				return err
+			}
 		}
 		if len(decision.Options) == 0 && decision.Mode != "" {
 			return fmt.Errorf(aModeWithoutOptions, named, decision.Mode)
@@ -165,6 +196,21 @@ func Validate(read Document) error {
 	}
 
 	return validateWhatWasSettled(read.Settled, seen)
+}
+
+func validateBlock(named string, position int, block Block) error {
+	holdsCode := block.Code != ""
+	holdsPatch := block.Patch != ""
+	if holdsCode && holdsPatch {
+		return fmt.Errorf(blockHoldsCodeAndAPatch, named, position)
+	}
+	if !holdsCode && !holdsPatch {
+		return fmt.Errorf(blockHoldsNeitherCodeNorAPatch, named, position)
+	}
+	if stated := block.Language; stated != "" && !slices.Contains(languages, stated) {
+		return fmt.Errorf(unknownLanguage, named, stated, languages)
+	}
+	return nil
 }
 
 func validateWhatWasSettled(settled []Settled, open map[string]bool) error {

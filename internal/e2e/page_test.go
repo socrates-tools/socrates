@@ -29,11 +29,16 @@ const twoDecisionDocument = `{
         {"label": "take the lock first", "meaning": "correctness first", "command": "patch c-1"},
         {"label": "leave it", "meaning": "acceptable here", "command": "agree c-1"}
       ],
-      "evidence": {
-        "language": "go",
-        "code": "entry, held := cache.Read(key)\nif held {\n\treturn entry\n}\n",
-        "patch": "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -10,3 +10,4 @@ func Write(key string, entry Entry) {\n func Write(key string, entry Entry) {\n-\tstore[key] = entry\n+\tmu.Lock()\n+\tstore[key] = entry\n }\n"
-      }
+      "evidence": [
+        {
+          "language": "go",
+          "code": "entry, held := cache.Read(key)\nif held {\n\treturn entry\n}\n"
+        },
+        {
+          "language": "go",
+          "patch": "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -10,3 +10,4 @@ func Write(key string, entry Entry) {\n func Write(key string, entry Entry) {\n-\tstore[key] = entry\n+\tmu.Lock()\n+\tstore[key] = entry\n }\n"
+        }
+      ]
     },
     {
       "id": "c-2",
@@ -898,10 +903,10 @@ const askingNothingDocument = `{
       "id": "c-1",
       "question": "the lock deleted itself while another request held it",
       "meaning": "the deletion is gone, and the entry is dropped by whichever reader took it last",
-      "evidence": {
+      "evidence": [{
         "language": "go",
         "patch": "--- a/internal/cache/read.go\n+++ b/internal/cache/read.go\n@@ -39,3 +39,2 @@ func Read(key string) Entry {\n func Read(key string) Entry {\n-\tdelete(locks, key)\n \treturn store[key]\n }\n"
-      }
+      }]
     },
     {
       "id": "c-2",

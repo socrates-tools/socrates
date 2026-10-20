@@ -23,7 +23,7 @@ const patched = `--- a/internal/cache/write.go
 
 func TestADiffRendersFromAPatch(t *testing.T) {
 	read := oneDecision(document.One)
-	read.Decisions[0].Evidence = document.Evidence{Patch: patched}
+	read.Decisions[0].Evidence = document.Evidence{{Patch: patched}}
 
 	page := rendered(t, read)
 

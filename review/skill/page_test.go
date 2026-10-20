@@ -428,6 +428,28 @@ func TestAResolvedFindingIsStatedRatherThanAsked(t *testing.T) {
 	}
 }
 
+func TestEvidenceIsAListAndAFindingShowingCodeAndAPatchPassesTwoBlocks(t *testing.T) {
+	for name, document := range map[string]string{
+		"review":   skill.Document(skillkit.ClaudeCode),
+		"handover": skill.HandoverDocument(skillkit.ClaudeCode),
+	} {
+		page := strings.ToLower(sectionOf(t, document, pageHeading))
+
+		for _, said := range []string{
+			`"evidence": [{"language": "python", "code": "..."}, {"patch": "..."}]`,
+			`"evidence": [{"patch": "..."}]`,
+			"a finding showing code and a patch passes two blocks",
+		} {
+			if !strings.Contains(page, said) {
+				t.Errorf("the %s skill does not say %q, so a reviewer writes evidence as an object agora refuses:\n%s", name, said, page)
+			}
+		}
+		if strings.Contains(page, `"evidence": {`) {
+			t.Errorf("the %s skill still writes evidence as an object", name)
+		}
+	}
+}
+
 func TestTheReasonForOfferingNoOptionsIsGiven(t *testing.T) {
 	page := strings.ToLower(sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading))
 

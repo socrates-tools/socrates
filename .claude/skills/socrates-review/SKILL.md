@@ -39,14 +39,16 @@ The document is one decision per finding in the round, each citing the entry it 
     {"title": "...", "preamble": "...",
      "source":    [{"id": "f3", "name": "Finding 3", "severity": "error", "audience": "needs a person", "location": "src/api/windows.py:41"}],
      "decisions": [{"id": "f3", "question": "...", "meaning": "...", "mode": "single-choice",
-                    "evidence": {"language": "python", "code": "...", "patch": "..."},
+                    "evidence": [{"language": "python", "code": "..."}, {"patch": "..."}],
                     "options": [{"label": "...", "meaning": "...", "command": "socrates review respond --finding f3 --decided --reason \"...\"",
                                  "recommended": true}]}]}
+
+A finding showing code and a patch passes two blocks.
 
 Where the round holds nothing a person answers, every finding is still a card and none of them carries an option.
 Serve that the same way and hand over the address.
 Nothing on it is theirs to answer, so nobody is waiting on it.
-Such a page states what was found and what was done about it, which is the whole of what those rounds have to hand over.
+Such a page states what was found and what was done about it, the whole of what those rounds hand over.
 
 One option of a decision may carry `"recommended": true`, and at most one.
 A document marking two is refused before anything is served.
@@ -115,7 +117,7 @@ It says what the finding was and what resolved it, and it carries the diff where
 
     {"id": "f1", "question": "the lock deleted itself while another request held it",
      "meaning": "the deletion is gone, and the entry is dropped by whichever reader took it last",
-     "evidence": {"patch": "..."}}
+     "evidence": [{"patch": "..."}]}
 
 Such a card carries no options, and states no mode either.
 A document giving a mode to a decision that offers nothing is refused before anything is served.

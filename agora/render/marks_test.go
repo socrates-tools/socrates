@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/socrates-tools/socrates/agora/document"
 	"golang.org/x/net/html"
 )
@@ -143,7 +144,7 @@ func TestTheIndexCountsWhatArrivesChosenAsAnswered(t *testing.T) {
 
 func TestADiffStatesWhatItAddsAndRemoves(t *testing.T) {
 	read := oneDecision(document.One)
-	read.Decisions[0].Evidence.Patch = "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -10,3 +10,4 @@\n func Write(key string, entry Entry) {\n-\tstore[key] = entry\n+\tmu.Lock()\n+\tstore[key] = entry\n }\n"
+	read.Decisions[0].Evidence = document.Evidence{{Patch: "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -10,3 +10,4 @@\n func Write(key string, entry Entry) {\n-\tstore[key] = entry\n+\tmu.Lock()\n+\tstore[key] = entry\n }\n"}}
 
 	page := rendered(t, read)
 	for _, held := range elements(page, "span") {
@@ -170,7 +171,7 @@ func TestADiffIsWrittenInTheLanguageStatedOrElseItsFilesOwn(t *testing.T) {
 		{"", "--- a/web.v2/build.mjs\n+++ /dev/null\n@@ -1,1 +0,0 @@\n-a\n", "mjs"},
 	} {
 		read := oneDecision(document.One)
-		read.Decisions[0].Evidence = document.Evidence{Language: stated.language, Patch: stated.patch}
+		read.Decisions[0].Evidence = document.Evidence{{Language: stated.language, Patch: stated.patch}}
 
 		for _, held := range elements(rendered(t, read), "div") {
 			if hasClass(held, "diff") {
@@ -179,5 +180,31 @@ func TestADiffIsWrittenInTheLanguageStatedOrElseItsFilesOwn(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+func TestEvidenceIsDrawnBlockAfterBlockInTheOrderWrittenEachUnderItsOwnHeading(t *testing.T) {
+	read := oneDecision(document.One)
+	read.Decisions[0].Evidence = document.Evidence{
+		{Caption: "as a prop", Language: "go", Code: "first()\n"},
+		{Language: "python", Code: "second()\n"},
+		{Caption: "the lock", Patch: "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -1,1 +1,1 @@\n-a\n+b\n"},
+		{Caption: "nothing to show", Patch: "not a patch at all"},
+	}
+
+	var headings []string
+	for _, held := range elements(rendered(t, read), "div") {
+		if hasClass(held, "evidence") && !hasClass(held, "illustrated") {
+			for _, heading := range elements(held, "span") {
+				if hasClass(heading, "evidence-label") {
+					headings = append(headings, strings.Join(strings.Fields(text(heading)), " "))
+				}
+			}
+		}
+	}
+
+	want := []string{"as a prop go", "python", "the lock internal/cache/write.go"}
+	if diff := cmp.Diff(want, headings); diff != "" {
+		t.Errorf("the headings of the blocks differ from the order and captions written (-want +got):\n%s", diff)
 	}
 }

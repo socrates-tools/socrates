@@ -75,12 +75,17 @@ type decisionView struct {
 	Mode     document.Mode
 	Multiple bool
 	Options  []optionView
+	Evidence []blockView
+	Drawing  *drawingView
+	Answered bool
+}
+
+type blockView struct {
+	Caption  string
 	Language string
 	Code     string
 	Diff     *Diff
 	Written  string
-	Drawing  *drawingView
-	Answered bool
 }
 
 type drawingView struct {
@@ -206,14 +211,8 @@ func decisionViewOf(decision document.Decision, frame Frame) decisionView {
 		Meaning:  decision.Meaning,
 		Mode:     decision.Mode,
 		Multiple: decision.Mode == document.Many,
-		Language: decision.Evidence.Language,
-		Code:     decision.Evidence.Code,
+		Evidence: blocksRead(decision.Evidence),
 		Answered: arrivesAnswered(decision),
-	}
-
-	if patched := ReadPatch(decision.Evidence.Patch); !patched.Empty() {
-		shown.Diff = &patched
-		shown.Written = writtenIn(decision.Evidence.Language, patched)
 	}
 
 	if path := decision.Illustration.Path; path != "" {
@@ -224,6 +223,27 @@ func decisionViewOf(decision document.Decision, frame Frame) decisionView {
 	}
 
 	shown.Options = optionsRead(decision.Options)
+	return shown
+}
+
+func blocksRead(written document.Evidence) []blockView {
+	var shown []blockView
+
+	for _, block := range written {
+		read := blockView{Caption: block.Caption, Language: block.Language, Code: block.Code}
+		if block.Patch != "" {
+			patched := ReadPatch(block.Patch)
+			if patched.Empty() {
+				continue
+			}
+			read.Diff = &patched
+			read.Written = writtenIn(block.Language, patched)
+		}
+		if read.Code == "" && read.Diff == nil {
+			continue
+		}
+		shown = append(shown, read)
+	}
 	return shown
 }
 

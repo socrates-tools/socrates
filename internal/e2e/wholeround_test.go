@@ -28,10 +28,10 @@ func theQuestionAsADecision(read reportedRound) []map[string]any {
 			}
 		case "f4":
 			decision["meaning"] = "the deletion is gone, and the entry is dropped by whichever reader took it last"
-			decision["evidence"] = map[string]any{
+			decision["evidence"] = []map[string]any{{
 				"language": "go",
 				"patch":    "--- a/internal/added.go\n+++ b/internal/added.go\n@@ -3,3 +3,2 @@ func Answer(document string) int {\n func Answer(document string) int {\n-\tdelete(locks, document)\n \treturn len(document)\n }\n",
-			}
+			}}
 		}
 		decisions = append(decisions, decision)
 	}

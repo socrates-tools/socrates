@@ -120,8 +120,8 @@ func TestTheTicketsAreWrittenOnceEveryCardIsKeptWithoutAFurtherPage(t *testing.T
 
 func TestEachCardCarriesTheWholeTicketItWouldBeWrittenAs(t *testing.T) {
 	ticketsSaysEach(t, breakdownHeading, "a person could approve a summary while the acceptance criteria and blockers were written unseen",
-		`"evidence": {"language": "markdown", "code":`,
-		"the whole file it would be written as",
+		`"evidence": [{"language": "markdown", "code":`,
+		"one block of the whole file it would be written as",
 		"acceptance criteria, its stories and its blockers",
 	)
 	ticketsSaysEach(t, writingThemHeading, "a ticket could be rewritten from memory after the person approved its card",

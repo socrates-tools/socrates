@@ -816,6 +816,12 @@ span.entry-link .entry-name {
   white-space: nowrap;
 }
 
+.evidence-caption {
+  margin-right: 4px;
+  color: var(--fg-1);
+  font-weight: 600;
+}
+
 .diff-heading .evidence-label {
   color: var(--fg-1);
   font-weight: 600;

@@ -35,11 +35,12 @@
           "command": "agree c-1 --reason \"the staleness is acceptable here\""
         }
       ],
-      "evidence": {
-        "language": "go",
-        "code": "entry, held := cache.Read(key)\nif held {\n\treturn entry\n}\n",
-        "patch": ""
-      }
+      "evidence": [
+        {
+          "language": "go",
+          "code": "entry, held := cache.Read(key)\nif held {\n\treturn entry\n}\n"
+        }
+      ]
     },
     {
       "id": "c-2",
@@ -63,11 +64,11 @@
           "command": "keep c-2 log"
         }
       ],
-      "evidence": {
-        "language": "",
-        "code": "",
-        "patch": "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -10,4 +10,5 @@\n func Write(key string, entry Entry) {\n-\tstore[key] = entry\n+\tmu.Lock()\n+\tstore[key] = entry\n+\tmu.Unlock()\n }\n"
-      },
+      "evidence": [
+        {
+          "patch": "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -10,4 +10,5 @@\n func Write(key string, entry Entry) {\n-\tstore[key] = entry\n+\tmu.Lock()\n+\tstore[key] = entry\n+\tmu.Unlock()\n }\n"
+        }
+      ],
       "illustration": {"path": "writes.html"}
     }
   ]

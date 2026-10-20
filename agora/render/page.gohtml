@@ -115,19 +115,13 @@
 <h2 class="question">{{.Question}}</h2>
 {{if .Meaning}}<p class="meaning">{{.Meaning}}</p>{{end}}
 
-{{if or .Code .Diff .Drawing}}
+{{if or .Evidence .Drawing}}
 <div class="evidences">
-{{if .Code}}
-<div class="evidence code">
-<div class="evidence-heading"><span class="evidence-label">{{if .Language}}{{.Language}}{{else}}code{{end}}</span></div>
-<pre><code class="language-{{.Language}}">{{.Code}}</code></pre>
-</div>
-{{end}}
-
+{{range .Evidence}}
 {{if .Diff}}
 <div class="evidence diff" data-layout="split" data-language="{{.Written}}">
 <div class="evidence-heading diff-heading">
-<span class="evidence-label">{{if eq .Diff.From .Diff.To}}<span class="diff-file">{{.Diff.From}}</span>{{else}}<span class="diff-from">{{.Diff.From}}</span> → <span class="diff-to">{{.Diff.To}}</span>{{end}}</span>
+<span class="evidence-label">{{with .Caption}}<span class="evidence-caption">{{.}}</span> {{end}}{{if eq .Diff.From .Diff.To}}<span class="diff-file">{{.Diff.From}}</span>{{else}}<span class="diff-from">{{.Diff.From}}</span> → <span class="diff-to">{{.Diff.To}}</span>{{end}}</span>
 <span class="evidence-aside"><span class="diff-added">+{{.Diff.Added}}</span>
 <span class="diff-removed">−{{.Diff.Removed}}</span></span>
 </div>
@@ -147,6 +141,12 @@
 </table>
 {{end}}
 </div>
+{{else}}
+<div class="evidence code">
+<div class="evidence-heading"><span class="evidence-label">{{with .Caption}}<span class="evidence-caption">{{.}}</span> {{end}}{{if .Language}}{{.Language}}{{else if not .Caption}}code{{end}}</span></div>
+<pre><code class="language-{{.Language}}">{{.Code}}</code></pre>
+</div>
+{{end}}
 {{end}}
 
 {{with .Drawing}}

@@ -213,7 +213,7 @@ func TestADecisionWithOptionsStillRequiresItsMode(t *testing.T) {
 
 func TestAnUnknownEvidenceLanguageIsRefusedBeforeServing(t *testing.T) {
 	written := whole()
-	written.Decisions[0].Evidence = document.Evidence{Language: "prolog", Code: "read(X) :- lock(X).\n"}
+	written.Decisions[0].Evidence = document.Evidence{{Language: "prolog", Code: "read(X) :- lock(X).\n"}}
 
 	read, err := document.Read(raw(t, written))
 	if err == nil {
@@ -233,14 +233,14 @@ func TestAnUnknownEvidenceLanguageIsRefusedBeforeServing(t *testing.T) {
 
 func TestEvidenceWithNoLanguageIsServed(t *testing.T) {
 	written := whole()
-	written.Decisions[0].Evidence = document.Evidence{Code: "entry, held := cache.Read(key)\n"}
+	written.Decisions[0].Evidence = document.Evidence{{Code: "entry, held := cache.Read(key)\n"}}
 
 	read, err := document.Read(raw(t, written))
 	if err != nil {
 		t.Fatalf("reading a document carrying evidence that names no language: %v", err)
 	}
-	if read.Decisions[0].Evidence.Language != "" {
-		t.Errorf("evidence naming no language came back naming %q", read.Decisions[0].Evidence.Language)
+	if read.Decisions[0].Evidence[0].Language != "" {
+		t.Errorf("evidence naming no language came back naming %q", read.Decisions[0].Evidence[0].Language)
 	}
 }
 
@@ -253,7 +253,7 @@ func TestEveryLanguageTheDocumentKnowsIsServed(t *testing.T) {
 
 	for _, named := range known {
 		written := whole()
-		written.Decisions[0].Evidence = document.Evidence{Language: named, Code: "one line\n"}
+		written.Decisions[0].Evidence = document.Evidence{{Language: named, Code: "one line\n"}}
 
 		if _, err := document.Read(raw(t, written)); err != nil {
 			t.Errorf("a document naming the language %q is refused, and the page highlights it: %v", named, err)
@@ -445,6 +445,124 @@ func TestTheSourceShapeACallerWritesIsWhatIsRead(t *testing.T) {
 		}
 		if decision.Name != cited.Name || decision.Severity != cited.Severity || decision.Audience != cited.Audience || decision.Location != cited.Location {
 			t.Errorf("%s does not carry what the sample's source entry stated: %+v", decision.ID, decision)
+		}
+	}
+}
+
+func TestEvidenceListingTwoBlocksIsReadInTheOrderWritten(t *testing.T) {
+	written := whole()
+	written.Decisions[0].Evidence = document.Evidence{
+		{Caption: "as a prop", Language: "typescript", Code: "<Select options={options} />\n"},
+		{Caption: "as children", Language: "go", Code: "func Select() {}\n"},
+	}
+
+	read, err := document.Read(raw(t, written))
+	if err != nil {
+		t.Fatalf("reading a document whose evidence lists two blocks: %v", err)
+	}
+	if diff := cmp.Diff(written.Decisions[0].Evidence, read.Decisions[0].Evidence); diff != "" {
+		t.Errorf("the blocks came back other than as written (-want +got):\n%s", diff)
+	}
+}
+
+func TestABlockCarryingNoCaptionIsServed(t *testing.T) {
+	written := whole()
+	written.Decisions[0].Evidence = document.Evidence{{Language: "go", Code: "one line\n"}}
+
+	read, err := document.Read(raw(t, written))
+	if err != nil {
+		t.Fatalf("reading a block that carries no caption: %v", err)
+	}
+	if caption := read.Decisions[0].Evidence[0].Caption; caption != "" {
+		t.Errorf("a block written with no caption came back captioned %q", caption)
+	}
+}
+
+func TestEvidenceWrittenAsAnObjectIsRefusedBeforeServing(t *testing.T) {
+	// scenario: A skill installed from an earlier release still writes the object
+	object := []byte(`{
+  "title": "two things to settle",
+  "decisions": [
+    {"id": "d-0", "question": "fine"},
+    {"id": "d-1", "question": "does the cache belong here", "evidence": {"language": "go", "code": "x := 1\n"}}
+  ]
+}`)
+
+	read, err := document.Read(object)
+	if err == nil {
+		t.Fatalf("a document whose evidence is an object validated: %s", briefly(read))
+	}
+	for _, said := range []string{"d-1", "list of blocks", "install the skill again"} {
+		if !strings.Contains(err.Error(), said) {
+			t.Errorf("refusing evidence written as an object does not say %q: %v", said, err)
+		}
+	}
+	if strings.Contains(err.Error(), "d-0") {
+		t.Errorf("refusing evidence written as an object names a decision whose evidence is fine: %v", err)
+	}
+}
+
+func TestEvidenceWrittenAsAnObjectOnADecisionWithNoIdentifierIsRefusedByPosition(t *testing.T) {
+	object := []byte(`{"title": "t", "decisions": [{"question": "q", "evidence": {"code": "x"}}]}`)
+
+	_, err := document.Read(object)
+	if err == nil {
+		t.Fatal("a document whose evidence is an object validated")
+	}
+	for _, said := range []string{"decision 1", "list of blocks", "install the skill again"} {
+		if !strings.Contains(err.Error(), said) {
+			t.Errorf("refusing evidence written as an object does not say %q: %v", said, err)
+		}
+	}
+}
+
+func TestABlockHoldingBothCodeAndAPatchIsRefusedBeforeServing(t *testing.T) {
+	written := whole()
+	written.Decisions[0].Evidence = document.Evidence{
+		{Language: "go", Code: "x := 1\n"},
+		{Language: "go", Code: "x := 1\n", Patch: "--- a/x\n+++ b/x\n@@ -1 +1 @@\n-x\n+y\n"},
+	}
+
+	read, err := document.Read(raw(t, written))
+	if err == nil {
+		t.Fatalf("a block holding both code and a patch validated: %s", briefly(read))
+	}
+	for _, said := range []string{"d-1", "block 2", "code", "patch"} {
+		if !strings.Contains(err.Error(), said) {
+			t.Errorf("refusing a block holding both code and a patch does not say %q: %v", said, err)
+		}
+	}
+}
+
+func TestABlockHoldingNeitherCodeNorAPatchIsRefusedBeforeServing(t *testing.T) {
+	written := whole()
+	written.Decisions[0].Evidence = document.Evidence{{Caption: "as a prop", Language: "go"}}
+
+	read, err := document.Read(raw(t, written))
+	if err == nil {
+		t.Fatalf("a block holding neither code nor a patch validated: %s", briefly(read))
+	}
+	for _, said := range []string{"d-1", "block 1", "code", "patch"} {
+		if !strings.Contains(err.Error(), said) {
+			t.Errorf("refusing a block holding neither code nor a patch does not say %q: %v", said, err)
+		}
+	}
+}
+
+func TestAnUnknownLanguageOnASecondBlockIsRefusedNamingTheDecision(t *testing.T) {
+	written := whole()
+	written.Decisions[0].Evidence = document.Evidence{
+		{Language: "go", Code: "x := 1\n"},
+		{Language: "prolog", Code: "read(X) :- lock(X).\n"},
+	}
+
+	_, err := document.Read(raw(t, written))
+	if err == nil {
+		t.Fatal("a second block naming a language the page cannot highlight validated")
+	}
+	for _, named := range []string{"d-1", "prolog"} {
+		if !strings.Contains(err.Error(), named) {
+			t.Errorf("refusing an unknown language on a second block does not name %q: %v", named, err)
 		}
 	}
 }

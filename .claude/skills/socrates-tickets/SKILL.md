@@ -74,11 +74,11 @@ The document is one card per proposed ticket, in the order of their waves, each 
 
     {"title": "...", "preamble": "...",
      "decisions": [{"id": "2.1-parse", "question": "2.1: ...", "meaning": "delivers: ...",
-                    "evidence": {"language": "markdown", "code": "# 2.1: ...\n\n## What to build\n..."},
+                    "evidence": [{"language": "markdown", "code": "# 2.1: ...\n\n## What to build\n..."}],
                     "mode": "single-choice",
                     "options": [{"label": "keep it", "meaning": "cut as proposed", "recommended": true}]}]}
 
-Each card states the ticket's title and what it delivers from the user's side, carries as its evidence the whole file it would be written as, so the person reads its acceptance criteria, its stories and its blockers as they will be written, and offers *keep it*, marked recommended so it arrives chosen: a person who agrees with the whole breakdown presses once.
+Each card states the ticket's title and what it delivers from the user's side, carries as its evidence one block of the whole file it would be written as, so the person reads its acceptance criteria, its stories and its blockers as written, and offers *keep it*, marked recommended so it arrives chosen: a person who agrees with the breakdown presses once.
 A merge, a split or a different blocker is asked for in the words field of the card concerned, after taking *None of these*, which the page already renders, so never write that option yourself.
 A breakdown answer runs nothing, so no option carries a command, and no card states a severity.
 

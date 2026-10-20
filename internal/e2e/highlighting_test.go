@@ -14,20 +14,20 @@ const inTwoLanguagesDocument = `{
       "question": "should the settlement be read before the lock is taken",
       "mode": "single-choice",
       "options": [{"label": "take the lock first", "meaning": "correctness first", "command": "patch c-1"}],
-      "evidence": {
+      "evidence": [{
         "language": "csharp",
         "code": "public sealed class Settlement\n{\n    public string Reference { get; init; } = \"unset\";\n}\n"
-      }
+      }]
     },
     {
       "id": "c-2",
       "question": "is the change to the reader the one that was wanted",
       "mode": "single-choice",
       "options": [{"label": "yes", "meaning": "that is the change", "command": "agree c-2"}],
-      "evidence": {
+      "evidence": [{
         "language": "diff",
         "code": "--- a/internal/cache/read.go\n+++ b/internal/cache/read.go\n@@ -1,2 +1,2 @@\n-\tdelete(locks, key)\n+\tdefer unlock(key)\n"
-      }
+      }]
     }
   ]
 }`
@@ -58,7 +58,7 @@ const colouredDiffDocument = `{
   "decisions": [
     {"id": "c-1", "question": "should the write take the lock", "mode": "single-choice",
      "options": [{"label": "take it", "meaning": "correctness first"}, {"label": "leave it", "meaning": "acceptable here"}],
-     "evidence": {"patch": "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -10,3 +10,4 @@\n func Write(key string, entry Entry) {\n-\t// store it, unlocked (fine for now)\n+\t// store it, under the lock\n+\tmu.Lock()\n \treturn\n }\n"}}
+     "evidence": [{"patch": "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -10,3 +10,4 @@\n func Write(key string, entry Entry) {\n-\t// store it, unlocked (fine for now)\n+\t// store it, under the lock\n+\tmu.Lock()\n \treturn\n }\n"}]}
   ]
 }`
 

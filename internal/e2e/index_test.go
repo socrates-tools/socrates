@@ -221,7 +221,7 @@ const quotedIdentifierDocument = `{
   "decisions": [
     {"id": "a\"b\\c", "question": "should the cache be read before the lock is taken", "mode": "single-choice",
      "options": [{"label": "take the lock first", "meaning": "correctness first"}, {"label": "leave it", "meaning": "acceptable here"}],
-     "evidence": {"language": "go", "code": "if held {\n\treturn entry\n}\n"}}
+     "evidence": [{"language": "go", "code": "if held {\n\treturn entry\n}\n"}]}
   ]
 }`
 

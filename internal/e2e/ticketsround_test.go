@@ -18,7 +18,7 @@ const breakdownDocument = `{
       "id": "1-prefactor",
       "question": "1: the skill machinery takes a second design document",
       "meaning": "delivers: socrates design skill installs two skills",
-      "evidence": {"language": "markdown", "code": "# 1: the skill machinery takes a second design document\n\n## What to build\n\nsocrates design skill installs two skills.\n\n## Acceptance criteria\n\n- [ ] socrates design skill writes a second SKILL.md, and before this ticket it writes one\n\n## User stories\n\n- 1\n\n## Blocked by\n\nNone"},
+      "evidence": [{"language": "markdown", "code": "# 1: the skill machinery takes a second design document\n\n## What to build\n\nsocrates design skill installs two skills.\n\n## Acceptance criteria\n\n- [ ] socrates design skill writes a second SKILL.md, and before this ticket it writes one\n\n## User stories\n\n- 1\n\n## Blocked by\n\nNone"}],
       "mode": "single-choice",
       "options": [{"label": "keep it", "meaning": "cut as proposed", "recommended": true}]
     },
@@ -26,7 +26,7 @@ const breakdownDocument = `{
       "id": "2-tickets-skill",
       "question": "2: the tickets skill states the breakdown, the main ticket and the tickets",
       "meaning": "delivers: a session can cut a spec into tickets",
-      "evidence": {"language": "markdown", "code": "# 2: the tickets skill states the breakdown, the main ticket and the tickets\n\n## What to build\n\nA session can cut a spec into tickets.\n\n## Acceptance criteria\n\n- [ ] the installed tickets skill names the main ticket, and before this ticket nothing does\n\n## User stories\n\n- 2, 3\n\n## Blocked by\n\n- 1-prefactor.md"},
+      "evidence": [{"language": "markdown", "code": "# 2: the tickets skill states the breakdown, the main ticket and the tickets\n\n## What to build\n\nA session can cut a spec into tickets.\n\n## Acceptance criteria\n\n- [ ] the installed tickets skill names the main ticket, and before this ticket nothing does\n\n## User stories\n\n- 2, 3\n\n## Blocked by\n\n- 1-prefactor.md"}],
       "mode": "single-choice",
       "options": [{"label": "keep it", "meaning": "cut as proposed", "recommended": true}]
     }

@@ -2,154 +2,141 @@ package e2e_test
 
 import (
 	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
-	"time"
 
-	"github.com/socrates-tools/socrates/internal/process"
-	"github.com/socrates-tools/socrates/internal/testing/harness"
-	"github.com/socrates-tools/socrates/review/findings"
-	"github.com/socrates-tools/socrates/review/runstate"
+	"github.com/google/go-cmp/cmp"
+	designskill "github.com/socrates-tools/socrates/design/skill"
+	"github.com/socrates-tools/socrates/internal/exit"
+	skillkit "github.com/socrates-tools/socrates/internal/skill"
 )
 
-func TestAMissingFindingsDocumentIsAFailure(t *testing.T) {
+func evidenceDocument(blocks string) string {
+	return `{
+  "title": "two shapes for the component",
+  "decisions": [
+    {
+      "id": "q-1",
+      "question": "which shape should the component take",
+      "mode": "single-choice",
+      "options": [{"label": "as a prop", "meaning": "options are data"}, {"label": "as children", "meaning": "options are elements"}],
+      "evidence": ` + blocks + `
+    }
+  ]
+}`
+}
+
+const twoCaptionedBlocks = `[
+  {"caption": "as a prop", "language": "go", "code": "func Select(options []Option) {}\n"},
+  {"caption": "as children", "language": "python", "code": "def select(children): pass\n"}
+]`
+
+const aBlockOfEachKind = `[
+  {"caption": "as a prop", "language": "go", "code": "func Select(options []Option) {}\n"},
+  {"language": "python", "code": "def select(children): pass\n"},
+  {"caption": "the lock", "patch": "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -1,1 +1,1 @@\n-a\n+b\n"},
+  {"patch": "--- a/internal/cache/read.go\n+++ b/internal/cache/read.go\n@@ -1,1 +1,1 @@\n-a\n+b\n"}
+]`
+
+const blockHeadings = `Array.from(document.querySelectorAll('.evidence:not(.illustrated)')).map((held) => held.querySelector('.evidence-label').innerText.replace(/\s+/g, ' ').trim())`
+
+func TestADecisionListingTwoCodeBlocksShowsBothInTheOrderWritten(t *testing.T) {
 	t.Parallel()
-	session := harness.Start(t)
-	session.Simulator.Scenario("default:\n  behaviour: no-structured-output\n")
-	session.Repository.Write("internal/added.go", "package internal\n")
+	_, page := read(t, evidenceDocument(twoCaptionedBlocks))
 
-	name := session.Begin()
-	run := session.WaitForTerminal(name)
+	var shown []string
+	page.evaluate(`Array.from(document.querySelectorAll('.decision[data-decision="q-1"] .evidence.code pre')).map((held) => held.innerText.trim())`, &shown)
 
-	if run.State != runstate.Failed {
-		t.Fatalf("a review that reported nothing ended as %s: %s", run.State, reason(run))
-	}
-	if !strings.Contains(reason(run), "structured output") {
-		t.Errorf("the failure reads %q, without naming the missing findings", reason(run))
-	}
-	if _, err := os.Stat(session.Round(name, 1).FindingsPath()); err == nil {
-		t.Error("a findings document exists for a review that returned none")
+	want := []string{"func Select(options []Option) {}", "def select(children): pass"}
+	if diff := cmp.Diff(want, shown); diff != "" {
+		t.Errorf("the card does not show both blocks in the order written (-want +got):\n%s", diff)
 	}
 }
 
-func TestAnUnparseableFindingsDocumentIsAFailure(t *testing.T) {
+func TestEachBlockHeadingShowsItsCaptionBesideItsLanguageOrItsFile(t *testing.T) {
 	t.Parallel()
-	session := harness.Start(t)
-	session.Simulator.Scenario("default:\n  behaviour: schema-violation\n")
-	session.Repository.Write("internal/added.go", "package internal\n")
+	_, page := read(t, evidenceDocument(aBlockOfEachKind))
 
-	name := session.Begin()
-	run := session.WaitForTerminal(name)
+	var headings []string
+	page.evaluate(blockHeadings, &headings)
 
-	if run.State != runstate.Failed {
-		t.Fatalf("a document violating the schema ended the run as %s: %s", run.State, reason(run))
+	want := []string{
+		"as a prop go",
+		"python",
+		"the lock internal/cache/write.go",
+		"internal/cache/read.go",
 	}
-	if !strings.Contains(reason(run), "schema") {
-		t.Errorf("the failure reads %q, without naming the violation", reason(run))
-	}
-
-	kept := session.Round(name, 1).FindingsPath()
-	content := session.File(kept)
-	if _, err := findings.Parse([]byte(content)); err == nil {
-		t.Errorf("the kept document %s satisfies the schema after all", content)
-	}
-	if !strings.Contains(reason(run), kept) {
-		t.Errorf("the failure reads %q, without saying where the document is kept", reason(run))
+	if diff := cmp.Diff(want, headings); diff != "" {
+		t.Errorf("the headings do not show the caption where there is one with the language or the file beside it, and the language or file alone where there is none (-want +got):\n%s", diff)
 	}
 }
 
-func TestAnEmptyFindingsArrayWithEvidenceIsClean(t *testing.T) {
+func TestServeRefusesEvidenceWrittenAsAnObject(t *testing.T) {
+	// scenario: A skill installed from an earlier release still writes the object
 	t.Parallel()
-	session := harness.Start(t)
-	session.Simulator.Scenario(`
-default:
-  structured: '{"findings":[],"risk_level":"low","risk_rationale":"a small and self-contained change"}'
-`)
-	session.Repository.Write("internal/added.go", "package internal\n")
+	held := standing(t)
 
-	name := session.Begin()
-	run := session.WaitForTerminal(name)
-
-	if run.State != runstate.Clean {
-		t.Fatalf("a completed review that found nothing ended as %s: %s", run.State, reason(run))
+	printed, failures, code := held.reading(evidenceDocument(`{"language": "go", "code": "x := 1\n"}`), "serve", "--document", "-")
+	if code == exit.NothingAsked {
+		t.Fatalf("a document whose evidence is an object was served at %q", printed)
 	}
-	if run.Verdict == nil || run.Verdict.Outcome != runstate.Clean {
-		t.Errorf("the verdict is %+v", run.Verdict)
-	}
-
-	document, err := findings.Parse([]byte(session.File(session.Round(name, 1).FindingsPath())))
-	if err != nil {
-		t.Fatalf("the findings document does not parse: %v", err)
-	}
-	if len(document.Findings) != 0 {
-		t.Errorf("the clean run reports %d findings", len(document.Findings))
-	}
-}
-
-func TestADeadReviewerIsAFailure(t *testing.T) {
-	t.Parallel()
-	session := harness.Start(t)
-	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 5m\n")
-	session.Repository.Write("internal/added.go", "package internal\n")
-
-	name := session.Begin()
-	run := session.WaitFor(name, runstate.Reviewing)
-
-	if err := process.Kill(run.Reviewer); err != nil {
-		t.Fatalf("killing the reviewer: %v", err)
-	}
-
-	stopped := session.WaitForTerminal(name)
-	if stopped.State != runstate.Failed {
-		t.Fatalf("a run whose reviewer was killed reads as %s", stopped.State)
-	}
-	if !strings.Contains(reason(stopped), "went away") {
-		t.Errorf("the failure reads %q, without naming that the reviewer went away", reason(stopped))
-	}
-	if session.Recorded(name).State != runstate.Reviewing {
-		t.Error("the judgement was written to disk rather than made when the run was read")
-	}
-}
-
-func TestAKilledReviewerStopsTheRun(t *testing.T) {
-	t.Parallel()
-	session := harness.Start(t)
-	session.Simulator.Scenario("default:\n  behaviour: silence\n  hold: 5m\n")
-	session.Repository.Write("internal/added.go", "package internal\n")
-
-	name := session.Begin()
-	run := session.WaitFor(name, runstate.Reviewing)
-
-	if err := process.Kill(run.Reviewer); err != nil {
-		t.Fatalf("killing the reviewer: %v", err)
-	}
-
-	stopped := session.WaitForTerminal(name)
-	if stopped.State == runstate.Reviewing {
-		t.Error("the run still reports that it is reviewing")
-	}
-	if stopped.State != runstate.Failed {
-		t.Errorf("the run reports %s, want %s", stopped.State, runstate.Failed)
-	}
-}
-
-func TestALiveReviewerIsStillWorking(t *testing.T) {
-	t.Parallel()
-	session := harness.Start(t)
-	session.Simulator.Scenario("default:\n  events: 30\n  interval: 100ms\n")
-	session.Repository.Write("internal/added.go", "package internal\n")
-
-	name := session.Begin()
-	run := session.WaitFor(name, runstate.Reviewing)
-
-	for range 5 {
-		if reading := session.Run(name); reading.State != runstate.Reviewing {
-			t.Fatalf("a run with a live reviewer reads as %s", reading.State)
+	for _, said := range []string{"q-1", "list of blocks", "install the skill again"} {
+		if !strings.Contains(failures, said) {
+			t.Errorf("refusing evidence written as an object does not say %q: %s", said, failures)
 		}
-		time.Sleep(30 * time.Millisecond)
+	}
+	if strings.TrimSpace(printed) != "" {
+		t.Errorf("refusing evidence written as an object printed %q, and an address would say it was served", printed)
+	}
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
+		t.Error("a refused document left a session behind, and it starts no server")
+	}
+}
+
+func TestServeRefusesABlockHoldingBothCodeAndAPatch(t *testing.T) {
+	t.Parallel()
+	held := standing(t)
+
+	blocks := `[{"language": "go", "code": "x := 1\n", "patch": "--- a/x\n+++ b/x\n@@ -1,1 +1,1 @@\n-a\n+b\n"}]`
+	printed, failures, code := held.reading(evidenceDocument(blocks), "serve", "--document", "-")
+	if code == exit.NothingAsked {
+		t.Fatalf("a block holding both code and a patch was served at %q", printed)
+	}
+	if !strings.Contains(failures, "q-1") {
+		t.Errorf("refusing a block holding both code and a patch does not name the decision: %s", failures)
+	}
+}
+
+func TestServeRefusesABlockHoldingNeitherCodeNorAPatch(t *testing.T) {
+	t.Parallel()
+	held := standing(t)
+
+	printed, failures, code := held.reading(evidenceDocument(`[{"caption": "empty", "language": "go"}]`), "serve", "--document", "-")
+	if code == exit.NothingAsked {
+		t.Fatalf("a block holding neither code nor a patch was served at %q", printed)
+	}
+	if !strings.Contains(failures, "q-1") {
+		t.Errorf("refusing a block holding neither code nor a patch does not name the decision: %s", failures)
+	}
+}
+
+var cardsTheTicketsSkillShows = regexp.MustCompile(`(?s)\n    (\{"title": .*?\]\}\]\})\n`)
+
+func TestAnExampleTheTicketsSkillShowsIsServedAndShowsTheTicketsFile(t *testing.T) {
+	// scenario: A ticket round served from what socrates-tickets teaches
+	t.Parallel()
+	shown := cardsTheTicketsSkillShows.FindStringSubmatch(designskill.TicketsDocument(skillkit.ClaudeCode))
+	if shown == nil {
+		t.Fatal("the tickets skill shows no document for a breakdown")
 	}
 
-	if !process.Alive(run.Reviewer) {
-		t.Error("the reviewer this test needs is not running")
+	_, page := read(t, shown[1])
+
+	var ticket string
+	page.evaluate(`document.querySelector('.decision[data-decision="2.1-parse"] .evidence.code pre').innerText`, &ticket)
+	if !strings.Contains(ticket, "# 2.1:") || !strings.Contains(ticket, "## What to build") {
+		t.Errorf("the card the tickets skill shows does not show its ticket's file: %q", ticket)
 	}
 }
