@@ -20,3 +20,8 @@ agora knows nothing about what a caller's document is about, beyond the three au
 - **exchange**: the delivery of a document and the collection of what a person answered. It holds at most one uncollected answer, and a later one replaces it. The last answer collected is kept in the session's directory, and `agora poll --last` prints it again.
 - **answer**: what one submit carries: every decision the person answered, anything they wrote, and whether it ends the exchange.
 - **confirmation**: the dialog a press raises where any decision is blank, naming each one and taking the person to it. The only thing on the page standing between a press and a send.
+
+## The client
+
+- **primitive**: a generic piece of the page that names nothing in agora's domain, such as a button, a field, a dialog or a code block. Every piece of the page this glossary does not name is a primitive, and every piece it does name is built from primitives. Not a component, and not a widget.
+- **catalog**: every primitive drawn in every state it has, by the same markup the page uses, for the browser suite to drive. Not a page: no document is behind it and nobody answers it.
