@@ -55,7 +55,9 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
   Either press over a blank decision raises a modal dialog naming every one of them and takes no armed state, a press inside it is what sends, what is behind it is dimmed, and each of its names closes it and puts the cursor on that card's first control.
   Going back, Escape and a press on the backdrop are one path: nothing is sent, the page is as it was, and the cursor returns to the button that raised it.
 - The languages the page highlights are the bundled library's common set, stated once and generated from `web/`, and a document naming one outside it is refused while one naming none renders as plain text.
-- Evidence written in markdown wraps at the width of its card rather than scrolling sideways, because it is prose a person reads whole, and code in any other language keeps its lines.
+- Every code block of evidence wraps at the width of its card, whatever its language, and nothing in one scrolls sideways.
+  A continuation line starts further in than the source line it continues, measured against that line's own indentation, so a wrapped line still reads as one line.
+  The split diff of a patch is a table and keeps its own scroll.
 - An illustration is an HTML file a caller names by path, drawn in an iframe sandboxed with `allow-scripts` and without `allow-same-origin`, so its script runs in an opaque origin and reads neither the page, its token nor its storage, and cannot navigate the page or open a popup, per ADR 76.
 - The sandbox is stated again as a `Content-Security-Policy` header on every response of the illustration's route, beside `X-Content-Type-Options: nosniff`, so a drawing opened on its own is sandboxed as well.
 - That policy admits script, style and font from the route, the surface's own origin and three CDN hosts, admits image and media from the route and `data:`, and names nothing for connecting, framing, forms or the base, so a drawing may load a library and has no way to send what it holds anywhere, per ADR 77.

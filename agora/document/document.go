@@ -110,9 +110,7 @@ func refuseEvidenceWrittenAsAnObject(raw []byte) error {
 			Evidence json.RawMessage `json:"evidence"`
 		} `json:"decisions"`
 	}
-	if err := json.Unmarshal(raw, &written); err != nil {
-		return nil
-	}
+	_ = json.Unmarshal(raw, &written)
 	for position, decision := range written.Decisions {
 		if bytes.HasPrefix(bytes.TrimSpace(decision.Evidence), []byte("{")) {
 			return fmt.Errorf(evidenceWrittenAsAnObject, decisionName(position, decision.ID))

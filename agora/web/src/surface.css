@@ -845,16 +845,21 @@ span.entry-link .entry-name {
 .evidence.code pre {
   margin: 0;
   padding: 12px;
-  overflow-x: auto;
   color: var(--fg-1);
   font-size: var(--size-code);
   line-height: var(--leading-code);
   tab-size: 4;
 }
 
-.evidence.code code.language-markdown {
+.evidence.code code {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.code-line {
+  display: block;
+  padding-left: calc(var(--continuation) * 1ch);
+  text-indent: calc(var(--continuation) * -1ch);
 }
 
 .hunk {
