@@ -54,25 +54,24 @@ State no severity anywhere, on a decision or on a source entry: a design questio
 One option of a decision may carry `"recommended": true`, and at most one is ever marked.
 A document marking two is refused before anything is served.
 The marked option is the answer the session would take, and it arrives chosen when the page renders.
-A decision you mark nothing on arrives with nothing chosen.
+A decision you mark nothing on arrives with nothing chosen: marking nothing says you have no view, and choosing one for the person would be the page answering on their behalf.
 
 A single-choice decision already renders a further control below its options, labelled *None of these*, which clears the selection and moves the cursor into the words field below it.
 Write the real options and nothing else, and never write that option yourself.
 
-Code goes in the decision's `evidence`, a list of blocks the page highlights, wraps and lets the person copy.
-A card comparing two shapes writes one captioned block per option:
+Code goes in the decision's `evidence`, blocks the page highlights, wraps and offers to copy.
+Two shapes are two captioned blocks:
 
-    {"evidence": [{"caption": "A: one prop", "language": "tsx", "code": "<Select options={options} />"},
+    {"evidence": [{"caption": "A: one prop", "language": "tsx", "code": "<Select options={o} />"},
                   {"caption": "B: children", "language": "tsx", "code": "<Select><Option /></Select>"}]}
 
-A block holds `code` or a `patch`, never both.
-A before and after is a `patch` block.
+A block holds `code` or a `patch`, never both, and a before and after is a `patch` block.
 
 A decision may also carry one illustration, an HTML file you write and name by path in a field of its own:
 
     {"illustration": {"path": "q3.html"}}
 
-A relative path resolves against the folder of the document, or against the working directory where the document is piped in.
+A relative path resolves against the document's folder, or the working directory where it is piped in.
 The file is drawn in a sandboxed frame on the card: its script runs, but it cannot reach the page or write into the answer.
 The frame grows to its drawing and can be expanded to fill the window.
 Write the files it references beside it, inside its folder, 16 MiB at most in all: HTML, CSS, JavaScript, JSON, SVG, PNG, JPEG, WebP, GIF, WOFF or WOFF2.
@@ -80,17 +79,17 @@ A reference outside the file's folder, a missing file, a type not served or a to
 A drawing may load scripts, styles and fonts from cdnjs.cloudflare.com, cdn.jsdelivr.net and unpkg.com and nowhere else, and it sends nothing anywhere.
 To look like the page, load /assets/tokens.css as a stylesheet.
 
-Draw one where the choice is a shape: a layout, an arrangement of panels, a screen recognised by its structure rather than by a description of it.
+Draw one where the choice is a shape: a layout, an arrangement of panels, a screen recognised by its structure.
 Skip it where the choice is a name, a threshold or a policy, anything a sentence already carries in full.
-An illustration never draws code on its own: it may still show code inside a drawn screen or layout, but a card that only shows code uses evidence.
+An illustration never draws code on its own: it may still show code inside a drawn screen or layout.
 An illustration that only repeats what the words already said costs the person attention and costs the skill its ceiling for nothing.
 
 The person answers on the page.
 `socrates agora poll --session <session>` hands back what they chose and anything they wrote, in their own words.
-What they write is the decision, taken into the spec and the ADR it becomes exactly as written.
+Their words are not a record you carry to somebody else to judge: the person is deciding the design itself, so what they write is the decision, taken into the spec and the ADR it becomes exactly as written.
 
 Mint the session once, with the first `socrates agora serve`, so the person is given one address.
-Keep that session for the whole design: serve every later round to the page they already have with `socrates agora serve --session <session>`, so a further round costs them no second address.
+Keep that session for the whole design: serve every later round to the page they already have with `socrates agora serve --session <session>`.
 agora collects a session after 45 minutes with no reader, and no design state lives outside it, so losing one costs an address and no work: serve the accumulated document again and the person is handed a new one to replace it.
 
 ## What was settled
@@ -121,7 +120,7 @@ A person reopening something they settled two rounds ago names it.
 ## Facts
 
 Facts are found rather than asked for.
-Read the repository, its history and what it says of itself before a question is written down: a name already in use, a pattern the codebase already follows, a decision already on record.
+Read the repository, its history and what it says of itself before a question is written down.
 No question reaches the page that reading the repository would have answered: a round asks a person to decide something, never to tell you something you could have looked up.
 
 Look facts up in subagents, while the round goes out.
@@ -187,6 +186,7 @@ There is no round cap.
 The frontier decides when a design stops, and it stops once the frontier is empty.
 
 When it empties, there is nothing left to ask, so serve no further page.
+Every answer the person sent already approved what it settled, and a card asking only to go ahead would be a press that decides nothing.
 Close the page they hold with `socrates agora end --session <session>`, so it says the exchange is over, and write the spec and its decisions straight away.
 
 The spec goes to `docs/changes/<slug>/spec.md`, in the change's own folder and nowhere else.
