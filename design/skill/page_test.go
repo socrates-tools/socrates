@@ -74,6 +74,25 @@ func TestTheSkillSaysWhenAnIllustrationEarnsItsPlace(t *testing.T) {
 	}
 }
 
+func TestTheSkillSaysCodeOnACardGoesInEvidenceAndNeverInAnIllustrationAlone(t *testing.T) {
+	// scenario: A session shows code on a design card
+	for _, host := range []skillkit.Host{skillkit.ClaudeCode, skillkit.Codex} {
+		page := sectionOf(t, skill.Document(host), pageHeading)
+
+		for _, said := range []string{
+			"Code goes in the decision's `evidence`",
+			"An illustration never draws code on its own",
+			"it may still show code inside a drawn screen or layout",
+			"a card that only shows code uses evidence",
+			"A before and after is a `patch` block",
+		} {
+			if !strings.Contains(page, said) {
+				t.Errorf("the %s page section does not say %q, so a session hand-draws code in an illustration:\n%s", host.Flag, said, page)
+			}
+		}
+	}
+}
+
 func TestFactsAreFoundRatherThanAsked(t *testing.T) {
 	facts := sectionOf(t, skill.Document(skillkit.ClaudeCode), factsHeading)
 

@@ -60,11 +60,20 @@ State no severity anywhere, on a decision or on a source entry: a design questio
 
 One option of a decision may carry |"recommended": true|, and at most one is ever marked.
 A document marking two is refused before anything is served.
-The marked option is the answer the session would take, and it arrives chosen when the page renders, so a person who agrees with the whole round need only press once.
-A decision you mark nothing on arrives with nothing chosen: marking nothing says you have no view, and choosing one for the person would be the page answering on their behalf.
+The marked option is the answer the session would take, and it arrives chosen when the page renders.
+A decision you mark nothing on arrives with nothing chosen.
 
 A single-choice decision already renders a further control below its options, labelled *None of these*, which clears the selection and moves the cursor into the words field below it.
 Write the real options and nothing else, and never write that option yourself.
+
+Code goes in the decision's |evidence|, a list of blocks the page highlights, wraps and lets the person copy.
+A card comparing two shapes writes one captioned block per option:
+
+    {"evidence": [{"caption": "A: one prop", "language": "tsx", "code": "<Select options={options} />"},
+                  {"caption": "B: children", "language": "tsx", "code": "<Select><Option /></Select>"}]}
+
+A block holds |code| or a |patch|, never both.
+A before and after is a |patch| block.
 
 A decision may also carry one illustration, an HTML file you write and name by path in a field of its own:
 
@@ -80,11 +89,12 @@ To look like the page, load /assets/tokens.css as a stylesheet.
 
 Draw one where the choice is a shape: a layout, an arrangement of panels, a screen recognised by its structure rather than by a description of it.
 Skip it where the choice is a name, a threshold or a policy, anything a sentence already carries in full.
+An illustration never draws code on its own: it may still show code inside a drawn screen or layout, but a card that only shows code uses evidence.
 An illustration that only repeats what the words already said costs the person attention and costs the skill its ceiling for nothing.
 
 The person answers on the page.
 |socrates agora poll --session <session>| hands back what they chose and anything they wrote, in their own words.
-Their words are not a record you carry to somebody else to judge: the person is deciding the design itself, so what they write is the decision, taken into the spec and the ADR it becomes exactly as written.
+What they write is the decision, taken into the spec and the ADR it becomes exactly as written.
 
 Mint the session once, with the first |socrates agora serve|, so the person is given one address.
 Keep that session for the whole design: serve every later round to the page they already have with |socrates agora serve --session <session>|, so a further round costs them no second address.
@@ -115,7 +125,7 @@ The preamble is one paragraph on the page, so write it as sentences rather than 
     "preamble": "Question 1: the surface, as agora's own source calls it. Question 2: no round cap, because nothing here spawns a process for one to protect."
 
 Identifiers are stable for the life of the design: q2 is q2 from the round it is first asked to the round the spec is written.
-A person reopening something they settled two rounds ago names it, and the spec and the ADR it becomes are already written against that name.`
+A person reopening something they settled two rounds ago names it.`
 
 	factsHeading = "## Facts"
 
@@ -137,7 +147,6 @@ A term worth writing down is written down as soon as it settles, in the round it
 
 Read |CONTEXT.md|, or the glossaries a |CONTEXT-MAP.md| names, before writing an entry, and write a new one in the glossary of its context.
 A term that conflicts with an entry already there, or that renames something the glossary already calls something else, is never applied silently: put it on a card of its own and let the person decide.
-The value of the glossary is that the person agreed to the word.
 
 Challenge the words rather than only checking them, each on a card of its own:
 
@@ -199,11 +208,10 @@ There is no round cap.
 The frontier decides when a design stops, and it stops once the frontier is empty.
 
 When it empties, there is nothing left to ask, so serve no further page.
-Every answer the person sent already approved what it settled, and a card asking only to go ahead would be a press that decides nothing.
 Close the page they hold with |socrates agora end --session <session>|, so it says the exchange is over, and write the spec and its decisions straight away.
 
 The spec goes to |docs/changes/<slug>/spec.md|, in the change's own folder and nowhere else.
-Once it is written, say in the terminal every path you wrote, so the person reads where the design went rather than hunting for it.
+Once it is written, say in the terminal every path you wrote.
 Start no other skill: every socrates skill is a person's to start, so once the spec is written you stop, and the person types the next skill themselves.`
 
 	endingHeading = "## Ending early"
@@ -218,7 +226,7 @@ Everything settled up to that point becomes its answer in the spec exactly as it
 
     ### The design ended early
 
-Name each one and what it was asking, so whoever picks the spec up next can see what the interview never reached rather than guessing that nothing was left.`
+Name each one and what it was asking, so whoever picks the spec up next sees what the interview never reached.`
 
 	installingHeading = "## Installing elsewhere"
 

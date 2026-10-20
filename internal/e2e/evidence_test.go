@@ -140,3 +140,35 @@ func TestAnExampleTheTicketsSkillShowsIsServedAndShowsTheTicketsFile(t *testing.
 		t.Errorf("the card the tickets skill shows does not show its ticket's file: %q", ticket)
 	}
 }
+
+var evidenceTheDesignSkillShows = regexp.MustCompile(`(?s)\n    \{"evidence": (\[.*?\])\}\n`)
+
+func TestTheCardTheDesignSkillShowsForTwoShapesIsServedAsTwoCaptionedHighlightedTsxBlocks(t *testing.T) {
+	// scenario: A card comparing two shapes served from what socrates-design teaches
+	t.Parallel()
+	for _, host := range []skillkit.Host{skillkit.ClaudeCode, skillkit.Codex} {
+		t.Run(host.Flag, func(t *testing.T) {
+			t.Parallel()
+			shown := evidenceTheDesignSkillShows.FindStringSubmatch(designskill.Document(host))
+			if shown == nil {
+				t.Fatal("the design skill shows no evidence for a card comparing two shapes")
+			}
+
+			held := standing(t)
+			page := opening(t, held.serve(evidenceDocument(shown[1])))
+			page.waitFor(`document.querySelectorAll('.evidence.code code.hljs').length === 2`)
+
+			var read map[string]bool
+			page.evaluate(highlightedBlocks, &read)
+			if diff := cmp.Diff(map[string]bool{"language-tsx": true}, read); diff != "" {
+				t.Errorf("the blocks the design skill shows are not highlighted as tsx (-want +got):\n%s", diff)
+			}
+
+			var captioned []string
+			page.evaluate(`Array.from(document.querySelectorAll('.evidence.code .evidence-caption')).map((held) => held.innerText.trim())`, &captioned)
+			if len(captioned) != 2 || captioned[0] == "" || captioned[1] == "" || captioned[0] == captioned[1] {
+				t.Errorf("the blocks the design skill shows are not two captioned blocks: %q", captioned)
+			}
+		})
+	}
+}
