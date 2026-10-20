@@ -138,7 +138,7 @@ func TestADrawingIsShownOnItsCardWithItsOwnScriptHavingRun(t *testing.T) {
 	aDrawing(t, held, "drawings/q3.html", drawingThatReports)
 
 	page := opening(t, held.serve(illustrating(t, oneDecisionDocument, "drawings/q3.html")))
-	page.waitFor(frameOfC1 + `.style.getPropertyValue('--drawing-height') !== ''`)
+	page.waitFor(frameOfC1 + `.getBoundingClientRect().height > 0`)
 
 	var framed struct {
 		Sandbox string  `json:"sandbox"`

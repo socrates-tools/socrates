@@ -94,7 +94,7 @@ func aPageWithACountingDrawing(t *testing.T) *reader {
 	held := standing(t)
 	aDrawing(t, held, "counting.html", drawingWithACounter)
 	page := opening(t, held.serve(illustrating(t, oneDecisionDocument, "counting.html")))
-	page.waitFor(frameOfC1 + `.style.getPropertyValue('--drawing-height') !== ''`)
+	page.waitFor(frameOfC1 + `.getBoundingClientRect().height > 0`)
 	return page
 }
 
@@ -274,7 +274,7 @@ func TestARevisionTakenWhileADrawingIsExpandedLeavesNothingOnThePageUnreachable(
 	aDrawing(t, held, "counting.html", drawingWithACounter)
 	written := illustrating(t, oneDecisionDocument, "counting.html")
 	page := opening(t, held.serve(written))
-	page.waitFor(frameOfC1 + `.style.getPropertyValue('--drawing-height') !== ''`)
+	page.waitFor(frameOfC1 + `.getBoundingClientRect().height > 0`)
 
 	page.click(expandControl)
 	held.serveAgain(strings.Replace(written, "one thing to settle", "one thing, revised", 1))
