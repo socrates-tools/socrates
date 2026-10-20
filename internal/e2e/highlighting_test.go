@@ -86,3 +86,68 @@ func TestTheLinesOfADiffAreColouredLikeCodeAndStillMeetTheFloor(t *testing.T) {
 		t.Errorf("%s, and the floor the page is held to is %v", failing, contrastFloor)
 	}
 }
+
+const namedByAliasDocument = `{
+  "title": "shapes named by alias",
+  "decisions": [
+    {
+      "id": "c-1",
+      "question": "which shape of the component",
+      "mode": "single-choice",
+      "options": [{"label": "the first", "meaning": "the first shape", "command": "take c-1"}],
+      "evidence": [
+        {"language": "tsx", "code": "export const Select = () => <select className=\"s\">{items}</select>\n"},
+        {"language": "jsx", "code": "const Select = () => <select className=\"s\" />\n"},
+        {"language": "ts", "code": "export const limit: number = 3\n"},
+        {"language": "sh", "code": "if [ -f \"$file\" ]; then echo \"$file\"; fi\n"},
+        {"language": "yml", "code": "name: build\non: push\n"},
+        {"patch": "--- a/select.tsx\n+++ b/select.tsx\n@@ -1,1 +1,1 @@\n-export const limit: number = 2\n+export const limit: number = 3\n"}
+      ]
+    }
+  ]
+}`
+
+func TestCodeNamedByAnAliasIsHighlightedAsItsLanguageIs(t *testing.T) {
+	t.Parallel()
+	held := standing(t)
+	page := opening(t, held.serve(namedByAliasDocument))
+
+	page.waitFor(`document.querySelectorAll('.evidence.code code.hljs').length === 5`)
+
+	var read map[string]bool
+	page.evaluate(highlightedBlocks, &read)
+
+	want := map[string]bool{
+		"language-tsx": true,
+		"language-jsx": true,
+		"language-ts":  true,
+		"language-sh":  true,
+		"language-yml": true,
+	}
+	if diff := cmp.Diff(want, read); diff != "" {
+		t.Errorf("what the page highlighted differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestAPatchWhoseLanguageIsNamedByAnAliasHasItsLinesHighlighted(t *testing.T) {
+	t.Parallel()
+	held := standing(t)
+	page := opening(t, held.serve(patchInAnAliasDocument))
+
+	page.waitFor(`!!document.querySelector('.hunk .line .hljs-keyword')`)
+
+	var coloured bool
+	page.evaluate(`!!document.querySelector('.hunk .line[data-kind="added"] .hljs-built_in, .hunk .line[data-kind="added"] .hljs-type')`, &coloured)
+	if !coloured {
+		t.Error("a type on a changed line of a patch whose language is ts is not coloured as one")
+	}
+}
+
+const patchInAnAliasDocument = `{
+  "title": "one thing to settle",
+  "decisions": [
+    {"id": "c-1", "question": "should the limit be raised", "mode": "single-choice",
+     "options": [{"label": "raise it", "meaning": "more room"}],
+     "evidence": [{"language": "ts", "patch": "--- a/limit.txt\n+++ b/limit.txt\n@@ -1,1 +1,1 @@\n-export const limit: number = 2\n+export const limit: number = 3\n"}]}
+  ]
+}`

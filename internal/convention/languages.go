@@ -7,13 +7,22 @@ import (
 
 const ClientBundle = "surface.js"
 
-var languageRegistered = regexp.MustCompile(`registerLanguage\("([^"]+)"`)
+var (
+	languageRegistered = regexp.MustCompile(`registerLanguage\("([^"]+)"`)
+	aliasesRegistered  = regexp.MustCompile(`aliases:\[((?:"[^"]+",?)+)\]`)
+	nameQuoted         = regexp.MustCompile(`"([^"]+)"`)
+)
 
 func LanguagesTheBundleRegisters(client string) []string {
 	var named []string
 
 	for _, found := range languageRegistered.FindAllStringSubmatch(client, -1) {
 		named = append(named, found[1])
+	}
+	for _, aliases := range aliasesRegistered.FindAllStringSubmatch(client, -1) {
+		for _, alias := range nameQuoted.FindAllStringSubmatch(aliases[1], -1) {
+			named = append(named, alias[1])
+		}
 	}
 	slices.Sort(named)
 	return slices.Compact(named)
