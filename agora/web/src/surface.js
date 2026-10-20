@@ -524,9 +524,76 @@ function bind() {
   document.querySelectorAll('pre code[class^="language-"]').forEach((block) => {
     if (block.textContent.trim()) {
       hljs.highlightElement(block)
+      hangTheLines(block)
     }
   })
   document.querySelectorAll('.evidence.diff').forEach(colourTheLines)
+}
+
+const columnsPerTab = 4
+
+function indentInColumns(text) {
+  let columns = 0
+  for (const character of text) {
+    if (character === '\t') {
+      columns += columnsPerTab - (columns % columnsPerTab)
+    } else if (character === ' ') {
+      columns += 1
+    } else {
+      break
+    }
+  }
+  return columns
+}
+
+function continuationColumn(text) {
+  return (Math.floor(indentInColumns(text) / columnsPerTab) + 1) * columnsPerTab
+}
+
+function splitIntoLines(root) {
+  const lines = []
+  const path = []
+  let tip = null
+  const startLine = () => {
+    const line = document.createElement('span')
+    line.className = 'code-line'
+    lines.push(line)
+    tip = path.reduce((parent, element) => parent.appendChild(element.cloneNode(false)), line)
+  }
+  const walk = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      node.data.match(/[^\n]*\n|[^\n]+/g)?.forEach((piece) => {
+        if (tip === null) {
+          startLine()
+        }
+        tip.appendChild(document.createTextNode(piece))
+        if (piece.endsWith('\n')) {
+          tip = null
+        }
+      })
+      return
+    }
+    if (tip === null) {
+      startLine()
+    }
+    const clone = node.cloneNode(false)
+    tip.appendChild(clone)
+    path.push(node)
+    tip = clone
+    node.childNodes.forEach(walk)
+    path.pop()
+    tip = tip === null ? null : tip.parentNode
+  }
+  root.childNodes.forEach(walk)
+  return lines
+}
+
+function hangTheLines(block) {
+  const lines = splitIntoLines(block)
+  lines.forEach((line) => {
+    line.style.setProperty('--continuation', continuationColumn(line.textContent))
+  })
+  block.replaceChildren(...lines)
 }
 
 function colourTheLines(diff) {
