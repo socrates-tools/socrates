@@ -593,7 +593,8 @@ function splitIntoLines(root) {
 
 function hangTheLines(block) {
   const lines = splitIntoLines(block)
-  lines.forEach((line) => {
+  lines.forEach((line, position) => {
+    line.dataset.number = position + 1
     line.style.setProperty('--continuation', continuationColumn(line.textContent))
   })
   block.replaceChildren(...lines)

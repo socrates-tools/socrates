@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -178,5 +179,53 @@ func TestATabIndentedLineOfGoKeepsItsFourColumnsAndItsTextIsIntact(t *testing.T)
 	}
 	if measured.Column <= 0 || measured.IndentedBy < measured.Column*3.9 || measured.IndentedBy > measured.Column*4.1 {
 		t.Errorf("a line starting with one tab is indented %vpx where one column is %vpx, not the four columns it states", measured.IndentedBy, measured.Column)
+	}
+}
+
+func TestEverySourceLineOfACodeBlockIsNumberedOnceInAGutterBesideIt(t *testing.T) {
+	// scenario: A code block numbers each source line from 1 in a gutter, a wrapped line once, and the numbers are not part of its text
+	t.Parallel()
+	page := openingAt(t, longGoDocument(t), 700, 900)
+
+	var numbered struct {
+		Numbers   []string `json:"numbers"`
+		Sources   int      `json:"sources"`
+		Drawn     []bool   `json:"drawn"`
+		TextAfter []bool   `json:"textAfter"`
+		Text      string   `json:"text"`
+	}
+	page.evaluate(`(() => {
+  const code = document.querySelector('.evidence.code code');
+  const lines = Array.from(code.querySelectorAll('.code-line'));
+  return {
+    numbers: lines.map((line) => line.dataset.number),
+    sources: code.textContent.replace(/\n$/, '').split('\n').length,
+    drawn: lines.map((line) => parseFloat(getComputedStyle(line, '::before').width) > 0),
+    textAfter: lines.map((line) => {
+      const range = document.createRange();
+      range.selectNodeContents(line);
+      const gutter = parseFloat(getComputedStyle(line, '::before').width);
+      return range.getClientRects()[0].left >= line.getBoundingClientRect().left + gutter - 0.5;
+    }),
+    text: code.textContent,
+  };
+})()`, &numbered)
+
+	if len(numbered.Numbers) != numbered.Sources {
+		t.Fatalf("the block draws %d numbered lines for %d source lines", len(numbered.Numbers), numbered.Sources)
+	}
+	for position, number := range numbered.Numbers {
+		if number != fmt.Sprint(position+1) {
+			t.Errorf("source line %d is numbered %q", position+1, number)
+		}
+		if !numbered.Drawn[position] {
+			t.Errorf("source line %d draws no number in the gutter", position+1)
+		}
+		if !numbered.TextAfter[position] {
+			t.Errorf("the code of source line %d starts inside the gutter", position+1)
+		}
+	}
+	if numbered.Text != longGoLines {
+		t.Errorf("numbering the lines changed the block's text to %q", numbered.Text)
 	}
 }

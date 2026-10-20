@@ -791,10 +791,6 @@ span.entry-link .entry-name {
   overflow: hidden;
 }
 
-.evidence.code {
-  background: var(--surface-sunk);
-}
-
 .evidence-heading {
   min-height: 32px;
   display: flex;
@@ -847,8 +843,9 @@ span.entry-link .entry-name {
 }
 
 .evidence.code pre {
+  --gutter: 48px;
   margin: 0;
-  padding: 12px;
+  padding: 12px 12px 12px 0;
   color: var(--fg-1);
   font-size: var(--size-code);
   line-height: var(--leading-code);
@@ -861,9 +858,23 @@ span.entry-link .entry-name {
 }
 
 .code-line {
+  position: relative;
   display: block;
-  padding-left: calc(var(--continuation) * 1ch);
+  padding-left: calc(var(--gutter) + var(--continuation) * 1ch);
   text-indent: calc(var(--continuation) * -1ch);
+}
+
+.code-line::before {
+  content: attr(data-number);
+  position: absolute;
+  left: 0;
+  width: var(--gutter);
+  padding-right: 16px;
+  box-sizing: border-box;
+  text-align: right;
+  text-indent: 0;
+  color: var(--fg-3);
+  user-select: none;
 }
 
 .hunk {

@@ -172,3 +172,24 @@ func TestTheCardTheDesignSkillShowsForTwoShapesIsServedAsTwoCaptionedHighlighted
 		})
 	}
 }
+
+func TestEveryBlockOfEvidencePaintsTheSameBackgroundAsTheCardItSitsOn(t *testing.T) {
+	// scenario: A code block and a patch block on one card are painted the same white as the card
+	t.Parallel()
+	_, page := read(t, evidenceDocument(aBlockOfEachKind))
+
+	var painted struct {
+		Card   string   `json:"card"`
+		Blocks []string `json:"blocks"`
+	}
+	page.evaluate(`({
+  card: getComputedStyle(document.querySelector('.decision')).backgroundColor,
+  blocks: Array.from(document.querySelectorAll('.evidence:not(.illustrated)')).map((held) => getComputedStyle(held.querySelector('pre, .hunk')).backgroundColor === 'rgba(0, 0, 0, 0)' ? getComputedStyle(held).backgroundColor : getComputedStyle(held.querySelector('pre, .hunk')).backgroundColor),
+})`, &painted)
+
+	for position, block := range painted.Blocks {
+		if block != painted.Card {
+			t.Errorf("block %d of the evidence is painted %s on a card painted %s", position+1, block, painted.Card)
+		}
+	}
+}
