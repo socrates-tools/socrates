@@ -15,7 +15,7 @@ const (
 	ContextMapFile     = "CONTEXT-MAP.md"
 	GlossaryFile       = "CONTEXT.md"
 	InstructionsFile   = "AGENTS.md"
-	InstructionsLink   = "CLAUDE.md"
+	ClaudeInstructions = "CLAUDE.md"
 	decisionsDirectory = "docs/adr"
 )
 
@@ -157,6 +157,9 @@ func ContextGaps(root string, tools []Tool) ([]string, error) {
 			gaps = append(gaps, shared+" does not exist")
 		}
 	}
+	if !importsTheInstructionsAlone(root, ClaudeInstructions) {
+		gaps = append(gaps, ClaudeInstructions+" does not hold @"+InstructionsFile+" alone")
+	}
 
 	held, err := Document(root, ContextMapFile)
 	if err != nil && !os.IsNotExist(err) {
@@ -166,7 +169,7 @@ func ContextGaps(root string, tools []Tool) ([]string, error) {
 	for _, tool := range tools {
 		glossary := tool.Directory + "/" + GlossaryFile
 		instructions := tool.Directory + "/" + InstructionsFile
-		link := tool.Directory + "/" + InstructionsLink
+		claude := tool.Directory + "/" + ClaudeInstructions
 		decisions := tool.Directory + "/" + decisionsDirectory
 
 		if !strings.Contains(held, glossary) {
@@ -178,14 +181,23 @@ func ContextGaps(root string, tools []Tool) ([]string, error) {
 		if !Carries(root, instructions) {
 			gaps = append(gaps, instructions+" does not exist")
 		}
-		if target, err := os.Readlink(filepath.Join(root, filepath.FromSlash(link))); err != nil || target != InstructionsFile {
-			gaps = append(gaps, link+" is not a link to "+InstructionsFile)
+		if !importsTheInstructionsAlone(root, claude) {
+			gaps = append(gaps, claude+" does not hold @"+InstructionsFile+" alone")
 		}
 		if !holdsRecords(filepath.Join(root, filepath.FromSlash(decisions))) {
 			gaps = append(gaps, decisions+" holds no decision record")
 		}
 	}
 	return gaps, nil
+}
+
+func importsTheInstructionsAlone(root, relative string) bool {
+	path := filepath.Join(root, filepath.FromSlash(relative))
+	if standing, err := os.Lstat(path); err != nil || !standing.Mode().IsRegular() {
+		return false
+	}
+	held, err := os.ReadFile(path)
+	return err == nil && string(held) == "@"+InstructionsFile+"\n"
 }
 
 func GlossaryNamingTheOtherTool(root, directory string) ([]string, error) {

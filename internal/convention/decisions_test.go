@@ -160,9 +160,8 @@ func TestAToolWithNoGlossaryNoDecisionDirectoryAndNoInstructionsIsReportedWherev
 	writeNested(t, filepath.Join(root, "review", "CONTEXT.md"), "review\n")
 	writeNested(t, filepath.Join(root, "review", "AGENTS.md"), "review\n")
 	writeDecision(t, root, "review", 1, "1. Held", "Decided.")
-	if err := os.Symlink("AGENTS.md", filepath.Join(root, "review", "CLAUDE.md")); err != nil {
-		t.Fatalf("linking the instructions: %v", err)
-	}
+	writeNested(t, filepath.Join(root, "CLAUDE.md"), "@AGENTS.md\n")
+	writeNested(t, filepath.Join(root, "review", "CLAUDE.md"), "@AGENTS.md\n")
 
 	got, err := convention.ContextGaps(root, twoTools)
 	if err != nil {
@@ -173,8 +172,35 @@ func TestAToolWithNoGlossaryNoDecisionDirectoryAndNoInstructionsIsReportedWherev
 		"CONTEXT-MAP.md does not name agora/CONTEXT.md",
 		"agora/CONTEXT.md does not exist",
 		"agora/AGENTS.md does not exist",
-		"agora/CLAUDE.md is not a link to AGENTS.md",
+		"agora/CLAUDE.md does not hold @AGENTS.md alone",
 		"agora/docs/adr holds no decision record",
+	}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("the gaps differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestAClaudeInstructionsFileThatLinksToAgentsRatherThanImportingItIsReported(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "CONTEXT.md"), "shared\n")
+	writeNested(t, filepath.Join(root, "CONTEXT-MAP.md"), "See CONTEXT.md and review/CONTEXT.md.\n")
+	writeNested(t, filepath.Join(root, "AGENTS.md"), "map\n")
+	writeNested(t, filepath.Join(root, "review", "CONTEXT.md"), "review\n")
+	writeNested(t, filepath.Join(root, "review", "AGENTS.md"), "review\n")
+	writeDecision(t, root, "review", 1, "1. Held", "Decided.")
+	if err := os.Symlink("AGENTS.md", filepath.Join(root, "CLAUDE.md")); err != nil {
+		t.Fatalf("linking the instructions: %v", err)
+	}
+	writeNested(t, filepath.Join(root, "review", "CLAUDE.md"), "@AGENTS.md\nAnd one more rule.\n")
+
+	got, err := convention.ContextGaps(root, []convention.Tool{{Namespace: "review", Directory: "review"}})
+	if err != nil {
+		t.Fatalf("reading a fabricated tree: %v", err)
+	}
+
+	want := []string{
+		"CLAUDE.md does not hold @AGENTS.md alone",
+		"review/CLAUDE.md does not hold @AGENTS.md alone",
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("the gaps differ (-want +got):\n%s", diff)
