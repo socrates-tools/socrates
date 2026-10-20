@@ -18,7 +18,7 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 79](../../../../agora/docs/adr/0
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1: The client is strict TypeScript, type-checked by the build](1-client-in-typescript.md) | None | pending |
+| [1: The client is strict TypeScript, type-checked by the build](1-client-in-typescript.md) | None | in progress |
 | [2.1: A development build serves the bundle from disk and rebuilds it on save](2.1-development-build.md) | 1-client-in-typescript | pending |
 | [2.2: The tokens, fonts and mark live in the library](2.2-tokens-in-the-library.md) | 1-client-in-typescript | pending |
 | [3.1: The dialog is the first primitive, and the contract holds it to its markup](3.1-the-dialog-as-the-first-primitive.md) | 2.2-tokens-in-the-library | pending |
