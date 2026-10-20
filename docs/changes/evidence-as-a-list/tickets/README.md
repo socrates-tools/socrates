@@ -18,7 +18,7 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 78](../../../../agora/docs/adr/0
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1.1: Evidence is a list of captioned blocks](1.1-evidence-as-a-list.md) | None | in progress |
+| [1.1: Evidence is a list of captioned blocks](1.1-evidence-as-a-list.md) | None | done |
 | [1.2: Every code block wraps its long lines](1.2-every-code-block-wraps.md) | None | done |
 | [1.3: Copy a code block](1.3-copy-a-code-block.md) | None | pending |
 | [1.4: A language may be named by any name highlight.js answers to](1.4-language-aliases.md) | None | pending |
