@@ -286,3 +286,33 @@ func TestARevisionTakenWhileADrawingIsExpandedLeavesNothingOnThePageUnreachable(
 		t.Errorf("%d elements are still unreachable after a revision replaced the expanded drawing", unreachable)
 	}
 }
+
+func TestAnIllustrationsHeadingNamesNothingAndHoldsItsExpandControlAtTheRight(t *testing.T) {
+	// scenario: The bar above a drawing carries no word, only the expand control at its right edge
+	t.Parallel()
+	page := aPageWithACountingDrawing(t)
+
+	var heading struct {
+		Text           string  `json:"text"`
+		HeadingRight   float64 `json:"headingRight"`
+		ControlRight   float64 `json:"controlRight"`
+		HeadingPadding float64 `json:"headingPadding"`
+	}
+	page.evaluate(`(() => {
+  const heading = document.querySelector('.decision[data-decision="c-1"] .evidence.illustrated .evidence-heading');
+  const control = heading.querySelector('.expand');
+  return {
+    text: heading.innerText.trim(),
+    headingRight: heading.getBoundingClientRect().right,
+    controlRight: control.getBoundingClientRect().right,
+    headingPadding: parseFloat(getComputedStyle(heading).paddingRight),
+  };
+})()`, &heading)
+
+	if heading.Text != "" {
+		t.Errorf("the bar above the drawing reads %q, want no word", heading.Text)
+	}
+	if gap := heading.HeadingRight - heading.HeadingPadding - heading.ControlRight; gap > 1 || gap < -1 {
+		t.Errorf("the expand control stands %vpx short of the bar's right edge, want it at the right", gap)
+	}
+}

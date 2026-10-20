@@ -153,7 +153,7 @@
 
 {{with .Drawing}}
 <div class="evidence illustrated">
-<div class="evidence-heading"><span class="evidence-label">illustration</span><button class="expand" data-part="viewing" type="button" aria-label="Expand illustration" aria-expanded="false" data-title="Expand illustration" data-hint="Lays the drawing over the whole window. Escape closes it.">{{template "expand"}}</button></div>
+<div class="evidence-heading"><button class="expand" data-part="viewing" type="button" aria-label="Expand illustration" aria-expanded="false" data-title="Expand illustration" data-hint="Lays the drawing over the whole window. Escape closes it.">{{template "expand"}}</button></div>
 <div class="drawing-stage">
 <div class="drawing-backdrop"></div>
 <iframe class="drawing" sandbox="allow-scripts" src="{{.Source}}" title="{{.Title}}"></iframe>

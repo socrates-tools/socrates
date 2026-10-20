@@ -809,6 +809,10 @@ span.entry-link .entry-name {
   font-size: var(--size-micro);
 }
 
+.illustrated .evidence-heading {
+  justify-content: flex-end;
+}
+
 .evidence-label {
   min-width: 0;
   overflow: hidden;
