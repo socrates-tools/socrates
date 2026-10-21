@@ -24,6 +24,20 @@ func TestEveryColourAndFontFamilyIsStatedOnceInTheLibrarysTokens(t *testing.T) {
 	}
 }
 
+func TestTheLandingPagesStylesheetPaintsNothingOfItsOwn(t *testing.T) {
+	read, err := convention.PaintWrittenWhereItIsUsed(source.Root(t), convention.LandingPageStyleDirectory, convention.TokensDirectory)
+	if err != nil {
+		t.Fatalf("reading what the landing page paints: %v", err)
+	}
+
+	for _, loose := range read.Colours {
+		t.Errorf("%s, and the landing page takes its colours from the library's tokens", loose)
+	}
+	for _, loose := range read.Families {
+		t.Errorf("%s, and the landing page takes its fonts from the library's tokens", loose)
+	}
+}
+
 func TestTheLibrarysTokensAreWhereThePaletteIsStated(t *testing.T) {
 	tokens := filepath.Join(source.Root(t), convention.TokensDirectory)
 	for _, stated := range []string{"tokens.css", "fonts.css"} {
