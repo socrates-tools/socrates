@@ -188,7 +188,14 @@ var catalogued = map[string][]state{
 		badgeState(badgeAccent, markedBadge("accent")),
 		badgeState(badgeWarning, markedBadge("warning")),
 		badgeState(badgeError, markedBadge("error")),
-		badgeState(badgeIconAlone, badgeView{Tone: "neutral", Icon: icon("info")}),
+		badgeState(badgeIconAlone, badgeView{
+			Tone:      "neutral",
+			Icon:      icon("info"),
+			Title:     catalogBadgeTitle,
+			Hint:      catalogBadgeHint,
+			Spoken:    catalogBadgeTitle + ". " + catalogBadgeHint,
+			Focusable: true,
+		}),
 		badgeState(badgeExplained, badgeView{
 			Tone:      "warning",
 			Icon:      icon("triangle-alert"),
