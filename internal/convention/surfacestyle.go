@@ -15,20 +15,19 @@ var SurfaceStyleDirectory = filepath.Join(ToolDirectory("agora"), "web", "packag
 var AgoraGlossary = filepath.Join(ToolDirectory("agora"), GlossaryFile)
 
 var PiecesOfTheSurface = map[string][]string{
-	"decision":       {"decision", "decisions", "decisions-item", "attribution", "name", "question", "meaning", "answering", "answered", "words", "check", "still-open"},
+	"document":       {"main-inner", "heading", "meta", "preamble", "crumb", "nothing"},
 	"source":         {"location"},
+	"decision":       {"decision", "decisions", "decisions-item", "attribution", "name", "question", "meaning", "answering", "answered", "words", "check", "still-open"},
 	"index":          {"index", "entries", "entry", "progress"},
 	"settled answer": {"settled", "when-open", "when-closed"},
 	"option":         {"options"},
 	"evidence":       {"evidence", "evidences", "diff", "illustrated"},
 	"illustration":   {"drawing"},
 	"confirmation":   {"confirmation"},
-	"composer":       {"composer", "bar", "send", "sends", "finish", "amend", "state", "message"},
-	"receipt":        {"receipt", "notice"},
-	"summary":        {"summary", "panel"},
-	"content":        {"main-inner", "heading", "meta", "preamble", "over-notice"},
-	"topbar":         {"brand", "crumb", "wordmark", "status"},
-	"empty page":     {"nothing"},
+	"composer":       {"composer", "bar", "send", "sends", "finish", "amend", "state", "message", "panel"},
+	"receipt":        {"receipt"},
+	"answer":         {"summary"},
+	"exchange":       {"status", "over-notice", "notice"},
 }
 
 var primitiveElements = map[string]bool{

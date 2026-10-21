@@ -1,0 +1,20 @@
+ui-brand {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+ui-brand [data-part='mark'] {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+
+ui-brand [data-part='wordmark'] {
+  font-family: var(--font-display);
+  font-size: var(--size-wordmark);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wordmark);
+  color: var(--fg-1);
+}

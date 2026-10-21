@@ -57,6 +57,11 @@ const (
 	catalogBadgeTitle = "What this badge is"
 	catalogBadgeHint  = "A sentence saying what it means."
 
+	brandAMarkAndAName = "a mark and a name"
+
+	catalogBrandName = "A brand"
+	catalogBrandMark = "/assets/socrates-mark.svg"
+
 	cardWithSections   = "a body and a footer"
 	cardWithABodyAlone = "a body alone"
 	cardWithNoSections = "no sections"

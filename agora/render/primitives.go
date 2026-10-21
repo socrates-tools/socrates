@@ -62,6 +62,14 @@ type cardView struct {
 	Data    any
 }
 
+type brandView struct {
+	Class         string
+	MarkClass     string
+	WordmarkClass string
+	Mark          string
+	Name          string
+}
+
 type overlineView struct {
 	Class string
 	Text  string

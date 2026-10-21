@@ -135,6 +135,10 @@ func badgeState(name string, view badgeView) state {
 	return state{Name: name, View: view}
 }
 
+func brandState(name string, view brandView) state {
+	return state{Name: name, View: view}
+}
+
 func cardState(name string, view cardView) state {
 	return state{Name: name, View: view}
 }
@@ -194,6 +198,9 @@ var catalogued = map[string][]state{
 			Spoken:    catalogBadgeTitle + ". " + catalogBadgeHint,
 			Focusable: true,
 		}),
+	},
+	"ui-brand": {
+		brandState(brandAMarkAndAName, brandView{Mark: catalogBrandMark, Name: catalogBrandName}),
 	},
 	"ui-card": {
 		cardState(cardWithSections, cardView{Content: "catalog-card-sections"}),

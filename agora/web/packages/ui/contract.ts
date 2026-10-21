@@ -6,6 +6,7 @@ export const contract = {
   'ui-copy': ['control', 'icon', 'done', 'status'],
   'ui-expand': ['control'],
   'ui-badge': ['icon', 'label'],
+  'ui-brand': ['mark', 'wordmark'],
   'ui-progress-bar': ['track'],
   'ui-status-dot': [],
   'ui-tooltip': ['title', 'hint'],

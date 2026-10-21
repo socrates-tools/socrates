@@ -33,6 +33,10 @@
     "icon",
     "label"
   ],
+  "ui-brand": [
+    "mark",
+    "wordmark"
+  ],
   "ui-progress-bar": [
     "track"
   ],

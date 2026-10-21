@@ -105,7 +105,7 @@
 <p class="state" role="status" aria-live="polite" data-tone="{{if .Over}}over{{else}}quiet{{end}}">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
 </footer>{{end}}
 {{define "nothing-content"}}<p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>{{end}}
-{{define "shell-topbar"}}<span class="brand"><img class="brand-mark" src="/assets/socrates-mark.svg" width="28" height="28" alt=""><span class="wordmark">socrates</span></span>
+{{define "shell-topbar"}}{{template "ui-brand" (dict "Class" "brand" "MarkClass" "brand-mark" "WordmarkClass" "wordmark" "Mark" "/assets/socrates-mark.svg" "Name" "socrates")}}
 <span class="crumb"><span class="crumb-title">{{.Title}}</span></span>
 <span class="status" data-status="{{if not .Decisions}}nothing{{else if .Over}}over{{else}}open{{end}}">{{template "ui-status-dot" statusDot "" ""}}<span class="status-said">{{if not .Decisions}}Nothing to answer{{else if .Over}}Exchange over{{else}}Open{{end}}</span></span>{{end}}
 {{define "shell-navigation"}}<div class="progress">

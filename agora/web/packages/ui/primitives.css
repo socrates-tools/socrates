@@ -1,5 +1,6 @@
 @import './app-shell/app-shell.css';
 @import './badge/badge.css';
+@import './brand/brand.css';
 @import './card/card.css';
 @import './code-block/code-block.css';
 @import './diff-block/diff-block.css';
