@@ -330,45 +330,50 @@ func TestABadgeWhoseLabelIsRemovedBecomesTheCircleOfTheChecksSize(t *testing.T) 
 	}
 }
 
-func (r *reader) renderedTextOf(selector string) string {
-	r.t.Helper()
-
-	var text string
-	r.evaluate(`(() => {
-  const drawn = (node) => {
-    if (node.nodeType === Node.COMMENT_NODE) {
-      return '';
-    }
-    if (node instanceof HTMLSlotElement) {
-      return node.assignedNodes({ flatten: true }).map(drawn).join('');
-    }
-    return node.nodeType === Node.TEXT_NODE ? node.textContent : Array.from(node.childNodes).map(drawn).join('');
-  };
-  return drawn(document.querySelector(`+jsonOf(r.t, selector)+`).shadowRoot).replace(/\s+/g, ' ').trim();
-})()`, &text)
-	return text
+type overlineWidths struct {
+	Whole         float64 `json:"whole"`
+	Words         float64 `json:"words"`
+	WordsSpread   float64 `json:"wordsSpread"`
+	WordsUnspread float64 `json:"wordsUnspread"`
+	WholeIfMedium float64 `json:"wholeIfMedium"`
+	WholeIfBold   float64 `json:"wholeIfBold"`
 }
 
-func (r *reader) insideTheShadowRootOf(selector, within string, properties ...string) map[string]string {
+func (r *reader) widthsOfAnOverline(selector string) overlineWidths {
 	r.t.Helper()
 
-	var painted map[string]string
+	var widths overlineWidths
 	r.evaluate(`(() => {
-  const held = document.querySelector(`+jsonOf(r.t, selector)+`).shadowRoot.querySelector(`+jsonOf(r.t, within)+`);
-  if (!held) {
-    return null;
-  }
-  const style = getComputedStyle(held);
-  const painted = {};
-  for (const property of `+jsonOfList(r.t, properties)+`) {
-    painted[property] = style.getPropertyValue(property);
-  }
-  return painted;
-})()`, &painted)
-	if painted == nil {
-		r.t.Fatalf("%s draws nothing at %s", selector, within)
-	}
-	return painted
+  const host = document.querySelector(`+jsonOf(r.t, selector)+`);
+  host.style.fontSize = '60px';
+  const words = host.textContent.trim();
+  const range = document.createRange();
+  range.selectNodeContents(host);
+  const style = getComputedStyle(host);
+  const widthOf = (text, weight, spacing) => {
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;text-transform:uppercase;font-family:' + style.fontFamily + ';font-size:' + style.fontSize + ';font-weight:' + weight + ';letter-spacing:' + spacing;
+    probe.textContent = text;
+    document.body.append(probe);
+    const width = probe.getBoundingClientRect().width;
+    probe.remove();
+    return width;
+  };
+  const tracking = 'var(--tracking-overline)';
+  const spread = widthOf(words, style.fontWeight, tracking);
+  const space = widthOf(' ', style.fontWeight, tracking);
+  const count = host.getAttribute('count');
+  const counted = (weight) => count === null ? 0 : widthOf('· ' + count, weight, '0');
+  return {
+    whole: host.getBoundingClientRect().width,
+    words: range.getBoundingClientRect().width,
+    wordsSpread: spread,
+    wordsUnspread: widthOf(words, style.fontWeight, '0'),
+    wholeIfMedium: spread + (count === null ? 0 : space) + counted(500),
+    wholeIfBold: spread + (count === null ? 0 : space) + counted(700),
+  };
+})()`, &widths)
+	return widths
 }
 
 func overlineOfState(key string) string {
@@ -395,8 +400,15 @@ func TestTheCatalogDrawsAnOverlineWithWordsAloneInCapitalsAndNoCount(t *testing.
 	if painted["font-weight"] != "700" {
 		t.Errorf("the overline's weight is %s, want bold", painted["font-weight"])
 	}
-	if got := page.renderedTextOf(overline); got != "An overline" {
-		t.Errorf("the overline draws %q, want its words alone and no count it was not given", got)
+	if got := page.attributeOf(overline, "count"); got != "" {
+		t.Errorf("the overline is given the count %q, want none", got)
+	}
+	widths := page.widthsOfAnOverline(overline)
+	if abs := widths.Whole - widths.WordsSpread; abs > 0.5 || abs < -0.5 {
+		t.Errorf("the overline is %vpx wide, want its words alone at %vpx, so nothing else is drawn", widths.Whole, widths.WordsSpread)
+	}
+	if widths.Words < widths.WordsUnspread+5 || widths.Words-widths.WordsSpread > 0.5 || widths.WordsSpread-widths.Words > 0.5 {
+		t.Errorf("the words measure %vpx beside %vpx spread and %vpx unspread, want them spread by the overline's tracking", widths.Words, widths.WordsSpread, widths.WordsUnspread)
 	}
 }
 
@@ -412,19 +424,18 @@ func TestTheCatalogDrawsAnOverlinesCountAfterItsWordsInALighterWeight(t *testing
 	if got := page.attributeOf(overline, "count"); got != "3" {
 		t.Errorf("the overline is given the count %q, want 3", got)
 	}
-	if got := page.renderedTextOf(overline); got != "An overline · 3" {
-		t.Errorf("the overline draws %q, want its words and its count set apart by a dot", got)
+	widths := page.widthsOfAnOverline(overline)
+	if gap := widths.Whole - widths.WholeIfMedium; gap > 0.5 || gap < -0.5 {
+		t.Errorf("the overline is %vpx wide, want the words, a space and the count set in weight 500 at %vpx", widths.Whole, widths.WholeIfMedium)
 	}
-	words := page.paintedOf(overline, "font-weight")
-	counted := page.insideTheShadowRootOf(overline, "span:last-child", "font-weight", "letter-spacing")
-	if counted["font-weight"] != "500" || words["font-weight"] != "700" {
-		t.Errorf("the count is weight %s beside words of weight %s, want 500 beside 700", counted["font-weight"], words["font-weight"])
+	if widths.WholeIfBold-widths.WholeIfMedium < 1 {
+		t.Fatalf("a count in weight 700 would be %vpx wide beside %vpx in weight 500, so the width cannot tell the weights apart", widths.WholeIfBold, widths.WholeIfMedium)
 	}
-	if counted["letter-spacing"] != "normal" && counted["letter-spacing"] != "0px" {
-		t.Errorf("the count is spaced %q, want it set tight", counted["letter-spacing"])
+	if widths.Whole-widths.Words < 1 {
+		t.Errorf("the overline is %vpx wide and its words %vpx, so no count is drawn after them", widths.Whole, widths.Words)
 	}
-	if spread := page.insideTheShadowRootOf(overline, "span:first-child", "letter-spacing")["letter-spacing"]; spread == counted["letter-spacing"] {
-		t.Errorf("the count and the words are spaced alike (%q), want the words spread", spread)
+	if words := page.paintedOf(overline, "font-weight")["font-weight"]; words != "700" {
+		t.Errorf("the words are weight %s, want 700", words)
 	}
 }
 
