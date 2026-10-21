@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/socrates-tools/socrates/agora/assets"
+	"github.com/socrates-tools/socrates/agora/document"
 	"github.com/socrates-tools/socrates/agora/render"
 	"golang.org/x/net/html"
 )
@@ -63,7 +64,7 @@ func partsOf(node *html.Node) parts {
 					found[within] = nil
 				}
 			}
-			if named := attribute(node, "data-part"); named != "" && within != "" {
+			if named := attribute(node, "data-part"); named != "" {
 				found[within] = append(found[within], named)
 			}
 		}
@@ -75,20 +76,32 @@ func partsOf(node *html.Node) parts {
 	return found
 }
 
-func disagreements(declared, written parts) []string {
+func undeclared(declared, written parts) []string {
 	var found []string
 	for element, held := range written {
+		if element == "" {
+			for _, part := range held {
+				found = append(found, fmt.Sprintf("the markup writes the part %q outside any primitive, and a part belongs to one", part))
+			}
+			continue
+		}
 		expected, known := declared[element]
 		if !known {
-			found = append(found, fmt.Sprintf("a partial writes <%s>, and the contract declares no such element", element))
+			found = append(found, fmt.Sprintf("the markup writes <%s>, and the contract declares no such element", element))
 			continue
 		}
 		for _, part := range held {
 			if !slices.Contains(expected, part) {
-				found = append(found, fmt.Sprintf("a partial writes the part %q of <%s>, and the contract does not declare it", part, element))
+				found = append(found, fmt.Sprintf("the markup writes the part %q of <%s>, and the contract does not declare it", part, element))
 			}
 		}
 	}
+	slices.Sort(found)
+	return found
+}
+
+func unwritten(declared, written parts) []string {
+	var found []string
 	for element, expected := range declared {
 		held, known := written[element]
 		if !known {
@@ -105,8 +118,25 @@ func disagreements(declared, written parts) []string {
 	return found
 }
 
+func disagreements(declared, written parts) []string {
+	return append(undeclared(declared, written), unwritten(declared, written)...)
+}
+
 func TestEveryPartialWritesWhatTheContractDeclaresAndNothingElse(t *testing.T) {
 	for _, found := range disagreements(declaredByTheContract(t), writtenByThePartials(t)) {
+		t.Error(found)
+	}
+}
+
+func TestARenderedPageWritesNoElementAndNoPartTheContractDoesNotDeclare(t *testing.T) {
+	// scenario: A rendered page reaching the confirmation writes only what the contract declares
+	page := rendered(t, oneDecision(document.One))
+
+	written := partsOf(page)
+	if _, reached := written["ui-dialog"]; !reached {
+		t.Fatalf("the rendered page writes %v, and it reaches the confirmation through the dialog's partial", written)
+	}
+	for _, found := range undeclared(declaredByTheContract(t), written) {
 		t.Error(found)
 	}
 }
@@ -122,7 +152,7 @@ func TestAnElementNoContractDeclaresIsReported(t *testing.T) {
 	declared := parts{"ui-dialog": {"panel"}}
 	written := parts{"ui-dialog": {"panel"}, "ui-tooltip": nil}
 
-	want := []string{`a partial writes <ui-tooltip>, and the contract declares no such element`}
+	want := []string{`the markup writes <ui-tooltip>, and the contract declares no such element`}
 	if diff := cmp.Diff(want, disagreements(declared, written)); diff != "" {
 		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
 	}
@@ -132,7 +162,7 @@ func TestAPartNoContractDeclaresIsReportedNamingTheElementAndThePart(t *testing.
 	declared := parts{"ui-dialog": {"panel"}}
 	written := parts{"ui-dialog": {"panel", "footer"}}
 
-	want := []string{`a partial writes the part "footer" of <ui-dialog>, and the contract does not declare it`}
+	want := []string{`the markup writes the part "footer" of <ui-dialog>, and the contract does not declare it`}
 	if diff := cmp.Diff(want, disagreements(declared, written)); diff != "" {
 		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
 	}
