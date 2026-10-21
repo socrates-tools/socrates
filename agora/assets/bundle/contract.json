@@ -16,6 +16,22 @@
         "mark"
       ]
     },
+    "ui-card": {
+      "attributes": [],
+      "slots": [
+        "",
+        "body",
+        "footer"
+      ]
+    },
+    "ui-dialog": {
+      "attributes": [],
+      "slots": [
+        "actions",
+        "body",
+        "heading"
+      ]
+    },
     "ui-overline": {
       "attributes": [
         "count"
@@ -44,12 +60,6 @@
     }
   },
   "parts": {
-    "ui-dialog": [
-      "panel",
-      "heading",
-      "body",
-      "actions"
-    ],
     "ui-button": [
       "control"
     ],
@@ -73,10 +83,6 @@
     ],
     "ui-expand": [
       "control"
-    ],
-    "ui-card": [
-      "body",
-      "footer"
     ],
     "ui-code-block": [
       "code"

@@ -17,13 +17,13 @@ const somethingLiveOnThePage = `Array.from(document.querySelectorAll('button, .c
 
 const everythingOnThePageIsLive = `Array.from(document.querySelectorAll('button, .choice, textarea')).every((held) => !held.disabled)`
 
-const confirmationIsOpen = `document.querySelector('dialog.confirmation').open === true`
+const confirmationIsOpen = `document.querySelector('ui-dialog.confirmation').isOpen === true`
 
-const confirmationIsClosed = `document.querySelector('dialog.confirmation').open === false`
+const confirmationIsClosed = `document.querySelector('ui-dialog.confirmation').isOpen === false`
 
-const confirmationIsModal = `document.querySelector('dialog.confirmation').matches(':modal')`
+const confirmationIsModal = `document.querySelector('ui-dialog.confirmation').isModal`
 
-const whatTheConfirmationSays = `document.querySelector('dialog.confirmation').textContent`
+const whatTheConfirmationSays = `document.querySelector('ui-dialog.confirmation').textContent`
 
 const whatTheConfirmationIsHeaded = `document.querySelector('.confirmation-heading').textContent`
 
@@ -704,8 +704,8 @@ func TestAPressInsideTheConfirmationIsNotAPressOnTheBackdrop(t *testing.T) {
 		Y float64 `json:"y"`
 	}
 	page.evaluate(`(() => {
-  const box = document.querySelector('dialog.confirmation').getBoundingClientRect();
-  return { x: box.left + 4, y: box.top + 4 };
+  const box = document.querySelector('.confirmation-heading').getBoundingClientRect();
+  return { x: box.left - 4, y: box.top - 4 };
 })()`, &padding)
 
 	page.clickAt(padding.X, padding.Y)
@@ -757,32 +757,52 @@ func TestAClosedExchangeHidesWhatCanNoLongerBeAnsweredAndSaysSoUnderTheTitle(t *
 }
 
 func TestTheConfirmationIsADialogPrimitiveCarryingTheConfirmationsClass(t *testing.T) {
+	// scenario: The confirmation is a ui-dialog carrying the confirmation's class and drawing its dialog in a shadow root that adopts the shared stylesheet
 	t.Parallel()
 	_, page := read(t, twoDecisionDocument)
 
 	var drawn struct {
-		Defined bool `json:"defined"`
-		Held    bool `json:"held"`
-		Shadow  bool `json:"shadow"`
+		Defined  bool `json:"defined"`
+		Shadowed bool `json:"shadowed"`
+		Adopting bool `json:"adopting"`
+		Inside   bool `json:"inside"`
 	}
 	page.evaluate(`(() => {
   const host = document.querySelector('ui-dialog.confirmation');
   return {
     defined: customElements.get('ui-dialog') !== undefined,
-    held: !!host && !!host.querySelector('dialog.confirmation'),
-    shadow: !!host && host.shadowRoot !== null,
+    shadowed: !!host && host.shadowRoot !== null,
+    adopting: !!host && host.shadowRoot !== null && host.shadowRoot.adoptedStyleSheets.length > 0,
+    inside: !!host && host.querySelector('dialog') !== null,
   };
 })()`, &drawn)
 
-	if !drawn.Defined || !drawn.Held {
-		t.Errorf("the confirmation is drawn as %+v, and it is a ui-dialog element carrying the class confirmation around its dialog", drawn)
+	if !drawn.Defined || !drawn.Shadowed || !drawn.Adopting {
+		t.Errorf("the confirmation is drawn as %+v, and it is a ui-dialog element carrying the class confirmation whose shadow root adopts the shared stylesheet", drawn)
 	}
-	if drawn.Shadow {
-		t.Error("the confirmation's dialog is drawn in a shadow root, and a primitive is drawn without one")
+	if drawn.Inside {
+		t.Error("the confirmation holds a dialog of its own in the page, and the dialog is drawn in the shadow root of the primitive")
+	}
+}
+
+func TestEveryCardAndDialogOfThePageHasAShadowRootThatAdoptsTheSharedStylesheet(t *testing.T) {
+	// scenario: Every decision, the composer and the confirmation of the page render into shadow roots and the page's policy blocks nothing
+	t.Parallel()
+	_, page := read(t, twoDecisionDocument)
+
+	page.waitFor(`(() => {
+  const held = Array.from(document.querySelectorAll('ui-card, ui-dialog'));
+  return held.length >= 3 && held.every((element) => element.shadowRoot !== null && element.shadowRoot.adoptedStyleSheets.length > 0);
+})()`)
+	page.evaluate(afterTwoFrames, nil, awaitingThePromise)
+
+	if violations := page.violations(); len(violations) != 0 {
+		t.Errorf("the page's policy blocked %v while the cards and the dialog adopted the shared stylesheet", violations)
 	}
 }
 
 func TestADialogThatLeftThePageAnswersNothingAfterARevision(t *testing.T) {
+	// scenario: A revision replacing the surface while the confirmation is open leaves nothing of it open or listening
 	t.Parallel()
 	held, page := read(t, twoDecisionDocument)
 
@@ -793,30 +813,35 @@ func TestADialogThatLeftThePageAnswersNothingAfterARevision(t *testing.T) {
 	page.evaluate(`(() => {
   window.leftThePage = document.querySelector('ui-dialog.confirmation');
   window.dismissals = 0;
-  window.leftThePage.addEventListener('dismissed', () => { window.dismissals += 1; });
+  document.addEventListener('dismissed', () => { window.dismissals += 1; });
 })()`, nil)
 
 	held.serveAgain(oneDecisionReply)
 	page.waitFor(reachedThePage("c-3"))
 
+	page.press(kb.Escape)
+	page.clickAt(4, 4)
+
 	var answered struct {
 		Connected bool `json:"connected"`
-		Prevented bool `json:"prevented"`
+		Open      bool `json:"open"`
+		Replaced  bool `json:"replaced"`
+		Closed    bool `json:"closed"`
 		Dismissed int  `json:"dismissed"`
 	}
 	page.evaluate(`(() => {
   const old = window.leftThePage;
-  const panel = old.querySelector('[data-part="panel"]');
-  const escape = new Event('cancel', { cancelable: true });
-  panel.dispatchEvent(escape);
-  panel.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: -10, clientY: -10 }));
-  return { connected: old.isConnected, prevented: escape.defaultPrevented, dismissed: window.dismissals };
+  const now = document.querySelector('ui-dialog.confirmation');
+  return { connected: old.isConnected, open: old.isOpen, replaced: now !== old, closed: now.isOpen === false, dismissed: window.dismissals };
 })()`, &answered)
 
-	if answered.Connected {
-		t.Fatal("the dialog that was on the page before the revision is still on the page")
+	if answered.Connected || answered.Open {
+		t.Fatalf("the dialog that was on the page before the revision is %+v, and it left the page and no longer stands open", answered)
 	}
-	if answered.Prevented || answered.Dismissed != 0 {
-		t.Errorf("the dialog that left the page still answers: %+v, and no listener of it reacts to a key or a press once it has left", answered)
+	if !answered.Replaced || !answered.Closed {
+		t.Errorf("after the revision the page holds %+v, want a fresh confirmation that is closed", answered)
+	}
+	if answered.Dismissed != 0 {
+		t.Errorf("a key and a press after the revision were answered by %d dismissals, and nothing of the dialog that left the page reacts to either", answered.Dismissed)
 	}
 }

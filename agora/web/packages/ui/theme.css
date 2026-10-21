@@ -119,6 +119,9 @@
 
   --shadow-card: var(--shadow-card);
   --shadow-dialog: var(--shadow-dialog);
+  --shadow-dimmed-dialog: var(--shadow-dimmed-dialog);
+  --blur-backdrop: var(--blur-backdrop);
+  --breakpoint-narrow: 44rem;
   --shadow-press: var(--shadow-press);
   --shadow-focus-ring: var(--focus-ring);
   --shadow-ring-chosen: var(--ring-chosen);
@@ -141,6 +144,7 @@
 @custom-variant progress-track (&::-webkit-progress-bar);
 @custom-variant progress-fill (&::-webkit-progress-value);
 @custom-variant progress-moz-fill (&::-moz-progress-bar);
+@custom-variant slotted (&::slotted(*));
 
 @layer base {
   :not(:defined) {

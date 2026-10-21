@@ -13,6 +13,7 @@
 --aegean-800
 --bg-bar
 --bg-ground
+--blur-backdrop
 --card-pad
 --check-size
 --chip-height
@@ -99,6 +100,7 @@
 --selection
 --shadow-card
 --shadow-dialog
+--shadow-dimmed-dialog
 --shadow-press
 --sidebar-width
 --size-body
