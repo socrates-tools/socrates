@@ -48,7 +48,7 @@ func TestABreakdownArrivesKeptAndWhatThePersonAskedToChangeReachesTheSession(t *
 	}
 
 	var shown []string
-	page.evaluate(`['1-prefactor', '2-tickets-skill'].map((id) => (document.querySelector('.decision[data-decision="' + id + '"] .evidence.code') || { innerText: '' }).innerText)`, &shown)
+	page.evaluate(`['1-prefactor', '2-tickets-skill'].map((id) => (document.querySelector('.decision[data-decision="' + id + '"] .evidence.code ui-code-block') || { statedText: () => '' }).statedText())`, &shown)
 	for position, written := range []string{"socrates design skill writes a second SKILL.md", "- 1-prefactor.md"} {
 		if position >= len(shown) || !strings.Contains(shown[position], "## Acceptance criteria") || !strings.Contains(shown[position], written) {
 			t.Errorf("card %d does not show the whole ticket it would be written as, so its acceptance criteria and blockers would be approved unseen: %q", position+1, shown)

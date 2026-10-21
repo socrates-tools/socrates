@@ -47,7 +47,7 @@ func TestADecisionListingTwoCodeBlocksShowsBothInTheOrderWritten(t *testing.T) {
 	_, page := read(t, evidenceDocument(twoCaptionedBlocks))
 
 	var shown []string
-	page.evaluate(`Array.from(document.querySelectorAll('.decision[data-decision="q-1"] .evidence.code pre')).map((held) => held.innerText.trim())`, &shown)
+	page.evaluate(`Array.from(document.querySelectorAll('.decision[data-decision="q-1"] .evidence.code ui-code-block')).map((held) => held.statedText().trim())`, &shown)
 
 	want := []string{"func Select(options []Option) {}", "def select(children): pass"}
 	if diff := cmp.Diff(want, shown); diff != "" {
@@ -135,7 +135,7 @@ func TestAnExampleTheTicketsSkillShowsIsServedAndShowsTheTicketsFile(t *testing.
 	_, page := read(t, shown[1])
 
 	var ticket string
-	page.evaluate(`document.querySelector('.decision[data-decision="2.1-parse"] .evidence.code pre').innerText`, &ticket)
+	page.evaluate(`document.querySelector('.decision[data-decision="2.1-parse"] .evidence.code ui-code-block').statedText()`, &ticket)
 	if !strings.Contains(ticket, "# 2.1:") || !strings.Contains(ticket, "## What to build") {
 		t.Errorf("the card the tickets skill shows does not show its ticket's file: %q", ticket)
 	}
@@ -156,11 +156,11 @@ func TestTheCardTheDesignSkillShowsForTwoShapesIsServedAsTwoCaptionedHighlighted
 
 			held := standing(t)
 			page := opening(t, held.serve(evidenceDocument(shown[1])))
-			page.waitFor(`document.querySelectorAll('.evidence.code code.hljs').length === 2`)
+			page.waitFor(highlightedCodeBlocks(2))
 
 			var read map[string]bool
 			page.evaluate(highlightedBlocks, &read)
-			if diff := cmp.Diff(map[string]bool{"language-tsx": true}, read); diff != "" {
+			if diff := cmp.Diff(map[string]bool{"tsx": true}, read); diff != "" {
 				t.Errorf("the blocks the design skill shows are not highlighted as tsx (-want +got):\n%s", diff)
 			}
 
@@ -184,7 +184,7 @@ func TestEveryBlockOfEvidencePaintsTheSameBackgroundAsTheCardItSitsOn(t *testing
 	}
 	page.evaluate(`({
   card: getComputedStyle(document.querySelector('.decision')).backgroundColor,
-  blocks: Array.from(document.querySelectorAll('.evidence:not(.illustrated)')).map((held) => getComputedStyle(held.querySelector('pre, .hunk')).backgroundColor === 'rgba(0, 0, 0, 0)' ? getComputedStyle(held).backgroundColor : getComputedStyle(held.querySelector('pre, .hunk')).backgroundColor),
+  blocks: Array.from(document.querySelectorAll('.evidence:not(.illustrated)')).map((held) => getComputedStyle(held.querySelector('ui-code-block, ui-diff-block')).backgroundColor),
 })`, &painted)
 
 	for position, block := range painted.Blocks {

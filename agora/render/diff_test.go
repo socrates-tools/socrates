@@ -46,7 +46,7 @@ func TestADiffRendersFromAPatch(t *testing.T) {
 
 	sides := map[string][]string{}
 	for _, line := range elements(diff, "td") {
-		if !hasClass(line, "line") {
+		if len(elements(line, "code")) == 0 {
 			continue
 		}
 		sides[attribute(line, "data-side")+" "+attribute(line, "data-kind")] = append(

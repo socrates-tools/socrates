@@ -32,22 +32,19 @@ const inTwoLanguagesDocument = `{
   ]
 }`
 
-const highlightedBlocks = `Object.fromEntries(Array.from(document.querySelectorAll('.evidence.code code')).map((held) => [
-  Array.from(held.classList).find((named) => named.startsWith('language-')),
-  held.classList.contains('hljs') && held.querySelectorAll('span[class^="hljs-"]').length > 0,
-]))`
+const highlightedBlocks = `Object.fromEntries(Array.from(document.querySelectorAll('.evidence.code ui-code-block')).map((held) => [held.language, held.highlighted]))`
 
 func TestTheLanguagesACallerActuallyPassesAreHighlighted(t *testing.T) {
 	t.Parallel()
 	held := standing(t)
 	page := opening(t, held.serve(inTwoLanguagesDocument))
 
-	page.waitFor(`document.querySelectorAll('.evidence.code code.hljs').length === 2`)
+	page.waitFor(highlightedCodeBlocks(2))
 
 	var read map[string]bool
 	page.evaluate(highlightedBlocks, &read)
 
-	want := map[string]bool{"language-csharp": true, "language-diff": true}
+	want := map[string]bool{"csharp": true, "diff": true}
 	if diff := cmp.Diff(want, read); diff != "" {
 		t.Errorf("what the page highlighted differs (-want +got):\n%s\na language the caller named and the page ignored renders as a grey block with nothing saying so", diff)
 	}
@@ -66,15 +63,15 @@ func TestTheLinesOfADiffAreColouredLikeCodeAndStillMeetTheFloor(t *testing.T) {
 	t.Parallel()
 	_, page := read(t, colouredDiffDocument)
 
-	page.waitFor(`!!document.querySelector('.hunk .line .hljs-keyword')`)
+	page.waitFor(`!!document.querySelector('ui-diff-block td:nth-child(even) .hljs-keyword')`)
 
 	var coloured struct {
 		Removed bool `json:"removed"`
 		Added   bool `json:"added"`
 	}
 	page.evaluate(`({
-  removed: !!document.querySelector('.hunk .line[data-kind="removed"] .hljs-comment'),
-  added: !!document.querySelector('.hunk .line[data-kind="added"] .hljs-comment'),
+  removed: !!document.querySelector('ui-diff-block td:nth-child(even)[data-kind="removed"] .hljs-comment'),
+  added: !!document.querySelector('ui-diff-block td:nth-child(even)[data-kind="added"] .hljs-comment'),
 })`, &coloured)
 	if !coloured.Removed || !coloured.Added {
 		t.Errorf("a comment on a changed line of a Go diff is not coloured as one: %+v", coloured)
@@ -112,17 +109,17 @@ func TestCodeNamedByAnAliasIsHighlightedAsItsLanguageIs(t *testing.T) {
 	held := standing(t)
 	page := opening(t, held.serve(namedByAliasDocument))
 
-	page.waitFor(`document.querySelectorAll('.evidence.code code.hljs').length === 5`)
+	page.waitFor(highlightedCodeBlocks(5))
 
 	var read map[string]bool
 	page.evaluate(highlightedBlocks, &read)
 
 	want := map[string]bool{
-		"language-tsx": true,
-		"language-jsx": true,
-		"language-ts":  true,
-		"language-sh":  true,
-		"language-yml": true,
+		"tsx": true,
+		"jsx": true,
+		"ts":  true,
+		"sh":  true,
+		"yml": true,
 	}
 	if diff := cmp.Diff(want, read); diff != "" {
 		t.Errorf("what the page highlighted differs (-want +got):\n%s", diff)
@@ -134,10 +131,10 @@ func TestAPatchWhoseLanguageIsNamedByAnAliasHasItsLinesHighlighted(t *testing.T)
 	held := standing(t)
 	page := opening(t, held.serve(patchInAnAliasDocument))
 
-	page.waitFor(`!!document.querySelector('.hunk .line .hljs-keyword')`)
+	page.waitFor(`!!document.querySelector('ui-diff-block td:nth-child(even) .hljs-keyword')`)
 
 	var coloured bool
-	page.evaluate(`!!document.querySelector('.hunk .line[data-kind="added"] .hljs-built_in, .hunk .line[data-kind="added"] .hljs-type')`, &coloured)
+	page.evaluate(`!!document.querySelector('ui-diff-block td:nth-child(even)[data-kind="added"] .hljs-built_in, ui-diff-block td:nth-child(even)[data-kind="added"] .hljs-type')`, &coloured)
 	if !coloured {
 		t.Error("a type on a changed line of a patch whose language is ts is not coloured as one")
 	}

@@ -71,6 +71,7 @@
 --limestone-500
 --limestone-600
 --main-max
+--marker-width
 --ochre-50
 --ochre-700
 --olive-100

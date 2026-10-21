@@ -24,12 +24,28 @@
         "footer"
       ]
     },
+    "ui-code-block": {
+      "attributes": [
+        "language"
+      ],
+      "slots": [
+        ""
+      ]
+    },
     "ui-dialog": {
       "attributes": [],
       "slots": [
         "actions",
         "body",
         "heading"
+      ]
+    },
+    "ui-diff-block": {
+      "attributes": [
+        "language"
+      ],
+      "slots": [
+        ""
       ]
     },
     "ui-overline": {
@@ -83,18 +99,6 @@
     ],
     "ui-expand": [
       "control"
-    ],
-    "ui-code-block": [
-      "code"
-    ],
-    "ui-diff-block": [
-      "hunk",
-      "heading",
-      "row",
-      "number",
-      "line",
-      "marker",
-      "code"
     ],
     "ui-app-shell": [
       "frame",

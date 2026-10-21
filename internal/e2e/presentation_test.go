@@ -155,7 +155,7 @@ func TestADecisionCanBeAnsweredWithoutAPointer(t *testing.T) {
 
 const narrowly = `(() => {
   const page = document.documentElement;
-  const hunk = document.querySelector('.hunk');
+  const hunk = document.querySelector('ui-diff-block table');
   const surface = document.querySelector('.surface');
   return {
     pageScroll: page.scrollWidth - page.clientWidth,
@@ -199,7 +199,7 @@ func TestThePageReachesNothing(t *testing.T) {
 	page := opening(t, address)
 
 	page.waitFor(`document.fonts.status === 'loaded'`)
-	page.waitFor(`!!document.querySelector('code.hljs')`)
+	page.waitFor(aCodeBlockIsHighlighted)
 
 	nothingLeftTheMachine(t, address, page.requests.all())
 }
@@ -212,7 +212,7 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
 	page := opening(t, address, chromedp.Flag("host-resolver-rules", "MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"))
 
 	page.waitFor(`document.fonts.status === 'loaded'`)
-	page.waitFor(`!!document.querySelector('code.hljs')`)
+	page.waitFor(aCodeBlockIsHighlighted)
 
 	var read struct {
 		Face      bool `json:"face"`
@@ -225,8 +225,8 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
   face: document.fonts.check('16px "Manrope"'),
   display: document.fonts.check('40px "Cinzel"'),
   mono: document.fonts.check('16px "JetBrains Mono"'),
-  diff: !!document.querySelector('.hunk .line[data-kind="added"]'),
-  highlight: document.querySelectorAll('code.hljs .hljs-keyword, code.hljs .hljs-string, code.hljs .hljs-title').length,
+  diff: !!document.querySelector('ui-diff-block td[data-kind="added"]'),
+  highlight: Array.from(document.querySelectorAll('ui-code-block')).filter((block) => block.highlighted).length,
 })`, &read)
 
 	if !read.Face || !read.Display || !read.Mono {

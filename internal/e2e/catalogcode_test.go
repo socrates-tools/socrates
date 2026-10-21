@@ -1,9 +1,13 @@
 package e2e_test
 
 import (
+	"bytes"
 	"fmt"
+	"image/png"
+	"strings"
 	"testing"
 
+	"github.com/chromedp/cdproto/input"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -36,40 +40,97 @@ func numberedInTheCatalog(t *testing.T) *reader {
 
 	page := catalogued(t)
 	for key := range sourceLinesOfEachCodeBlockState {
-		page.waitFor(`document.querySelectorAll('` + codeBlockOf(key) + ` .code-line').length > 0`)
+		page.waitFor(`document.querySelector('` + codeBlockOf(key) + `').drawnLines.length > 0`)
 	}
 	return page
 }
 
-const columnOfEachRowOfEachLine = `(block) => {
-  const code = document.querySelector(block + ' [data-part="code"]');
-  const probe = document.createElement('span');
-  probe.style.cssText = 'display:inline-block;width:1ch;position:absolute;visibility:hidden';
-  code.appendChild(probe);
-  const column = probe.getBoundingClientRect().width;
-  probe.remove();
-  return Array.from(code.querySelectorAll('.code-line')).map((line) => {
-    const left = line.getBoundingClientRect().left + parseFloat(getComputedStyle(line, '::before').width);
-    const rows = new Map();
-    const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
-    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      for (let at = 0; at < node.data.length; at++) {
-        if (/\s/.test(node.data[at])) {
-          continue;
-        }
-        const range = document.createRange();
-        range.setStart(node, at);
-        range.setEnd(node, at + 1);
-        const box = range.getBoundingClientRect();
-        const top = Math.round(box.top);
-        if (!rows.has(top)) {
-          rows.set(top, (box.left - left) / column);
-        }
-      }
-    }
-    return Array.from(rows.values()).map((columns) => Math.round(columns * 10) / 10);
-  });
-}`
+type drawnLine struct {
+	Number string    `json:"number"`
+	Gutter float64   `json:"gutter"`
+	Rows   []float64 `json:"rows"`
+}
+
+func (r *reader) drawnLinesOf(selector string) []drawnLine {
+	r.t.Helper()
+
+	var lines []drawnLine
+	r.evaluate(`document.querySelector(`+jsonOf(r.t, selector)+`).drawnLines.map((line) => ({
+  number: line.number,
+  gutter: line.gutter,
+  rows: line.rows.map((columns) => Math.round(columns * 10) / 10),
+}))`, &lines)
+	return lines
+}
+
+func (r *reader) colouredPixelsOf(selector, token string) int {
+	r.t.Helper()
+
+	r.evaluate(`document.querySelector(`+jsonOf(r.t, selector)+`).scrollIntoView({ block: 'center' }); new Promise((settled) => requestAnimationFrame(() => requestAnimationFrame(settled)))`, nil, awaitingThePromise)
+	var box struct{ Left, Top, Width, Height float64 }
+	r.evaluate(`(() => { const box = document.querySelector(`+jsonOf(r.t, selector)+`).getBoundingClientRect(); return { Left: box.left, Top: box.top, Width: box.width, Height: box.height }; })()`, &box)
+	var want [3]int
+	if _, err := fmt.Sscanf(r.pageColourOf(token), "rgb(%d, %d, %d)", &want[0], &want[1], &want[2]); err != nil {
+		r.t.Fatalf("reading the colour of %s: %v", token, err)
+	}
+
+	shot, err := png.Decode(bytes.NewReader(r.screenshot()))
+	if err != nil {
+		r.t.Fatalf("reading what the page painted: %v", err)
+	}
+	matching := 0
+	for x := int(box.Left); x < int(box.Left+box.Width); x++ {
+		for y := int(box.Top); y < int(box.Top+box.Height); y++ {
+			red, green, blue, _ := shot.At(x, y).RGBA()
+			if abs(int(red>>8)-want[0])+abs(int(green>>8)-want[1])+abs(int(blue>>8)-want[2]) <= 12 {
+				matching++
+			}
+		}
+	}
+	return matching
+}
+
+const (
+	insideTheFirstLine = 18
+	besideTheGutter    = 49
+)
+
+func (r *reader) selectByDraggingAcross(selector string) string {
+	r.t.Helper()
+
+	r.evaluate(`document.querySelector(`+jsonOf(r.t, selector)+`).scrollIntoView({ block: 'center' }); new Promise((settled) => requestAnimationFrame(() => requestAnimationFrame(settled)))`, nil, awaitingThePromise)
+	var box struct{ Left, Top, Right, Bottom float64 }
+	r.evaluate(`(() => { const box = document.querySelector(`+jsonOf(r.t, selector)+`).getBoundingClientRect(); return { Left: box.left, Top: box.top, Right: box.right, Bottom: box.bottom }; })()`, &box)
+	r.do(
+		sending(input.DispatchMouseEvent, input.DispatchMouseEventParams{Type: input.DispatchMouseEventTypeMouseMoved, X: box.Left + besideTheGutter, Y: box.Top + insideTheFirstLine}),
+		sending(input.DispatchMouseEvent, input.DispatchMouseEventParams{Type: input.DispatchMouseEventTypeMousePressed, X: box.Left + besideTheGutter, Y: box.Top + insideTheFirstLine, Button: input.MouseButtonLeft, Buttons: 1, ClickCount: 1}),
+		sending(input.DispatchMouseEvent, input.DispatchMouseEventParams{Type: input.DispatchMouseEventTypeMouseMoved, X: box.Right - 1, Y: box.Bottom - insideTheFirstLine, Button: input.MouseButtonLeft, Buttons: 1}),
+		sending(input.DispatchMouseEvent, input.DispatchMouseEventParams{Type: input.DispatchMouseEventTypeMouseReleased, X: box.Right - 1, Y: box.Bottom - insideTheFirstLine, Button: input.MouseButtonLeft, Buttons: 1, ClickCount: 1}),
+	)
+	var selected string
+	r.evaluate(`window.getSelection().toString()`, &selected)
+	return selected
+}
+
+const everyBlockOfEvidenceAdoptsTheSharedStylesheet = `(() => {
+  const blocks = Array.from(document.querySelectorAll('ui-code-block, ui-diff-block'));
+  return blocks.length > 0 && blocks.every((block) => block.shadowRoot !== null && block.shadowRoot.adoptedStyleSheets.length > 0);
+})()`
+
+func TestAShadowRootHoldsEveryCodeBlockAndDiffBlockOfTheCatalogAndThePage(t *testing.T) {
+	// scenario: Every code block and diff block renders into a shadow root that adopts the shared stylesheet, on the catalog and on the page, and the policy blocks nothing
+	t.Parallel()
+	catalog := numberedInTheCatalog(t)
+	_, page := read(t, evidenceDocument(aBlockOfEachKind))
+
+	for place, reader := range map[string]*reader{"catalog": catalog, "page": page} {
+		reader.waitFor(everyBlockOfEvidenceAdoptsTheSharedStylesheet)
+		reader.evaluate(afterTwoFrames, nil, awaitingThePromise)
+		if violations := reader.violations(); len(violations) != 0 {
+			t.Errorf("the %s's policy blocked %v while the blocks of evidence adopted the shared stylesheet", place, violations)
+		}
+	}
+}
 
 func TestTheCatalogNumbersEverySourceLineOfACodeBlockOnceFromOne(t *testing.T) {
 	// scenario: Every code block state in the catalog numbers its source lines from 1, a wrapped line once
@@ -79,7 +140,9 @@ func TestTheCatalogNumbersEverySourceLineOfACodeBlockOnceFromOne(t *testing.T) {
 	for key, sources := range sourceLinesOfEachCodeBlockState {
 		t.Run(key, func(t *testing.T) {
 			var numbers []string
-			page.evaluate(`Array.from(document.querySelectorAll('`+codeBlockOf(key)+` .code-line')).map((line) => line.dataset.number)`, &numbers)
+			for _, line := range page.drawnLinesOf(codeBlockOf(key)) {
+				numbers = append(numbers, line.Number)
+			}
 
 			var want []string
 			for number := 1; number <= sources; number++ {
@@ -99,33 +162,25 @@ func TestTheCatalogDrawsEachCodeBlockNumberInAGutterTheCodeStartsAfter(t *testin
 
 	for key := range sourceLinesOfEachCodeBlockState {
 		t.Run(key, func(t *testing.T) {
-			var drawn struct {
-				Gutters   []float64 `json:"gutters"`
-				TextAfter []bool    `json:"textAfter"`
-			}
-			page.evaluate(`(() => {
-  const code = document.querySelector('`+codeBlockOf(key)+` [data-part="code"]');
-  const lines = Array.from(code.querySelectorAll('.code-line'));
-  return {
-    gutters: lines.map((line) => parseFloat(getComputedStyle(line, '::before').width)),
-    textAfter: lines.map((line) => {
-      const range = document.createRange();
-      range.selectNodeContents(line);
-      const gutter = parseFloat(getComputedStyle(line, '::before').width);
-      return range.getClientRects()[0].left >= line.getBoundingClientRect().left + gutter - 0.5;
-    }),
-  };
-})()`, &drawn)
-
-			for position, gutter := range drawn.Gutters {
-				if gutter <= 0 {
+			for position, line := range page.drawnLinesOf(codeBlockOf(key)) {
+				if line.Gutter <= 0 {
 					t.Errorf("source line %d draws no gutter", position+1)
 				}
-				if !drawn.TextAfter[position] {
-					t.Errorf("the code of source line %d starts inside the gutter", position+1)
+				if len(line.Rows) == 0 || line.Rows[0] < 0 {
+					t.Errorf("the code of source line %d starts inside the gutter: %v", position+1, line.Rows)
 				}
 			}
 		})
+	}
+}
+
+func TestTheCatalogInksEachCodeBlockNumberInTheMutedForeground(t *testing.T) {
+	// scenario: The numbers of a code block are inked in the muted foreground, so a number is read as the margin and not as the code
+	t.Parallel()
+	page := numberedInTheCatalog(t)
+
+	if inked := page.colouredPixelsOf(codeBlockOf(catalogUnknownLanguage), "--fg-3"); inked == 0 {
+		t.Error("the block draws no pixel in the muted foreground, so its numbers are not drawn in the gutter's ink")
 	}
 }
 
@@ -135,20 +190,33 @@ func TestTheCatalogKeepsATabIndentedCodeBlocksTextExactlyAsStated(t *testing.T) 
 	page := numberedInTheCatalog(t)
 
 	var held struct {
-		Drawn  string `json:"drawn"`
+		Lines  int    `json:"lines"`
 		Stated string `json:"stated"`
 	}
 	page.evaluate(`({
-  drawn: document.querySelector('`+codeBlockOf(catalogTabIndentedLine)+` [data-part="code"]').textContent,
+  lines: document.querySelector('`+codeBlockOf(catalogTabIndentedLine)+`').drawnLines.length,
   stated: document.querySelector('`+codeBlockOf(catalogTabIndentedLine)+`').statedText(),
 })`, &held)
 
 	const written = "func Write() {\n\tmu.Lock()\n\treturn\n}\n"
-	if held.Drawn != written {
-		t.Errorf("the block draws %q, want what the catalog wrote, %q", held.Drawn, written)
-	}
 	if held.Stated != written {
 		t.Errorf("the block states %q as its code, want %q", held.Stated, written)
+	}
+	if held.Lines != 4 {
+		t.Errorf("the block draws %d lines, want the 4 it was written with", held.Lines)
+	}
+}
+
+func TestSelectingACodeBlocksTextByHandSelectsNoLineNumber(t *testing.T) {
+	// scenario: Dragging a selection across a numbered code block selects its code and none of its line numbers
+	t.Parallel()
+	page := numberedInTheCatalog(t)
+
+	selected := page.selectByDraggingAcross(codeBlockOf(catalogTabIndentedLine))
+
+	const written = "func Write() {\n\tmu.Lock()\n\treturn\n}"
+	if got := strings.TrimRight(strings.ReplaceAll(selected, "\r", ""), "\n"); got != written {
+		t.Errorf("selecting the block by hand selects %q, want its code %q and no number from its gutter", selected, written)
 	}
 }
 
@@ -157,14 +225,16 @@ func TestTheCatalogIndentsATabIndentedLineByFourColumns(t *testing.T) {
 	t.Parallel()
 	page := numberedInTheCatalog(t)
 
-	var rows [][]float64
-	page.evaluate(`(`+columnOfEachRowOfEachLine+`)('`+codeBlockOf(catalogTabIndentedLine)+`')`, &rows)
-
-	if len(rows) != 4 || len(rows[1]) != 1 || len(rows[2]) != 1 {
-		t.Fatalf("the tab-indented block is drawn as rows %v, want four lines of one row each", rows)
+	var starts [][]float64
+	for _, line := range page.drawnLinesOf(codeBlockOf(catalogTabIndentedLine)) {
+		starts = append(starts, line.Rows)
 	}
-	if rows[0][0] != 0 || rows[1][0] != 4 || rows[2][0] != 4 {
-		t.Errorf("the lines are indented by %v, %v and %v columns, want 0, 4 and 4", rows[0][0], rows[1][0], rows[2][0])
+
+	if len(starts) != 4 || len(starts[1]) != 1 || len(starts[2]) != 1 {
+		t.Fatalf("the tab-indented block is drawn as rows %v, want four lines of one row each", starts)
+	}
+	if starts[0][0] != 0 || starts[1][0] != 4 || starts[2][0] != 4 {
+		t.Errorf("the lines are indented by %v, %v and %v columns, want 0, 4 and 4", starts[0][0], starts[1][0], starts[2][0])
 	}
 }
 
@@ -173,17 +243,16 @@ func TestTheCatalogWrapsALineWiderThanItsBlockAndNeverScrollsItSideways(t *testi
 	t.Parallel()
 	page := numberedInTheCatalog(t)
 
-	var rows [][]float64
-	page.evaluate(`(`+columnOfEachRowOfEachLine+`)('`+codeBlockOf(catalogWrappedLine)+`')`, &rows)
+	lines := page.drawnLinesOf(codeBlockOf(catalogWrappedLine))
 	var scrolling []string
-	page.evaluate(`Array.from(document.querySelectorAll('[data-primitive="ui-code-block"] pre')).filter((held) => held.scrollWidth > held.clientWidth + 1).map((held) => held.closest('[data-state]').dataset.state)`, &scrolling)
+	page.evaluate(`Array.from(document.querySelectorAll('ui-code-block')).filter((held) => held.scrollWidth > held.clientWidth + 1).map((held) => held.closest('[data-state]').dataset.state)`, &scrolling)
 
-	if len(rows) != 3 {
-		t.Fatalf("the wrapped block is drawn as %d lines, want 3", len(rows))
+	if len(lines) != 3 {
+		t.Fatalf("the wrapped block is drawn as %d lines, want 3", len(lines))
 	}
-	for position, columns := range rows {
-		if len(columns) < 2 {
-			t.Errorf("source line %d is drawn on %d row, so a line wider than its block is not wrapped", position+1, len(columns))
+	for position, line := range lines {
+		if len(line.Rows) < 2 {
+			t.Errorf("source line %d is drawn on %d row, so a line wider than its block is not wrapped", position+1, len(line.Rows))
 		}
 	}
 	if len(scrolling) != 0 {
@@ -196,57 +265,37 @@ func TestTheCatalogHangsAWrappedLineOneTabStopFurtherInThanThatLinesOwnIndentati
 	t.Parallel()
 	page := numberedInTheCatalog(t)
 
-	var rows [][]float64
-	page.evaluate(`(`+columnOfEachRowOfEachLine+`)('`+codeBlockOf(catalogWrappedLine)+`')`, &rows)
+	lines := page.drawnLinesOf(codeBlockOf(catalogWrappedLine))
 
 	startsAndContinuations := [][2]float64{{0, 4}, {4, 8}, {6, 8}}
-	if len(rows) != len(startsAndContinuations) {
-		t.Fatalf("the wrapped block is drawn as %d lines, want %d", len(rows), len(startsAndContinuations))
+	if len(lines) != len(startsAndContinuations) {
+		t.Fatalf("the wrapped block is drawn as %d lines, want %d", len(lines), len(startsAndContinuations))
 	}
 	for position, want := range startsAndContinuations {
-		if len(rows[position]) < 2 {
+		rows := lines[position].Rows
+		if len(rows) < 2 {
 			t.Errorf("source line %d is not wrapped", position+1)
 			continue
 		}
-		if rows[position][0] != want[0] || rows[position][1] != want[1] {
-			t.Errorf("source line %d starts at column %v and continues at column %v, want %v and %v", position+1, rows[position][0], rows[position][1], want[0], want[1])
+		if rows[0] != want[0] || rows[1] != want[1] {
+			t.Errorf("source line %d starts at column %v and continues at column %v, want %v and %v", position+1, rows[0], rows[1], want[0], want[1])
 		}
 	}
 }
 
-func TestTheCatalogHighlightsACodeBlockInALanguageThePageKnows(t *testing.T) {
+func TestTheCatalogPaintsACodeBlockInALanguageThePageKnowsByItsTokens(t *testing.T) {
 	// scenario: A code block naming a language the page highlights is painted by its tokens
 	t.Parallel()
 	page := numberedInTheCatalog(t)
 
-	var held struct {
-		Highlighted bool   `json:"highlighted"`
-		Keywords    int    `json:"keywords"`
-		Painted     string `json:"painted"`
-		Token       string `json:"token"`
-		Plain       string `json:"plain"`
-	}
-	page.evaluate(`(() => {
-  const code = document.querySelector('`+codeBlockOf(catalogShortLine)+` [data-part="code"]');
-  const probe = document.createElement('span');
-  probe.style.color = 'var(--token-keyword)';
-  code.appendChild(probe);
-  const token = getComputedStyle(probe).color;
-  probe.remove();
-  return {
-    highlighted: code.classList.contains('hljs'),
-    keywords: code.querySelectorAll('.hljs-keyword').length,
-    painted: getComputedStyle(code.querySelector('.hljs-keyword')).color,
-    token,
-    plain: getComputedStyle(code).color,
-  };
-})()`, &held)
+	var highlighted bool
+	page.evaluate(`document.querySelector('`+codeBlockOf(catalogShortLine)+`').highlighted`, &highlighted)
 
-	if !held.Highlighted || held.Keywords != 1 {
-		t.Errorf("the short Go line is %+v, want highlighted with its one keyword painted", held)
+	if !highlighted {
+		t.Error("the short Go line is not highlighted")
 	}
-	if held.Painted != held.Token || held.Painted == held.Plain {
-		t.Errorf("the keyword is painted %s, want the keyword token %s and not the plain %s", held.Painted, held.Token, held.Plain)
+	if inked := page.colouredPixelsOf(codeBlockOf(catalogShortLine), "--token-keyword"); inked == 0 {
+		t.Error("the keyword of the short Go line is painted in no pixel of the keyword token")
 	}
 }
 
@@ -257,22 +306,21 @@ func TestTheCatalogDrawsACodeBlockInAnUnknownLanguageAsPlainTextThatIsStillNumbe
 
 	var held struct {
 		Highlighted bool   `json:"highlighted"`
-		Tokens      int    `json:"tokens"`
 		Lines       int    `json:"lines"`
 		Text        string `json:"text"`
 	}
 	page.evaluate(`(() => {
-  const code = document.querySelector('`+codeBlockOf(catalogUnknownLanguage)+` [data-part="code"]');
-  return {
-    highlighted: code.classList.contains('hljs'),
-    tokens: code.querySelectorAll('span[class^="hljs-"]').length,
-    lines: code.querySelectorAll('.code-line').length,
-    text: code.textContent,
-  };
+  const block = document.querySelector('`+codeBlockOf(catalogUnknownLanguage)+`');
+  return { highlighted: block.highlighted, lines: block.drawnLines.length, text: block.statedText() };
 })()`, &held)
 
-	if held.Highlighted || held.Tokens != 0 {
-		t.Errorf("the block in an unknown language is %+v, want no highlighting", held)
+	if held.Highlighted {
+		t.Error("the block in an unknown language is highlighted")
+	}
+	for _, token := range []string{"--token-keyword", "--token-string", "--token-number", "--token-call", "--token-type"} {
+		if inked := page.colouredPixelsOf(codeBlockOf(catalogUnknownLanguage), token); inked != 0 {
+			t.Errorf("the block in an unknown language is painted in %d pixels of %s, want plain text", inked, token)
+		}
 	}
 	if held.Lines != 2 || held.Text != "qapla'\nbatlh\n" {
 		t.Errorf("the block in an unknown language is %+v, want its two lines numbered and its text as written", held)
@@ -291,7 +339,7 @@ func TestTheCatalogLeavesACodeBlockAsItWasWhenItIsMovedWithinThePage(t *testing.
 	}
 	page.evaluate(`(() => {
   const block = document.querySelector('`+codeBlockOf(catalogTabIndentedLine)+`');
-  const numbers = () => Array.from(block.querySelectorAll('.code-line')).map((line) => line.dataset.number);
+  const numbers = () => block.drawnLines.map((line) => line.number);
   const before = numbers();
   block.parentNode.appendChild(block);
   return { before, after: numbers(), text: block.statedText() };
@@ -318,7 +366,7 @@ func TestTheCatalogDrawsAPatchAsAFixedTableOfNumberedSides(t *testing.T) {
 		LeftText    string `json:"leftText"`
 		RightText   string `json:"rightText"`
 	}
-	page.evaluate(`Array.from(document.querySelectorAll('`+diffBlockOf(catalogPatch)+` table.hunk tr')).map((row) => {
+	page.evaluate(`Array.from(document.querySelectorAll('`+diffBlockOf(catalogPatch)+` table tr')).map((row) => {
   const [leftNumber, left, rightNumber, right] = Array.from(row.children);
   return {
     leftKind: left.dataset.kind,
@@ -371,10 +419,10 @@ func TestTheCatalogPaintsAPatchInALanguageThePageKnowsAndQuietsWhatChanged(t *te
   const quiet = getComputedStyle(probe).color;
   probe.remove();
   return {
-    keywords: block.querySelectorAll('.line .hljs-keyword').length,
-    changedQuiet: colour('.line[data-kind="added"] .hljs-comment'),
-    changedLoud: colour('.line[data-kind="added"] .hljs-keyword'),
-    contextLoud: colour('.line[data-kind="context"] .hljs-keyword'),
+    keywords: block.querySelectorAll('td:nth-child(even) .hljs-keyword').length,
+    changedQuiet: colour('td:nth-child(even)[data-kind="added"] .hljs-comment'),
+    changedLoud: colour('td:nth-child(even)[data-kind="added"] .hljs-keyword'),
+    contextLoud: colour('td:nth-child(even)[data-kind="context"] .hljs-keyword'),
     quietOnChange: quiet,
   };
 })()`, &held)
@@ -401,7 +449,7 @@ func TestTheCatalogDrawsAPatchInAnUnknownLanguageAsPlainTextRows(t *testing.T) {
 	}
 	page.evaluate(`({
   tokens: document.querySelectorAll('`+diffBlockOf(catalogPatchInUnknownTag)+` span[class^="hljs-"]').length,
-  rows: document.querySelectorAll('`+diffBlockOf(catalogPatchInUnknownTag)+` table.hunk tr').length,
+  rows: document.querySelectorAll('`+diffBlockOf(catalogPatchInUnknownTag)+` table tr').length,
 })`, &held)
 
 	if held.Tokens != 0 || held.Rows == 0 {
@@ -423,7 +471,7 @@ func TestTheCatalogGivesAPatchTooWideForItsBlockAScrollOfItsOwn(t *testing.T) {
 	}
 	page.evaluate(`(() => {
   const block = document.querySelector('`+diffBlockOf(catalogPatch)+`');
-  const hunk = block.querySelector('table.hunk');
+  const hunk = block.querySelector('table');
   const state = block.closest('[data-state]');
   const page = document.documentElement;
   return {

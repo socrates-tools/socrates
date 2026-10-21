@@ -136,6 +136,7 @@
   --height-control: var(--control-height);
   --height-topbar: var(--topbar-height);
   --size-check: var(--check-size);
+  --width-marker: var(--marker-width);
   --width-sidebar: var(--sidebar-width);
   --width-panel: var(--panel-width);
   --max-width-main: var(--main-max);
@@ -145,6 +146,13 @@
 @custom-variant progress-fill (&::-webkit-progress-value);
 @custom-variant progress-moz-fill (&::-moz-progress-bar);
 @custom-variant slotted (&::slotted(*));
+
+@custom-variant gutter {
+  &::before {
+    content: attr(data-number);
+    @slot;
+  }
+}
 
 @layer base {
   :not(:defined) {

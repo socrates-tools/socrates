@@ -654,3 +654,80 @@ func TestAPartWrittenInsideADialogIsReportedBecauseTheDialogDrawsItsOwnParts(t *
 		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
 	}
 }
+
+var blocksOfEvidence = map[string]element{
+	"ui-code-block": {Attributes: []string{"language"}, Slots: []string{defaultSlot}},
+	"ui-diff-block": {Attributes: []string{"language"}, Slots: []string{defaultSlot}},
+}
+
+func TestTheContractDeclaresTheCodeBlockAndTheDiffBlockAsElementsOfALanguageAndTheContentTheyHold(t *testing.T) {
+	declared := declaredByTheContract(t)
+
+	for name, want := range blocksOfEvidence {
+		t.Run(name, func(t *testing.T) {
+			if diff := cmp.Diff(want, declared.Elements[name], cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("the contract declares <%s> differently (-want +got):\n%s", name, diff)
+			}
+			if _, stillParts := declared.Parts[name]; stillParts {
+				t.Errorf("the contract still declares parts for <%s>: %v", name, declared.Parts[name])
+			}
+		})
+	}
+}
+
+func TestARenderedPageWritesTheCodeBlockAndTheDiffBlockOnlyWithTheLanguageAndTheContentTheyHold(t *testing.T) {
+	// scenario: A decision carrying code and a patch writes a code block holding its code and a diff block holding its tables, each naming a language and nothing inside
+	read := oneDecision(document.One)
+	read.Decisions[0].Evidence = document.Evidence{
+		{Code: "x := 1\n", Language: "go"},
+		{Patch: "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -1,1 +1,1 @@\n-a\n+b\n"},
+	}
+
+	written := writingsOf(rendered(t, read))
+
+	for name := range blocksOfEvidence {
+		held, reached := written[name]
+		if !reached {
+			t.Fatalf("the rendered page writes %v, and it draws evidence on <%s>", written, name)
+		}
+		if len(held.parts) != 0 {
+			t.Errorf("the rendered page writes the parts %v inside <%s>, and the element draws its own parts", held.parts, name)
+		}
+		if !slices.Contains(held.attributes, "language") {
+			t.Errorf("the rendered page writes <%s> with the attributes %v, want it to name its language", name, held.attributes)
+		}
+	}
+	for _, found := range undeclared(declaredByTheContract(t), written) {
+		t.Error(found)
+	}
+}
+
+func TestEveryCodeBlockAndDiffBlockWrittenWithSomethingItDoesNotDeclareIsReported(t *testing.T) {
+	declared := contract{Elements: blocksOfEvidence}
+	for _, mutation := range []struct {
+		scenario string
+		element  string
+		written  writing
+		want     string
+	}{
+		{"a code block given a highlight switch", "ui-code-block", writing{attributes: []string{"language", "highlight"}, slots: []string{defaultSlot}}, `the markup writes the attribute "highlight" on <ui-code-block>, and the element does not declare it`},
+		{"a code block given a slot it does not render", "ui-code-block", writing{attributes: []string{"language"}, slots: []string{defaultSlot, "gutter"}}, `the markup writes the slot "gutter" of <ui-code-block>, and the element does not render it`},
+		{"a code block given its code part", "ui-code-block", writing{attributes: []string{"language"}, slots: []string{defaultSlot}, parts: []string{"code"}}, `the markup writes the part "code" of <ui-code-block>, and the element draws its own parts`},
+		{"a diff block given a layout", "ui-diff-block", writing{attributes: []string{"language", "layout"}, slots: []string{defaultSlot}}, `the markup writes the attribute "layout" on <ui-diff-block>, and the element does not declare it`},
+		{"a diff block given a hunk part", "ui-diff-block", writing{attributes: []string{"language"}, slots: []string{defaultSlot}, parts: []string{"hunk"}}, `the markup writes the part "hunk" of <ui-diff-block>, and the element draws its own parts`},
+		{"a code block whose language nobody writes", "ui-code-block", writing{slots: []string{defaultSlot}}, `the contract declares the attribute "language" of <ui-code-block>, and no partial writes it`},
+		{"a diff block whose tables nobody writes", "ui-diff-block", writing{attributes: []string{"language"}}, `the contract declares the slot "" of <ui-diff-block>, and no partial writes it`},
+	} {
+		t.Run(mutation.scenario, func(t *testing.T) {
+			written := writings{}
+			for name, held := range blocksOfEvidence {
+				written[name] = writing{attributes: held.Attributes, slots: held.Slots}
+			}
+			written[mutation.element] = mutation.written
+
+			if diff := cmp.Diff([]string{mutation.want}, disagreements(declared, written)); diff != "" {
+				t.Errorf("the disagreements differ (-want +got):\n%s", diff)
+			}
+		})
+	}
+}

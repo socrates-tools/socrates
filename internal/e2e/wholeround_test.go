@@ -79,7 +79,7 @@ func TestTheWholeRoundIsHandedOverAsCardsInSeverityOrder(t *testing.T) {
 	}
 
 	var patched bool
-	page.evaluate(`!!document.querySelector('.decision[data-decision="f4"] .hunk .line[data-kind="removed"]')`, &patched)
+	page.evaluate(`!!document.querySelector('.decision[data-decision="f4"] ui-diff-block td[data-kind="removed"]')`, &patched)
 	if !patched {
 		t.Error("the card for the finding the session resolved carries no diff, and the diff is what makes the resolution clear")
 	}

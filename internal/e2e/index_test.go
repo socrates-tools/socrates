@@ -229,7 +229,7 @@ func TestAnIdentifierHoldingAQuoteLeavesThePageWorking(t *testing.T) {
 	t.Parallel()
 	_, page := read(t, quotedIdentifierDocument)
 
-	page.waitFor(`!!document.querySelector('code.hljs')`)
+	page.waitFor(aCodeBlockIsHighlighted)
 	page.evaluate(`document.querySelector('.choice').click()`, nil)
 
 	if chosen := indexAfter(t, page); chosen.Said != "1 of 1 answered" {
