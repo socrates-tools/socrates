@@ -1,8 +1,12 @@
 package e2e_test
 
 import (
+	"bytes"
 	"fmt"
+	"image/png"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/chromedp/chromedp/kb"
 	"github.com/google/go-cmp/cmp"
@@ -384,5 +388,131 @@ func TestTheCatalogPaintsEachChoiceStateInItsOwnTokens(t *testing.T) {
 				t.Errorf("the %s choice's corners are %vpx, want %vpx", state.name, got, want)
 			}
 		})
+	}
+}
+
+func (r *reader) shadowOfToken(token string) string {
+	r.t.Helper()
+
+	var shadow string
+	r.evaluate(`(() => {
+  const probe = document.createElement('i');
+  probe.style.boxShadow = 'var(`+token+`)';
+  document.body.append(probe);
+  const shadow = getComputedStyle(probe).boxShadow;
+  probe.remove();
+  return shadow;
+})()`, &shadow)
+	return shadow
+}
+
+func (r *reader) pixelBesideTheIndicatorOf(choice string) [3]int {
+	r.t.Helper()
+
+	r.evaluate(`document.querySelector(`+jsonOf(r.t, choice)+`).scrollIntoView({ block: 'center' }); new Promise((settled) => requestAnimationFrame(() => requestAnimationFrame(settled)))`, nil, awaitingThePromise)
+	time.Sleep(500 * time.Millisecond)
+	var at struct{ X, Y float64 }
+	r.evaluate(`(() => {
+  const held = document.querySelector(`+jsonOf(r.t, choice)+`);
+  const box = held.getBoundingClientRect();
+  const style = getComputedStyle(held);
+  const edge = box.left + parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
+  const top = box.top + parseFloat(style.borderTopWidth) + parseFloat(style.paddingTop);
+  return { X: edge - 1.5, Y: top + 2 + 9 };
+})()`, &at)
+	shot, err := png.Decode(bytes.NewReader(r.screenshot()))
+	if err != nil {
+		r.t.Fatalf("reading what the page painted: %v", err)
+	}
+	red, green, blue, _ := shot.At(int(at.X), int(at.Y)).RGBA()
+	return [3]int{int(red >> 8), int(green >> 8), int(blue >> 8)}
+}
+
+func (r *reader) focusRingColour() [3]int {
+	r.t.Helper()
+
+	var ring [3]int
+	colour := r.pageColourOf("--accent-ring")
+	if _, err := fmt.Sscanf(colour, "rgb(%d, %d, %d)", &ring[0], &ring[1], &ring[2]); err != nil {
+		r.t.Fatalf("reading the focus ring colour %q: %v", colour, err)
+	}
+	return ring
+}
+
+func TestTheCatalogDrawsTheFocusRingAroundTheIndicatorOfAChosenChoiceReachedByKeyboardAndNoOutline(t *testing.T) {
+	// scenario: A chosen choice reached by Tab paints the page's focus ring around its indicator beside the chosen ring, and no outline
+	t.Parallel()
+	page := catalogued(t)
+	ring := page.focusRingColour()
+
+	chosen := groupOf(singleChoiceChosenKey)
+	page.aroundWithButtons(chosen)
+	page.focus("#before-the-group")
+	idle := page.pixelBesideTheIndicatorOf(choiceOf(chosen, 1))
+	page.press(kb.Tab)
+
+	if got := page.pixelBesideTheIndicatorOf(choiceOf(chosen, 1)); got != ring {
+		t.Errorf("beside the indicator of the focused chosen choice the page paints %v, want the focus ring %v", got, ring)
+	}
+	if idle == ring {
+		t.Errorf("beside the indicator of a choice nobody focused the page paints the focus ring %v", ring)
+	}
+	painted := page.paintedOf(choiceOf(chosen, 1), "outline-style", "box-shadow")
+	if painted["outline-style"] != "none" {
+		t.Errorf("the focused chosen choice is drawn with the outline %q, want none", painted["outline-style"])
+	}
+	if want := page.shadowOfToken("--ring-chosen"); !strings.HasSuffix(painted["box-shadow"], want) {
+		t.Errorf("the focused chosen choice keeps the shadow %q, want the chosen ring %q", painted["box-shadow"], want)
+	}
+}
+
+func TestTheCatalogDrawsTheFocusRingAroundTheIndicatorOfAnUnchosenChoiceReachedByKeyboardAndNothingAroundIt(t *testing.T) {
+	// scenario: An unchosen choice reached by Tab paints the page's focus ring around its indicator and no outline or shadow around itself
+	t.Parallel()
+	page := catalogued(t)
+	ring := page.focusRingColour()
+
+	multiple := groupOf(multipleChoiceKey)
+	page.aroundWithButtons(multiple)
+	page.focus("#before-the-group")
+	page.press(kb.Tab)
+	page.press(kb.Tab)
+
+	if got := page.focusedChoiceIn(multiple); got != 1 {
+		t.Fatalf("Tab reached choice %d, want the second", got)
+	}
+	if got := page.pixelBesideTheIndicatorOf(choiceOf(multiple, 1)); got != ring {
+		t.Errorf("beside the indicator of the focused unchosen choice the page paints %v, want the focus ring %v", got, ring)
+	}
+	painted := page.paintedOf(choiceOf(multiple, 1), "outline-style", "box-shadow")
+	nothingPainted := strings.NewReplacer("rgba(0, 0, 0, 0) 0px 0px 0px 0px", "", ",", "", " ", "", "none", "")
+	if painted["outline-style"] != "none" || nothingPainted.Replace(painted["box-shadow"]) != "" {
+		t.Errorf("the focused unchosen choice is drawn with the outline %q and the shadow %q, want neither", painted["outline-style"], painted["box-shadow"])
+	}
+}
+
+func TestTheCatalogAnnouncesChoicechangedOnlyWhenAChoiceIsCheckedOrUnchecked(t *testing.T) {
+	// scenario: A choice announces choicechanged when its checked changes and not when it is disabled or enabled
+	t.Parallel()
+	page := catalogued(t)
+	group := groupOf(singleChoiceChosenKey)
+	page.evaluate(`window.__changed = 0; document.querySelector(`+jsonOf(t, group)+`).addEventListener('choicechanged', () => { window.__changed += 1; }); true`, nil)
+	choice := `document.querySelector(` + jsonOf(t, choiceOf(group, 0)) + `)`
+	settled := `new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))`
+
+	page.evaluate(choice+`.disabled = true; `+settled, nil, awaitingThePromise)
+	page.evaluate(choice+`.disabled = false; `+settled, nil, awaitingThePromise)
+	var whileOnlyDisabledChanged int
+	page.evaluate(`window.__changed`, &whileOnlyDisabledChanged)
+
+	page.evaluate(choice+`.checked = true; `+settled, nil, awaitingThePromise)
+	var afterChecking int
+	page.evaluate(`window.__changed`, &afterChecking)
+
+	if whileOnlyDisabledChanged != 0 {
+		t.Errorf("disabling and enabling a choice announced choicechanged %d times, want none", whileOnlyDisabledChanged)
+	}
+	if afterChecking == 0 {
+		t.Error("checking a choice announced no choicechanged")
 	}
 }

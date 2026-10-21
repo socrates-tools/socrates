@@ -142,6 +142,7 @@
 }
 
 @custom-variant slotted (&::slotted(*));
+@custom-variant host-focused (:host(:focus-visible) &);
 
 @layer base {
   :not(:defined) {

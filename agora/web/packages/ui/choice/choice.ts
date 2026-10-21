@@ -5,17 +5,17 @@ import { UiElement } from '../element'
 const frameClasses = 'flex items-start gap-x-3 rounded-md border px-4 py-3 transition-all duration-fast ease-standard'
 
 const frameStates: Record<string, string> = {
-  'solid': 'cursor-pointer border-rule bg-surface-card hover:border-rule-hover',
-  'solid-checked': 'cursor-pointer border-accent bg-accent-selected shadow-ring-chosen',
+  'solid': 'cursor-pointer border-rule bg-surface-card hover:border-rule-hover focus-visible:shadow-none!',
+  'solid-checked': 'cursor-pointer border-accent bg-accent-selected shadow-ring-chosen focus-visible:shadow-ring-chosen!',
   'solid-disabled': 'cursor-default border-rule bg-surface-card opacity-55 hover:border-rule-hover',
   'solid-checked-disabled': 'cursor-default border-accent bg-accent-selected opacity-55 shadow-ring-chosen',
-  'dashed': 'cursor-pointer border-dashed border-rule-control bg-transparent',
-  'dashed-checked': 'cursor-pointer border-solid border-fg-2 bg-surface-muted shadow-ring-declined',
+  'dashed': 'cursor-pointer border-dashed border-rule-control bg-transparent focus-visible:shadow-none!',
+  'dashed-checked': 'cursor-pointer border-solid border-fg-2 bg-surface-muted shadow-ring-declined focus-visible:shadow-ring-declined!',
   'dashed-disabled': 'cursor-default border-dashed border-rule-control bg-transparent opacity-55',
   'dashed-checked-disabled': 'cursor-default border-solid border-fg-2 bg-surface-muted opacity-55 shadow-ring-declined',
 }
 
-const indicatorClasses = 'mt-0.5 flex size-check flex-none items-center justify-center transition-all duration-fast ease-standard'
+const indicatorClasses = 'mt-0.5 flex size-check flex-none items-center justify-center transition-all duration-fast ease-standard host-focused:shadow-focus-ring'
 
 const indicatorStates: Record<string, string> = {
   'radio': 'rounded-full border-check border-ring-unchosen bg-surface-card',
@@ -65,8 +65,13 @@ export class UiChoice extends UiElement {
     }
   }
 
-  protected override updated(): void {
-    this.dispatchEvent(new CustomEvent('choicechanged', { bubbles: true }))
+  protected override updated(changed: PropertyValues): void {
+    if (changed.has('checked')) {
+      this.dispatchEvent(new CustomEvent('choicechanged', { bubbles: true }))
+    }
+    if (changed.has('disabled')) {
+      this.dispatchEvent(new CustomEvent('choicedisabledchanged', { bubbles: true }))
+    }
   }
 
   protected override render() {

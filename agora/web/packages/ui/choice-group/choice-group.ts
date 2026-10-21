@@ -13,6 +13,7 @@ export class UiChoiceGroup extends UiElement {
     super.connectedCallback()
     this.addEventListener('change', this.keepOneChecked)
     this.addEventListener('choicechanged', this.keepOneChecked)
+    this.addEventListener('choicedisabledchanged', this.rovingTheTabStopOnTheEvent)
     this.addEventListener('keydown', this.moveOnTheArrowKeys)
   }
 
@@ -20,6 +21,7 @@ export class UiChoiceGroup extends UiElement {
     super.disconnectedCallback()
     this.removeEventListener('change', this.keepOneChecked)
     this.removeEventListener('choicechanged', this.keepOneChecked)
+    this.removeEventListener('choicedisabledchanged', this.rovingTheTabStopOnTheEvent)
     this.removeEventListener('keydown', this.moveOnTheArrowKeys)
   }
 
@@ -64,6 +66,10 @@ export class UiChoiceGroup extends UiElement {
         }
       })
     }
+    this.rovingTheTabStop()
+  }
+
+  private readonly rovingTheTabStopOnTheEvent = (): void => {
     this.rovingTheTabStop()
   }
 
