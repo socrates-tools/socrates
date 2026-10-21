@@ -20,7 +20,11 @@ var colourWritten = regexp.MustCompile(`(?i)#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hw
 
 var declaration = regexp.MustCompile(`^\s*([-a-zA-Z0-9_]+)\s*:`)
 
-var fontDeclared = regexp.MustCompile(`^\s*(font-family|font)\s*:\s*([^;{}]*?)\s*;?\s*$`)
+var fontDeclared = regexp.MustCompile(`(?:^|[\s;{])(font-family|font)\s*:\s*([^;{}]*)`)
+
+var commentWritten = regexp.MustCompile(`(?s)/\*.*?\*/`)
+
+var notALineBreak = regexp.MustCompile(`[^\n]`)
 
 var fontLeftToTheTokens = regexp.MustCompile(`^(?:inherit|initial|unset|revert|revert-layer|var\(--font-[a-z-]+\))$`)
 
@@ -82,19 +86,22 @@ func isWithin(relative, directory string) bool {
 func familiesNamedIn(named, held string) []string {
 	var loose []string
 
-	for position, line := range strings.Split(held, "\n") {
-		declared := fontDeclared.FindStringSubmatch(line)
-		if declared == nil {
-			continue
-		}
-		value := strings.TrimSpace(strings.TrimSuffix(declared[2], "!important"))
+	unannotated := commentWritten.ReplaceAllStringFunc(held, func(comment string) string {
+		return notALineBreak.ReplaceAllString(comment, " ")
+	})
+
+	for _, declared := range fontDeclared.FindAllStringSubmatchIndex(unannotated, -1) {
+		property := unannotated[declared[2]:declared[3]]
+		value := strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(unannotated[declared[4]:declared[5]]), "!important"))
+		value = strings.Join(strings.Fields(value), " ")
 		if fontLeftToTheTokens.MatchString(value) {
 			continue
 		}
-		if declared[1] == "font" && fontTakenFromTheTokens.MatchString(value) {
+		if property == "font" && fontTakenFromTheTokens.MatchString(value) {
 			continue
 		}
-		loose = append(loose, fmt.Sprintf("%s:%d names the font family %s outside the library's tokens", named, position+1, value))
+		position := strings.Count(unannotated[:declared[2]], "\n") + 1
+		loose = append(loose, fmt.Sprintf("%s:%d names the font family %s outside the library's tokens", named, position, value))
 	}
 
 	return loose

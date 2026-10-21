@@ -127,3 +127,31 @@ func TestAFontFamilyNamedOutsideTheLibrarysTokensIsReported(t *testing.T) {
 		t.Errorf("what a stylesheet naming its own font reports differs (-want +got):\n%s", diff)
 	}
 }
+
+func TestAFontFamilyNamedInARuleWrittenOnOneLineIsReported(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "styles", "packages", "inline.css"), `.x { font-family: Georgia; }
+a { color: var(--ink-900); font: 12px Arial }
+.fine { font-family: var(--font-mono); font: inherit }
+.multi {
+  margin: 0; font-family:
+    'Courier New',
+    monospace;
+}
+/* font-family: Comic Sans; */
+`)
+
+	read, err := convention.PaintWrittenWhereItIsUsed(root, "styles", filepath.Join("styles", "tokens"))
+	if err != nil {
+		t.Fatalf("reading what a fabricated stylesheet names: %v", err)
+	}
+
+	want := []string{
+		`styles/packages/inline.css:1 names the font family Georgia outside the library's tokens`,
+		`styles/packages/inline.css:2 names the font family 12px Arial outside the library's tokens`,
+		`styles/packages/inline.css:5 names the font family 'Courier New', monospace outside the library's tokens`,
+	}
+	if diff := cmp.Diff(want, read.Families); diff != "" {
+		t.Errorf("what a stylesheet naming its own font on one line reports differs (-want +got):\n%s", diff)
+	}
+}
