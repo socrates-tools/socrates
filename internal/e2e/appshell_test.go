@@ -36,7 +36,7 @@ func inFrame(frame string) string {
 }
 
 func shellPart(frame, part string) string {
-	return fmt.Sprintf(`%s.document.querySelector('ui-app-shell [data-part="%s"]')`, inFrame(frame), part)
+	return fmt.Sprintf(`%s.document.querySelector('ui-app-shell > [data-part="frame"] > [data-part="body"] > [data-part="%s"]')`, inFrame(frame), part)
 }
 
 func howTheShellStateScrolls(frame string) string {
@@ -140,7 +140,7 @@ func TestTheCatalogDrawsThePanelOnlyFromTwelveEighty(t *testing.T) {
 }
 
 func markedSectionsOf(frame string) string {
-	return fmt.Sprintf(`JSON.stringify(Array.from(%s.document.querySelectorAll('ui-app-shell [data-part="navigation"] a[data-section]'))
+	return fmt.Sprintf(`JSON.stringify(Array.from(%s.document.querySelectorAll('ui-app-shell > [data-part="frame"] > [data-part="body"] > [data-part="navigation"] a[data-section]'))
   .filter((link) => link.getAttribute('aria-current') === 'location')
   .map((link) => link.dataset.section))`, inFrame(frame))
 }

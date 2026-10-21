@@ -1,6 +1,16 @@
 import type { PartOf } from '../contract'
 
 const wideEnoughForThePanelQuery = '(min-width: 1280px)'
+const frame = '[data-part="frame"]'
+const body = `${frame} > [data-part="body"]`
+const pathTo: Record<PartOf<'ui-app-shell'>, string> = {
+  frame,
+  topbar: `${frame} > [data-part="topbar"]`,
+  body,
+  navigation: `${body} > [data-part="navigation"]`,
+  content: `${body} > [data-part="content"]`,
+  panel: `${body} > [data-part="panel"]`,
+}
 const whereASectionIsInView = 0.3
 
 export class UiAppShell extends HTMLElement {
@@ -27,7 +37,7 @@ export class UiAppShell extends HTMLElement {
   }
 
   partNamed(name: PartOf<'ui-app-shell'>): HTMLElement {
-    const held = this.querySelector<HTMLElement>(`[data-part="${name}"]`)
+    const held = this.querySelector<HTMLElement>(`:scope > ${pathTo[name]}`)
     if (!held) {
       throw new Error(`ui-app-shell holds no ${name}`)
     }
