@@ -9,11 +9,11 @@ import (
 	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
-func TestTheSurfacesStylesheetHoldsNoRuleAUtilityCouldSay(t *testing.T) {
-	// scenario: The surface's stylesheet holds no rule that names a class, an id or an element
-	found, err := convention.RulesAUtilityCouldSay(source.Root(t), convention.SurfaceStyleDirectory)
+func TestNoHandWrittenStylesheetOfTheClientStylesAPrimitiveOrAPiece(t *testing.T) {
+	// scenario: No stylesheet under the client's packages holds a rule that names a class, an id or an element
+	found, err := convention.RulesAUtilityCouldSay(source.Root(t), convention.ClientStyleDirectory)
 	if err != nil {
-		t.Fatalf("reading what the surface styles: %v", err)
+		t.Fatalf("reading what the client styles: %v", err)
 	}
 
 	for _, styled := range found {
@@ -80,6 +80,8 @@ html {
   }
 }
 `)
+
+	writeNested(t, filepath.Join(root, "surface", "node_modules", "library", "theme.css"), ".theme {\n  color: inherit;\n}\n")
 
 	found, err := convention.RulesAUtilityCouldSay(root, "surface")
 	if err != nil {

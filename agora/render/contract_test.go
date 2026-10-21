@@ -26,14 +26,13 @@ type element struct {
 }
 
 type contract struct {
-	Elements map[string]element  `json:"elements"`
-	Parts    map[string][]string `json:"parts"`
+	Elements map[string]element `json:"elements"`
 }
 
 type writing struct {
 	attributes []string
 	slots      []string
-	parts      []string
+	dataParts  []string
 }
 
 type writings map[string]writing
@@ -76,7 +75,7 @@ func merged(first, second writing) writing {
 	return writing{
 		attributes: append(first.attributes, second.attributes...),
 		slots:      append(first.slots, second.slots...),
-		parts:      append(first.parts, second.parts...),
+		dataParts:  append(first.dataParts, second.dataParts...),
 	}
 }
 
@@ -100,7 +99,7 @@ func writingsOf(node *html.Node) writings {
 				note(within, writing{attributes: attributesOf(node), slots: slotsWrittenInto(node)})
 			}
 			if named := attribute(node, "data-part"); named != "" {
-				note(within, writing{parts: []string{named}})
+				note(within, writing{dataParts: []string{named}})
 			}
 		}
 		for child := node.FirstChild; child != nil; child = child.NextSibling {
@@ -143,27 +142,22 @@ func isGlobal(attribute string) bool {
 func undeclared(declared contract, written writings) []string {
 	var found []string
 	for name, held := range written {
-		if name == "" {
-			for _, part := range held.parts {
-				found = append(found, fmt.Sprintf("the markup writes the part %q outside any primitive, and a part belongs to one", part))
+		for _, part := range held.dataParts {
+			if name == "" {
+				found = append(found, fmt.Sprintf("the markup writes data-part=%q outside any primitive, and no part is named from outside a shadow root", part))
+				continue
 			}
+			found = append(found, fmt.Sprintf("the markup writes data-part=%q inside <%s>, and the element draws its parts in its own shadow root", part, name))
+		}
+		if name == "" {
 			continue
 		}
-		moved, isMoved := declared.Elements[name]
-		expected, hasParts := declared.Parts[name]
-		if !isMoved && !hasParts {
+		expected, known := declared.Elements[name]
+		if !known {
 			found = append(found, fmt.Sprintf("the markup writes <%s>, and the contract declares no such element", name))
 			continue
 		}
-		if isMoved {
-			found = append(found, undeclaredOfAnElement(name, moved, held)...)
-			continue
-		}
-		for _, part := range held.parts {
-			if !slices.Contains(expected, part) {
-				found = append(found, fmt.Sprintf("the markup writes the part %q of <%s>, and the contract does not declare it", part, name))
-			}
-		}
+		found = append(found, undeclaredOfAnElement(name, expected, held)...)
 	}
 	slices.Sort(found)
 	return found
@@ -184,26 +178,11 @@ func undeclaredOfAnElement(name string, declared element, held writing) []string
 			found = append(found, fmt.Sprintf("the markup writes the slot %q of <%s>, and the element does not render it", slot, name))
 		}
 	}
-	for _, part := range held.parts {
-		found = append(found, fmt.Sprintf("the markup writes the part %q of <%s>, and the element draws its own parts", part, name))
-	}
 	return found
 }
 
 func unwritten(declared contract, written writings) []string {
 	var found []string
-	for name, expected := range declared.Parts {
-		held, known := written[name]
-		if !known {
-			found = append(found, fmt.Sprintf("the contract declares <%s>, and no partial writes it", name))
-			continue
-		}
-		for _, part := range expected {
-			if !slices.Contains(held.parts, part) {
-				found = append(found, fmt.Sprintf("the contract declares the part %q of <%s>, and no partial writes it", part, name))
-			}
-		}
-	}
 	for name, expected := range declared.Elements {
 		held, known := written[name]
 		if !known {
@@ -268,9 +247,6 @@ func TestTheContractDeclaresTheBadgeAsAnElementOfAttributesAndSlots(t *testing.T
 	if diff := cmp.Diff(want, declared.Elements["ui-badge"]); diff != "" {
 		t.Errorf("the contract declares the badge differently (-want +got):\n%s", diff)
 	}
-	if _, stillParts := declared.Parts["ui-badge"]; stillParts {
-		t.Errorf("the contract still declares parts for the badge: %v", declared.Parts["ui-badge"])
-	}
 }
 
 func TestTheContractDeclaresTheControlsAsElementsOfAttributesAndSlots(t *testing.T) {
@@ -288,9 +264,6 @@ func TestTheContractDeclaresTheControlsAsElementsOfAttributesAndSlots(t *testing
 		if diff := cmp.Diff(expected, got, cmpopts.EquateEmpty()); diff != "" {
 			t.Errorf("the contract declares <%s> differently (-want +got):\n%s", name, diff)
 		}
-		if _, stillParts := declared.Parts[name]; stillParts {
-			t.Errorf("the contract still declares parts for <%s>: %v", name, declared.Parts[name])
-		}
 	}
 }
 
@@ -305,9 +278,6 @@ func TestTheContractDeclaresTheCardAndTheDialogAsElementsOfSlotsAlone(t *testing
 		if diff := cmp.Diff(want, declared.Elements[name], cmpopts.EquateEmpty()); diff != "" {
 			t.Errorf("the contract declares <%s> differently (-want +got):\n%s", name, diff)
 		}
-		if _, stillParts := declared.Parts[name]; stillParts {
-			t.Errorf("the contract still declares parts for <%s>: %v", name, declared.Parts[name])
-		}
 	}
 }
 
@@ -317,12 +287,9 @@ func TestARenderedPageWritesTheCardAndTheDialogOnlyWithTheSlotsTheyDeclare(t *te
 	written := writingsOf(rendered(t, read))
 
 	for _, name := range []string{"ui-card", "ui-dialog"} {
-		held, reached := written[name]
+		_, reached := written[name]
 		if !reached {
 			t.Fatalf("the rendered page writes %v, and it draws a decision and its confirmation on <%s>", written, name)
-		}
-		if len(held.parts) != 0 {
-			t.Errorf("the rendered page writes the parts %v inside <%s>, and the element draws its own parts", held.parts, name)
 		}
 	}
 	for _, found := range undeclared(declaredByTheContract(t), written) {
@@ -343,9 +310,6 @@ func TestTheContractDeclaresTheAppShellAsAnElementOfSlotsAlone(t *testing.T) {
 	if diff := cmp.Diff(want, declared.Elements["ui-app-shell"], cmpopts.EquateEmpty()); diff != "" {
 		t.Errorf("the contract declares the app shell differently (-want +got):\n%s", diff)
 	}
-	if _, stillParts := declared.Parts["ui-app-shell"]; stillParts {
-		t.Errorf("the contract still declares parts for the app shell: %v", declared.Parts["ui-app-shell"])
-	}
 }
 
 func TestARenderedPageWritesTheAppShellOnlyWithTheSlotsItDeclares(t *testing.T) {
@@ -355,9 +319,6 @@ func TestARenderedPageWritesTheAppShellOnlyWithTheSlotsItDeclares(t *testing.T) 
 	held, reached := written["ui-app-shell"]
 	if !reached {
 		t.Fatalf("the rendered page writes %v, and it draws its frame on <ui-app-shell>", written)
-	}
-	if len(held.parts) != 0 {
-		t.Errorf("the rendered page writes the parts %v inside <ui-app-shell>, and the element draws its own parts", held.parts)
 	}
 	slices.Sort(held.slots)
 	if want := []string{"content", "navigation", "panel", "topbar"}; !slices.Equal(held.slots, want) {
@@ -369,8 +330,8 @@ func TestARenderedPageWritesTheAppShellOnlyWithTheSlotsItDeclares(t *testing.T) 
 }
 
 func TestAnElementNoContractDeclaresIsReported(t *testing.T) {
-	declared := contract{Parts: map[string][]string{"ui-dialog": {"panel"}}}
-	written := writings{"ui-dialog": {parts: []string{"panel"}}, "ui-tooltip": {}}
+	declared := contract{Elements: map[string]element{"ui-dialog": {Slots: []string{"body"}}}}
+	written := writings{"ui-dialog": {slots: []string{"body"}}, "ui-tooltip": {}}
 
 	want := []string{`the markup writes <ui-tooltip>, and the contract declares no such element`}
 	if diff := cmp.Diff(want, disagreements(declared, written)); diff != "" {
@@ -378,33 +339,72 @@ func TestAnElementNoContractDeclaresIsReported(t *testing.T) {
 	}
 }
 
-func TestAPartNoContractDeclaresIsReportedNamingTheElementAndThePart(t *testing.T) {
-	declared := contract{Parts: map[string][]string{"ui-dialog": {"panel"}}}
-	written := writings{"ui-dialog": {parts: []string{"panel", "footer"}}}
-
-	want := []string{`the markup writes the part "footer" of <ui-dialog>, and the contract does not declare it`}
-	if diff := cmp.Diff(want, disagreements(declared, written)); diff != "" {
-		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
-	}
-}
-
-func TestAPartNoPartialWritesIsReportedNamingTheElementAndThePart(t *testing.T) {
-	declared := contract{Parts: map[string][]string{"ui-dialog": {"panel", "heading"}}}
-	written := writings{"ui-dialog": {parts: []string{"panel"}}}
-
-	want := []string{`the contract declares the part "heading" of <ui-dialog>, and no partial writes it`}
-	if diff := cmp.Diff(want, disagreements(declared, written)); diff != "" {
-		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
-	}
-}
-
 func TestAnElementNoPartialWritesIsReported(t *testing.T) {
-	declared := contract{Parts: map[string][]string{"ui-dialog": {"panel"}, "ui-tooltip": {"bubble"}}}
-	written := writings{"ui-dialog": {parts: []string{"panel"}}}
+	declared := contract{Elements: map[string]element{"ui-dialog": {Slots: []string{"body"}}, "ui-tooltip": {}}}
+	written := writings{"ui-dialog": {slots: []string{"body"}}}
 
 	want := []string{`the contract declares <ui-tooltip>, and no partial writes it`}
 	if diff := cmp.Diff(want, disagreements(declared, written)); diff != "" {
 		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestAPartialWritingDataPartIsReportedNamingTheElementAndThePart(t *testing.T) {
+	parsed, err := html.Parse(strings.NewReader(`<ui-dialog><div slot="body" data-part="panel">words</div></ui-dialog>`))
+	if err != nil {
+		t.Fatalf("reading the markup: %v", err)
+	}
+	declared := contract{Elements: map[string]element{"ui-dialog": {Slots: []string{"body"}}}}
+
+	want := []string{`the markup writes data-part="panel" inside <ui-dialog>, and the element draws its parts in its own shadow root`}
+	if diff := cmp.Diff(want, disagreements(declared, writingsOf(parsed))); diff != "" {
+		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestADataPartWrittenOutsideAnyPrimitiveIsReported(t *testing.T) {
+	parsed, err := html.Parse(strings.NewReader(`<div data-part="control"></div>`))
+	if err != nil {
+		t.Fatalf("reading the markup: %v", err)
+	}
+
+	want := []string{`the markup writes data-part="control" outside any primitive, and no part is named from outside a shadow root`}
+	if diff := cmp.Diff(want, undeclared(contract{}, writingsOf(parsed))); diff != "" {
+		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestNoPartialAndNoRenderedPageWritesDataPart(t *testing.T) {
+	// scenario: Every partial and a rendered page carrying code, a patch and an illustration write no data-part attribute
+	read := oneDecision(document.One)
+	read.Decisions[0].Evidence = document.Evidence{{Code: "x := 1", Language: "go"}, {Patch: "--- a/x\n+++ b/x\n@@ -1,1 +1,1 @@\n-a\n+b\n"}}
+	read.Decisions[0].Illustration = document.Illustration{Path: "drawings/c-1.html"}
+
+	for place, written := range map[string]writings{"the partials": writtenByThePartials(t), "the rendered page": writingsOf(rendered(t, read)), "the catalog": writingsOf(theCatalog(t))} {
+		for name, held := range written {
+			for _, part := range held.dataParts {
+				t.Errorf("%s write data-part=%q on or inside <%s>", place, part, name)
+			}
+		}
+	}
+}
+
+func TestTheContractCarriesElementsAndNoPartsBesideThem(t *testing.T) {
+	held, err := fs.ReadFile(assets.Files(), "contract.json")
+	if err != nil {
+		t.Fatalf("reading the contract the build writes: %v", err)
+	}
+	var sections map[string]json.RawMessage
+	if err := json.Unmarshal(held, &sections); err != nil {
+		t.Fatalf("parsing the contract: %v", err)
+	}
+
+	var names []string
+	for name := range sections {
+		names = append(names, name)
+	}
+	if diff := cmp.Diff([]string{"elements"}, names); diff != "" {
+		t.Errorf("the contract's sections differ (-want +got):\n%s", diff)
 	}
 }
 
@@ -475,15 +475,6 @@ func TestTheGlobalAttributesAreNotPartOfTheContract(t *testing.T) {
 	}
 }
 
-func TestAPartWrittenInsideAnElementThatDrawsItsOwnPartsIsReported(t *testing.T) {
-	written := writings{"ui-badge": {attributes: []string{"tone", "icon"}, slots: []string{"label"}, parts: []string{"label"}}}
-
-	want := []string{`the markup writes the part "label" of <ui-badge>, and the element draws its own parts`}
-	if diff := cmp.Diff(want, disagreements(aBadge(), written)); diff != "" {
-		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
-	}
-}
-
 func TestWhatAPartialWritesIntoAnElementIsReadAsItsAttributesAndTheSlotsOfItsChildren(t *testing.T) {
 	parsed, err := html.Parse(strings.NewReader(`<ui-badge tone="error" data-title="t"><span slot="label">word</span>loose<svg></svg></ui-badge>`))
 	if err != nil {
@@ -529,9 +520,7 @@ func TestNoButtonAndNoTextareaOfARenderedPageStandsOutsideAPrimitivesShadowRoot(
 		t.Errorf("the page writes a <%s class=%q>, and the button, the field, the copy control and the expand control draw theirs inside their own shadow roots", control.Data, attribute(control, "class"))
 	}
 	for _, control := range elements(page, "input") {
-		if attribute(control, "data-part") != "control" {
-			t.Errorf("the page offers a <%s class=%q> that is not the control of a primitive", control.Data, attribute(control, "class"))
-		}
+		t.Errorf("the page writes an <input class=%q> of its own, and the controls are drawn inside their primitives' shadow roots", attribute(control, "class"))
 	}
 }
 
@@ -550,9 +539,6 @@ func TestTheContractDeclaresEachIndicatorTheBrandAndTheTooltipAsAnElementOfAttri
 		t.Run(name, func(t *testing.T) {
 			if diff := cmp.Diff(want, declared.Elements[name], cmpopts.EquateEmpty()); diff != "" {
 				t.Errorf("the contract declares <%s> differently (-want +got):\n%s", name, diff)
-			}
-			if _, stillParts := declared.Parts[name]; stillParts {
-				t.Errorf("the contract still declares parts for <%s>: %v", name, declared.Parts[name])
 			}
 		})
 	}
@@ -589,7 +575,7 @@ func TestEveryIndicatorTheBrandAndTheTooltipWrittenWithSomethingItDoesNotDeclare
 		{"a brand given a slot it does not render", writing{slots: []string{defaultSlot, "mark", "tagline"}}, "ui-brand", `the markup writes the slot "tagline" of <ui-brand>, and the element does not render it`},
 		{"a brand given an attribute", writing{attributes: []string{"mark"}, slots: []string{defaultSlot, "mark"}}, "ui-brand", `the markup writes the attribute "mark" on <ui-brand>, and the element does not declare it`},
 		{"a tooltip given a title", writing{attributes: []string{"heading"}}, "ui-tooltip", `the markup writes the attribute "heading" on <ui-tooltip>, and the element does not declare it`},
-		{"a tooltip given its parts", writing{parts: []string{"title"}}, "ui-tooltip", `the markup writes the part "title" of <ui-tooltip>, and the element draws its own parts`},
+		{"a tooltip given its parts", writing{dataParts: []string{"title"}}, "ui-tooltip", `the markup writes data-part="title" inside <ui-tooltip>, and the element draws its parts in its own shadow root`},
 	} {
 		t.Run(mutation.scenario, func(t *testing.T) {
 			written := writings{}
@@ -700,18 +686,6 @@ func TestContentWrittenIntoADialogOutsideAnySlotIsReportedNamingTheDialog(t *tes
 	}
 }
 
-func TestAPartWrittenInsideADialogIsReportedBecauseTheDialogDrawsItsOwnParts(t *testing.T) {
-	written := writings{
-		"ui-card":   {slots: []string{"body", "footer", defaultSlot}},
-		"ui-dialog": {slots: []string{"heading", "body", "actions"}, parts: []string{"panel"}},
-	}
-
-	want := []string{`the markup writes the part "panel" of <ui-dialog>, and the element draws its own parts`}
-	if diff := cmp.Diff(want, disagreements(aCardAndADialog(), written)); diff != "" {
-		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
-	}
-}
-
 var blocksOfEvidence = map[string]element{
 	"ui-code-block": {Attributes: []string{"language"}, Slots: []string{defaultSlot}},
 	"ui-diff-block": {Attributes: []string{"language"}, Slots: []string{defaultSlot}},
@@ -724,9 +698,6 @@ func TestTheContractDeclaresTheCodeBlockAndTheDiffBlockAsElementsOfALanguageAndT
 		t.Run(name, func(t *testing.T) {
 			if diff := cmp.Diff(want, declared.Elements[name], cmpopts.EquateEmpty()); diff != "" {
 				t.Errorf("the contract declares <%s> differently (-want +got):\n%s", name, diff)
-			}
-			if _, stillParts := declared.Parts[name]; stillParts {
-				t.Errorf("the contract still declares parts for <%s>: %v", name, declared.Parts[name])
 			}
 		})
 	}
@@ -747,9 +718,6 @@ func TestARenderedPageWritesTheCodeBlockAndTheDiffBlockOnlyWithTheLanguageAndThe
 		if !reached {
 			t.Fatalf("the rendered page writes %v, and it draws evidence on <%s>", written, name)
 		}
-		if len(held.parts) != 0 {
-			t.Errorf("the rendered page writes the parts %v inside <%s>, and the element draws its own parts", held.parts, name)
-		}
 		if !slices.Contains(held.attributes, "language") {
 			t.Errorf("the rendered page writes <%s> with the attributes %v, want it to name its language", name, held.attributes)
 		}
@@ -769,9 +737,9 @@ func TestEveryCodeBlockAndDiffBlockWrittenWithSomethingItDoesNotDeclareIsReporte
 	}{
 		{"a code block given a highlight switch", "ui-code-block", writing{attributes: []string{"language", "highlight"}, slots: []string{defaultSlot}}, `the markup writes the attribute "highlight" on <ui-code-block>, and the element does not declare it`},
 		{"a code block given a slot it does not render", "ui-code-block", writing{attributes: []string{"language"}, slots: []string{defaultSlot, "gutter"}}, `the markup writes the slot "gutter" of <ui-code-block>, and the element does not render it`},
-		{"a code block given its code part", "ui-code-block", writing{attributes: []string{"language"}, slots: []string{defaultSlot}, parts: []string{"code"}}, `the markup writes the part "code" of <ui-code-block>, and the element draws its own parts`},
+		{"a code block given its code part", "ui-code-block", writing{attributes: []string{"language"}, slots: []string{defaultSlot}, dataParts: []string{"code"}}, `the markup writes data-part="code" inside <ui-code-block>, and the element draws its parts in its own shadow root`},
 		{"a diff block given a layout", "ui-diff-block", writing{attributes: []string{"language", "layout"}, slots: []string{defaultSlot}}, `the markup writes the attribute "layout" on <ui-diff-block>, and the element does not declare it`},
-		{"a diff block given a hunk part", "ui-diff-block", writing{attributes: []string{"language"}, slots: []string{defaultSlot}, parts: []string{"hunk"}}, `the markup writes the part "hunk" of <ui-diff-block>, and the element draws its own parts`},
+		{"a diff block given a hunk part", "ui-diff-block", writing{attributes: []string{"language"}, slots: []string{defaultSlot}, dataParts: []string{"hunk"}}, `the markup writes data-part="hunk" inside <ui-diff-block>, and the element draws its parts in its own shadow root`},
 		{"a code block whose language nobody writes", "ui-code-block", writing{slots: []string{defaultSlot}}, `the contract declares the attribute "language" of <ui-code-block>, and no partial writes it`},
 		{"a diff block whose tables nobody writes", "ui-diff-block", writing{attributes: []string{"language"}}, `the contract declares the slot "" of <ui-diff-block>, and no partial writes it`},
 	} {

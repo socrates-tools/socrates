@@ -23,13 +23,6 @@ const targets = ['chrome120', 'firefox121', 'safari17']
 
 const hljs = createRequire(join(library, 'package.json'))('highlight.js/lib/common')
 
-async function partsOfThePrimitivesNotYetMoved() {
-  const source = readFileSync(join(library, 'contract.ts'), 'utf8')
-  const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } })
-  const loaded = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`)
-  return loaded.contract
-}
-
 function decoratorCalled(node, name) {
   return (ts.getDecorators(node) ?? []).map((decorator) => decorator.expression).find((call) => ts.isCallExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === name)
 }
@@ -322,7 +315,7 @@ await build({
 copyFileSync(join(tokens, 'brand', 'socrates-mark.svg'), join(bundle, 'socrates-mark.svg'))
 
 const answeredTo = [...new Set(hljs.listLanguages().flatMap((name) => [name, ...(hljs.getLanguage(name).aliases ?? [])]))].sort()
-writeFileSync(declared, JSON.stringify({ elements: elementsDeclaredBy(created), parts: await partsOfThePrimitivesNotYetMoved() }, null, 2) + '\n')
+writeFileSync(declared, JSON.stringify({ elements: elementsDeclaredBy(created) }, null, 2) + '\n')
 writeFileSync(languages, JSON.stringify(answeredTo, null, 2) + '\n')
 writeFileSync(stamp, sum() + '\n')
 

@@ -1,6 +1,5 @@
 @import '@agora/ui/tokens/tokens.css';
 @import 'agora:stylesheet';
-@import '@agora/ui/primitives.css';
 
 ::selection {
   background: var(--selection);

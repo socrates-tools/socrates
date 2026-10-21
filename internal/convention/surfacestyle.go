@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var SurfaceStyleDirectory = filepath.Join(ToolDirectory("agora"), "web", "packages", "surface")
+var ClientStyleDirectory = filepath.Join(ToolDirectory("agora"), "web", "packages")
 
 var attributeSelector = regexp.MustCompile(`\[[^\]]*\]`)
 
@@ -30,6 +30,9 @@ func RulesAUtilityCouldSay(root, directory string) ([]string, error) {
 	err := filepath.WalkDir(filepath.Join(root, directory), func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+		if entry.IsDir() && entry.Name() == "node_modules" {
+			return filepath.SkipDir
 		}
 		if entry.IsDir() || filepath.Ext(path) != ".css" {
 			return nil
