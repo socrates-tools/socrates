@@ -33,7 +33,7 @@
 <h1 class="catalog-title">{{.Title}}</h1>
 {{range .Primitives}}<section class="catalog-primitive" data-primitive="{{.Name}}">
 <h2 class="catalog-primitive-name">{{.Name}}</h2>
-{{range .States}}<article class="catalog-state">
+{{range .States}}<article class="catalog-state" data-state="{{.Key}}">
 <h3 class="catalog-state-name">{{.Name}}</h3>
 {{if .Opens}}<button class="catalog-opener" id="open-{{.Opens}}" type="button" data-opens="{{.Opens}}">Open</button>{{end}}
 {{with .Anchor}}<button class="catalog-anchor" id="{{.ID}}" type="button" data-tooltip="{{.Tooltip}}" data-title="{{.Title}}"{{with .Hint}} data-hint="{{.}}"{{end}}>{{.Label}}</button>{{end}}

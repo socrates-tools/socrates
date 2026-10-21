@@ -22,6 +22,7 @@ export class UiTooltip extends HTMLElement {
     document.addEventListener('mouseout', this.leftAnAnchor)
     document.addEventListener('focusin', this.focusedAnAnchor)
     document.addEventListener('focusout', this.blurredAnAnchor)
+    document.addEventListener('retitled', this.retitledAnAnchor)
     window.addEventListener('scroll', this.scrolled, true)
   }
 
@@ -30,6 +31,7 @@ export class UiTooltip extends HTMLElement {
     document.removeEventListener('mouseout', this.leftAnAnchor)
     document.removeEventListener('focusin', this.focusedAnAnchor)
     document.removeEventListener('focusout', this.blurredAnAnchor)
+    document.removeEventListener('retitled', this.retitledAnAnchor)
     window.removeEventListener('scroll', this.scrolled, true)
     this.hide()
   }
@@ -91,6 +93,13 @@ export class UiTooltip extends HTMLElement {
     const anchor = anchorOf(event)
     if (anchor && this.speaksFor(anchor)) {
       this.hide()
+    }
+  }
+
+  private retitledAnAnchor = (event: Event): void => {
+    const anchor = event.target
+    if (anchor instanceof HTMLElement && this.isShowingFor(anchor)) {
+      this.showFor(anchor)
     }
   }
 

@@ -11,14 +11,13 @@
 </head>
 <body data-base="{{.Base}}" data-token="{{.Token}}" data-revision="{{.Revision}}" data-over="{{if .Over}}yes{{else}}no{{end}}">
 {{define "check"}}<svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square" aria-hidden="true" focusable="false"><polyline points="20 6 9 17 4 12"/></svg>{{end}}
-{{define "expand"}}<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg>{{end}}
-{{define "copy"}}<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>{{end}}
-{{define "copied"}}<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>{{end}}
 {{define "mark"}}{{template "ui-badge" .Badge}}{{end}}
 {{define "confirmation-body"}}<p class="confirmation-meaning">A decision left blank goes as nothing. Whoever asked will see no answer to it.</p>
-<ul class="confirmation-decisions"></ul>{{end}}
-{{define "confirmation-actions"}}<button class="go-back" data-interaction="sending" type="button">Go back and answer</button>
-<button class="send-anyway" data-interaction="sending" type="button" autofocus>Send anyway</button>{{end}}
+<ul class="confirmation-decisions"></ul>
+<template class="confirmation-decision-item"><li>{{template "ui-button" (dict "Class" "confirmation-decision" "Variant" "link" "Type" "button" "Interaction" "sending")}}</li></template>{{end}}
+{{define "confirmation-actions"}}{{template "ui-button" (dict "Class" "go-back" "Variant" "quiet" "Type" "button" "Interaction" "sending" "Label" "Go back and answer")}}
+{{template "ui-button" (dict "Class" "send-anyway" "Variant" "primary" "Type" "button" "Interaction" "sending" "Label" "Send anyway" "Autofocus" true)}}{{end}}
+{{define "send-label"}}Send and wait<span class="send-more"> for a reply</span>{{end}}
 {{define "entry"}}<span class="answered" data-answered="{{if .Decided}}{{if .Answered}}yes{{else}}no{{end}}{{else}}none{{end}}" aria-hidden="true">{{template "check"}}</span>
 <span class="entry-heading"><span class="entry-name">{{.Name}}</span>{{with .Severity}}{{template "mark" .}}{{end}}</span>
 {{if .Location}}<span class="location">{{.Location}}</span>{{end}}{{end}}
@@ -61,7 +60,7 @@
 </div>
 {{else}}
 <div class="evidence code">
-<div class="evidence-heading"><span class="evidence-label">{{with .Caption}}<span class="evidence-caption">{{.}}</span> {{end}}{{if .Language}}{{.Language}}{{else if not .Caption}}code{{end}}</span>{{with .Copy}}<button class="copy" data-interaction="viewing" type="button" aria-label="{{.Label}}" data-title="{{.Label}}" data-hint="{{.Hint}}" data-copied-title="{{.Copied}}" data-failed-title="{{.Failed}}"><span class="copy-icon">{{template "copy"}}</span><span class="copy-done">{{template "copied"}}</span></button><span class="copy-status" role="status"></span>{{end}}</div>
+<div class="evidence-heading"><span class="evidence-label">{{with .Caption}}<span class="evidence-caption">{{.}}</span> {{end}}{{if .Language}}{{.Language}}{{else if not .Caption}}code{{end}}</span>{{with .Copy}}{{template "ui-copy" .}}{{end}}</div>
 <pre><code class="language-{{.Language}}">{{.Code}}</code></pre>
 </div>
 {{end}}
@@ -69,11 +68,11 @@
 
 {{with .Drawing}}
 <div class="evidence illustrated">
-<div class="evidence-heading"><button class="expand" data-interaction="viewing" type="button" aria-label="Expand illustration" aria-expanded="false" data-title="Expand illustration" data-hint="Lays the drawing over the whole window. Escape closes it.">{{template "expand"}}</button></div>
+<div class="evidence-heading">{{template "ui-expand" (dict "Interaction" "viewing" "Label" "Expand illustration" "Hint" "Lays the drawing over the whole window. Escape closes it.")}}</div>
 <div class="drawing-stage">
 <div class="drawing-backdrop"></div>
 <iframe class="drawing" sandbox="allow-scripts" src="{{.Source}}" title="{{.Title}}"></iframe>
-<button class="drawing-close" data-interaction="viewing" type="button">Close</button>
+{{template "ui-button" (dict "Class" "drawing-close" "Variant" "secondary" "Type" "button" "Interaction" "viewing" "Label" "Close")}}
 </div>
 </div>
 {{end}}
@@ -86,35 +85,21 @@
 <fieldset class="options">
 <legend>{{if .Multiple}}Choose as many as apply{{else}}Choose one{{end}}</legend>
 {{$decision := .}}
+{{$kind := "radio"}}{{if .Multiple}}{{$kind = "checkbox"}}{{end}}
 <div class="options-list">
 {{range .Options}}
-<label class="option"{{if .Recommended}} data-recommended="yes"{{end}}>
-<input class="choice" data-interaction="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}"{{if .Recommended}} checked{{end}}{{if $.Over}} disabled{{end}}>
-<span class="option-label">{{.Label}}</span>
-{{if .Recommended}}<span class="option-mark">Recommended</span>{{end}}
-{{if .Meaning}}<span class="option-meaning">{{.Meaning}}</span>{{end}}
-</label>
+{{template "ui-choice" (dict "Class" "option" "ControlClass" "choice" "Family" "option" "Variant" "solid" "Type" $kind "Name" (printf "choice-%s" $decision.ID) "Value" (printf "%d" .Position) "Interaction" "answering" "Decision" $decision.ID "Label" .Label "Meaning" .Meaning "Tag" .Tag "Recommended" .Recommended "Checked" .Recommended "Disabled" $.Over)}}
 {{end}}
 {{if not .Multiple}}
-<label class="none">
-<input class="decline" data-interaction="answering" type="radio" name="choice-{{.ID}}" data-decision="{{.ID}}"{{if $.Over}} disabled{{end}}>
-<span class="option-label">None of these</span>
-<span class="option-meaning">Write your own answer below, or leave this to whoever asked.</span>
-</label>
+{{template "ui-choice" (dict "Class" "none" "ControlClass" "decline" "Family" "option" "Variant" "dashed" "Type" "radio" "Name" (printf "choice-%s" .ID) "Interaction" "answering" "Decision" .ID "Label" "None of these" "Meaning" "Write your own answer below, or leave this to whoever asked." "Disabled" $.Over)}}
 {{end}}
 </div>
 </fieldset>
 {{end}}
 
-<label class="words">
-<span class="words-label">In your own words</span>
-<textarea class="words-field" data-interaction="answering" name="words-{{.ID}}" data-decision="{{.ID}}" rows="2" placeholder="Answering here alone is a complete answer."{{if $.Over}} disabled{{end}}></textarea>
-</label>
+{{template "ui-field" (dict "Class" "words" "CaptionClass" "words-label" "ControlClass" "words-field" "Caption" "In your own words" "Name" (printf "words-%s" .ID) "Rows" 2 "Placeholder" "Answering here alone is a complete answer." "Interaction" "answering" "Decision" .ID "Disabled" $.Over)}}
 </div>{{end}}
-{{define "composer-content"}}<label class="message">
-<span class="message-label">Anything to say to whoever asked</span>
-<textarea class="message-field" data-interaction="sending" name="message" rows="3"{{if .Over}} disabled{{end}}></textarea>
-</label>
+{{define "composer-content"}}{{template "ui-field" (dict "Class" "message" "CaptionClass" "message-label" "ControlClass" "message-field" "Caption" "Anything to say to whoever asked" "Name" "message" "Rows" 3 "Interaction" "sending" "Disabled" .Over)}}
 
 <footer class="bar">
 <output class="receipt" data-interaction="sending" hidden aria-live="polite">
@@ -126,11 +111,11 @@
 </span>
 </output>
 <div class="sends">
-<button class="send" data-interaction="sending" type="submit" data-ends="no"{{if .Over}} disabled{{end}}>Send and wait<span class="send-more"> for a reply</span></button>
-<button class="finish" data-interaction="sending" type="submit" data-ends="yes"{{if .Over}} disabled{{end}}>Send and finish</button>
+{{template "ui-button" (dict "Class" "send" "Variant" "primary" "Raised" true "Type" "submit" "Interaction" "sending" "Ends" "no" "Content" "send-label" "Disabled" .Over)}}
+{{template "ui-button" (dict "Class" "finish" "Variant" "secondary" "Type" "submit" "Interaction" "sending" "Ends" "yes" "Label" "Send and finish" "Disabled" .Over)}}
 </div>
 <p class="sends-meaning">Sending waits for a reply on this page. Finishing sends and closes the exchange.</p>
-<button class="amend" data-interaction="sending" type="button" hidden{{if .Over}} disabled{{end}}>Amend and send again</button>
+{{template "ui-button" (dict "Class" "amend" "Variant" "secondary" "Type" "button" "Interaction" "sending" "Label" "Amend and send again" "Hidden" true "Disabled" .Over)}}
 <p class="state" role="status" aria-live="polite" data-tone="{{if .Over}}over{{else}}quiet{{end}}">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
 </footer>{{end}}
 {{define "nothing-content"}}<p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>{{end}}

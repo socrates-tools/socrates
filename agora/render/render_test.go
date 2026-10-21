@@ -655,6 +655,7 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 		"answering words-field",
 		"sending amend",
 		"sending confirmation",
+		"sending confirmation-decision",
 		"sending exchange shell",
 		"sending finish",
 		"sending go-back",

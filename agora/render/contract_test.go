@@ -194,3 +194,34 @@ func TestAnElementNoPartialWritesIsReported(t *testing.T) {
 		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
 	}
 }
+
+func TestARenderedPageReachesEveryControlThroughThePartialThatDrawsIt(t *testing.T) {
+	// scenario: A page with options, a code block and an illustration draws the button, field, choice, copy and expand through their partials
+	read := oneDecision(document.One)
+	read.Decisions[0].Evidence = document.Evidence{{Code: "x := 1", Language: "go"}}
+	read.Decisions[0].Illustration = document.Illustration{Path: "drawings/c-1.html"}
+
+	written := partsOf(rendered(t, read))
+
+	for _, element := range []string{"ui-button", "ui-field", "ui-choice", "ui-copy", "ui-expand"} {
+		if _, reached := written[element]; !reached {
+			t.Errorf("the rendered page writes %v, and it reaches the controls through <%s>", written, element)
+		}
+	}
+	for _, found := range undeclared(declaredByTheContract(t), written) {
+		t.Error(found)
+	}
+}
+
+func TestEveryControlOfARenderedPageIsHeldByAPrimitive(t *testing.T) {
+	// scenario: No button, input or textarea of a rendered page stands outside a primitive's element
+	read := oneDecision(document.One)
+	read.Decisions[0].Evidence = document.Evidence{{Code: "x := 1", Language: "go"}}
+	read.Decisions[0].Illustration = document.Illustration{Path: "drawings/c-1.html"}
+
+	for _, control := range elements(rendered(t, read), "button", "input", "textarea") {
+		if attribute(control, "data-part") != "control" {
+			t.Errorf("the page offers a <%s class=%q> that is not the control of a primitive", control.Data, attribute(control, "class"))
+		}
+	}
+}

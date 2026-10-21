@@ -1,5 +1,10 @@
 export const contract = {
   'ui-dialog': ['panel', 'heading', 'body', 'actions'],
+  'ui-button': ['control'],
+  'ui-field': ['frame', 'caption', 'control'],
+  'ui-choice': ['frame', 'control', 'label', 'meaning', 'tag'],
+  'ui-copy': ['control', 'icon', 'done', 'status'],
+  'ui-expand': ['control'],
   'ui-badge': ['icon', 'label'],
   'ui-progress-bar': ['track'],
   'ui-status-dot': [],
