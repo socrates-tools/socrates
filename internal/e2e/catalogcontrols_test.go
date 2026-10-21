@@ -468,3 +468,32 @@ func TestTheCatalogReturnsTheCursorToAnExpandControlItsOwnerCollapses(t *testing
 		t.Errorf("after collapse() the control is %+v, want aria-expanded=false and the cursor on it", held)
 	}
 }
+
+func TestTheCatalogChoosesAChoiceThroughItsOwnMethodAndLeavesAChosenOneChosen(t *testing.T) {
+	// scenario: Calling choose() twice on a checkbox state leaves it chosen, and on a chosen radio changes nothing
+	t.Parallel()
+	page := catalogued(t)
+
+	unchosen := stateOf("ui-choice", "checkbox")
+	chosen := stateOf("ui-choice", "radio-chosen")
+	page.evaluate(`window.__changes = 0; document.addEventListener('change', () => { window.__changes += 1; }); true`, nil)
+
+	page.evaluate(`document.querySelector('`+unchosen+` ui-choice').choose(); document.querySelector('`+unchosen+` ui-choice').choose(); true`, nil)
+	page.evaluate(`document.querySelector('`+chosen+` ui-choice').choose(); true`, nil)
+
+	var held struct {
+		Unchosen bool `json:"unchosen"`
+		Chosen   bool `json:"chosen"`
+		Changes  int  `json:"changes"`
+		Reads    bool `json:"reads"`
+	}
+	page.evaluate(`({
+  unchosen: document.querySelector('`+unchosen+` input').checked,
+  chosen: document.querySelector('`+chosen+` input').checked,
+  changes: window.__changes,
+  reads: document.querySelector('`+unchosen+` ui-choice').chosen && document.querySelector('`+chosen+` ui-choice').chosen,
+})`, &held)
+	if !held.Unchosen || !held.Chosen || held.Changes != 1 || !held.Reads {
+		t.Errorf("after choose() on both the choices are %+v, want both chosen, one change announced and chosen to read true", held)
+	}
+}
