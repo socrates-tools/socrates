@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Attachments on agora</title>
+<style>
+@font-face { font-family: 'Cinzel'; font-weight: 400 900; font-display: swap; src: url('../../../agora/web/fonts/Cinzel-Variable.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 200 800; font-display: swap; src: url('../../../agora/web/fonts/Manrope-Variable.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 100 800; font-display: swap; src: url('../../../agora/web/fonts/JetBrainsMono-Variable.woff2') format('woff2'); }
+
+:root {
+  color-scheme: light;
+  --bg-ground: #f6f2ea;
+  --surface-card: #ffffff;
+  --surface-sunk: #fbf9f5;
+  --surface-muted: #f0ebe1;
+  --surface-hover: #ede7db;
+  --surface-heading: #f3eee4;
+  --fg-1: #14283c;
+  --fg-2: #4b5b6b;
+  --fg-3: #5f6b78;
+  --fg-placeholder: #66727f;
+  --fg-on-accent: #ffffff;
+  --rule: #e5ded1;
+  --rule-soft: #ede7db;
+  --rule-control: #d2c8b6;
+  --rule-hover: #b9ac96;
+  --accent: #1259a8;
+  --accent-hover: #0e4a8c;
+  --accent-wash: #e8f0fa;
+  --accent-selected: #eef4fb;
+  --accent-ring: #d6e5f5;
+  --recommended: #0b6e79;
+  --recommended-wash: #e2f0f1;
+  --resolved: #4f6b25;
+  --resolved-wash: #ebf0df;
+  --warning: #8a5a00;
+  --warning-wash: #faefd8;
+  --error: #b42e24;
+  --error-wash: #fbe6e3;
+  --clay: #a3471f;
+  --focus-ring: 0 0 0 3px var(--accent-ring);
+  --shadow-card: 0 1px 2px rgba(20, 40, 60, 0.04), 0 12px 32px -12px rgba(20, 40, 60, 0.1);
+  --shadow-press: 0 6px 16px -6px rgba(18, 89, 168, 0.55);
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-body: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --radius-box: 6px;
+  --radius-entry: 10px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
+  --card-pad: 24px;
+  --chip-height: 22px;
+  --control-height: 36px;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+:where(.grid, .flex, [style*="display: grid"], [style*="display: flex"]) > * { min-width: 0; }
+:where(p, h1, h2, h3, li, dd, td, th) { overflow-wrap: anywhere; }
+:where(img, svg) { max-width: 100%; height: auto; }
+
+html { background: var(--bg-ground); }
+body {
+  margin: 0;
+  background: var(--bg-ground);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+main { max-width: 1120px; margin: 0 auto; padding: 40px 16px 96px; }
+@media (min-width: 720px) { main { padding: 56px 32px 120px; } }
+
+.overline { display: block; color: var(--fg-3); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+h1 { margin: 8px 0 0; font-family: var(--font-display); font-size: clamp(1.5rem, 3.4vw, 2.1rem); font-weight: 600; line-height: 1.2; letter-spacing: -0.015em; }
+h2.section { margin: 0; font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
+h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+.lead { max-width: 70ch; margin: 12px 0 0; color: var(--fg-2); font-size: 1rem; text-wrap: pretty; }
+p { margin: 0; }
+code, .mono { font-family: var(--font-mono); font-size: 0.75rem; }
+p code, li code, td code { padding: 1px 5px; border-radius: 4px; background: var(--surface-muted); }
+
+section.block { margin-top: 56px; }
+section.block > header { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+section.block > header p { color: var(--fg-2); max-width: 72ch; }
+
+.card { border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface-card); box-shadow: var(--shadow-card); }
+
+.pitch { display: grid; gap: 12px; margin-top: 28px; grid-template-columns: 1fr; }
+@media (min-width: 820px) { .pitch { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.pitch .card { padding: 18px 20px; }
+.pitch .k { display: block; color: var(--fg-3); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.pitch .v { display: block; margin-top: 6px; font-weight: 600; }
+
+.stage { display: grid; gap: 20px; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 1000px) { .stage { grid-template-columns: minmax(0, 1fr) 280px; } }
+
+.decision { overflow: hidden; }
+.seen { padding: var(--card-pad); }
+.attribution { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.name { margin-right: 4px; font-size: 0.8125rem; font-weight: 700; }
+.mark { height: var(--chip-height); display: inline-flex; align-items: center; gap: 4px; padding: 0 8px; border-radius: var(--radius-pill); background: var(--warning-wash); color: var(--warning); font-size: 0.75rem; font-weight: 700; }
+.mark.call { background: var(--accent-wash); color: var(--accent); }
+.location { color: var(--fg-3); font-family: var(--font-mono); font-size: 0.75rem; }
+.question { margin: 12px 0 0; font-size: 1.125rem; font-weight: 700; line-height: 1.35; letter-spacing: -0.01em; }
+.meaning { margin-top: 4px; max-width: 62ch; color: var(--fg-2); }
+
+.answering { display: flex; flex-direction: column; gap: 16px; padding: var(--card-pad); border-top: 1px solid var(--rule); background: var(--surface-sunk); position: relative; }
+.options-list { display: grid; gap: 8px; }
+.option { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; column-gap: 12px; align-items: start; padding: 12px 16px; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface-card); cursor: pointer; }
+.option:has(input:checked) { border-color: var(--accent); background: var(--accent-selected); box-shadow: 0 0 0 1px var(--accent); }
+.option input { margin: 3px 0 0; accent-color: var(--accent); }
+.option-label { font-weight: 700; }
+.option-mark { height: var(--chip-height); display: inline-flex; align-items: center; padding: 0 8px; border-radius: var(--radius-pill); background: var(--recommended-wash); color: var(--recommended); font-size: 0.75rem; font-weight: 700; }
+.legend { margin-bottom: 8px; font-size: 0.8125rem; font-weight: 700; color: var(--fg-2); }
+
+.words, .message { display: flex; flex-direction: column; gap: 8px; }
+.words-label, .message-label { font-size: 0.8125rem; font-weight: 700; }
+.field-shell { border: 1px solid var(--rule-control); border-radius: var(--radius-md); background: var(--surface-card); transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease); }
+.field-shell:hover { border-color: var(--rule-hover); }
+.field-shell:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
+.field-shell textarea { display: block; width: 100%; padding: 8px 12px; border: 0; border-radius: var(--radius-md) var(--radius-md) 0 0; background: transparent; color: var(--fg-1); font: inherit; line-height: 1.6; resize: vertical; outline: none; }
+.field-shell textarea::placeholder { color: var(--fg-placeholder); }
+
+.tray { display: flex; flex-direction: column; gap: 8px; padding: 0 8px 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips:empty { display: none; }
+.chip { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr) 28px; align-items: center; gap: 8px; width: min(100%, 236px); height: 52px; padding: 5px 4px 5px 5px; border: 1px solid var(--rule); border-radius: var(--radius-entry); background: var(--surface-sunk); }
+.chip .thumb { width: 40px; height: 40px; border-radius: var(--radius-box); background: var(--surface-muted) center / cover no-repeat; display: grid; place-items: center; color: var(--fg-2); font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; overflow: hidden; }
+.chip .meta { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.chip .file { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8125rem; font-weight: 600; }
+.chip .size { color: var(--fg-3); font-size: 0.75rem; }
+.chip .remove { width: 28px; height: 28px; padding: 0; border-radius: 50%; color: var(--fg-2); }
+.chip .remove:hover { background: var(--surface-hover); color: var(--fg-1); }
+
+.tray-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.attach { height: 30px; padding: 0 12px 0 10px; border: 1px solid var(--rule-control); background: var(--surface-card); color: var(--fg-1); font-size: 0.8125rem; }
+.attach:hover:enabled { border-color: var(--accent); color: var(--accent); }
+.attach svg { width: 15px; height: 15px; }
+.count { color: var(--fg-3); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+kbd { display: inline-block; min-width: 18px; padding: 0 4px; border: 1px solid var(--rule-control); border-bottom-width: 2px; border-radius: 4px; background: var(--surface-card); font-family: var(--font-mono); font-size: 0.6875rem; line-height: 16px; text-align: center; color: var(--fg-2); }
+.hint { color: var(--fg-3); font-size: 0.75rem; margin-left: auto; }
+.refusal { flex-basis: 100%; color: var(--error); font-size: 0.75rem; font-weight: 600; }
+.refusal:empty { display: none; }
+
+.dropping { position: absolute; inset: 8px; display: none; place-items: center; border: 2px dashed var(--accent); border-radius: var(--radius-md); background: rgba(238, 244, 251, 0.92); color: var(--accent); font-weight: 700; pointer-events: none; }
+[data-dragging='yes'] > .dropping { display: grid; }
+
+button { height: var(--control-height); display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 16px; border: 1px solid transparent; border-radius: var(--radius-pill); background: transparent; color: var(--fg-1); font-family: var(--font-body); font-size: 0.8125rem; font-weight: 700; line-height: 1; white-space: nowrap; cursor: pointer; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.send { padding: 0 18px; background: var(--accent); color: var(--fg-on-accent); box-shadow: var(--shadow-press); }
+.send:hover:enabled { background: var(--accent-hover); }
+.finish { border-color: var(--rule-control); background: var(--surface-card); }
+
+.composer { margin-top: 20px; padding: var(--card-pad); display: flex; flex-direction: column; gap: 16px; position: relative; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding-top: 16px; border-top: 1px solid var(--rule-soft); }
+.sends { display: flex; flex-wrap: wrap; gap: 12px; }
+.sends-meaning { flex: 1 1 260px; color: var(--fg-2); font-size: 0.8125rem; }
+
+.panel { padding: 20px; position: sticky; top: 16px; }
+.summary { list-style: none; margin: 12px 0 0; padding: 0; }
+.summary li { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; }
+.summary li + li { border-top: 1px solid var(--rule-soft); }
+.summary .s-name { font-size: 0.8125rem; font-weight: 700; }
+.summary .s-said { color: var(--fg-2); font-size: 0.8125rem; }
+.summary .s-files { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-size: 0.75rem; font-weight: 700; }
+.summary .s-files svg { width: 12px; height: 12px; }
+
+.note { display: flex; gap: 10px; margin-top: 14px; padding: 12px 14px; border-radius: var(--radius-entry); background: var(--accent-selected); color: var(--fg-2); font-size: 0.8125rem; }
+.note b { color: var(--fg-1); }
+
+figure { margin: 0; padding: 20px; }
+figure svg { display: block; width: 100%; }
+figcaption { margin-top: 12px; color: var(--fg-2); font-size: 0.8125rem; max-width: 80ch; }
+.fig-node rect { fill: var(--surface-card); stroke: var(--rule-control); }
+.fig-node.hot rect { fill: var(--accent-selected); stroke: var(--accent); }
+.fig-node.store rect { fill: var(--surface-muted); stroke: var(--rule-control); }
+.fig-node text { fill: var(--fg-1); font-family: var(--font-body); font-size: 13px; font-weight: 700; }
+.fig-node text.sub { fill: var(--fg-3); font-size: 11px; font-weight: 500; font-family: var(--font-mono); }
+.fig-edge { stroke: var(--fg-3); stroke-width: 1.5; fill: none; }
+.fig-edge.hot { stroke: var(--accent); stroke-width: 2; }
+.fig-label { fill: var(--fg-2); font-family: var(--font-mono); font-size: 11px; }
+.fig-label.hot { fill: var(--accent); font-weight: 700; }
+
+.shapes { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .shapes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.shape { overflow: hidden; }
+.shape-head { display: flex; justify-content: space-between; gap: 8px; padding: 10px 16px; background: var(--surface-heading); border-bottom: 1px solid var(--rule); font-size: 0.8125rem; font-weight: 700; }
+.shape-head span:last-child { color: var(--fg-3); font-weight: 500; }
+.shape pre { margin: 0; padding: 14px 16px; font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.shape pre .add { display: block; margin: 0 -16px; padding: 0 16px; background: #f0f5e8; box-shadow: inset 3px 0 0 var(--resolved); }
+.shape pre .k { color: var(--accent); }
+.shape pre .s { color: var(--resolved); }
+.shape pre .n { color: var(--warning); }
+
+.rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.rules li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; padding: 14px 16px; }
+.rules .num { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-wash); color: var(--accent); font-size: 0.75rem; font-weight: 800; }
+.rules .t { font-weight: 700; }
+.rules .d { margin-top: 2px; color: var(--fg-2); }
+
+.layers { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+.layers th, .layers td { padding: 10px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--rule-soft); }
+.layers th { color: var(--fg-3); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; background: var(--surface-heading); }
+.layers td:first-child { white-space: nowrap; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; }
+.layers tr:last-child td { border-bottom: 0; }
+.scroll-x { overflow-x: auto; }
+
+.asks { display: grid; gap: 16px; }
+.ask { padding: 0; overflow: hidden; }
+.ask .seen { padding: 20px 22px 16px; }
+.ask .answering { padding: 16px 22px 20px; }
+.ask .option { padding: 10px 14px; }
+.ask .option-meaning { grid-column: 2 / -1; color: var(--fg-2); font-size: 0.8125rem; }
+.ask textarea { display: block; width: 100%; min-height: 56px; padding: 8px 12px; border: 1px solid var(--rule-control); border-radius: var(--radius-md); background: var(--surface-card); color: var(--fg-1); font: inherit; resize: vertical; }
+.ask textarea:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus-ring); }
+
+.risks { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 820px) { .risks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.risk { padding: 16px 18px; border-left: 3px solid var(--warning); }
+.risk p { margin-top: 4px; color: var(--fg-2); }
+
+.submit-bar { position: sticky; bottom: 0; margin-top: 40px; padding: 14px 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.submit-bar .state { flex: 1 1 240px; color: var(--fg-2); font-size: 0.8125rem; }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+<span class="overline">socrates agora - feature design</span>
+<h1>Attachments beside the words a person writes</h1>
+<p class="lead">Every decision card and the closing message can carry up to ten files.
+The page sends them with the answer, agora keeps them in the session, and <code>socrates agora poll</code> hands the caller a local path for each, so the agent reads a screenshot the way it reads any file.</p>
+<div class="pitch">
+<div class="card"><span class="k">Where</span><span class="v">Under "In your own words" on every card, and under the message in the composer.</span></div>
+<div class="card"><span class="k">How it goes</span><span class="v">One multipart POST at the press, so what the controls hold at the submit is still exactly what is sent.</span></div>
+<div class="card"><span class="k">What the caller gets</span><span class="v">An <code>attachments</code> list of name, type, size and absolute path, beside <code>words</code>.</span></div>
+</div>
+</header>
+
+<section class="block" id="mock">
+<header>
+<span class="overline">1 - The page</span>
+<h2 class="section">What a person sees</h2>
+<p>This mock is live: attach with the button, drop files on the card, or copy a screenshot or a file in Explorer or Finder and press <kbd>Ctrl</kbd>+<kbd>V</kbd> / <kbd>⌘</kbd><kbd>V</kbd> with the cursor anywhere in the card.
+The eleventh file is refused in place, and the summary on the right counts files beside words.</p>
+</header>
+
+<div class="stage">
+<div>
+<article class="card decision" data-holder="f2" tabindex="-1">
+<div class="seen">
+<div class="attribution">
+<span class="name">f2</span>
+<span class="mark">Warning</span>
+<span class="mark call">Your call</span>
+<span class="location">agora/render/page.gohtml:204</span>
+</div>
+<h2 class="question">The empty state of the index reads as an error rather than as nothing to do.</h2>
+<p class="meaning">The reviewer suggests a quieter tone. Whether it reads as an error is something only a person looking at it can say.</p>
+</div>
+<div class="answering" data-drop="f2">
+<div>
+<div class="legend">Choose one</div>
+<div class="options-list">
+<label class="option"><input type="radio" name="f2" checked><span class="option-label">Soften it to the quiet tone</span><span class="option-mark">Recommended</span></label>
+<label class="option"><input type="radio" name="f2"><span class="option-label">Leave it as it is</span></label>
+</div>
+</div>
+<div class="words">
+<span class="words-label" id="words-f2">In your own words</span>
+<div class="field-shell">
+<textarea rows="2" aria-labelledby="words-f2" placeholder="Answering here alone is a complete answer." data-for="f2"></textarea>
+<div class="tray">
+<div class="chips" data-chips="f2"></div>
+<div class="tray-bar">
+<button class="attach" type="button" data-attach="f2" aria-describedby="count-f2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>Attach files</button>
+<span class="count" id="count-f2" data-count="f2">0 of 10</span>
+<span class="hint">Drop files here, or paste with <kbd>Ctrl</kbd>+<kbd>V</kbd> / <kbd>⌘</kbd><kbd>V</kbd>.</span>
+<span class="refusal" role="status" aria-live="polite" data-refusal="f2"></span>
+</div>
+</div>
+</div>
+<input type="file" multiple hidden data-picker="f2">
+</div>
+<div class="dropping">Drop to attach to f2</div>
+</div>
+</article>
+
+<section class="card composer" data-holder="message" tabindex="-1">
+<div class="message" data-drop="message">
+<span class="message-label" id="words-message">Anything to say to whoever asked</span>
+<div class="field-shell">
+<textarea rows="3" aria-labelledby="words-message" data-for="message"></textarea>
+<div class="tray">
+<div class="chips" data-chips="message"></div>
+<div class="tray-bar">
+<button class="attach" type="button" data-attach="message" aria-describedby="count-message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>Attach files</button>
+<span class="count" id="count-message" data-count="message">0 of 10</span>
+<span class="hint">Drop files here, or paste with <kbd>Ctrl</kbd>+<kbd>V</kbd> / <kbd>⌘</kbd><kbd>V</kbd>.</span>
+<span class="refusal" role="status" aria-live="polite" data-refusal="message"></span>
+</div>
+</div>
+</div>
+<input type="file" multiple hidden data-picker="message">
+</div>
+<div class="dropping">Drop to attach to the message</div>
+<div class="bar">
+<p class="sends-meaning">Sending waits for a reply on this page. Finishing sends and closes the exchange.</p>
+<div class="sends">
+<button class="finish" type="button" disabled>Send and finish</button>
+<button class="send" type="button" disabled>Send and wait for a reply</button>
+</div>
+</div>
+</section>
+</div>
+
+<aside class="card panel" aria-label="Answer summary">
+<span class="overline">Answer summary</span>
+<ol class="summary">
+<li><span class="s-name">f2</span><span class="s-said" data-said="f2">Soften it to the quiet tone</span><span class="s-files" data-files="f2" hidden></span></li>
+<li><span class="s-name">Message</span><span class="s-said" data-said="message">Nothing written</span><span class="s-files" data-files="message" hidden></span></li>
+</ol>
+<p class="note"><span><b>Files count as an answer.</b> A card holding only files is answered, the index ticks it, and the blank-decision dialog does not name it.</span></p>
+</aside>
+</div>
+</section>
+
+<section class="block" id="flow">
+<header>
+<span class="overline">2 - The path</span>
+<h2 class="section">From the drop to the agent's Read</h2>
+<p>Nothing leaves the browser until a press.
+The page previews from the file in memory, so the surface never serves an attachment back and gains no route a caller's bytes are rendered from.</p>
+</header>
+<div class="card">
+<figure>
+<svg viewBox="0 0 980 300" role="img" aria-labelledby="flow-title">
+<title id="flow-title">Attachment path from page to agent</title>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="currentColor"/></marker>
+</defs>
+<g class="fig-node" id="node-page"><title>The page holds File objects and blob previews</title>
+<rect x="10" y="40" width="190" height="84" rx="12"/><text x="26" y="72">Page</text><text class="sub" x="26" y="94">File[] per card</text><text class="sub" x="26" y="110">blob: preview only</text></g>
+<g class="fig-node hot" id="node-answer"><title>The answer route reads multipart</title>
+<rect x="270" y="40" width="200" height="84" rx="12"/><text x="286" y="72">POST /answer</text><text class="sub" x="286" y="94">multipart/form-data</text><text class="sub" x="286" y="110">part "answer" + files</text></g>
+<g class="fig-node" id="node-exchange"><title>Exchange.Receive stores then swaps</title>
+<rect x="540" y="40" width="190" height="84" rx="12"/><text x="556" y="72">Exchange</text><text class="sub" x="556" y="94">uncollected answer</text><text class="sub" x="556" y="110">+ its folder</text></g>
+<g class="fig-node" id="node-poll"><title>poll prints the paths</title>
+<rect x="790" y="40" width="180" height="84" rx="12"/><text x="806" y="72">agora poll</text><text class="sub" x="806" y="94">JSON with paths</text><text class="sub" x="806" y="110">written before handed</text></g>
+<g class="fig-node store" id="node-store"><title>Session directory on disk</title>
+<rect x="470" y="190" width="330" height="90" rx="12"/><text x="486" y="220">~/.socrates/agora/sessions/&lt;s&gt;/</text><text class="sub" x="486" y="242">answers/&lt;n&gt;/f2/1-before.png</text><text class="sub" x="486" y="260">answers/&lt;n&gt;/message/1-trace.txt</text></g>
+<g class="fig-node" id="node-agent"><title>The caller's agent reads the file</title>
+<rect x="840" y="200" width="130" height="70" rx="12"/><text x="856" y="230">Agent</text><text class="sub" x="856" y="250">Read(path)</text></g>
+<g style="color: var(--accent)">
+<path class="fig-edge hot" d="M200 82 H266" marker-end="url(#arrow)"/>
+<text class="fig-label hot" x="206" y="72">at the press</text>
+<path class="fig-edge hot" d="M470 82 H536" marker-end="url(#arrow)"/>
+<path class="fig-edge hot" d="M635 124 V186" marker-end="url(#arrow)"/>
+<text class="fig-label hot" x="644" y="160">write all, then swap</text>
+</g>
+<g style="color: var(--fg-3)">
+<path class="fig-edge" d="M730 82 H786" marker-end="url(#arrow)"/>
+<path class="fig-edge" d="M880 124 V196" marker-end="url(#arrow)"/>
+<path class="fig-edge" d="M800 235 H836" marker-end="url(#arrow)"/>
+<text class="fig-label" x="738" y="72">collect</text>
+</g>
+</svg>
+<figcaption>A later submit replaces the uncollected answer and removes its folder.
+A revision removes every uncollected folder, because nothing carries across a revision.
+The collected answer's folder lives exactly as long as <code>answer.json</code>, which is as long as the session.</figcaption>
+</figure>
+</div>
+</section>
+
+<section class="block" id="shapes">
+<header>
+<span class="overline">3 - The wire</span>
+<h2 class="section">What goes in and what comes out</h2>
+<p>The JSON a caller reads today stays valid: <code>attachments</code> is omitted where empty, so a skill that never looks for it sees nothing change.</p>
+</header>
+<div class="shapes">
+<div class="card shape">
+<div class="shape-head"><span>Page to surface</span><span>multipart, one POST</span></div>
+<pre>part <span class="s">"answer"</span>  application/json
+{ <span class="k">"decisions"</span>: [
+    { <span class="k">"id"</span>: <span class="s">"f2"</span>, <span class="k">"chosen"</span>: [<span class="n">0</span>],
+      <span class="k">"words"</span>: <span class="s">"Still too loud, see the shot"</span>,
+<span class="add">      <span class="k">"attached"</span>: [<span class="s">"a0"</span>, <span class="s">"a1"</span>] }],</span>
+  <span class="k">"message"</span>: <span class="s">""</span>,
+<span class="add">  <span class="k">"attached"</span>: [<span class="s">"a2"</span>],</span>
+  <span class="k">"ends"</span>: <span class="n">false</span> }
+
+<span class="add">part <span class="s">"a0"</span>  filename=<span class="s">"before.png"</span>  image/png</span><span class="add">part <span class="s">"a1"</span>  filename=<span class="s">"after.png"</span>   image/png</span><span class="add">part <span class="s">"a2"</span>  filename=<span class="s">"trace.txt"</span>   text/plain</span></pre>
+</div>
+<div class="card shape">
+<div class="shape-head"><span>socrates agora poll</span><span>stdout</span></div>
+<pre>{ <span class="k">"decisions"</span>: [
+    { <span class="k">"id"</span>: <span class="s">"f2"</span>,
+      <span class="k">"chosen"</span>: [<span class="s">"Soften it to the quiet tone"</span>],
+      <span class="k">"commands"</span>: [<span class="s">"socrates review respond ..."</span>],
+      <span class="k">"words"</span>: <span class="s">"Still too loud, see the shot"</span>,
+<span class="add">      <span class="k">"attachments"</span>: [</span><span class="add">        { <span class="k">"name"</span>: <span class="s">"before.png"</span>, <span class="k">"type"</span>: <span class="s">"image/png"</span>,</span><span class="add">          <span class="k">"bytes"</span>: <span class="n">48213</span>,</span><span class="add">          <span class="k">"path"</span>: <span class="s">"/home/u/.socrates/agora/sessions/</span></span><span class="add"><span class="s">                   9f2c/answers/3/f2/1-before.png"</span> },</span><span class="add">        ... ] }],</span>
+  <span class="k">"message"</span>: <span class="s">""</span>,
+<span class="add">  <span class="k">"attachments"</span>: [ { <span class="k">"name"</span>: <span class="s">"trace.txt"</span>, ... } ],</span>
+  <span class="k">"ended"</span>: <span class="n">false</span> }</pre>
+</div>
+</div>
+</section>
+
+<section class="block" id="rules">
+<header>
+<span class="overline">4 - The rules</span>
+<h2 class="section">Invariants this adds to agora</h2>
+<p>Each one becomes a line in <code>agora/AGENTS.md</code> and a test named for its scenario, and the page half is driven by the real browser against the real binary, as the rest are.</p>
+</header>
+<ol class="rules">
+<li class="card"><span class="num">1</span><div><p class="t">Every free-text field carries an attachment tray no document field can remove.</p><p class="d">The card's words and the composer's message alike, at most ten files each of any type, and the eleventh is refused where it was added, naming the ceiling.</p></div></li>
+<li class="card"><span class="num">2</span><div><p class="t">Files are sent at the press and only then.</p><p class="d">The page holds them in memory, previews from a <code>blob:</code> URL, and a submit carries every file the trays hold, so nothing is committed per decision and an amend sends them again.</p></div></li>
+<li class="card"><span class="num">3</span><div><p class="t">Pasting attaches, wherever the cursor is in a holder.</p><p class="d"><kbd>Ctrl</kbd>+<kbd>V</kbd> on Windows and Linux and <kbd>⌘</kbd><kbd>V</kbd> on macOS, with focus anywhere in a card or the composer, attach every file the clipboard holds: a screenshot from the snipping tool, or files copied in Explorer or Finder. A clipboard holding text pastes text as it does today, and one holding both attaches the files and pastes the text. A pasted image with no name of its own is named <code>pasted-1.png</code>, <code>pasted-2.png</code> in the order it arrived. The tenth-file ceiling and the in-place refusal apply to a paste as to a drop.</p></div></li>
+<li class="card"><span class="num">4</span><div><p class="t">Files alone are an answer.</p><p class="d">A decision holding files and no selection and no words is sent, counted in the index and never named as blank.</p></div></li>
+<li class="card"><span class="num">5</span><div><p class="t">An answer is stored whole or refused whole.</p><p class="d">Every file is written into a fresh folder before the exchange swaps its uncollected answer, and a file over 20 MiB, an answer over 100 MiB, an eleventh file or a name the page did not state refuses the submit with nothing kept.</p></div></li>
+<li class="card"><span class="num">6</span><div><p class="t">The surface never serves an attachment.</p><p class="d">No route reads back what a person sent, so a caller's or a person's bytes are never rendered from agora's origin.</p></div></li>
+<li class="card"><span class="num">7</span><div><p class="t">A file is named by agora, not by the person.</p><p class="d">The stored name is a position and a sanitised base name inside the answer's folder, the original name travels as <code>name</code>, and no stated name reaches outside that folder.</p></div></li>
+<li class="card"><span class="num">8</span><div><p class="t">Nothing carries across a revision, attachments included.</p><p class="d">The trays empty with the rest of the controls, and every uncollected folder is removed.</p></div></li>
+<li class="card"><span class="num">9</span><div><p class="t">A closed exchange draws no tray.</p><p class="d">As it draws no field nothing will read, per ADR 53.</p></div></li>
+<li class="card"><span class="num">10</span><div><p class="t">A settled answer states the names of the files that were collected, exactly.</p><p class="d">The folded settled list shows them, and a revision that drops, adds or renames one is refused before it is written or served, per ADR 59.</p></div></li>
+</ol>
+</section>
+
+<section class="block" id="layers">
+<header>
+<span class="overline">5 - The change</span>
+<h2 class="section">Where each part lands</h2>
+</header>
+<div class="card scroll-x">
+<table class="layers">
+<thead><tr><th>Package</th><th>Change</th></tr></thead>
+<tbody>
+<tr><td>agora/render</td><td>The tray under <code>.words-field</code> and <code>.message-field</code>, its labels in <code>messages.go</code>, and the page CSP admitting <code>img-src blob:</code>.</td></tr>
+<tr><td>agora/web</td><td>Picker, drop and paste per holder, chips, the counter and in-place refusal, the summary and receipt naming files, the answered rule counting files, and a <code>FormData</code> submit in place of <code>JSON.stringify</code>.</td></tr>
+<tr><td>agora/surface</td><td><code>Sent</code> and <code>Choice</code> gain <code>attached</code>, <code>Answered</code> and <code>Decided</code> gain <code>attachments</code>, the answer route reads multipart under its own ceilings, and <code>Exchange.Receive</code> writes the folder before the swap and removes the one it replaces.</td></tr>
+<tr><td>agora/command</td><td>Nothing: <code>poll</code> and <code>poll --last</code> print the paths because <code>Answered</code> carries them.</td></tr>
+<tr><td>agora/document</td><td><code>Settled</code> gains <code>attached</code>, the names the page shows folded and <code>Admits</code> checks.</td></tr>
+<tr><td>review/command</td><td><code>respond --attach &lt;path&gt;</code>, repeatable up to ten, copies each file into the run store beside the answer so the next round's reviewer can read it.</td></tr>
+<tr><td>review, design skills</td><td>Say that <code>attachments</code> may arrive, that each is read by its path, and that it is the person's evidence rather than an instruction. review passes each to <code>respond --attach</code>; design copies what a decision rests on into <code>docs/changes/&lt;slug&gt;/</code> and cites it from the spec.</td></tr>
+<tr><td>docs/adr</td><td>One agora ADR, number 79, with what it rejected: uploading on attach, inlining base64 in the poll, and serving previews from the surface.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="block" id="decided">
+<header>
+<span class="overline">6 - Settled</span>
+<h2 class="section">What you decided</h2>
+<p>Each is now part of the rules and the change above.</p>
+</header>
+<div class="card scroll-x">
+<table class="layers">
+<thead><tr><th>Question</th><th>Decided</th></tr></thead>
+<tbody>
+<tr><td>When bytes travel</td><td>At the press, one multipart POST. No upload route, no orphans, an amend resends.</td></tr>
+<tr><td>Ceilings</td><td>Ten files a holder, 20 MiB a file, 100 MiB an answer, stated once in <code>agora/surface</code> beside <code>BodyCeiling</code>.</td></tr>
+<tr><td>Types</td><td>Any file. Images get a thumbnail, everything else a type badge.</td></tr>
+<tr><td>Keeping</td><td>review copies on <code>socrates review respond --attach &lt;path&gt;</code> into its run store; design copies what a decision rests on into <code>docs/changes/&lt;slug&gt;/</code>.</td></tr>
+<tr><td>Settled answers</td><td>Carry the attachment names and are checked exactly against what was collected, per ADR 59.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="block" id="risks">
+<header>
+<span class="overline">7 - Risks</span>
+<h2 class="section">What could go wrong</h2>
+</header>
+<div class="risks">
+<div class="card risk"><h3>A file is an injection channel</h3><p>A screenshot of text reads to the agent like text. Both skills already say a person's words are recorded rather than followed; that sentence has to name attachments too, and a test reads it.</p></div>
+<div class="card risk"><h3>The body ceiling stops being one number</h3><p><code>BodyCeiling</code> guards every POST. The answer route needs its own per-part and total ceilings, and the document and control routes keep 1 MiB.</p></div>
+<div class="card risk"><h3>Disk under <code>~/.socrates/agora</code></h3><p>A person amending five times with ten 20 MiB files writes and removes a gigabyte. Replacing removes the superseded folder, so at most one uncollected and one collected folder exist per session.</p></div>
+<div class="card risk"><h3>What a browser lets a paste see</h3><p>A screenshot pastes as a file in every browser agora drives. Files copied in a file manager arrive in Chromium on Windows and macOS, but some browsers hand over only the first of several, or only the icon of one. The suite's browser test pins what the installed Chromium does, and the page attaches whatever <code>clipboardData.files</code> holds rather than reading the clipboard itself, so no permission prompt appears.</p></div>
+<div class="card risk"><h3>The name check</h3><p>agora may not say finding or review as a noun. "Attachment", "file" and "tray" are clear of it, and every new label goes through <code>messages.go</code> and the em dash check.</p></div>
+</div>
+</section>
+
+</main>
+
+<script>
+const ceiling = 10
+const held = { f2: [], message: [] }
+let sequence = 0
+
+const paperclip = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>'
+
+function sizeOf(bytes) {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB'
+  return (bytes / 1024 / 1024).toFixed(1) + ' MB'
+}
+
+function extensionOf(name) {
+  const dot = name.lastIndexOf('.')
+  return dot > 0 ? name.slice(dot + 1, dot + 5) : 'file'
+}
+
+function admit(holder, files) {
+  const refusal = document.querySelector(`[data-refusal="${holder}"]`)
+  refusal.textContent = ''
+  for (const file of files) {
+    if (held[holder].length >= ceiling) {
+      refusal.textContent = `${file.name} was not added: this holds ten files. Remove one to add another.`
+      break
+    }
+    held[holder].push({ key: ++sequence, file, preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null })
+  }
+  draw(holder)
+}
+
+function release(holder, key) {
+  const position = held[holder].findIndex(one => one.key === key)
+  if (position < 0) return
+  const [gone] = held[holder].splice(position, 1)
+  if (gone.preview) URL.revokeObjectURL(gone.preview)
+  document.querySelector(`[data-refusal="${holder}"]`).textContent = ''
+  draw(holder)
+  document.querySelector(`[data-attach="${holder}"]`).focus()
+}
+
+function draw(holder) {
+  const chips = document.querySelector(`[data-chips="${holder}"]`)
+  chips.replaceChildren(...held[holder].map(one => {
+    const chip = document.createElement('div')
+    chip.className = 'chip'
+    const thumb = document.createElement('span')
+    thumb.className = 'thumb'
+    if (one.preview) thumb.style.backgroundImage = `url("${one.preview}")`
+    else thumb.textContent = extensionOf(one.file.name)
+    const meta = document.createElement('span')
+    meta.className = 'meta'
+    const name = document.createElement('span')
+    name.className = 'file'
+    name.textContent = one.file.name
+    name.title = one.file.name
+    const size = document.createElement('span')
+    size.className = 'size'
+    size.textContent = sizeOf(one.file.size)
+    meta.append(name, size)
+    const remove = document.createElement('button')
+    remove.type = 'button'
+    remove.className = 'remove'
+    remove.setAttribute('aria-label', `Remove ${one.file.name}`)
+    remove.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+    remove.addEventListener('click', () => release(holder, one.key))
+    chip.append(thumb, meta, remove)
+    return chip
+  }))
+  document.querySelector(`[data-count="${holder}"]`).textContent = `${held[holder].length} of ${ceiling}`
+  document.querySelector(`[data-attach="${holder}"]`).disabled = held[holder].length >= ceiling
+  summarise(holder)
+}
+
+function summarise(holder) {
+  const files = document.querySelector(`[data-files="${holder}"]`)
+  const count = held[holder].length
+  files.hidden = count === 0
+  files.innerHTML = count ? `${paperclip}${count} ${count === 1 ? 'file' : 'files'}` : ''
+  if (holder === 'message') {
+    const words = document.querySelector('[data-for="message"]').value.trim()
+    document.querySelector('[data-said="message"]').textContent = words || (count ? 'Files only' : 'Nothing written')
+  }
+}
+
+for (const holder of Object.keys(held)) {
+  const picker = document.querySelector(`[data-picker="${holder}"]`)
+  document.querySelector(`[data-attach="${holder}"]`).addEventListener('click', () => picker.click())
+  picker.addEventListener('change', () => { admit(holder, [...picker.files]); picker.value = '' })
+
+  const field = document.querySelector(`[data-for="${holder}"]`)
+  const owner = document.querySelector(`[data-holder="${holder}"]`)
+  owner.addEventListener('paste', event => {
+    const pasted = [...event.clipboardData.files]
+    if (pasted.length === 0) return
+    if (!event.clipboardData.getData('text/plain') || event.target !== field) event.preventDefault()
+    let unnamed = held[holder].filter(one => one.file.name.startsWith('pasted-')).length
+    admit(holder, pasted.map(file => file.name && file.name !== 'image.png' ? file : new File([file], `pasted-${++unnamed}.png`, { type: file.type })))
+  })
+  field.addEventListener('input', () => summarise(holder))
+
+  const target = holder === 'f2' ? document.querySelector('[data-drop="f2"]') : document.querySelector('[data-holder="message"]')
+  let depth = 0
+  target.addEventListener('dragenter', event => { if (!event.dataTransfer.types.includes('Files')) return; event.preventDefault(); depth++; target.dataset.dragging = 'yes' })
+  target.addEventListener('dragover', event => { if (event.dataTransfer.types.includes('Files')) event.preventDefault() })
+  target.addEventListener('dragleave', () => { depth = Math.max(0, depth - 1); if (depth === 0) target.dataset.dragging = 'no' })
+  target.addEventListener('drop', event => { event.preventDefault(); depth = 0; target.dataset.dragging = 'no'; admit(holder, [...event.dataTransfer.files]) })
+}
+
+document.querySelectorAll('input[name="f2"]').forEach(choice => choice.addEventListener('change', () => {
+  document.querySelector('[data-said="f2"]').textContent = choice.closest('.option').querySelector('.option-label').textContent
+}))
+
+</script>
+</body>
+</html>
