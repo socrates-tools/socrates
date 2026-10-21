@@ -1,3 +1,4 @@
+import { pressOf, type UiField } from '@agora/ui'
 import { type HeldDecision, blankCards, decisionsHeld, describe } from './answers'
 import { askBeforeSending, closeConfirmation } from './confirmation'
 import { exchange, exchangeIsOver } from './exchange'
@@ -9,7 +10,7 @@ interface Sent {
   ends: boolean
 }
 
-type Control = HTMLButtonElement | HTMLInputElement | HTMLTextAreaElement
+type Control = HTMLElement & { disabled: boolean }
 
 const readOnlyWhileSent = '.choice, .decline, .words-field, .message-field, .send, .finish'
 
@@ -79,7 +80,7 @@ export function closeTheExchange(): void {
   findAll('.decision').forEach((card) => {
     card.dataset.state = 'closed'
   })
-  findAll<Control>('button, .choice, .decline, textarea').forEach((control) => {
+  findAll<Control>('ui-button, ui-field, .choice, .decline').forEach((control) => {
     control.disabled = true
   })
   offerToAmend(false)
@@ -103,7 +104,7 @@ async function send(ends: boolean): Promise<void> {
     return
   }
 
-  const message = find<HTMLTextAreaElement>('.message-field')
+  const message = find<UiField>('.message-field')
   const sent: Sent = {
     decisions: decisionsHeld(),
     message: message ? message.value : '',
@@ -149,7 +150,7 @@ export function followTheForm(): void {
       return
     }
     event.preventDefault()
-    const press = event.submitter instanceof HTMLElement ? event.submitter : find('.send')
+    const press = pressOf(event) ?? find('.send')
     const ends = press ? press.dataset.ends === 'yes' : false
     const blank = blankCards()
     if (blank.length > 0) {

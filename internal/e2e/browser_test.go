@@ -240,9 +240,15 @@ func (r *reader) press(key string) {
 	r.do(chromedp.KeyEvent(key))
 }
 
+func (r *reader) focus(selector string) {
+	r.t.Helper()
+	r.evaluate(`document.querySelector(`+jsonOf(r.t, selector)+`).focus(); true`, nil)
+}
+
 func (r *reader) write(selector, words string) {
 	r.t.Helper()
-	r.do(chromedp.SendKeys(chromedp.CSS(selector), words))
+	r.focus(selector)
+	r.do(chromedp.KeyEvent(words))
 }
 
 func (r *reader) evaluate(expression string, into any, options ...chromedp.EvaluateOption) {

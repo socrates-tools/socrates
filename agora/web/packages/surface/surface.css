@@ -697,7 +697,7 @@ html:has(.drawing-stage[data-expanded]) {
   gap: 16px;
 }
 
-.decision[data-state='closed'] .words,
+.decision[data-state='closed'] .words-field,
 .decision[data-state='closed'] .answering:not(:has(.options)) {
   display: none;
 }
@@ -739,7 +739,7 @@ html:has(.drawing-stage[data-expanded]) {
   padding: var(--card-pad);
 }
 
-.composer:not([data-phase='open']) .message,
+.composer:not([data-phase='open']) .message-field,
 .composer[data-phase='over']:has(.receipt[hidden]) {
   display: none;
 }

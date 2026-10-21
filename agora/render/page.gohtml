@@ -83,9 +83,9 @@
 </fieldset>
 {{end}}
 
-{{template "ui-field" (dict "Class" "words" "CaptionClass" "words-label" "ControlClass" "words-field" "Caption" "In your own words" "Name" (printf "words-%s" .ID) "Rows" 2 "Placeholder" "Answering here alone is a complete answer." "Interaction" "answering" "Decision" .ID "Disabled" $.Over)}}
+{{template "ui-field" (dict "Class" "words-field" "Caption" "In your own words" "Name" (printf "words-%s" .ID) "Rows" 2 "Placeholder" "Answering here alone is a complete answer." "Interaction" "answering" "Decision" .ID "Disabled" $.Over)}}
 </div>{{end}}
-{{define "composer-content"}}{{template "ui-field" (dict "Class" "message" "CaptionClass" "message-label" "ControlClass" "message-field" "Caption" "Anything to say to whoever asked" "Name" "message" "Rows" 3 "Interaction" "sending" "Disabled" .Over)}}
+{{define "composer-content"}}{{template "ui-field" (dict "Class" "message-field" "Caption" "Anything to say to whoever asked" "Name" "message" "Rows" 3 "Interaction" "sending" "Disabled" .Over)}}
 
 <footer class="bar">
 <output class="receipt" data-interaction="sending" hidden aria-live="polite">

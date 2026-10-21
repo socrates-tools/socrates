@@ -1,4 +1,4 @@
-import type { UiProgressBar } from '@agora/ui'
+import type { UiField, UiProgressBar } from '@agora/ui'
 import { cards, clear, closestTo, decisionNamed, find, findAll, nameOf } from './page'
 
 export interface HeldDecision {
@@ -7,8 +7,6 @@ export interface HeldDecision {
   words: string
 }
 
-type WordsField = HTMLTextAreaElement | HTMLInputElement
-
 export function chosenIn(card: HTMLElement): number[] {
   return findAll<HTMLInputElement>('.choice', card)
     .filter((choice) => choice.checked)
@@ -16,7 +14,7 @@ export function chosenIn(card: HTMLElement): number[] {
 }
 
 export function wordsIn(card: HTMLElement): string {
-  const field = find<WordsField>('.words-field', card)
+  const field = find<UiField>('.words-field', card)
   return field ? field.value : ''
 }
 
@@ -110,7 +108,7 @@ export function countAnswered(): void {
 function moveToTheWordsOfTheCardDeclined(event: Event): void {
   const declined = closestTo(event, '.decline')
   const card = declined ? declined.closest<HTMLElement>('.decision') : null
-  const field = card ? find<WordsField>('.words-field', card) : null
+  const field = card ? find<UiField>('.words-field', card) : null
   if (field) {
     field.focus()
   }

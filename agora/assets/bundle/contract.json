@@ -8,6 +8,46 @@
       "slots": [
         "label"
       ]
+    },
+    "ui-button": {
+      "attributes": [
+        "disabled",
+        "raised",
+        "type",
+        "variant"
+      ],
+      "slots": [
+        ""
+      ]
+    },
+    "ui-copy": {
+      "attributes": [
+        "copied-title",
+        "failed-title",
+        "hint",
+        "label",
+        "text"
+      ],
+      "slots": []
+    },
+    "ui-expand": {
+      "attributes": [
+        "expanded",
+        "hint",
+        "label"
+      ],
+      "slots": []
+    },
+    "ui-field": {
+      "attributes": [
+        "disabled",
+        "name",
+        "placeholder",
+        "rows"
+      ],
+      "slots": [
+        "caption"
+      ]
     }
   },
   "parts": {
@@ -17,29 +57,12 @@
       "body",
       "actions"
     ],
-    "ui-button": [
-      "control"
-    ],
-    "ui-field": [
-      "frame",
-      "caption",
-      "control"
-    ],
     "ui-choice": [
       "frame",
       "control",
       "label",
       "meaning",
       "tag"
-    ],
-    "ui-copy": [
-      "control",
-      "icon",
-      "done",
-      "status"
-    ],
-    "ui-expand": [
-      "control"
     ],
     "ui-brand": [
       "mark",

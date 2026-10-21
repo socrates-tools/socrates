@@ -96,7 +96,7 @@ func TestAMarkSaysWhatItMeansWhileItHasTheCursor(t *testing.T) {
 		t.Errorf("a severity mark with the cursor on it shows %+v, and it says what the severity means", focused)
 	}
 
-	page.do(chromedp.Focus(chromedp.CSS(within("c-1", ".words-field"))))
+	page.focus(within("c-1", ".words-field"))
 
 	var left tipped
 	page.evaluate(whatTheTipSays, &left)

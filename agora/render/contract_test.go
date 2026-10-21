@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/socrates-tools/socrates/agora/assets"
 	"github.com/socrates-tools/socrates/agora/document"
 	"github.com/socrates-tools/socrates/agora/render"
@@ -272,6 +273,27 @@ func TestTheContractDeclaresTheBadgeAsAnElementOfAttributesAndSlots(t *testing.T
 	}
 }
 
+func TestTheContractDeclaresTheControlsAsElementsOfAttributesAndSlots(t *testing.T) {
+	declared := declaredByTheContract(t)
+
+	want := map[string]element{
+		"ui-button": {Attributes: []string{"disabled", "raised", "type", "variant"}, Slots: []string{defaultSlot}},
+		"ui-field":  {Attributes: []string{"disabled", "name", "placeholder", "rows"}, Slots: []string{"caption"}},
+		"ui-copy":   {Attributes: []string{"copied-title", "failed-title", "hint", "label", "text"}},
+		"ui-expand": {Attributes: []string{"expanded", "hint", "label"}},
+	}
+	for name, expected := range want {
+		got := declared.Elements[name]
+		slices.Sort(expected.Attributes)
+		if diff := cmp.Diff(expected, got, cmpopts.EquateEmpty()); diff != "" {
+			t.Errorf("the contract declares <%s> differently (-want +got):\n%s", name, diff)
+		}
+		if _, stillParts := declared.Parts[name]; stillParts {
+			t.Errorf("the contract still declares parts for <%s>: %v", name, declared.Parts[name])
+		}
+	}
+}
+
 func TestTheContractDeclaresTheDialog(t *testing.T) {
 	declared := declaredByTheContract(t)
 	if _, known := declared.Parts["ui-dialog"]; !known {
@@ -429,13 +451,17 @@ func TestARenderedPageReachesEveryControlThroughThePartialThatDrawsIt(t *testing
 	}
 }
 
-func TestEveryControlOfARenderedPageIsHeldByAPrimitive(t *testing.T) {
-	// scenario: No button, input or textarea of a rendered page stands outside a primitive's element
+func TestNoButtonAndNoTextareaOfARenderedPageStandsOutsideAPrimitivesShadowRoot(t *testing.T) {
+	// scenario: A rendered page writes no button and no textarea of its own, since the button and the field draw theirs inside their elements
 	read := oneDecision(document.One)
 	read.Decisions[0].Evidence = document.Evidence{{Code: "x := 1", Language: "go"}}
 	read.Decisions[0].Illustration = document.Illustration{Path: "drawings/c-1.html"}
 
-	for _, control := range elements(rendered(t, read), "button", "input", "textarea") {
+	page := rendered(t, read)
+	for _, control := range elements(page, "button", "textarea") {
+		t.Errorf("the page writes a <%s class=%q>, and the button, the field, the copy control and the expand control draw theirs inside their own shadow roots", control.Data, attribute(control, "class"))
+	}
+	for _, control := range elements(page, "input") {
 		if attribute(control, "data-part") != "control" {
 			t.Errorf("the page offers a <%s class=%q> that is not the control of a primitive", control.Data, attribute(control, "class"))
 		}

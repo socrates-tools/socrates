@@ -77,7 +77,7 @@ func jsonOf(t *testing.T, value string) string {
 	return string(encoded)
 }
 
-const copyControls = `.evidence.code button.copy`
+const copyControls = `.evidence.code ui-copy.copy`
 
 func TestEveryCodeBlockOffersACopyControlAndASplitDiffOffersNone(t *testing.T) {
 	t.Parallel()
@@ -91,9 +91,9 @@ func TestEveryCodeBlockOffersACopyControlAndASplitDiffOffersNone(t *testing.T) {
 	}
 	page.evaluate(`({
   code: document.querySelectorAll('.evidence.code').length,
-  controls: document.querySelectorAll('.evidence.code > .evidence-heading button.copy').length,
+  controls: document.querySelectorAll('.evidence.code > .evidence-heading ui-copy.copy').length,
   diffs: document.querySelectorAll('.evidence.diff').length,
-  inDiffs: document.querySelectorAll('.evidence.diff button.copy').length,
+  inDiffs: document.querySelectorAll('.evidence.diff ui-copy.copy').length,
 })`, &counts)
 
 	if counts.Code != 2 || counts.Diffs != 1 {
@@ -130,29 +130,38 @@ func TestACopyControlIsReachedAndPressedByKeyboardAndIsNamedToAScreenReader(t *t
 	page.mayCopy()
 
 	var control struct {
-		Name     string `json:"name"`
 		Title    string `json:"title"`
 		Hint     string `json:"hint"`
-		Type     string `json:"type"`
-		TabIndex int    `json:"tabIndex"`
 		Disabled bool   `json:"disabled"`
 		Part     string `json:"part"`
 	}
 	page.evaluate(`(() => {
   const held = document.querySelector('`+copyControls+`');
-  return { name: held.getAttribute('aria-label') || '', title: held.dataset.title || '', hint: held.dataset.hint || '',
-    type: held.type, tabIndex: held.tabIndex, disabled: held.disabled, part: held.dataset.interaction };
+  return { title: held.dataset.title || '', hint: held.dataset.hint || '', disabled: held.hasAttribute('disabled'), part: held.dataset.interaction };
 })()`, &control)
 
-	if control.Name == "" || control.Title == "" || control.Hint == "" {
-		t.Errorf("the copy control is named %q, titled %q and hinted %q, and it must say what it does to a screen reader and on hover and focus", control.Name, control.Title, control.Hint)
+	if named := page.buttonsNamed("Copy code"); len(named) != 2 {
+		t.Errorf("a screen reader finds %d buttons named Copy code, want one for each of the two code blocks", len(named))
 	}
-	if control.Type != "button" || control.TabIndex < 0 || control.Disabled || control.Part != "viewing" {
-		t.Errorf("the copy control is %+v, and it must be an enabled button in the tab order that takes no part in the answer", control)
+	if control.Title == "" || control.Hint == "" {
+		t.Errorf("the copy control is titled %q and hinted %q, and it must say what it does on hover and focus", control.Title, control.Hint)
+	}
+	if control.Disabled || control.Part != "viewing" {
+		t.Errorf("the copy control is %+v, and it must be enabled and take no part in the answer", control)
 	}
 
+	reached := false
+	for range 40 {
+		page.press(kb.Tab)
+		page.evaluate(`document.activeElement === document.querySelector('`+copyControls+`')`, &reached)
+		if reached {
+			break
+		}
+	}
+	if !reached {
+		t.Fatal("the copy control cannot be reached by keyboard alone")
+	}
 	page.clipboardHolds("something else entirely")
-	page.evaluate(`document.querySelector('`+copyControls+`').focus()`, nil)
 	page.waitFor(`!document.querySelector('.tooltip').hidden && document.querySelector('.tooltip-title').textContent !== ''`)
 	page.press(kb.Enter)
 	page.waitFor(`navigator.clipboard.readText().then((held) => held !== "something else entirely")`)
@@ -172,17 +181,15 @@ func TestACopyControlConfirmsTheCopyWhereItWasPressed(t *testing.T) {
 
 	var confirmed struct {
 		Title  string `json:"title"`
-		Status string `json:"status"`
 		Others int    `json:"others"`
 	}
 	page.evaluate(`({
   title: document.querySelector('.tooltip-title').textContent,
-  status: document.querySelector('.evidence.code .copy-status').textContent,
   others: document.querySelectorAll('.copy[data-copied]').length,
 })`, &confirmed)
 
-	if confirmed.Title != "Copied" || confirmed.Status != "Copied" {
-		t.Errorf("after the copy the tooltip says %q and the live status says %q, want both to say Copied", confirmed.Title, confirmed.Status)
+	if confirmed.Title != "Copied" {
+		t.Errorf("after the copy the tooltip says %q, want Copied", confirmed.Title)
 	}
 	if confirmed.Others != 1 {
 		t.Errorf("%d controls show a copy, want only the one pressed", confirmed.Others)
