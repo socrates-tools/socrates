@@ -60,11 +60,10 @@ func TestTheLandingPagesStylesheetCarriesTheNoticeOfWhatItBundles(t *testing.T) 
 
 	site := os.DirFS(filepath.Join(source.Root(t), "site"))
 	for _, missing := range convention.NoticesTheLandingPageDoesNotCarry(site, theNotice(t), bundled) {
-		switch {
-		case missing.Library == "":
+		if missing.Library == "" {
 			t.Errorf("%s names no library bundled into site/%s, and it ships beside the landing page", convention.NoticeFile, missing.File)
-		default:
-			t.Errorf("the site/%s that ships carries no %q, and %s is bundled into it", missing.File, missing.Line, missing.Library)
+			continue
 		}
+		t.Errorf("the site/%s that ships carries no %q, and %s is bundled into it", missing.File, missing.Line, missing.Library)
 	}
 }
