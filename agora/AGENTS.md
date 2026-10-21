@@ -19,10 +19,10 @@ This file is agora's layout and invariants.
 - `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
   It is a pnpm workspace of two packages.
   `packages/ui` is `@agora/ui`, the library: its `tokens/` holds `tokens.css`, `fonts.css`, the fonts and the mark, and the bundle serves `tokens.css` at `/assets/tokens.css` with every custom property it holds, because illustrations load it by that path.
-  Its `contract.ts` declares each primitive's element and the parts it holds, a folder for each primitive holds its stylesheet and its element (`dialog/`, `button/`, `field/`, `choice/`, `copy/`, `expand/`), its `primitives.css` imports every primitive's stylesheet, its `index.ts` exports every element, and its `catalog/` styles the catalog, which `surface.css` imports.
+  Its `contract.ts` declares each primitive's element and the parts it holds, one folder for each primitive holding its stylesheet and, where it has behaviour, its element, its `primitives.css` imports every primitive's stylesheet, its `index.ts` exports every element, and its `catalog/` styles the catalog, which `surface.css` imports.
   Adding a primitive is a partial, an entry in `contract.ts`, a folder in `packages/ui` imported from `primitives.css` and `index.ts`, and its states in `catalogued` in `agora/render/catalog.go`.
   The library imports nothing from the surface, and a stylesheet outside `packages/ui/tokens/` that writes a colour or names a font family fails the suite.
-  `packages/surface` holds the page's script as strict TypeScript, one module for each of sending and the receipt, the confirmation, the live revision, code blocks, the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
+  `packages/surface` holds the page's script as strict TypeScript, one module for each of sending and the receipt, the confirmation, the live revision, code blocks, the calls that show and hide the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
 
 ## Invariants
 
@@ -91,6 +91,8 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
   A closed exchange says so under the title and draws no field nothing will read, per ADR 53.
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.
 - Every primitive is a custom element drawn without a shadow root, whose behaviour is attached when it enters the page and released when it leaves, so a revision that replaces the surface leaves nothing of a dialog listening, per ADR 81.
+  The tooltip is one of them: it shows on hover and on focus of anything carrying `data-title`, hides when the cursor or the focus leaves and on scroll, and follows a focused anchor when the page scrolls, as methods and listeners of `ui-tooltip` itself.
+  A mark is a piece of the surface drawn on `ui-badge`, the index is built on `ui-progress-bar`, `ui-status-dot` and `ui-overline`, and a decision, the composer and the empty page are drawn on `ui-card`.
   A domain piece carries its own class on the primitive's element and on its own dialog, so the confirmation is `<ui-dialog class="confirmation">` around a `<dialog class="confirmation">`.
   Where the browser suite and the script reach a control by its class, the class sits on the control inside the primitive and not on the primitive's element, so `.send` is the `<button>` inside a `<ui-button>` and `.words-field` is the `<textarea>` inside a `<ui-field>`.
   The copy control offers what it holds in `data-text`, or asks the listeners above it with a `copyrequested` event whose `detail.text` they set, and the expand control announces `expanded` and `collapsed` to its owner, which lays out what it expands.

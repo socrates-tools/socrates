@@ -41,6 +41,9 @@ type view struct {
 	Over         bool
 	Policy       string
 	Confirmation dialogView
+	Tooltip      tooltipView
+	Composer     cardView
+	Nothing      cardView
 	Index        []entryView
 	Settled      []settledView
 	Decisions    []decisionView
@@ -78,6 +81,25 @@ type decisionView struct {
 	Evidence []blockView
 	Drawing  *drawingView
 	Answered bool
+	Over     bool
+}
+
+func (d decisionView) Card() cardView {
+	state := "open"
+	if d.Over {
+		state = "closed"
+	}
+	return cardView{
+		ID:    "decision-" + d.ID,
+		Class: "decision",
+		Dataset: map[string]string{
+			"decision": d.ID,
+			"mode":     string(d.Mode),
+			"state":    state,
+		},
+		Content: "decision-content",
+		Data:    d,
+	}
 }
 
 type blockView struct {
@@ -120,7 +142,10 @@ func viewOf(read document.Document, frame Frame) view {
 		Over:         frame.Over,
 		Policy:       policy,
 		Confirmation: dialogView{Class: "confirmation", Interaction: "sending", Body: "confirmation-body", Actions: "confirmation-actions"},
+		Tooltip:      tooltipView{ID: "tooltip", Class: "tooltip"},
+		Nothing:      cardView{Class: "nothing", Content: "nothing-content"},
 	}
+	shown.Composer = composerCard(shown)
 
 	answered := map[string]bool{}
 	for _, decision := range read.Decisions {
@@ -172,6 +197,19 @@ func viewOf(read document.Document, frame Frame) view {
 	return shown
 }
 
+func composerCard(v view) cardView {
+	phase := "open"
+	if v.Over {
+		phase = "over"
+	}
+	return cardView{
+		Class:   "composer",
+		Dataset: map[string]string{"phase": phase},
+		Content: "composer-content",
+		Data:    v,
+	}
+}
+
 func (v view) AnsweredCount() int {
 	count := 0
 	for _, decision := range v.Decisions {
@@ -216,6 +254,7 @@ func decisionViewOf(decision document.Decision, frame Frame) decisionView {
 		Multiple: decision.Mode == document.Many,
 		Evidence: blocksRead(decision.Evidence),
 		Answered: arrivesAnswered(decision),
+		Over:     frame.Over,
 	}
 
 	if path := decision.Illustration.Path; path != "" {

@@ -144,14 +144,6 @@ pre,
   color: var(--state-resolved);
 }
 
-.status-dot {
-  flex: none;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
 .surface {
   min-height: 100vh;
   display: flex;
@@ -224,22 +216,7 @@ pre,
 }
 
 .over-notice .notice-dot {
-  flex: none;
   margin-top: 0;
-  background: var(--fg-2);
-}
-
-.overline {
-  font-size: var(--size-micro);
-  font-weight: 700;
-  letter-spacing: var(--tracking-overline);
-  text-transform: uppercase;
-  color: var(--fg-3);
-}
-
-.overline-count {
-  font-weight: 500;
-  letter-spacing: 0;
 }
 
 .index {
@@ -262,7 +239,7 @@ pre,
   gap: 2px;
 }
 
-.index-group > .overline {
+.index-group > ui-overline {
   display: block;
   padding: 0 10px 8px;
 }
@@ -292,32 +269,7 @@ pre,
 }
 
 .progress-bar {
-  appearance: none;
-  display: block;
   flex-basis: 100%;
-  width: 100%;
-  height: 4px;
-  border: 0;
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-  background: var(--surface-track);
-  color: var(--accent);
-}
-
-.progress-bar::-webkit-progress-bar {
-  border-radius: var(--radius-pill);
-  background: var(--surface-track);
-}
-
-.progress-bar::-webkit-progress-value {
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  transition: width var(--duration-base) var(--ease);
-}
-
-.progress-bar::-moz-progress-bar {
-  border-radius: var(--radius-pill);
-  background: var(--accent);
 }
 
 .settled-link,
@@ -476,90 +428,6 @@ span.entry-link .entry-name {
 
 .index:not(:has(.answered:not([data-answered='none']))) .entry .location {
   grid-column: 1;
-}
-
-.mark {
-  flex: none;
-  height: var(--chip-height);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 8px 0 6px;
-  border-radius: var(--radius-pill);
-  background: var(--surface-muted);
-  color: var(--fg-2);
-  font-size: var(--size-micro);
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
-  cursor: help;
-}
-
-.mark .icon {
-  display: block;
-  flex: none;
-  width: 12px;
-  height: 12px;
-}
-
-.entry .mark {
-  width: var(--check-size);
-  height: var(--check-size);
-  justify-content: center;
-  padding: 0;
-  border-radius: 50%;
-}
-
-.entry .mark .icon {
-  width: 11px;
-  height: 11px;
-}
-
-.mark[data-tone='error'] {
-  background: var(--state-error-wash);
-  color: var(--state-error);
-}
-
-.mark[data-tone='call'] {
-  background: var(--your-call-wash);
-  color: var(--your-call);
-}
-
-.mark[data-tone='warning'] {
-  background: var(--state-warning-wash);
-  color: var(--state-warning);
-}
-
-.tooltip {
-  position: fixed;
-  z-index: 2147483000;
-  width: max-content;
-  max-width: 260px;
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  background: var(--surface-tip);
-  box-shadow: var(--shadow-dialog);
-  color: var(--fg-on-tip);
-  font-size: var(--size-small);
-  line-height: 1.45;
-  text-align: left;
-  pointer-events: none;
-  transform: translate(-50%, -100%);
-}
-
-.tooltip-title {
-  display: block;
-  font-weight: 700;
-}
-
-.tooltip-hint {
-  display: block;
-  margin-top: 2px;
-  color: var(--fg-on-tip-quiet);
-}
-
-.tooltip-hint:empty {
-  display: none;
 }
 
 .still-open {
@@ -730,23 +598,13 @@ span.entry-link .entry-name {
   gap: var(--stack);
 }
 
-.decision,
-.composer,
-.nothing {
+.decisions-item {
   min-width: 0;
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-md);
-  background: var(--surface-card);
-  box-shadow: var(--shadow-card);
 }
 
 .decision {
   overflow: hidden;
   scroll-margin-top: var(--landing-clearance);
-}
-
-.seen {
-  padding: var(--card-pad);
 }
 
 .attribution {
@@ -1029,9 +887,6 @@ html:has(.drawing-stage[data-expanded]) {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: var(--card-pad);
-  border-top: 1px solid var(--rule);
-  background: var(--surface-sunk);
 }
 
 .decision[data-state='closed'] .words,
@@ -1178,8 +1033,6 @@ html:has(.drawing-stage[data-expanded]) {
   width: 8px;
   height: 8px;
   margin-top: 8px;
-  border-radius: 50%;
-  background: var(--state-resolved);
 }
 
 .notice-said {
@@ -1479,8 +1332,6 @@ html:has(.drawing-stage[data-expanded]) {
     font-size: var(--size-display-narrow);
   }
 
-  .seen,
-  .answering,
   .composer,
   .nothing {
     padding: 16px;

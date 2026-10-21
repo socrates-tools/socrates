@@ -11,7 +11,7 @@
 </head>
 <body data-base="{{.Base}}" data-token="{{.Token}}" data-revision="{{.Revision}}" data-over="{{if .Over}}yes{{else}}no{{end}}">
 {{define "check"}}<svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square" aria-hidden="true" focusable="false"><polyline points="20 6 9 17 4 12"/></svg>{{end}}
-{{define "mark"}}<span class="mark {{.Kind}}"{{if eq .Kind "severity"}} data-severity="{{.Value}}"{{else}} data-audience="{{.Value}}"{{end}} data-tone="{{.Tone}}" data-title="{{.Title}}" data-hint="{{.Hint}}" role="img" aria-label="{{.Spoken}}"{{if .Focusable}} tabindex="0"{{end}}>{{.Drawn}}{{if .Named}}<span class="mark-name">{{.Name}}</span>{{end}}</span>{{end}}
+{{define "mark"}}{{template "ui-badge" .Badge}}{{end}}
 {{define "confirmation-body"}}<p class="confirmation-meaning">A decision left blank goes as nothing. Whoever asked will see no answer to it.</p>
 <ul class="confirmation-decisions"></ul>
 <template class="confirmation-decision-item"><li>{{template "ui-button" (dict "Class" "confirmation-decision" "Variant" "link" "Type" "button" "Interaction" "sending")}}</li></template>{{end}}
@@ -21,95 +21,7 @@
 {{define "entry"}}<span class="answered" data-answered="{{if .Decided}}{{if .Answered}}yes{{else}}no{{end}}{{else}}none{{end}}" aria-hidden="true">{{template "check"}}</span>
 <span class="entry-heading"><span class="entry-name">{{.Name}}</span>{{with .Severity}}{{template "mark" .}}{{end}}</span>
 {{if .Location}}<span class="location">{{.Location}}</span>{{end}}{{end}}
-<div class="surface">
-<header class="topbar">
-<div class="topbar-inner">
-<span class="brand"><img class="brand-mark" src="/assets/socrates-mark.svg" width="28" height="28" alt=""><span class="wordmark">socrates</span></span>
-<span class="crumb"><span class="crumb-title">{{.Title}}</span></span>
-<span class="status" data-status="{{if not .Decisions}}nothing{{else if .Over}}over{{else}}open{{end}}"><span class="status-dot" aria-hidden="true"></span><span class="status-said">{{if not .Decisions}}Nothing to answer{{else if .Over}}Exchange over{{else}}Open{{end}}</span></span>
-</div>
-</header>
-
-{{if .Decisions}}<form class="exchange shell" data-interaction="sending">{{else}}<div class="shell">{{end}}
-{{if .Index}}
-<nav class="index" aria-label="What was seen">
-<div class="progress">
-<span class="overline">{{if .Decisions}}Decisions{{else}}What was seen{{end}}</span>
-{{if .Decisions}}
-<span class="progress-said"><span class="answered-count">{{.AnsweredCount}}</span> of {{len .Decisions}} answered</span>
-<progress class="progress-bar" max="{{len .Decisions}}" value="{{.AnsweredCount}}" aria-hidden="true"></progress>
-{{end}}
-</div>
-<div class="index-group">
-{{if .Decisions}}<span class="overline">{{if eq (len .Index) (len .Decisions)}}Still open{{else}}What was seen{{end}} <span class="overline-count">· {{len .Index}}</span></span>{{end}}
-<ol class="entries">
-{{range .Index}}
-<li class="entry">
-{{if .Decided}}<a class="entry-link" href="#decision-{{.ID}}" data-decision="{{.ID}}">{{template "entry" .}}</a>{{else}}<span class="entry-link">{{template "entry" .}}</span>{{end}}
-</li>
-{{end}}
-</ol>
-</div>
-{{if .Settled}}
-<div class="index-group">
-<span class="overline">Settled earlier <span class="overline-count">· {{len .Settled}}</span></span>
-<a class="settled-link" href="#settled">
-<span class="settled-check">{{template "check"}}</span>
-<span class="settled-link-count">{{len .Settled}} settled earlier</span>
-<span class="settled-link-names">{{range $at, $answer := .Settled}}{{if $at}}, {{end}}{{$answer.Name}}{{end}}</span>
-</a>
-</div>
-{{end}}
-</nav>
-{{end}}
-
-<main class="main">
-<div class="main-inner">
-<header class="heading">
-<span class="meta">{{if .Decisions}}{{len .Decisions}} open{{if .Settled}} · {{len .Settled}} settled earlier{{end}}{{else}}Nothing to answer{{end}}</span>
-<h1>{{.Title}}</h1>
-{{if .Preamble}}<p class="preamble">{{.Preamble}}</p>{{end}}
-<p class="over-notice" role="status"{{if not (and .Over .Decisions)}} hidden{{end}}><span class="notice-dot" aria-hidden="true"></span><span class="over-notice-said">The exchange is over. Nothing further will be sent from this page.</span></p>
-</header>
-
-{{if .Settled}}
-<details class="settled" id="settled"{{if not .Decisions}} open{{end}}>
-<summary class="settled-summary">
-<span class="settled-heading">
-<span class="settled-title">Settled earlier <span class="settled-count">· {{len .Settled}}</span></span>
-<span class="settled-note">Read-only. These will not be asked again.</span>
-</span>
-<span class="settled-toggle" aria-hidden="true"><span class="when-open">Hide</span><span class="when-closed">Show</span></span>
-</summary>
-<ol class="settled-answers">
-{{range .Settled}}
-<li class="settled-answer" data-settled="{{.ID}}">
-<span class="settled-check">{{template "check"}}</span>
-<div class="settled-attribution">
-<span class="settled-name">{{.Name}}</span>
-{{if .Location}}<span class="location">{{.Location}}</span>{{end}}
-</div>
-<p class="settled-question">{{.Question}}</p>
-<div class="settled-answered">
-<span class="overline settled-overline">Settled</span>
-<span class="settled-said">
-{{if .Chosen}}<span class="settled-chosen">{{.Chosen}}</span>{{end}}
-{{if .Words}}<span class="settled-words">“{{.Words}}”</span>{{end}}
-{{if and (not .Chosen) (not .Words)}}<span class="settled-left">Left to whoever asked</span>{{end}}
-</span>
-</div>
-</li>
-{{end}}
-</ol>
-</details>
-{{if .Decisions}}<span class="overline still-open">Still open</span>{{end}}
-{{end}}
-
-{{if .Decisions}}
-<ol class="decisions">
-{{range .Decisions}}
-<li class="decision" id="decision-{{.ID}}" data-decision="{{.ID}}" data-mode="{{.Mode}}" data-state="{{if $.Over}}closed{{else}}open{{end}}">
-<div class="seen">
+{{define "decision-content"}}<div class="seen" data-part="body">
 <div class="attribution">
 <span class="answered" data-answered="{{if .Answered}}yes{{else}}no{{end}}" aria-hidden="true">{{template "check"}}</span>
 <span class="name">{{.Name}}</span>
@@ -168,7 +80,7 @@
 {{end}}
 </div>
 
-<div class="answering">
+<div class="answering" data-part="footer">
 {{if .Options}}
 <fieldset class="options">
 <legend>{{if .Multiple}}Choose as many as apply{{else}}Choose one{{end}}</legend>
@@ -186,17 +98,12 @@
 {{end}}
 
 {{template "ui-field" (dict "Class" "words" "CaptionClass" "words-label" "ControlClass" "words-field" "Caption" "In your own words" "Name" (printf "words-%s" .ID) "Rows" 2 "Placeholder" "Answering here alone is a complete answer." "Interaction" "answering" "Decision" .ID "Disabled" $.Over)}}
-</div>
-</li>
-{{end}}
-</ol>
-
-<section class="composer" data-phase="{{if .Over}}over{{else}}open{{end}}">
-{{template "ui-field" (dict "Class" "message" "CaptionClass" "message-label" "ControlClass" "message-field" "Caption" "Anything to say to whoever asked" "Name" "message" "Rows" 3 "Interaction" "sending" "Disabled" .Over)}}
+</div>{{end}}
+{{define "composer-content"}}{{template "ui-field" (dict "Class" "message" "CaptionClass" "message-label" "ControlClass" "message-field" "Caption" "Anything to say to whoever asked" "Name" "message" "Rows" 3 "Interaction" "sending" "Disabled" .Over)}}
 
 <footer class="bar">
 <output class="receipt" data-interaction="sending" hidden aria-live="polite">
-<span class="notice-dot" aria-hidden="true"></span>
+{{template "ui-status-dot" statusDot "notice-dot" "resolved"}}
 <span class="notice-said">
 <span class="receipt-heading">Sent. Here is what went:</span>
 <ul class="receipt-decisions"></ul>
@@ -210,19 +117,109 @@
 <p class="sends-meaning">Sending waits for a reply on this page. Finishing sends and closes the exchange.</p>
 {{template "ui-button" (dict "Class" "amend" "Variant" "secondary" "Type" "button" "Interaction" "sending" "Label" "Amend and send again" "Hidden" true "Disabled" .Over)}}
 <p class="state" role="status" aria-live="polite" data-tone="{{if .Over}}over{{else}}quiet{{end}}">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
-</footer>
-</section>
+</footer>{{end}}
+{{define "nothing-content"}}<p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>{{end}}
+<div class="surface">
+<header class="topbar">
+<div class="topbar-inner">
+<span class="brand"><img class="brand-mark" src="/assets/socrates-mark.svg" width="28" height="28" alt=""><span class="wordmark">socrates</span></span>
+<span class="crumb"><span class="crumb-title">{{.Title}}</span></span>
+<span class="status" data-status="{{if not .Decisions}}nothing{{else if .Over}}over{{else}}open{{end}}">{{template "ui-status-dot" statusDot "" ""}}<span class="status-said">{{if not .Decisions}}Nothing to answer{{else if .Over}}Exchange over{{else}}Open{{end}}</span></span>
+</div>
+</header>
+
+{{if .Decisions}}<form class="exchange shell" data-interaction="sending">{{else}}<div class="shell">{{end}}
+{{if .Index}}
+<nav class="index" aria-label="What was seen">
+<div class="progress">
+{{if .Decisions}}{{template "ui-overline" overline "" "Decisions"}}{{else}}{{template "ui-overline" overline "" "What was seen"}}{{end}}
+{{if .Decisions}}
+<span class="progress-said"><span class="answered-count">{{.AnsweredCount}}</span> of {{len .Decisions}} answered</span>
+{{template "ui-progress-bar" progressBar "progress-bar" (len .Decisions) .AnsweredCount}}
+{{end}}
+</div>
+<div class="index-group">
+{{if .Decisions}}{{if eq (len .Index) (len .Decisions)}}{{template "ui-overline" overlineCounted "" "Still open" (len .Index)}}{{else}}{{template "ui-overline" overlineCounted "" "What was seen" (len .Index)}}{{end}}{{end}}
+<ol class="entries">
+{{range .Index}}
+<li class="entry">
+{{if .Decided}}<a class="entry-link" href="#decision-{{.ID}}" data-decision="{{.ID}}">{{template "entry" .}}</a>{{else}}<span class="entry-link">{{template "entry" .}}</span>{{end}}
+</li>
+{{end}}
+</ol>
+</div>
+{{if .Settled}}
+<div class="index-group">
+{{template "ui-overline" overlineCounted "" "Settled earlier" (len .Settled)}}
+<a class="settled-link" href="#settled">
+<span class="settled-check">{{template "check"}}</span>
+<span class="settled-link-count">{{len .Settled}} settled earlier</span>
+<span class="settled-link-names">{{range $at, $answer := .Settled}}{{if $at}}, {{end}}{{$answer.Name}}{{end}}</span>
+</a>
+</div>
+{{end}}
+</nav>
+{{end}}
+
+<main class="main">
+<div class="main-inner">
+<header class="heading">
+<span class="meta">{{if .Decisions}}{{len .Decisions}} open{{if .Settled}} · {{len .Settled}} settled earlier{{end}}{{else}}Nothing to answer{{end}}</span>
+<h1>{{.Title}}</h1>
+{{if .Preamble}}<p class="preamble">{{.Preamble}}</p>{{end}}
+<p class="over-notice" role="status"{{if not (and .Over .Decisions)}} hidden{{end}}>{{template "ui-status-dot" statusDot "notice-dot" "neutral"}}<span class="over-notice-said">The exchange is over. Nothing further will be sent from this page.</span></p>
+</header>
+
+{{if .Settled}}
+<details class="settled" id="settled"{{if not .Decisions}} open{{end}}>
+<summary class="settled-summary">
+<span class="settled-heading">
+<span class="settled-title">Settled earlier <span class="settled-count">· {{len .Settled}}</span></span>
+<span class="settled-note">Read-only. These will not be asked again.</span>
+</span>
+<span class="settled-toggle" aria-hidden="true"><span class="when-open">Hide</span><span class="when-closed">Show</span></span>
+</summary>
+<ol class="settled-answers">
+{{range .Settled}}
+<li class="settled-answer" data-settled="{{.ID}}">
+<span class="settled-check">{{template "check"}}</span>
+<div class="settled-attribution">
+<span class="settled-name">{{.Name}}</span>
+{{if .Location}}<span class="location">{{.Location}}</span>{{end}}
+</div>
+<p class="settled-question">{{.Question}}</p>
+<div class="settled-answered">
+{{template "ui-overline" overline "settled-overline" "Settled"}}
+<span class="settled-said">
+{{if .Chosen}}<span class="settled-chosen">{{.Chosen}}</span>{{end}}
+{{if .Words}}<span class="settled-words">“{{.Words}}”</span>{{end}}
+{{if and (not .Chosen) (not .Words)}}<span class="settled-left">Left to whoever asked</span>{{end}}
+</span>
+</div>
+</li>
+{{end}}
+</ol>
+</details>
+{{if .Decisions}}{{template "ui-overline" overline "still-open" "Still open"}}{{end}}
+{{end}}
+
+{{if .Decisions}}
+<ol class="decisions">
+{{range .Decisions}}
+<li class="decisions-item">{{template "ui-card" .Card}}</li>
+{{end}}
+</ol>
+
+{{template "ui-card" .Composer}}
 {{else}}
-<section class="nothing">
-<p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>
-</section>
+{{template "ui-card" .Nothing}}
 {{end}}
 </div>
 </main>
 {{if .Decisions}}
 <aside class="panel" aria-label="Reply">
 <div class="panel-body">
-<span class="overline">Answer summary</span>
+{{template "ui-overline" overline "" "Answer summary"}}
 <ol class="summary"></ol>
 </div>
 </aside>
@@ -233,7 +230,7 @@
 </div>
 {{end}}
 </div>
-<div class="tooltip" id="tooltip" role="tooltip" hidden><span class="tooltip-title"></span><span class="tooltip-hint"></span></div>
+{{template "ui-tooltip" .Tooltip}}
 <script src="/assets/surface.js"></script>
 </body>
 </html>

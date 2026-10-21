@@ -1,0 +1,74 @@
+package render
+
+import (
+	"bytes"
+	"html/template"
+	"strconv"
+)
+
+type badgeView struct {
+	Class     string
+	Tone      string
+	Dataset   map[string]string
+	Title     string
+	Hint      string
+	Spoken    string
+	Focusable bool
+	Icon      template.HTML
+	Label     string
+}
+
+type cardView struct {
+	ID      string
+	Class   string
+	Dataset map[string]string
+	Content string
+	Data    any
+}
+
+type overlineView struct {
+	Class string
+	Text  string
+	Count string
+}
+
+type progressBarView struct {
+	Class string
+	Max   int
+	Value int
+	Label string
+}
+
+type statusDotView struct {
+	Class string
+	Tone  string
+}
+
+type tooltipView struct {
+	ID    string
+	Class string
+}
+
+func overlineOf(class, text string) overlineView {
+	return overlineView{Class: class, Text: text}
+}
+
+func overlineCounting(class, text string, count int) overlineView {
+	return overlineView{Class: class, Text: text, Count: strconv.Itoa(count)}
+}
+
+func progressBarOf(class string, max, value int) progressBarView {
+	return progressBarView{Class: class, Max: max, Value: value}
+}
+
+func statusDotOf(class, tone string) statusDotView {
+	return statusDotView{Class: class, Tone: tone}
+}
+
+func filled(root *template.Template, name string, data any) (template.HTML, error) {
+	var written bytes.Buffer
+	if err := root.ExecuteTemplate(&written, name, data); err != nil {
+		return "", err
+	}
+	return template.HTML(written.String()), nil
+}

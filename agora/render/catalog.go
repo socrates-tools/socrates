@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"html/template"
 	"slices"
+	"strings"
 )
 
 //go:embed catalog.gohtml
@@ -80,11 +81,50 @@ type expandView struct {
 	Expanded    bool
 }
 
+type anchorView struct {
+	ID      string
+	Tooltip string
+	Label   string
+	Title   string
+	Hint    string
+}
+
 type state struct {
-	Key   string
-	Name  string
-	Opens string
-	View  any
+	Key    string
+	Name   string
+	Opens  string
+	Anchor *anchorView
+	View   any
+}
+
+func badgeState(name string, view badgeView) state {
+	return state{Name: name, View: view}
+}
+
+func cardState(name string, view cardView) state {
+	return state{Name: name, View: view}
+}
+
+func overlineState(name string, view overlineView) state {
+	return state{Name: name, View: view}
+}
+
+func progressBarState(name string, view progressBarView) state {
+	return state{Name: name, View: view}
+}
+
+func statusDotState(name string, view statusDotView) state {
+	return state{Name: name, View: view}
+}
+
+func tooltipState(name string, id string, anchor anchorView) state {
+	anchor.ID = "anchor-" + id
+	anchor.Tooltip = id
+	return state{Name: name, Anchor: &anchor, View: tooltipView{ID: id, Class: "tooltip"}}
+}
+
+func markedBadge(tone string) badgeView {
+	return badgeView{Tone: tone, Icon: icon("info"), Label: catalogBadgeLabel}
 }
 
 func dialogState(key, name string, view dialogView) state {
@@ -96,6 +136,27 @@ func stateDrawn(key, name string, view any) state {
 }
 
 var catalogued = map[string][]state{
+	"ui-badge": {
+		badgeState(badgeNeutral, markedBadge("neutral")),
+		badgeState(badgeAccent, markedBadge("accent")),
+		badgeState(badgeWarning, markedBadge("warning")),
+		badgeState(badgeError, markedBadge("error")),
+		badgeState(badgeIconAlone, badgeView{Tone: "neutral", Icon: icon("info")}),
+		badgeState(badgeExplained, badgeView{
+			Tone:      "warning",
+			Icon:      icon("triangle-alert"),
+			Label:     catalogBadgeLabel,
+			Title:     catalogBadgeTitle,
+			Hint:      catalogBadgeHint,
+			Spoken:    catalogBadgeTitle + ". " + catalogBadgeHint,
+			Focusable: true,
+		}),
+	},
+	"ui-card": {
+		cardState(cardWithSections, cardView{Content: "catalog-card-sections"}),
+		cardState(cardWithABodyAlone, cardView{Content: "catalog-card-body"}),
+		cardState(cardWithNoSections, cardView{Content: "catalog-card-plain"}),
+	},
 	"ui-dialog": {
 		dialogState("with-everything", dialogWithEverything, dialogView{
 			ID:      "catalog-dialog",
@@ -139,13 +200,36 @@ var catalogued = map[string][]state{
 		stateDrawn("resting", expandResting, expandView{Label: expandLabel, Hint: expandHint}),
 		stateDrawn("expanded", expandExpanded, expandView{Label: expandLabel, Hint: expandHint, Expanded: true}),
 	},
+	"ui-overline": {
+		overlineState(overlineWordsAlone, overlineOf("", catalogOverlineWords)),
+		overlineState(overlineWithACount, overlineCounting("", catalogOverlineWords, 3)),
+	},
+	"ui-progress-bar": {
+		progressBarState(progressNothingDone, progressBarOf("", 4, 0)),
+		progressBarState(progressPartlyDone, progressBarOf("", 4, 2)),
+		progressBarState(progressAllDone, progressBarOf("", 4, 4)),
+		progressBarState(progressNamed, progressBarView{Max: 4, Value: 2, Label: catalogProgressLabel}),
+	},
+	"ui-status-dot": {
+		statusDotState(dotInTheColourAround, statusDotOf("", "")),
+		statusDotState(dotNeutral, statusDotOf("", "neutral")),
+		statusDotState(dotAccent, statusDotOf("", "accent")),
+		statusDotState(dotResolved, statusDotOf("", "resolved")),
+		statusDotState(dotWarning, statusDotOf("", "warning")),
+		statusDotState(dotError, statusDotOf("", "error")),
+	},
+	"ui-tooltip": {
+		tooltipState(tooltipWithATitleAndAHint, "catalog-tooltip", anchorView{Label: catalogAnchorLabel, Title: catalogBadgeTitle, Hint: catalogBadgeHint}),
+		tooltipState(tooltipWithATitleAlone, "catalog-tooltip-bare", anchorView{Label: catalogAnchorLabel, Title: catalogBadgeTitle}),
+	},
 }
 
 type catalogState struct {
-	Key   string
-	Name  string
-	Opens string
-	Drawn template.HTML
+	Key    string
+	Name   string
+	Opens  string
+	Anchor *anchorView
+	Drawn  template.HTML
 }
 
 type catalogPrimitive struct {
@@ -174,7 +258,7 @@ func Catalog() (string, error) {
 			if err != nil {
 				return "", err
 			}
-			primitive.States = append(primitive.States, catalogState{Key: held.Key, Name: held.Name, Opens: held.Opens, Drawn: markup})
+			primitive.States = append(primitive.States, catalogState{Key: keyOf(held), Name: held.Name, Opens: held.Opens, Anchor: held.Anchor, Drawn: markup})
 		}
 		view.Primitives = append(view.Primitives, primitive)
 	}
@@ -184,4 +268,13 @@ func Catalog() (string, error) {
 		return "", err
 	}
 	return written.String(), nil
+}
+
+var keySpelling = strings.NewReplacer(" ", "-", ",", "", ".", "", "'", "")
+
+func keyOf(held state) string {
+	if held.Key != "" {
+		return held.Key
+	}
+	return keySpelling.Replace(strings.ToLower(held.Name))
 }

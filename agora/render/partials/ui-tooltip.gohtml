@@ -1,0 +1,1 @@
+{{define "ui-tooltip"}}<ui-tooltip{{with .Class}} class="{{.}}"{{end}} id="{{.ID}}" role="tooltip" hidden><span{{with .Class}} class="{{.}}-title"{{end}} data-part="title"></span><span{{with .Class}} class="{{.}}-hint"{{end}} data-part="hint"></span></ui-tooltip>{{end}}

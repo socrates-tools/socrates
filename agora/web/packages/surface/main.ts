@@ -8,14 +8,12 @@ import { followTheScrolling } from './navigation'
 import { surface } from './page'
 import { follow } from './revision'
 import { takeUpWhetherItIsOver } from './sending'
-import { followTheMarks } from './tooltip'
 
 if (surface()) {
   followTheWidth()
   followTheScrolling()
   bind()
   takeUpWhetherItIsOver()
-  followTheMarks()
   followTheExpanding()
   followTheCopying()
   followTheDrawingHeights()

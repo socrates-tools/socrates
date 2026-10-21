@@ -1,0 +1,25 @@
+ui-card {
+  display: block;
+  min-width: 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+}
+
+ui-card [data-part='body'] {
+  padding: var(--card-pad);
+}
+
+ui-card [data-part='footer'] {
+  padding: var(--card-pad);
+  border-top: 1px solid var(--rule);
+  background: var(--surface-sunk);
+}
+
+@media (max-width: 44rem) {
+  ui-card [data-part='body'],
+  ui-card [data-part='footer'] {
+    padding: 16px;
+  }
+}
