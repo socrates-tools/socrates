@@ -1,7 +1,7 @@
 import { html, nothing, type PropertyValues } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { UiElement } from '../element'
-import { highlightedIn, paintedTokens } from '../code-block/highlighting'
+import { highlightedIn, paintedTokens } from '../highlighting'
 import { readPatch, type Hunk, type Kind, type Side } from './patch'
 
 const numberClasses: Record<Kind, string> = {

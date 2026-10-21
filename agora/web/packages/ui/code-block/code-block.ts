@@ -2,7 +2,7 @@ import { html, type PropertyValues } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { ref } from 'lit/directives/ref.js'
 import { UiElement } from '../element'
-import { highlightedIn, highlightedWhateverItIs, paintedTokens } from './highlighting'
+import { highlightedIn, highlightedWhateverItIs, paintedTokens } from '../highlighting'
 
 const columnsPerTab = 4
 const rowTolerance = 4
