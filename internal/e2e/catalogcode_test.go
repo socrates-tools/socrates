@@ -353,47 +353,130 @@ func TestTheCatalogLeavesACodeBlockAsItWasWhenItIsMovedWithinThePage(t *testing.
 	}
 }
 
+type drawnSide struct {
+	Kind   string `json:"kind"`
+	Number string `json:"number"`
+	Text   string `json:"text"`
+}
+
+type drawnToken struct {
+	Text string `json:"text"`
+	Ink  string `json:"ink"`
+}
+
+func (r *reader) tokensOfTheSidesOf(selector, kind string) []drawnToken {
+	r.t.Helper()
+
+	var tokens []drawnToken
+	r.evaluate(`document.querySelector(`+jsonOf(r.t, selector)+`).drawnHunks.flatMap((hunk) => hunk.rows).flatMap((row) => [row.left, row.right]).filter((side) => side.kind === `+jsonOf(r.t, kind)+`).flatMap((side) => side.tokens)`, &tokens)
+	return tokens
+}
+
+type drawnRow struct {
+	Left  drawnSide `json:"left"`
+	Right drawnSide `json:"right"`
+}
+
+type drawnHunk struct {
+	Heading string     `json:"heading"`
+	Rows    []drawnRow `json:"rows"`
+}
+
 func TestTheCatalogDrawsAPatchAsAFixedTableOfNumberedSides(t *testing.T) {
 	// scenario: A patch in the catalog is a table of rows, each side numbered and kinded as the patch states
 	t.Parallel()
 	page := catalogued(t)
+	page.waitFor(`document.querySelector('` + diffBlockOf(catalogPatch) + `').drawnHunks.length > 0`)
 
-	var rows []struct {
-		LeftKind    string `json:"leftKind"`
-		LeftNumber  string `json:"leftNumber"`
-		RightKind   string `json:"rightKind"`
-		RightNumber string `json:"rightNumber"`
-		LeftText    string `json:"leftText"`
-		RightText   string `json:"rightText"`
-	}
-	page.evaluate(`Array.from(document.querySelectorAll('`+diffBlockOf(catalogPatch)+` table tr')).map((row) => {
-  const [leftNumber, left, rightNumber, right] = Array.from(row.children);
-  return {
-    leftKind: left.dataset.kind,
-    leftNumber: leftNumber.textContent,
-    rightKind: right.dataset.kind,
-    rightNumber: rightNumber.textContent,
-    leftText: left.querySelector('code').textContent,
-    rightText: right.querySelector('code').textContent,
-  };
-})`, &rows)
+	var hunks []drawnHunk
+	page.evaluate(`document.querySelector('`+diffBlockOf(catalogPatch)+`').drawnHunks.map((hunk) => ({ heading: hunk.heading, rows: hunk.rows }))`, &hunks)
 
-	type row = struct {
-		LeftKind    string `json:"leftKind"`
-		LeftNumber  string `json:"leftNumber"`
-		RightKind   string `json:"rightKind"`
-		RightNumber string `json:"rightNumber"`
-		LeftText    string `json:"leftText"`
-		RightText   string `json:"rightText"`
+	want := []drawnHunk{{Heading: "func Limit", Rows: []drawnRow{
+		{drawnSide{"context", "1", "func Limit() int {"}, drawnSide{"context", "1", "func Limit() int {"}},
+		{drawnSide{"removed", "2", "\treturn 2"}, drawnSide{"added", "2", "\t// the limit, raised"}},
+		{drawnSide{"absent", "", ""}, drawnSide{"added", "3", "\treturn 3"}},
+		{drawnSide{"context", "3", "}"}, drawnSide{"context", "4", "}"}},
+	}}}
+	if diff := cmp.Diff(want, hunks); diff != "" {
+		t.Errorf("the hunks of the patch differ (-want +got):\n%s", diff)
 	}
-	want := []row{
-		{"context", "1", "context", "1", "func Limit() int {", "func Limit() int {"},
-		{"removed", "2", "added", "2", "\treturn 2", "\t// the limit, raised"},
-		{"absent", "", "added", "3", "", "\treturn 3"},
-		{"context", "3", "context", "4", "}", "}"},
-	}
-	if diff := cmp.Diff(want, rows); diff != "" {
-		t.Errorf("the rows of the patch differ (-want +got):\n%s", diff)
+}
+
+func (r *reader) hunksReadFrom(patch string) []drawnHunk {
+	r.t.Helper()
+
+	var hunks []drawnHunk
+	r.evaluate(`(async (patch) => {
+  const block = document.createElement('ui-diff-block');
+  block.textContent = patch;
+  document.body.append(block);
+  await block.updateComplete;
+  const hunks = block.drawnHunks.map((hunk) => ({ heading: hunk.heading, rows: hunk.rows }));
+  block.remove();
+  return hunks;
+})(`+jsonOf(r.t, patch)+`)`, &hunks, awaitingThePromise)
+	return hunks
+}
+
+func TestADiffBlockReadsAPatchIntoHunksOfPairedNumberedSides(t *testing.T) {
+	// scenario: A diff block given a patch pairs its removals with its additions, numbers each side from the hunk's own start and leaves what is not a line of the patch out
+	t.Parallel()
+	page := catalogued(t)
+
+	side := func(kind, number, text string) drawnSide { return drawnSide{kind, number, text} }
+	absent := side("absent", "", "")
+	for _, each := range []struct {
+		scenario string
+		patch    string
+		want     []drawnHunk
+	}{
+		{
+			"removals paired with more additions leave the left side absent",
+			"--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -10,5 +10,7 @@ func Write(key string, entry Entry) {\n func Write(key string, entry Entry) {\n-\tstore[key] = entry\n+\tmu.Lock()\n+\tdefer mu.Unlock()\n+\tstore[key] = entry\n }\n",
+			[]drawnHunk{{"func Write(key string, entry Entry) {", []drawnRow{
+				{side("context", "10", "func Write(key string, entry Entry) {"), side("context", "10", "func Write(key string, entry Entry) {")},
+				{side("removed", "11", "\tstore[key] = entry"), side("added", "11", "\tmu.Lock()")},
+				{absent, side("added", "12", "\tdefer mu.Unlock()")},
+				{absent, side("added", "13", "\tstore[key] = entry")},
+				{side("context", "12", "}"), side("context", "14", "}")},
+			}}},
+		},
+		{
+			"a removal alone leaves the right side absent",
+			"--- a/x.go\n+++ b/x.go\n@@ -4,2 +4,1 @@\n-gone\n kept\n",
+			[]drawnHunk{{"", []drawnRow{
+				{side("removed", "4", "gone"), absent},
+				{side("context", "5", "kept"), side("context", "4", "kept")},
+			}}},
+		},
+		{
+			"two hunks are two tables and a line saying there is no newline is not a row",
+			"--- a/x.go\n+++ b/x.go\n@@ -1,1 +1,1 @@\n-a\n+b\n\\ No newline at end of file\n@@ -20,1 +20,1 @@ later\n-c\n+d\n",
+			[]drawnHunk{
+				{"", []drawnRow{{side("removed", "1", "a"), side("added", "1", "b")}}},
+				{"later", []drawnRow{{side("removed", "20", "c"), side("added", "20", "d")}}},
+			},
+		},
+		{
+			"a hunk heading naming no range starts both sides at 1",
+			"@@ nothing to read\n-a\n+b\n",
+			[]drawnHunk{{"", []drawnRow{{side("removed", "1", "a"), side("added", "1", "b")}}}},
+		},
+		{
+			"text before any hunk is not drawn",
+			"just some words\nand more\n",
+			[]drawnHunk{},
+		},
+	} {
+		t.Run(each.scenario, func(t *testing.T) {
+			got := page.hunksReadFrom(each.patch)
+			if got == nil {
+				got = []drawnHunk{}
+			}
+			if diff := cmp.Diff(each.want, got); diff != "" {
+				t.Errorf("the hunks read from the patch differ (-want +got):\n%s", diff)
+			}
+		})
 	}
 }
 
@@ -401,59 +484,59 @@ func TestTheCatalogPaintsAPatchInALanguageThePageKnowsAndQuietsWhatChanged(t *te
 	// scenario: A patch naming a language the page highlights paints each side, and quiets a comment on a changed line
 	t.Parallel()
 	page := catalogued(t)
-	page.waitFor(`!!document.querySelector('` + diffBlockOf(catalogPatch) + ` .hljs-keyword')`)
+	page.waitFor(`document.querySelector('` + diffBlockOf(catalogPatch) + `').highlighted`)
 
-	var held struct {
-		Keywords      int    `json:"keywords"`
-		ChangedQuiet  string `json:"changedQuiet"`
-		ChangedLoud   string `json:"changedLoud"`
-		ContextLoud   string `json:"contextLoud"`
-		QuietOnChange string `json:"quietOnChange"`
+	block := diffBlockOf(catalogPatch)
+	if diff := cmp.Diff([]drawnToken{{"func", "keyword"}}, firstOf(page.tokensOfTheSidesOf(block, "context"), "keyword")); diff != "" {
+		t.Errorf("the keyword of a context line differs (-want +got):\n%s", diff)
 	}
-	page.evaluate(`(() => {
-  const block = document.querySelector('`+diffBlockOf(catalogPatch)+`');
-  const colour = (selector) => getComputedStyle(block.querySelector(selector)).color;
-  const probe = document.createElement('span');
-  probe.style.color = 'var(--token-quiet-on-change)';
-  block.appendChild(probe);
-  const quiet = getComputedStyle(probe).color;
-  probe.remove();
-  return {
-    keywords: block.querySelectorAll('td:nth-child(even) .hljs-keyword').length,
-    changedQuiet: colour('td:nth-child(even)[data-kind="added"] .hljs-comment'),
-    changedLoud: colour('td:nth-child(even)[data-kind="added"] .hljs-keyword'),
-    contextLoud: colour('td:nth-child(even)[data-kind="context"] .hljs-keyword'),
-    quietOnChange: quiet,
-  };
-})()`, &held)
+	if diff := cmp.Diff([]drawnToken{{"return", "keyword"}}, firstOf(page.tokensOfTheSidesOf(block, "added"), "keyword")); diff != "" {
+		t.Errorf("the keyword of an added line differs (-want +got):\n%s", diff)
+	}
+	if diff := cmp.Diff([]drawnToken{{"// the limit, raised", "quiet-on-change"}}, firstOf(page.tokensOfTheSidesOf(block, "added"), "quiet-on-change")); diff != "" {
+		t.Errorf("the comment on the added line differs (-want +got):\n%s", diff)
+	}
+	for _, token := range page.tokensOfTheSidesOf(block, "added") {
+		if token.Ink == "comment" {
+			t.Errorf("the comment %q on an added line is drawn in the comment ink, want the quiet ink of a change", token.Text)
+		}
+	}
+	if inked := page.colouredPixelsOf(block, "--token-keyword"); inked == 0 {
+		t.Error("the keywords of the patch are painted in no pixel of the keyword token")
+	}
+}
 
-	if held.Keywords < 3 {
-		t.Errorf("the patch paints %d keywords, want every side painted", held.Keywords)
+func firstOf(tokens []drawnToken, ink string) []drawnToken {
+	for _, token := range tokens {
+		if token.Ink == ink {
+			return []drawnToken{token}
+		}
 	}
-	if held.ChangedQuiet != held.QuietOnChange {
-		t.Errorf("a comment on an added line is %s, want the quiet colour %s", held.ChangedQuiet, held.QuietOnChange)
-	}
-	if held.ChangedLoud != held.ContextLoud {
-		t.Errorf("a keyword on an added line is %s and on a context line %s, want the same", held.ChangedLoud, held.ContextLoud)
-	}
+	return nil
 }
 
 func TestTheCatalogDrawsAPatchInAnUnknownLanguageAsPlainTextRows(t *testing.T) {
 	// scenario: A patch naming a language the page does not highlight keeps its rows and paints none of them
 	t.Parallel()
 	page := catalogued(t)
+	page.waitFor(`document.querySelector('` + diffBlockOf(catalogPatchInUnknownTag) + `').drawnHunks.length > 0`)
 
 	var held struct {
-		Tokens int `json:"tokens"`
-		Rows   int `json:"rows"`
+		Highlighted bool `json:"highlighted"`
+		Rows        int  `json:"rows"`
+		Tokens      int  `json:"tokens"`
 	}
-	page.evaluate(`({
-  tokens: document.querySelectorAll('`+diffBlockOf(catalogPatchInUnknownTag)+` span[class^="hljs-"]').length,
-  rows: document.querySelectorAll('`+diffBlockOf(catalogPatchInUnknownTag)+` table tr').length,
-})`, &held)
+	page.evaluate(`(() => {
+  const block = document.querySelector('`+diffBlockOf(catalogPatchInUnknownTag)+`');
+  const sides = block.drawnHunks.flatMap((hunk) => hunk.rows).flatMap((row) => [row.left, row.right]);
+  return { highlighted: block.highlighted, rows: block.drawnHunks.flatMap((hunk) => hunk.rows).length, tokens: sides.flatMap((side) => side.tokens).length };
+})()`, &held)
 
-	if held.Tokens != 0 || held.Rows == 0 {
-		t.Errorf("the patch in an unknown language is %+v, want its rows and no painted token", held)
+	if held.Highlighted || held.Rows == 0 || held.Tokens != 0 {
+		t.Errorf("the patch in an unknown language is %+v, want its rows and no highlighting", held)
+	}
+	if inked := page.colouredPixelsOf(diffBlockOf(catalogPatchInUnknownTag), "--token-keyword"); inked != 0 {
+		t.Errorf("the patch in an unknown language is painted in %d pixels of the keyword token, want plain text", inked)
 	}
 }
 
@@ -461,23 +544,26 @@ func TestTheCatalogGivesAPatchTooWideForItsBlockAScrollOfItsOwn(t *testing.T) {
 	// scenario: At a window narrower than the patch's table the table scrolls inside its block and not the page
 	t.Parallel()
 	page := catalogued(t)
+	page.waitFor(`document.querySelector('` + diffBlockOf(catalogPatch) + `').drawnHunks.length > 0`)
 	page.narrow(360, 780)
 
 	var held struct {
 		Overflow     string  `json:"overflow"`
 		Scrolls      bool    `json:"scrolls"`
 		BlockWithin  bool    `json:"blockWithin"`
+		BlockScrolls bool    `json:"blockScrolls"`
 		PageSideways float64 `json:"pageSideways"`
 	}
 	page.evaluate(`(() => {
   const block = document.querySelector('`+diffBlockOf(catalogPatch)+`');
-  const hunk = block.querySelector('table');
+  const hunk = block.drawnHunks[0];
   const state = block.closest('[data-state]');
   const page = document.documentElement;
   return {
-    overflow: getComputedStyle(hunk).overflowX,
-    scrolls: hunk.scrollWidth > hunk.clientWidth + 1,
+    overflow: hunk.overflowX,
+    scrolls: hunk.contentWidth > hunk.width + 1,
     blockWithin: block.getBoundingClientRect().right <= state.getBoundingClientRect().right + 1,
+    blockScrolls: block.scrollWidth > block.clientWidth + 1,
     pageSideways: page.scrollWidth - page.clientWidth,
   };
 })()`, &held)
@@ -488,8 +574,8 @@ func TestTheCatalogGivesAPatchTooWideForItsBlockAScrollOfItsOwn(t *testing.T) {
 	if !held.Scrolls {
 		t.Error("the patch does not scroll inside its table at 360px")
 	}
-	if !held.BlockWithin || held.PageSideways > 1 {
-		t.Errorf("the patch spills out of its block %v or scrolls the page by %vpx", !held.BlockWithin, held.PageSideways)
+	if !held.BlockWithin || held.BlockScrolls || held.PageSideways > 1 {
+		t.Errorf("the patch spills out of its block %v, scrolls its block %v or scrolls the page by %vpx", !held.BlockWithin, held.BlockScrolls, held.PageSideways)
 	}
 }
 

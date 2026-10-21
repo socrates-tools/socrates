@@ -155,13 +155,14 @@ func TestADecisionCanBeAnsweredWithoutAPointer(t *testing.T) {
 
 const narrowly = `(() => {
   const page = document.documentElement;
-  const hunk = document.querySelector('ui-diff-block table');
+  const block = document.querySelector('ui-diff-block');
+  const hunk = block ? block.drawnHunks[0] : null;
   const surface = document.querySelector('ui-app-shell');
   return {
     pageScroll: page.scrollWidth - page.clientWidth,
-    hunkOverflows: hunk ? getComputedStyle(hunk).overflowX : '',
-    hunkWithin: hunk ? hunk.clientWidth <= surface.clientWidth : false,
-    hunkHasContent: hunk ? hunk.scrollWidth > 0 : false,
+    hunkOverflows: hunk ? hunk.overflowX : '',
+    hunkWithin: hunk ? hunk.width <= surface.clientWidth : false,
+    hunkHasContent: hunk ? hunk.contentWidth > 0 : false,
   };
 })()`
 
@@ -225,7 +226,7 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
   face: document.fonts.check('16px "Manrope"'),
   display: document.fonts.check('40px "Cinzel"'),
   mono: document.fonts.check('16px "JetBrains Mono"'),
-  diff: !!document.querySelector('ui-diff-block td[data-kind="added"]'),
+  diff: Array.from(document.querySelectorAll('ui-diff-block')).some((block) => block.drawnHunks.some((hunk) => hunk.rows.some((row) => row.right.kind === 'added'))),
   highlight: Array.from(document.querySelectorAll('ui-code-block')).filter((block) => block.highlighted).length,
 })`, &read)
 

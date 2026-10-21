@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"encoding/json"
+	"slices"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -65,18 +66,22 @@ func TestTheLinesOfADiffAreColouredLikeCodeAndStillMeetTheFloor(t *testing.T) {
 	t.Parallel()
 	_, page := read(t, colouredDiffDocument)
 
-	page.waitFor(`!!document.querySelector('ui-diff-block td:nth-child(even) .hljs-keyword')`)
+	page.waitFor(`document.querySelector('ui-diff-block').highlighted`)
 
-	var coloured struct {
-		Removed bool `json:"removed"`
-		Added   bool `json:"added"`
+	for _, kind := range []string{"removed", "added"} {
+		var comments []string
+		page.evaluate(`document.querySelector('ui-diff-block').drawnHunks.flatMap((hunk) => hunk.rows).map((row) => row.`+map[string]string{"removed": "left", "added": "right"}[kind]+`).filter((side) => side.kind === '`+kind+`').flatMap((side) => side.tokens).filter((token) => token.text.startsWith('//')).map((token) => token.ink)`, &comments)
+		if len(comments) == 0 {
+			t.Errorf("a comment on a %s line of a Go diff is not coloured as one", kind)
+		}
+		for _, ink := range comments {
+			if ink != "quiet-on-change" {
+				t.Errorf("a comment on a %s line of a Go diff is drawn in the %s ink, want the quiet ink of a change", kind, ink)
+			}
+		}
 	}
-	page.evaluate(`({
-  removed: !!document.querySelector('ui-diff-block td:nth-child(even)[data-kind="removed"] .hljs-comment'),
-  added: !!document.querySelector('ui-diff-block td:nth-child(even)[data-kind="added"] .hljs-comment'),
-})`, &coloured)
-	if !coloured.Removed || !coloured.Added {
-		t.Errorf("a comment on a changed line of a Go diff is not coloured as one: %+v", coloured)
+	if inked := page.colouredPixelsOf("ui-diff-block", "--token-keyword"); inked == 0 {
+		t.Error("a keyword in a Go diff is painted in no pixel of the keyword token")
 	}
 
 	var weighedDiff weighed
@@ -133,12 +138,12 @@ func TestAPatchWhoseLanguageIsNamedByAnAliasHasItsLinesHighlighted(t *testing.T)
 	held := standing(t)
 	page := opening(t, held.serve(patchInAnAliasDocument))
 
-	page.waitFor(`!!document.querySelector('ui-diff-block td:nth-child(even) .hljs-keyword')`)
+	page.waitFor(`document.querySelector('ui-diff-block').highlighted`)
 
-	var coloured bool
-	page.evaluate(`!!document.querySelector('ui-diff-block td:nth-child(even)[data-kind="added"] .hljs-built_in, ui-diff-block td:nth-child(even)[data-kind="added"] .hljs-type')`, &coloured)
-	if !coloured {
-		t.Error("a type on a changed line of a patch whose language is ts is not coloured as one")
+	var inks []string
+	page.evaluate(`document.querySelector('ui-diff-block').drawnHunks.flatMap((hunk) => hunk.rows).map((row) => row.right).filter((side) => side.kind === 'added').flatMap((side) => side.tokens).map((token) => token.ink)`, &inks)
+	if !slices.Contains(inks, "keyword") {
+		t.Errorf("an added line of a patch whose language is ts is drawn in the inks %v, want its keyword coloured as one", inks)
 	}
 }
 

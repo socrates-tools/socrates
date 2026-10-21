@@ -44,26 +44,15 @@ func TestADiffRendersFromAPatch(t *testing.T) {
 		}
 	}
 
-	sides := map[string][]string{}
-	for _, line := range elements(diff, "td") {
-		if len(elements(line, "code")) == 0 {
-			continue
-		}
-		sides[attribute(line, "data-side")+" "+attribute(line, "data-kind")] = append(
-			sides[attribute(line, "data-side")+" "+attribute(line, "data-kind")], text(line))
+	blocks := elements(diff, "ui-diff-block")
+	if len(blocks) != 1 {
+		t.Fatalf("the diff holds %d diff blocks, want one", len(blocks))
 	}
-
-	if len(sides["left removed"]) != 1 {
-		t.Errorf("the left side shows %v as removed, want one line", sides["left removed"])
+	if held := text(blocks[0]); held != patched {
+		t.Errorf("the diff block holds %q, want the patch as the document stated it, %q", held, patched)
 	}
-	if len(sides["right added"]) != 3 {
-		t.Errorf("the right side shows %v as added, want three lines", sides["right added"])
-	}
-	if len(sides["left context"]) != 2 || len(sides["right context"]) != 2 {
-		t.Errorf("the two sides show %v and %v as unchanged, want two lines each", sides["left context"], sides["right context"])
-	}
-	if len(sides["left absent"]) != 2 {
-		t.Errorf("the left side shows %v where the right side gained lines, want two blanks", sides["left absent"])
+	if len(elements(blocks[0], "table")) != 0 {
+		t.Error("the page writes the tables of the diff, and the diff block draws them itself")
 	}
 }
 

@@ -42,7 +42,7 @@
 <span class="evidence-aside"><span class="diff-added">+{{.Diff.Added}}</span>
 <span class="diff-removed">−{{.Diff.Removed}}</span></span>
 </div>
-{{template "ui-diff-block" (dict "Language" .Written "Hunks" .Diff.Hunks)}}
+{{template "ui-diff-block" (dict "Language" .Written "Patch" .Patch)}}
 </div>
 {{else}}
 <div class="evidence code">

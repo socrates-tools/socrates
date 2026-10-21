@@ -165,7 +165,7 @@ func tooltipState(name string, id string, anchor anchorView) state {
 }
 
 func diffBlockOf(language, patch string) diffBlockView {
-	return diffBlockView{Language: language, Hunks: ReadPatch(patch).Hunks}
+	return diffBlockView{Language: language, Patch: patch}
 }
 
 func markedBadge(tone string) badgeView {
