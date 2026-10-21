@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-var ClientManifest = filepath.Join(ToolDirectory("agora"), "web", "packages", "ui", "package.json")
+var ClientPackages = filepath.Join(ToolDirectory("agora"), "web", "packages")
 
 var noticeSeparator = regexp.MustCompile(`(?m)^={20,}$`)
 
@@ -54,23 +54,36 @@ func copyrightStatedFor(notice, library string) []string {
 }
 
 func LibrariesTheClientBundles(root string) ([]string, error) {
-	held, err := os.ReadFile(filepath.Join(root, ClientManifest))
+	manifests, err := filepath.Glob(filepath.Join(root, ClientPackages, "*", "package.json"))
 	if err != nil {
 		return nil, err
 	}
-
-	var declared struct {
-		Dependencies map[string]string `json:"dependencies"`
-	}
-	if err := json.Unmarshal(held, &declared); err != nil {
-		return nil, fmt.Errorf("reading %s: %w", ClientManifest, err)
+	if len(manifests) == 0 {
+		return nil, fmt.Errorf("no workspace package under %s holds a package.json", ClientPackages)
 	}
 
-	bundled := make([]string, 0, len(declared.Dependencies))
-	for library, version := range declared.Dependencies {
-		if strings.HasPrefix(version, "workspace:") {
-			continue
+	seen := map[string]bool{}
+	for _, manifest := range manifests {
+		held, err := os.ReadFile(manifest)
+		if err != nil {
+			return nil, err
 		}
+
+		var declared struct {
+			Dependencies map[string]string `json:"dependencies"`
+		}
+		if err := json.Unmarshal(held, &declared); err != nil {
+			return nil, fmt.Errorf("reading %s: %w", manifest, err)
+		}
+		for library, version := range declared.Dependencies {
+			if !strings.HasPrefix(version, "workspace:") {
+				seen[library] = true
+			}
+		}
+	}
+
+	bundled := make([]string, 0, len(seen))
+	for library := range seen {
 		bundled = append(bundled, library)
 	}
 	slices.Sort(bundled)

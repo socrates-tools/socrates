@@ -274,10 +274,16 @@ func TestAModuleTheNoticeDoesNotNameIsLeftToTheCheckForMissingEntries(t *testing
 
 func TestAWorkspacePackageTheClientDependsOnIsNotALibraryItBundlesFromElsewhere(t *testing.T) {
 	tree := t.TempDir()
-	write(t, tree, ClientManifest, `{
+	write(t, tree, filepath.Join(ClientPackages, "surface", "package.json"), `{
   "name": "@agora/surface",
   "dependencies": {
-    "@agora/ui": "workspace:*",
+    "@agora/ui": "workspace:*"
+  }
+}
+`)
+	write(t, tree, filepath.Join(ClientPackages, "ui", "package.json"), `{
+  "name": "@agora/ui",
+  "dependencies": {
     "highlight.js": "^11.11.1"
   }
 }
@@ -289,6 +295,34 @@ func TestAWorkspacePackageTheClientDependsOnIsNotALibraryItBundlesFromElsewhere(
 	}
 
 	if diff := cmp.Diff([]string{"highlight.js"}, bundled); diff != "" {
+		t.Errorf("the libraries the client bundles differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestALibraryAddedToAnyWorkspacePackageIsOneTheClientBundles(t *testing.T) {
+	tree := t.TempDir()
+	write(t, tree, filepath.Join(ClientPackages, "surface", "package.json"), `{
+  "name": "@agora/surface",
+  "dependencies": {
+    "@agora/ui": "workspace:*",
+    "a-fabricated-library": "^1.0.0"
+  }
+}
+`)
+	write(t, tree, filepath.Join(ClientPackages, "ui", "package.json"), `{
+  "name": "@agora/ui",
+  "dependencies": {
+    "highlight.js": "^11.11.1"
+  }
+}
+`)
+
+	bundled, err := LibrariesTheClientBundles(tree)
+	if err != nil {
+		t.Fatalf("reading what the client bundles: %v", err)
+	}
+
+	if diff := cmp.Diff([]string{"a-fabricated-library", "highlight.js"}, bundled); diff != "" {
 		t.Errorf("the libraries the client bundles differ (-want +got):\n%s", diff)
 	}
 }
