@@ -103,6 +103,7 @@
   --leading-field: var(--leading-field);
   --leading-control: var(--leading-control);
   --leading-code: var(--leading-code);
+  --leading-tip: var(--leading-tip);
 
   --tracking-display: var(--tracking-display);
   --tracking-title: var(--tracking-title);
@@ -141,6 +142,9 @@
   --max-width-main: var(--main-max);
 }
 
+@custom-variant progress-track (&::-webkit-progress-bar);
+@custom-variant progress-fill (&::-webkit-progress-value);
+@custom-variant progress-moz-fill (&::-moz-progress-bar);
 @custom-variant slotted (&::slotted(*));
 @custom-variant host-focused (:host(:focus-visible) &);
 

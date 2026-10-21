@@ -270,7 +270,7 @@ func TestTheCatalogNamesAnExplainedBadgeToAScreenReaderAndShowsItsTipOnHoverAndO
 
 	tipSays := `(() => {
   const tip = document.querySelector('.tooltip');
-  return !tip.hidden && tip.getBoundingClientRect().height > 0 && tip.textContent.includes(` + jsonOf(t, catalogBadgeTitleSaid) + `) && tip.textContent.includes(` + jsonOf(t, catalogBadgeHintSaid) + `);
+  return !tip.hidden && tip.getBoundingClientRect().height > 0 && tip.heading === ` + jsonOf(t, catalogBadgeTitleSaid) + ` && tip.hint === ` + jsonOf(t, catalogBadgeHintSaid) + `;
 })()`
 	tipIsHidden := `document.querySelector('.tooltip').hidden === true`
 
@@ -330,6 +330,52 @@ func TestABadgeWhoseLabelIsRemovedBecomesTheCircleOfTheChecksSize(t *testing.T) 
 	}
 }
 
+type overlineWidths struct {
+	Whole         float64 `json:"whole"`
+	Words         float64 `json:"words"`
+	WordsSpread   float64 `json:"wordsSpread"`
+	WordsUnspread float64 `json:"wordsUnspread"`
+	WholeIfMedium float64 `json:"wholeIfMedium"`
+	WholeIfBold   float64 `json:"wholeIfBold"`
+}
+
+func (r *reader) widthsOfAnOverline(selector string) overlineWidths {
+	r.t.Helper()
+
+	var widths overlineWidths
+	r.evaluate(`(() => {
+  const host = document.querySelector(`+jsonOf(r.t, selector)+`);
+  host.style.fontSize = '60px';
+  const words = host.textContent.trim();
+  const range = document.createRange();
+  range.selectNodeContents(host);
+  const style = getComputedStyle(host);
+  const widthOf = (text, weight, spacing) => {
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;text-transform:uppercase;font-family:' + style.fontFamily + ';font-size:' + style.fontSize + ';font-weight:' + weight + ';letter-spacing:' + spacing;
+    probe.textContent = text;
+    document.body.append(probe);
+    const width = probe.getBoundingClientRect().width;
+    probe.remove();
+    return width;
+  };
+  const tracking = 'var(--tracking-overline)';
+  const spread = widthOf(words, style.fontWeight, tracking);
+  const space = widthOf(' ', style.fontWeight, tracking);
+  const count = host.getAttribute('count');
+  const counted = (weight) => count === null ? 0 : widthOf('· ' + count, weight, '0');
+  return {
+    whole: host.getBoundingClientRect().width,
+    words: range.getBoundingClientRect().width,
+    wordsSpread: spread,
+    wordsUnspread: widthOf(words, style.fontWeight, '0'),
+    wholeIfMedium: spread + (count === null ? 0 : space) + counted(500),
+    wholeIfBold: spread + (count === null ? 0 : space) + counted(700),
+  };
+})()`, &widths)
+	return widths
+}
+
 func overlineOfState(key string) string {
 	return stateOf("ui-overline", key) + " ui-overline"
 }
@@ -354,8 +400,15 @@ func TestTheCatalogDrawsAnOverlineWithWordsAloneInCapitalsAndNoCount(t *testing.
 	if painted["font-weight"] != "700" {
 		t.Errorf("the overline's weight is %s, want bold", painted["font-weight"])
 	}
-	if page.countOf(overline+` [data-part="count"]`) != 0 {
-		t.Error("the overline draws a count it was not given")
+	if got := page.attributeOf(overline, "count"); got != "" {
+		t.Errorf("the overline is given the count %q, want none", got)
+	}
+	widths := page.widthsOfAnOverline(overline)
+	if abs := widths.Whole - widths.WordsSpread; abs > 0.5 || abs < -0.5 {
+		t.Errorf("the overline is %vpx wide, want its words alone at %vpx, so nothing else is drawn", widths.Whole, widths.WordsSpread)
+	}
+	if widths.Words < widths.WordsUnspread+5 || widths.Words-widths.WordsSpread > 0.5 || widths.WordsSpread-widths.Words > 0.5 {
+		t.Errorf("the words measure %vpx beside %vpx spread and %vpx unspread, want them spread by the overline's tracking", widths.Words, widths.WordsSpread, widths.WordsUnspread)
 	}
 }
 
@@ -364,24 +417,25 @@ func TestTheCatalogDrawsAnOverlinesCountAfterItsWordsInALighterWeight(t *testing
 	t.Parallel()
 	page := catalogued(t)
 	overline := overlineOfState(overlineCountedKey)
-	count := overline + ` [data-part="count"]`
 
-	if got := page.textOf(overline); got != "An overline · 3" {
-		t.Errorf("the overline says %q, want its words and its count", got)
+	if got := page.textOf(overline); got != "An overline" {
+		t.Errorf("the overline's own words are %q, want its words with the count left to the element", got)
 	}
-	if got := page.textOf(count); got != "· 3" {
-		t.Errorf("the count says %q, want the number set apart by a dot", got)
+	if got := page.attributeOf(overline, "count"); got != "3" {
+		t.Errorf("the overline is given the count %q, want 3", got)
 	}
-	words := page.paintedOf(overline, "font-weight", "letter-spacing")
-	counted := page.paintedOf(count, "font-weight", "letter-spacing")
-	if counted["font-weight"] != "500" || words["font-weight"] != "700" {
-		t.Errorf("the count is weight %s beside words of weight %s, want 500 beside 700", counted["font-weight"], words["font-weight"])
+	widths := page.widthsOfAnOverline(overline)
+	if gap := widths.Whole - widths.WholeIfMedium; gap > 0.5 || gap < -0.5 {
+		t.Errorf("the overline is %vpx wide, want the words, a space and the count set in weight 500 at %vpx", widths.Whole, widths.WholeIfMedium)
 	}
-	if counted["letter-spacing"] != "normal" && counted["letter-spacing"] != "0px" {
-		t.Errorf("the count is spaced %q, want it set tight", counted["letter-spacing"])
+	if widths.WholeIfBold-widths.WholeIfMedium < 1 {
+		t.Fatalf("a count in weight 700 would be %vpx wide beside %vpx in weight 500, so the width cannot tell the weights apart", widths.WholeIfBold, widths.WholeIfMedium)
 	}
-	if words["letter-spacing"] == counted["letter-spacing"] {
-		t.Errorf("the count and the words are spaced alike (%q), want the words spread", words["letter-spacing"])
+	if widths.Whole-widths.Words < 1 {
+		t.Errorf("the overline is %vpx wide and its words %vpx, so no count is drawn after them", widths.Whole, widths.Words)
+	}
+	if words := page.paintedOf(overline, "font-weight")["font-weight"]; words != "700" {
+		t.Errorf("the words are weight %s, want 700", words)
 	}
 }
 
@@ -404,13 +458,13 @@ func TestTheCatalogPaintsEachStatusDotToneInItsToken(t *testing.T) {
 		t.Run(tone.name, func(t *testing.T) {
 			dot := dotOf(tone.key)
 
-			painted := page.paintedOf(dot, "background-color", "width", "height", "border-top-left-radius")
+			painted := page.paintedOf(dot, "background-color", "width", "height")
 
 			if want := page.pageColourOf(tone.token); painted["background-color"] != want {
 				t.Errorf("the %s dot is painted %s, want %s", tone.name, painted["background-color"], want)
 			}
-			if painted["width"] != "6px" || painted["height"] != "6px" || painted["border-top-left-radius"] != "50%" {
-				t.Errorf("the %s dot is %s by %s with corners %s, want a six pixel circle", tone.name, painted["width"], painted["height"], painted["border-top-left-radius"])
+			if painted["width"] != "6px" || painted["height"] != "6px" || page.pixelsOf(dot, "border-top-left-radius") < 3 {
+				t.Errorf("the %s dot is %s by %s with corners %vpx round, want a six pixel circle", tone.name, painted["width"], painted["height"], page.pixelsOf(dot, "border-top-left-radius"))
 			}
 			if got := page.attributeOf(dot, "aria-hidden"); got != "true" {
 				t.Errorf("the %s dot is hidden from a screen reader as %q, want true", tone.name, got)
@@ -427,7 +481,7 @@ func TestTheCatalogPaintsAStatusDotWithNoToneInTheColourAroundIt(t *testing.T) {
 
 	painted := page.paintedOf(dot, "background-color", "color")
 
-	if page.attributeOf(dot, "data-tone") != "" {
+	if page.attributeOf(dot, "tone") != "" {
 		t.Error("the dot with no tone states a tone")
 	}
 	if painted["background-color"] != painted["color"] {
@@ -609,8 +663,8 @@ func TestTheCatalogDrawsABrandAsADecorativeMarkBeforeItsNameInTheDisplayFace(t *
 	t.Parallel()
 	page := catalogued(t)
 	brand := stateOf("ui-brand", brandKey) + " ui-brand"
-	mark := brand + ` [data-part="mark"]`
-	name := brand + ` [data-part="wordmark"]`
+	mark := brand + ` img[slot="mark"]`
+	name := brand + ` span`
 
 	if got := page.textOf(name); got != "A brand" {
 		t.Errorf("the brand says %q, want its name", got)
