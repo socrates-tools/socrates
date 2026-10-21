@@ -77,6 +77,7 @@
 --limestone-500
 --limestone-600
 --main-max
+--marker-width
 --measure-lead
 --measure-meaning
 --ochre-50

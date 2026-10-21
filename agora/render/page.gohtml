@@ -44,7 +44,7 @@
 <span class="evidence-aside flex flex-none gap-3 font-bold"><span class="diff-added text-diff-added-mark">+{{.Diff.Added}}</span>
 <span class="diff-removed text-diff-removed-mark">−{{.Diff.Removed}}</span></span>
 </div>
-{{template "ui-diff-block" (dict "Language" .Written "Hunks" .Diff.Hunks)}}
+{{template "ui-diff-block" (dict "Language" .Written "Patch" .Patch)}}
 </div>
 {{else}}
 <div class="evidence code min-w-0 overflow-hidden rounded-md border border-rule bg-surface-card">

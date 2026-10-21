@@ -155,13 +155,14 @@ func TestADecisionCanBeAnsweredWithoutAPointer(t *testing.T) {
 
 const narrowly = `(() => {
   const page = document.documentElement;
-  const hunk = document.querySelector('.hunk');
+  const block = document.querySelector('ui-diff-block');
+  const hunk = block ? block.drawnHunks[0] : null;
   const surface = document.querySelector('ui-app-shell');
   return {
     pageScroll: page.scrollWidth - page.clientWidth,
-    hunkOverflows: hunk ? getComputedStyle(hunk).overflowX : '',
-    hunkWithin: hunk ? hunk.clientWidth <= surface.clientWidth : false,
-    hunkHasContent: hunk ? hunk.scrollWidth > 0 : false,
+    hunkOverflows: hunk ? hunk.overflowX : '',
+    hunkWithin: hunk ? hunk.width <= surface.clientWidth : false,
+    hunkHasContent: hunk ? hunk.contentWidth > 0 : false,
   };
 })()`
 
@@ -199,7 +200,7 @@ func TestThePageReachesNothing(t *testing.T) {
 	page := opening(t, address)
 
 	page.waitFor(`document.fonts.status === 'loaded'`)
-	page.waitFor(`!!document.querySelector('code.hljs')`)
+	page.waitFor(aCodeBlockIsHighlighted)
 
 	nothingLeftTheMachine(t, address, page.requests.all())
 }
@@ -212,7 +213,7 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
 	page := opening(t, address, chromedp.Flag("host-resolver-rules", "MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"))
 
 	page.waitFor(`document.fonts.status === 'loaded'`)
-	page.waitFor(`!!document.querySelector('code.hljs')`)
+	page.waitFor(aCodeBlockIsHighlighted)
 
 	var read struct {
 		Face      bool `json:"face"`
@@ -225,8 +226,8 @@ func TestRenderingNeedsNoNetwork(t *testing.T) {
   face: document.fonts.check('16px "Manrope"'),
   display: document.fonts.check('40px "Cinzel"'),
   mono: document.fonts.check('16px "JetBrains Mono"'),
-  diff: !!document.querySelector('.hunk .line[data-kind="added"]'),
-  highlight: document.querySelectorAll('code.hljs .hljs-keyword, code.hljs .hljs-string, code.hljs .hljs-title').length,
+  diff: Array.from(document.querySelectorAll('ui-diff-block')).some((block) => block.drawnHunks.some((hunk) => hunk.rows.some((row) => row.right.kind === 'added'))),
+  highlight: Array.from(document.querySelectorAll('ui-code-block')).filter((block) => block.highlighted).length,
 })`, &read)
 
 	if !read.Face || !read.Display || !read.Mono {

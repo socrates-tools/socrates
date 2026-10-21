@@ -131,26 +131,6 @@ func readHunkHeading(line string) (string, int, int) {
 	return strings.TrimSpace(trailing), from, to
 }
 
-func (s Side) Numbered() string {
-	if s.Kind == Absent {
-		return ""
-	}
-	return strconv.Itoa(s.Number)
-}
-
-func (s Side) Marker() string {
-	switch s.Kind {
-	case Removed:
-		return "\u2212"
-	case Added:
-		return "+"
-	case Context:
-		return " "
-	default:
-		return ""
-	}
-}
-
 func pathShown(named string) string {
 	for _, prefix := range []string{"a/", "b/"} {
 		if strings.HasPrefix(named, prefix) {

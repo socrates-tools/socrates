@@ -1,9 +1,12 @@
 package e2e_test
 
 import (
+	"encoding/json"
+	"slices"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/socrates-tools/socrates/agora/document"
 )
 
 const inTwoLanguagesDocument = `{
@@ -32,22 +35,19 @@ const inTwoLanguagesDocument = `{
   ]
 }`
 
-const highlightedBlocks = `Object.fromEntries(Array.from(document.querySelectorAll('.evidence.code code')).map((held) => [
-  Array.from(held.classList).find((named) => named.startsWith('language-')),
-  held.classList.contains('hljs') && held.querySelectorAll('span[class^="hljs-"]').length > 0,
-]))`
+const highlightedBlocks = `Object.fromEntries(Array.from(document.querySelectorAll('.evidence.code ui-code-block')).map((held) => [held.language, held.highlighted]))`
 
 func TestTheLanguagesACallerActuallyPassesAreHighlighted(t *testing.T) {
 	t.Parallel()
 	held := standing(t)
 	page := opening(t, held.serve(inTwoLanguagesDocument))
 
-	page.waitFor(`document.querySelectorAll('.evidence.code code.hljs').length === 2`)
+	page.waitFor(highlightedCodeBlocks(2))
 
 	var read map[string]bool
 	page.evaluate(highlightedBlocks, &read)
 
-	want := map[string]bool{"language-csharp": true, "language-diff": true}
+	want := map[string]bool{"csharp": true, "diff": true}
 	if diff := cmp.Diff(want, read); diff != "" {
 		t.Errorf("what the page highlighted differs (-want +got):\n%s\na language the caller named and the page ignored renders as a grey block with nothing saying so", diff)
 	}
@@ -66,18 +66,22 @@ func TestTheLinesOfADiffAreColouredLikeCodeAndStillMeetTheFloor(t *testing.T) {
 	t.Parallel()
 	_, page := read(t, colouredDiffDocument)
 
-	page.waitFor(`!!document.querySelector('.hunk .line .hljs-keyword')`)
+	page.waitFor(`document.querySelector('ui-diff-block').highlighted`)
 
-	var coloured struct {
-		Removed bool `json:"removed"`
-		Added   bool `json:"added"`
+	for _, kind := range []string{"removed", "added"} {
+		var comments []string
+		page.evaluate(`document.querySelector('ui-diff-block').drawnHunks.flatMap((hunk) => hunk.rows).map((row) => row.`+map[string]string{"removed": "left", "added": "right"}[kind]+`).filter((side) => side.kind === '`+kind+`').flatMap((side) => side.tokens).filter((token) => token.text.startsWith('//')).map((token) => token.ink)`, &comments)
+		if len(comments) == 0 {
+			t.Errorf("a comment on a %s line of a Go diff is not coloured as one", kind)
+		}
+		for _, ink := range comments {
+			if ink != "quiet-on-change" {
+				t.Errorf("a comment on a %s line of a Go diff is drawn in the %s ink, want the quiet ink of a change", kind, ink)
+			}
+		}
 	}
-	page.evaluate(`({
-  removed: !!document.querySelector('.hunk .line[data-kind="removed"] .hljs-comment'),
-  added: !!document.querySelector('.hunk .line[data-kind="added"] .hljs-comment'),
-})`, &coloured)
-	if !coloured.Removed || !coloured.Added {
-		t.Errorf("a comment on a changed line of a Go diff is not coloured as one: %+v", coloured)
+	if inked := page.colouredPixelsOf("ui-diff-block", "--token-keyword"); inked == 0 {
+		t.Error("a keyword in a Go diff is painted in no pixel of the keyword token")
 	}
 
 	var weighedDiff weighed
@@ -112,17 +116,17 @@ func TestCodeNamedByAnAliasIsHighlightedAsItsLanguageIs(t *testing.T) {
 	held := standing(t)
 	page := opening(t, held.serve(namedByAliasDocument))
 
-	page.waitFor(`document.querySelectorAll('.evidence.code code.hljs').length === 5`)
+	page.waitFor(highlightedCodeBlocks(5))
 
 	var read map[string]bool
 	page.evaluate(highlightedBlocks, &read)
 
 	want := map[string]bool{
-		"language-tsx": true,
-		"language-jsx": true,
-		"language-ts":  true,
-		"language-sh":  true,
-		"language-yml": true,
+		"tsx": true,
+		"jsx": true,
+		"ts":  true,
+		"sh":  true,
+		"yml": true,
 	}
 	if diff := cmp.Diff(want, read); diff != "" {
 		t.Errorf("what the page highlighted differs (-want +got):\n%s", diff)
@@ -134,12 +138,12 @@ func TestAPatchWhoseLanguageIsNamedByAnAliasHasItsLinesHighlighted(t *testing.T)
 	held := standing(t)
 	page := opening(t, held.serve(patchInAnAliasDocument))
 
-	page.waitFor(`!!document.querySelector('.hunk .line .hljs-keyword')`)
+	page.waitFor(`document.querySelector('ui-diff-block').highlighted`)
 
-	var coloured bool
-	page.evaluate(`!!document.querySelector('.hunk .line[data-kind="added"] .hljs-built_in, .hunk .line[data-kind="added"] .hljs-type')`, &coloured)
-	if !coloured {
-		t.Error("a type on a changed line of a patch whose language is ts is not coloured as one")
+	var inks []string
+	page.evaluate(`document.querySelector('ui-diff-block').drawnHunks.flatMap((hunk) => hunk.rows).map((row) => row.right).filter((side) => side.kind === 'added').flatMap((side) => side.tokens).map((token) => token.ink)`, &inks)
+	if !slices.Contains(inks, "keyword") {
+		t.Errorf("an added line of a patch whose language is ts is drawn in the inks %v, want its keyword coloured as one", inks)
 	}
 }
 
@@ -151,3 +155,25 @@ const patchInAnAliasDocument = `{
      "evidence": [{"language": "ts", "patch": "--- a/limit.txt\n+++ b/limit.txt\n@@ -1,1 +1,1 @@\n-export const limit: number = 2\n+export const limit: number = 3\n"}]}
   ]
 }`
+
+func TestEveryLanguageThePageHighlightsIsHighlightedByACodeBlockNamingIt(t *testing.T) {
+	// scenario: A code block naming any language or alias the page highlights is highlighted, none is left plain
+	t.Parallel()
+	var blocks []map[string]string
+	for _, named := range document.Languages() {
+		blocks = append(blocks, map[string]string{"language": named, "code": "x = 1\n"})
+	}
+	evidence, err := json.Marshal(blocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	held := standing(t)
+	page := opening(t, held.serve(evidenceDocument(string(evidence))))
+	page.waitFor(highlightedCodeBlocks(len(blocks)))
+
+	var plain []string
+	page.evaluate(`Array.from(document.querySelectorAll('.evidence.code ui-code-block')).filter((block) => !block.highlighted).map((block) => block.language)`, &plain)
+	if len(plain) != 0 {
+		t.Errorf("the code blocks naming %v are left plain, though the page highlights those languages", plain)
+	}
+}

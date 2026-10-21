@@ -140,6 +140,7 @@
   --height-control: var(--control-height);
   --height-topbar: var(--topbar-height);
   --size-check: var(--check-size);
+  --width-marker: var(--marker-width);
   --border-width-check: var(--check-border);
   --width-sidebar: var(--sidebar-width);
   --width-panel: var(--panel-width);
@@ -185,6 +186,13 @@
 
 @utility landing-clearance-* {
   --landing-clearance: calc(var(--spacing) * --value(integer));
+}
+
+@custom-variant gutter {
+  &::before {
+    content: attr(data-number);
+    @slot;
+  }
 }
 
 @layer base {

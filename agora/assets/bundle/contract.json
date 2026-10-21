@@ -65,6 +65,14 @@
         ""
       ]
     },
+    "ui-code-block": {
+      "attributes": [
+        "language"
+      ],
+      "slots": [
+        ""
+      ]
+    },
     "ui-copy": {
       "attributes": [
         "copied-title",
@@ -81,6 +89,14 @@
         "actions",
         "body",
         "heading"
+      ]
+    },
+    "ui-diff-block": {
+      "attributes": [
+        "language"
+      ],
+      "slots": [
+        ""
       ]
     },
     "ui-expand": {
@@ -129,18 +145,5 @@
       "slots": []
     }
   },
-  "parts": {
-    "ui-code-block": [
-      "code"
-    ],
-    "ui-diff-block": [
-      "hunk",
-      "heading",
-      "row",
-      "number",
-      "line",
-      "marker",
-      "code"
-    ]
-  }
+  "parts": {}
 }
