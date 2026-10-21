@@ -19,13 +19,13 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 82](../../../../agora/docs/adr/0
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
 | [1.1: The foundation, proved on the badge](1.1-the-foundation-and-the-badge.md) | None | done |
-| [1.2: No class string carries an arbitrary value](1.2-no-arbitrary-value.md) | None | in progress |
+| [1.2: No class string carries an arbitrary value](1.2-no-arbitrary-value.md) | None | done |
 | [2.1: The indicators, the brand and the tooltip as Lit elements](2.1-the-indicators-and-the-tooltip.md) | 1.1 | done |
 | [2.2: The button, the field, the copy control and the expand control as Lit elements](2.2-the-controls.md) | 1.1 | done |
 | [2.3: A decision's choices as one ui-choice-group](2.3-the-choice-group.md) | 1.1 | done |
 | [2.4: The card and the dialog as Lit elements that slot what they wrap](2.4-the-card-and-the-dialog.md) | 1.1 | done |
 | [2.5: The app shell as a Lit element](2.5-the-app-shell.md) | 1.1 | done |
-| [2.6: The code block and the diff block as Lit elements](2.6-the-code-and-diff-blocks.md) | 1.1 | in progress |
-| [2.7: The glossary's pieces and the catalog laid out by utilities](2.7-the-pieces-and-the-catalog-on-utilities.md) | 1.1 | in progress |
+| [2.6: The code block and the diff block as Lit elements](2.6-the-code-and-diff-blocks.md) | 1.1 | done |
+| [2.7: The glossary's pieces and the catalog laid out by utilities](2.7-the-pieces-and-the-catalog-on-utilities.md) | 1.1 | done |
 | [2.8: The landing page styled with utilities](2.8-the-landing-page-on-utilities.md) | 1.1 | in progress |
-| [3: Every primitive a Lit element, and the light-DOM primitive gone](3-every-primitive-a-lit-element.md) | 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 | pending |
+| [3: Every primitive a Lit element, and the light-DOM primitive gone](3-every-primitive-a-lit-element.md) | 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 | done |

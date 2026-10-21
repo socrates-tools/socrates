@@ -31,9 +31,6 @@ func absentFromTheCatalog(declared contract, drawn writings) []string {
 	for element := range declared.Elements {
 		names = append(names, element)
 	}
-	for element := range declared.Parts {
-		names = append(names, element)
-	}
 	for _, element := range names {
 		if _, known := drawn[element]; !known {
 			found = append(found, fmt.Sprintf("the contract declares <%s>, and the catalog draws no state of it", element))
@@ -49,24 +46,24 @@ func TestEveryPrimitiveTheContractDeclaresIsDrawnInTheCatalog(t *testing.T) {
 	}
 }
 
-func TestTheCatalogWritesNoElementAndNoPartTheContractDoesNotDeclare(t *testing.T) {
+func TestTheCatalogWritesNoElementNoAttributeNoSlotAndNoPartTheContractDoesNotDeclare(t *testing.T) {
 	for _, found := range undeclared(declaredByTheContract(t), writingsOf(theCatalog(t))) {
 		t.Error(found)
 	}
 }
 
-func TestTheCatalogDrawsEveryPartOfEveryPrimitiveTheContractDeclares(t *testing.T) {
+func TestTheCatalogDrawsEveryAttributeAndSlotOfEveryPrimitiveTheContractDeclares(t *testing.T) {
 	for _, found := range unwritten(declaredByTheContract(t), writingsOf(theCatalog(t))) {
 		t.Error(found)
 	}
 }
 
 func TestAPrimitiveTheContractDeclaresAndTheCatalogDoesNotDrawIsReportedNamingIt(t *testing.T) {
-	declared := contract{
-		Parts:    map[string][]string{"ui-dialog": {"panel"}},
-		Elements: map[string]element{"ui-tooltip": {Attributes: []string{"tone"}}},
-	}
-	drawn := writings{"ui-dialog": {parts: []string{"panel"}}}
+	declared := contract{Elements: map[string]element{
+		"ui-dialog":  {Slots: []string{"body"}},
+		"ui-tooltip": {Attributes: []string{"tone"}},
+	}}
+	drawn := writings{"ui-dialog": {slots: []string{"body"}}}
 
 	want := []string{`the contract declares <ui-tooltip>, and the catalog draws no state of it`}
 	if diff := cmp.Diff(want, absentFromTheCatalog(declared, drawn)); diff != "" {
@@ -130,7 +127,7 @@ func TestTheCatalogDrawsEveryControlInMoreThanOneState(t *testing.T) {
 	held := map[string]int{}
 	var visit func(node *html.Node)
 	visit = func(node *html.Node) {
-		if node.Type == html.ElementNode && node.Data == "article" && attribute(node, "class") == "catalog-state" {
+		if node.Type == html.ElementNode && node.Data == "article" && hasClass(node, "catalog-state") {
 			for child := node.FirstChild; child != nil; child = child.NextSibling {
 				if child.Type == html.ElementNode && strings.HasPrefix(child.Data, "ui-") {
 					held[child.Data]++

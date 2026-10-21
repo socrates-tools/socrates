@@ -16,6 +16,7 @@
 --blur-backdrop
 --blur-bar
 --card-pad
+--catalog-max
 --check-border
 --check-size
 --chip-height
@@ -31,6 +32,8 @@
 --diff-removed
 --diff-removed-gutter
 --diff-removed-mark
+--drawing-expanded-height
+--drawing-expanded-width
 --duration-base
 --duration-fast
 --ease
@@ -48,6 +51,7 @@
 --font-mono
 --glyph-check-on-accent
 --gutter
+--heading-margin
 --ink-450
 --ink-500
 --ink-600
@@ -73,6 +77,9 @@
 --limestone-500
 --limestone-600
 --main-max
+--marker-width
+--measure-lead
+--measure-meaning
 --ochre-50
 --ochre-700
 --olive-100

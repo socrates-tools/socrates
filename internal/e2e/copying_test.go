@@ -111,7 +111,7 @@ func TestPressingACopyControlPutsTheBlocksCodeOnTheClipboardExactlyAsTheDocument
 	t.Parallel()
 	_, page := read(t, copyingDocument(t))
 	page.mayCopy()
-	page.waitFor(`document.querySelectorAll('.evidence.code code.hljs').length === 2`)
+	page.waitFor(highlightedCodeBlocks(2))
 
 	for position, want := range []string{indentedGo, aMarkdownNote} {
 		page.clipboardHolds("something else entirely")

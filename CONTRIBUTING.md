@@ -41,7 +41,7 @@ Committing, pushing, opening a pull request and watching continuous integration 
 - Go 1.26 or later.
 - `git`.
 - A Chrome or Chromium on your `PATH`, or named by `AGORA_BROWSER`. The page half of the suite drives a real browser.
-- Node and `pnpm`, only if you touch `web/`. `make assets` rebuilds the committed bundle, and `make dev` builds `bin/socrates` to serve the bundle from disk and rebuilds the bundle on every save, printing type errors without stopping.
+- Node and `pnpm`, only if you touch `web/` or `site/`. `make assets` rebuilds the committed bundle, and `make dev` builds `bin/socrates` to serve the bundle from disk and rebuilds the bundle on every save, printing type errors without stopping.
 - The `claude` CLI, only if you re-record the simulator's fixtures or run the live smoke suite. Nothing else reaches it, and nothing in continuous integration does.
 
 ## Verifying a change

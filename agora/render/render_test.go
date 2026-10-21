@@ -634,7 +634,7 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 			t.Errorf("the page offers a <%s class=%q> that is part of none of answering, sending or viewing", control.Data, attribute(control, "class"))
 			continue
 		}
-		parts = append(parts, part+" "+attribute(control, "class"))
+		parts = append(parts, part+" "+classesNamedIn(attribute(control, "class")))
 	}
 
 	slices.Sort(parts)
@@ -664,6 +664,22 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 	}
 }
 
+var namingClasses = map[string]bool{
+	"none": true, "decline": true, "option": true, "choice": true, "words-field": true, "amend": true, "confirmation": true,
+	"confirmation-decision": true, "exchange": true, "shell": true, "finish": true, "go-back": true, "message-field": true,
+	"receipt": true, "send": true, "send-anyway": true, "drawing-close": true, "expand": true,
+}
+
+func classesNamedIn(class string) string {
+	var named []string
+	for _, held := range strings.Fields(class) {
+		if namingClasses[held] {
+			named = append(named, held)
+		}
+	}
+	return strings.Join(named, " ")
+}
+
 func TestTheConfirmationStandsOutsideTheFormAndSubmitsNothing(t *testing.T) {
 	page := rendered(t, citingASource())
 
@@ -688,7 +704,7 @@ func TestTheConfirmationStandsOutsideTheFormAndSubmitsNothing(t *testing.T) {
 	first := ""
 	for _, press := range submits {
 		if attribute(press, "type") == "submit" {
-			first = attribute(press, "class")
+			first = classesNamedIn(attribute(press, "class"))
 			break
 		}
 	}
@@ -830,8 +846,8 @@ func TestTheSourceListIsOrderedTheSameWay(t *testing.T) {
 	if err != nil {
 		t.Fatalf("rendering the page: %v", err)
 	}
-	listed := strings.Index(written, `class="entries"`)
-	decided := strings.Index(written, `class="decisions"`)
+	listed := strings.Index(written, `class="entries `)
+	decided := strings.Index(written, `class="decisions `)
 	if listed < 0 || decided < 0 || listed > decided {
 		t.Errorf("the list is at %d and the decisions at %d, and ordering them changed which comes first", listed, decided)
 	}
@@ -927,8 +943,8 @@ func TestTheSourceIsReadBeforeTheDecisions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("rendering the page: %v", err)
 	}
-	listed := strings.Index(written, `class="entries"`)
-	decided := strings.Index(written, `class="decisions"`)
+	listed := strings.Index(written, `class="entries `)
+	decided := strings.Index(written, `class="decisions `)
 	if listed < 0 || decided < 0 || listed > decided {
 		t.Errorf("the list is at %d and the decisions at %d, and a person reads the list first", listed, decided)
 	}

@@ -154,7 +154,7 @@ elif ! kill -0 "$watcher" 2>/dev/null; then
 fi
 printf "console.log('rebuilt after the fix')\n" >> "$scratch/agora/web/packages/surface/height.ts"
 sed -i '/export const wrong/d' "$scratch/agora/web/packages/surface/exchange.ts"
-if ! until_it "grep -q 'rebuilt after the fix' '$scratch/agora/assets/bundle/height.js'"; then
+if ! until_it "grep -qs 'rebuilt after the fix' '$scratch/agora/assets/bundle/height.js'"; then
   fail "the watch did not rebuild the bundle once the type error was fixed: $(cat "$watching")"
 fi
 kill "$watcher" 2>/dev/null || true

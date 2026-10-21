@@ -146,6 +146,7 @@ type blockView struct {
 	Language string
 	Code     string
 	Diff     *Diff
+	Patch    string
 	Written  string
 	Copy     *copyView
 }
@@ -268,6 +269,10 @@ func composerCard(v view) cardView {
 	}
 }
 
+func (v view) Tracked() bool {
+	return slices.ContainsFunc(v.Index, func(entry entryView) bool { return entry.Decided })
+}
+
 func (v view) AnsweredCount() int {
 	count := 0
 	for _, decision := range v.Decisions {
@@ -340,6 +345,7 @@ func blocksRead(written document.Evidence) []blockView {
 				continue
 			}
 			read.Diff = &patched
+			read.Patch = block.Patch
 			read.Written = writtenIn(block.Language, patched)
 		}
 		if read.Code == "" && read.Diff == nil {

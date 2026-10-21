@@ -47,7 +47,7 @@ type codeBlockView struct {
 
 type diffBlockView struct {
 	Language string
-	Hunks    []Hunk
+	Patch    string
 }
 
 type cardView struct {

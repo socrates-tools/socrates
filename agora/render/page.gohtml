@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="bg-bg-ground has-expanded:overflow-hidden">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,56 +9,58 @@
 <link rel="icon" type="image/svg+xml" href="/assets/socrates-mark.svg">
 <link rel="stylesheet" href="/assets/surface.css">
 </head>
-<body data-base="{{.Base}}" data-token="{{.Token}}" data-revision="{{.Revision}}" data-over="{{if .Over}}yes{{else}}no{{end}}">
-{{define "check"}}<svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square" aria-hidden="true" focusable="false"><polyline points="20 6 9 17 4 12"/></svg>{{end}}
+<body class="bg-bg-ground font-body text-body leading-body text-fg-1 antialiased" data-base="{{.Base}}" data-token="{{.Token}}" data-revision="{{.Revision}}" data-over="{{if .Over}}yes{{else}}no{{end}}">
+{{define "check"}}<svg class="check {{.}}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square" aria-hidden="true" focusable="false"><polyline points="20 6 9 17 4 12"/></svg>{{end}}
 {{define "mark"}}{{template "ui-badge" .Badge}}{{end}}
-{{define "confirmation-body"}}<p class="confirmation-meaning">A decision left blank goes as nothing. Whoever asked will see no answer to it.</p>
-<ul class="confirmation-decisions"></ul>
+{{define "confirmation-body"}}<p class="confirmation-meaning mt-3 text-fg-2">A decision left blank goes as nothing. Whoever asked will see no answer to it.</p>
+<ul class="confirmation-decisions mt-4 flex flex-col gap-2"></ul>
 <template class="confirmation-decision-item"><li>{{template "ui-button" (dict "Class" "confirmation-decision" "Variant" "link" "Type" "button" "Interaction" "sending")}}</li></template>{{end}}
 {{define "confirmation-actions"}}{{template "ui-button" (dict "Class" "go-back" "Variant" "quiet" "Type" "button" "Interaction" "sending" "Label" "Go back and answer")}}
 {{template "ui-button" (dict "Class" "send-anyway" "Variant" "primary" "Type" "button" "Interaction" "sending" "Label" "Send anyway" "Autofocus" true)}}{{end}}
-{{define "send-label"}}Send and wait<span class="send-more"> for a reply</span>{{end}}
-{{define "entry"}}<span class="answered" data-answered="{{if .Decided}}{{if .Answered}}yes{{else}}no{{end}}{{else}}none{{end}}" aria-hidden="true">{{template "check"}}</span>
-<span class="entry-heading"><span class="entry-name">{{.Name}}</span>{{with .Severity}}{{template "mark" .}}{{end}}</span>
-{{if .Location}}<span class="location">{{.Location}}</span>{{end}}{{end}}
+{{define "send-label"}}Send and wait<span class="send-more in-panel:hidden"> for a reply</span>{{end}}
+{{define "answered"}}<span class="answered inline-flex size-check flex-none items-center justify-center rounded-full border-check border-ring-unchosen bg-surface-card text-fg-on-accent transition-colors duration-fast ease-standard answered-yes:border-accent answered-yes:bg-accent answered-none:border-transparent answered-none:bg-transparent{{with .Extra}} {{.}}{{end}}" data-answered="{{.State}}" aria-hidden="true">{{template "check" "hidden size-2.5 answered-yes:block"}}</span>{{end}}
+{{define "entry-link-layout"}}scroll-mt-landing-clearance grid items-center gap-x-2.5 rounded-entry px-2.5 py-2 transition-colors duration-fast ease-standard{{end}}
+{{define "entry"}}{{$entry := .Entry}}{{$state := "none"}}{{if $entry.Decided}}{{if $entry.Answered}}{{$state = "yes"}}{{else}}{{$state = "no"}}{{end}}{{end}}{{$hidden := ""}}{{if not .Tracked}}{{$hidden = "hidden!"}}{{end}}{{template "answered" (dict "State" $state "Extra" $hidden)}}
+<span class="entry-heading flex min-w-0 items-center gap-2"><span class="entry-name min-w-0 text-rail-name font-bold wrap-anywhere{{if not $entry.Decided}} text-fg-2{{end}}">{{$entry.Name}}</span>{{with $entry.Severity}}{{template "mark" .}}{{end}}</span>
+{{if $entry.Location}}<span class="location min-w-0 truncate font-mono text-micro text-fg-3 {{if .Tracked}}col-start-2{{else}}col-start-1{{end}}">{{$entry.Location}}</span>{{end}}{{end}}
 {{define "decision-content"}}<div class="seen" slot="body">
-<div class="attribution">
-<span class="answered" data-answered="{{if .Answered}}yes{{else}}no{{end}}" aria-hidden="true">{{template "check"}}</span>
-<span class="name">{{.Name}}</span>
+<div class="attribution flex flex-wrap items-center gap-2">
+{{$state := "no"}}{{if .Answered}}{{$state = "yes"}}{{end}}{{template "answered" (dict "State" $state "Extra" "")}}
+<span class="name mr-1 text-small font-bold">{{.Name}}</span>
 {{with .Severity}}{{template "mark" .}}{{end}}
 {{with .Audience}}{{template "mark" .}}{{end}}
-{{if .Location}}<span class="location">{{.Location}}</span>{{end}}
+{{if .Location}}<span class="location ml-auto min-w-0 font-mono text-micro wrap-anywhere text-fg-3">{{.Location}}</span>{{end}}
 </div>
-<h2 class="question">{{.Question}}</h2>
-{{if .Meaning}}<p class="meaning">{{.Meaning}}</p>{{end}}
+<h2 class="question mt-3 text-title leading-title font-bold tracking-title text-balance">{{.Question}}</h2>
+{{if .Meaning}}<p class="meaning mt-1 max-w-meaning text-pretty text-fg-2">{{.Meaning}}</p>{{end}}
 
 {{if or .Evidence .Drawing}}
-<div class="evidences">
+<div class="evidences mt-4 flex flex-col gap-4">
 {{range .Evidence}}
 {{if .Diff}}
-<div class="evidence diff" data-layout="split">
-<div class="evidence-heading diff-heading">
-<span class="evidence-label">{{with .Caption}}<span class="evidence-caption">{{.}}</span> {{end}}{{if eq .Diff.From .Diff.To}}<span class="diff-file">{{.Diff.From}}</span>{{else}}<span class="diff-from">{{.Diff.From}}</span> → <span class="diff-to">{{.Diff.To}}</span>{{end}}</span>
-<span class="evidence-aside"><span class="diff-added">+{{.Diff.Added}}</span>
-<span class="diff-removed">−{{.Diff.Removed}}</span></span>
+<div class="evidence diff min-w-0 overflow-hidden rounded-md border border-rule bg-surface-card" data-layout="split">
+<div class="evidence-heading diff-heading flex min-h-8 items-center justify-between gap-4 border-b border-rule bg-surface-evidence-heading px-3 font-mono text-micro text-fg-2">
+<span class="evidence-label min-w-0 truncate font-semibold text-fg-1">{{with .Caption}}<span class="evidence-caption mr-1 font-semibold text-fg-1">{{.}}</span> {{end}}{{if eq .Diff.From .Diff.To}}<span class="diff-file">{{.Diff.From}}</span>{{else}}<span class="diff-from">{{.Diff.From}}</span> → <span class="diff-to">{{.Diff.To}}</span>{{end}}</span>
+<span class="evidence-aside flex flex-none gap-3 font-bold"><span class="diff-added text-diff-added-mark">+{{.Diff.Added}}</span>
+<span class="diff-removed text-diff-removed-mark">−{{.Diff.Removed}}</span></span>
 </div>
-{{template "ui-diff-block" (dict "Language" .Written "Hunks" .Diff.Hunks)}}
+{{template "ui-diff-block" (dict "Language" .Written "Patch" .Patch)}}
 </div>
 {{else}}
-<div class="evidence code">
-<div class="evidence-heading"><span class="evidence-label">{{with .Caption}}<span class="evidence-caption">{{.}}</span> {{end}}{{if .Language}}{{.Language}}{{else if not .Caption}}code{{end}}</span>{{with .Copy}}{{template "ui-copy" .}}{{end}}</div>
+<div class="evidence code min-w-0 overflow-hidden rounded-md border border-rule bg-surface-card">
+<div class="evidence-heading flex min-h-8 items-center justify-between gap-4 border-b border-rule bg-surface-evidence-heading px-3 font-mono text-micro text-fg-2"><span class="evidence-label min-w-0 truncate">{{with .Caption}}<span class="evidence-caption mr-1 font-semibold text-fg-1">{{.}}</span> {{end}}{{if .Language}}{{.Language}}{{else if not .Caption}}code{{end}}</span>{{with .Copy}}{{template "ui-copy" .}}{{end}}</div>
 {{template "ui-code-block" (dict "Language" .Language "Code" .Code)}}
 </div>
 {{end}}
 {{end}}
 
 {{with .Drawing}}
-<div class="evidence illustrated">
-<div class="evidence-heading">{{template "ui-expand" (dict "Interaction" "viewing" "Label" "Expand illustration" "Hint" "Lays the drawing over the whole window. Escape closes it.")}}</div>
+<div class="evidence illustrated min-w-0 overflow-hidden rounded-md border border-rule bg-surface-card">
+<div class="evidence-heading flex min-h-8 items-center justify-end gap-4 border-b border-rule bg-surface-evidence-heading px-3 font-mono text-micro text-fg-2">{{template "ui-expand" (dict "Interaction" "viewing" "Label" "Expand illustration" "Hint" "Lays the drawing over the whole window. Escape closes it.")}}</div>
 <div class="drawing-stage">
-<div class="drawing-backdrop"></div>
-<iframe class="drawing" sandbox="allow-scripts" src="{{.Source}}" title="{{.Title}}"></iframe>
-{{template "ui-button" (dict "Class" "drawing-close" "Variant" "secondary" "Type" "button" "Interaction" "viewing" "Label" "Close")}}
+<div class="drawing-backdrop hidden expanded:fixed expanded:inset-0 expanded:z-50 expanded:block expanded:bg-scrim expanded:backdrop-blur-backdrop"></div>
+<iframe class="drawing block h-drawing w-full bg-surface-card expanded:fixed expanded:top-14 expanded:left-4 expanded:z-51 expanded:h-drawing-expanded expanded:w-drawing-expanded expanded:rounded-md expanded:shadow-dialog" sandbox="allow-scripts" src="{{.Source}}" title="{{.Title}}"></iframe>
+{{template "ui-button" (dict "Class" "drawing-close hidden! expanded:fixed expanded:top-2 expanded:right-4 expanded:z-52 expanded:inline-flex! expanded:border-rule! expanded:shadow-dialog!" "Variant" "secondary" "Type" "button" "Interaction" "viewing" "Label" "Close")}}
 </div>
 </div>
 {{end}}
@@ -66,128 +68,129 @@
 {{end}}
 </div>
 
-<div class="answering" slot="footer">
+<div class="answering flex flex-col gap-4{{if not .Options}} state-closed:hidden{{end}}" slot="footer">
 {{if .Options}}
 {{$group := .ChoiceGroup}}
-<div class="options">
-<p class="options-legend" aria-hidden="true">{{$group.Label}}</p>
-{{template "ui-choice-group" $group}}
+<div class="options @container min-w-0">
+<p class="options-legend mb-3 text-small font-bold" aria-hidden="true">{{$group.Label}}</p>
+{{template "ui-choice-group" (laid $group "Class" "docked:@pair:grid docked:@pair:grid-cols-2")}}
 </div>
 {{end}}
 
-{{template "ui-field" (dict "Class" "words-field" "Caption" "In your own words" "Name" (printf "words-%s" .ID) "Rows" 2 "Placeholder" "Answering here alone is a complete answer." "Interaction" "answering" "Decision" .ID "Disabled" $.Over)}}
+{{template "ui-field" (dict "Class" "words-field state-closed:hidden!" "Caption" "In your own words" "Name" (printf "words-%s" .ID) "Rows" 2 "Placeholder" "Answering here alone is a complete answer." "Interaction" "answering" "Decision" .ID "Disabled" $.Over)}}
 </div>{{end}}
-{{define "composer-content"}}{{template "ui-field" (dict "Class" "message-field" "Caption" "Anything to say to whoever asked" "Name" "message" "Rows" 3 "Interaction" "sending" "Disabled" .Over)}}
+{{define "composer-content"}}{{template "ui-field" (dict "Class" "message-field phase-not-open:hidden!" "Caption" "Anything to say to whoever asked" "Name" "message" "Rows" 3 "Interaction" "sending" "Disabled" .Over)}}
 
-<footer class="bar">
-<output class="receipt" data-interaction="sending" hidden aria-live="polite">
-{{template "ui-status-dot" statusDot "notice-dot" "resolved"}}
-<span class="notice-said">
-<span class="receipt-heading">Sent. Here is what went:</span>
-<ul class="receipt-decisions"></ul>
-<span class="receipt-message"></span>
+<footer class="bar flex flex-wrap items-center gap-4 border-t border-rule-soft pt-4 phase-not-open:border-t-0 phase-not-open:pt-0 in-panel:flex-1 in-panel:flex-col in-panel:flex-nowrap in-panel:items-stretch in-panel:gap-3 in-panel:border-t-0 in-panel:pt-0">
+<output class="receipt grid basis-full grid-cols-notice gap-x-4 rounded-md bg-state-resolved-wash px-4 py-3 in-panel:basis-auto" data-interaction="sending" hidden aria-live="polite">
+{{template "ui-status-dot" statusDot "notice-dot size-2! mt-2" "resolved"}}
+<span class="notice-said flex min-w-0 flex-col gap-0.5">
+<span class="receipt-heading font-bold text-fg-1">Sent. Here is what went:</span>
+<ul class="receipt-decisions flex flex-col gap-0.5 text-small wrap-anywhere text-fg-receipt"></ul>
+<span class="receipt-message mt-0.5 text-small wrap-anywhere text-fg-receipt empty:hidden"></span>
 </span>
 </output>
-<div class="sends">
-{{template "ui-button" (dict "Class" "send" "Variant" "primary" "Raised" true "Type" "submit" "Interaction" "sending" "Ends" "no" "Content" "send-label" "Disabled" .Over)}}
-{{template "ui-button" (dict "Class" "finish" "Variant" "secondary" "Type" "submit" "Interaction" "sending" "Ends" "yes" "Label" "Send and finish" "Disabled" .Over)}}
+<div class="sends flex flex-wrap gap-3 phase-not-open:hidden in-panel:flex-nowrap">
+{{template "ui-button" (dict "Class" "send in-panel:flex-auto" "Variant" "primary" "Raised" true "Type" "submit" "Interaction" "sending" "Ends" "no" "Content" "send-label" "Disabled" .Over)}}
+{{template "ui-button" (dict "Class" "finish -order-1 in-panel:flex-auto" "Variant" "secondary" "Type" "submit" "Interaction" "sending" "Ends" "yes" "Label" "Send and finish" "Disabled" .Over)}}
 </div>
-<p class="sends-meaning">Sending waits for a reply on this page. Finishing sends and closes the exchange.</p>
-{{template "ui-button" (dict "Class" "amend" "Variant" "secondary" "Type" "button" "Interaction" "sending" "Label" "Amend and send again" "Hidden" true "Disabled" .Over)}}
-<p class="state" role="status" aria-live="polite" data-tone="{{if .Over}}over{{else}}quiet{{end}}">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
+<p class="sends-meaning -order-1 grow shrink basis-70 text-small text-pretty text-fg-2 phase-not-open:hidden in-panel:order-0 in-panel:flex-none">Sending waits for a reply on this page. Finishing sends and closes the exchange.</p>
+{{template "ui-button" (dict "Class" "amend order-1 ml-auto in-panel:mt-auto in-panel:ml-0" "Variant" "secondary" "Type" "button" "Interaction" "sending" "Label" "Amend and send again" "Hidden" true "Disabled" .Over)}}
+<p class="state basis-full text-small font-bold text-fg-2 in-panel:basis-auto empty:hidden tone-waiting:text-accent tone-error:-order-2 tone-error:grid tone-error:grid-cols-notice tone-error:gap-x-4 tone-error:rounded-md tone-error:bg-state-error-wash tone-error:px-4 tone-error:py-3 tone-error:text-body tone-error:text-fg-1 tone-error:before:mt-2 tone-error:before:size-2 tone-error:before:rounded-full tone-error:before:bg-state-error tone-error:before:content-empty" role="status" aria-live="polite" data-tone="{{if .Over}}over{{else}}quiet{{end}}">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
 </footer>{{end}}
-{{define "nothing-content"}}<p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>{{end}}
+{{define "nothing-content"}}<p class="nothing-said text-fg-2">There is nothing on this page to answer, and nobody is waiting on it.</p>{{end}}
 {{define "shell-topbar"}}{{template "ui-brand" (dict "Class" "brand" "MarkClass" "brand-mark" "WordmarkClass" "wordmark" "Mark" "/assets/socrates-mark.svg" "Name" "socrates")}}
-<span class="crumb"><span class="crumb-title">{{.Title}}</span></span>
-<span class="status" data-status="{{if not .Decisions}}nothing{{else if .Over}}over{{else}}open{{end}}">{{template "ui-status-dot" statusDot "" ""}}<span class="status-said">{{if not .Decisions}}Nothing to answer{{else if .Over}}Exchange over{{else}}Open{{end}}</span></span>{{end}}
-{{define "shell-navigation"}}<div class="progress">
+<span class="crumb flex min-w-0 flex-initial items-center gap-3 text-small font-semibold text-fg-2 before:h-5 before:w-px before:flex-none before:bg-rule-control before:content-empty"><span class="crumb-title min-w-0 truncate">{{.Title}}</span></span>
+<span class="status ml-auto inline-flex h-pill flex-none items-center gap-2 rounded-pill bg-surface-muted px-2.5 text-micro leading-none font-bold tracking-chip whitespace-nowrap text-fg-2 status-open:bg-accent-wash status-open:text-accent status-sent:bg-state-resolved-wash status-sent:text-state-resolved" data-status="{{if not .Decisions}}nothing{{else if .Over}}over{{else}}open{{end}}">{{template "ui-status-dot" statusDot "" ""}}<span class="status-said">{{if not .Decisions}}Nothing to answer{{else if .Over}}Exchange over{{else}}Open{{end}}</span></span>{{end}}
+{{define "shell-navigation"}}<div class="progress flex shrink-0 flex-wrap items-baseline justify-between gap-2{{if .Decisions}} rounded-md border border-rule bg-surface-card p-4{{else}} px-3{{end}}">
 {{if .Decisions}}{{template "ui-overline" overline "" "Decisions"}}{{else}}{{template "ui-overline" overline "" "What was seen"}}{{end}}
 {{if .Decisions}}
-<span class="progress-said"><span class="answered-count">{{.AnsweredCount}}</span> of {{len .Decisions}} answered</span>
-{{template "ui-progress-bar" progressBar "progress-bar" (len .Decisions) .AnsweredCount}}
+<span class="progress-said text-small font-bold text-fg-1"><span class="answered-count">{{.AnsweredCount}}</span> of {{len .Decisions}} answered</span>
+{{template "ui-progress-bar" progressBar "progress-bar basis-full" (len .Decisions) .AnsweredCount}}
 {{end}}
 </div>
-<div class="index-group">
-{{if .Decisions}}{{if eq (len .Index) (len .Decisions)}}{{template "ui-overline" overlineCounted "index-heading" "Still open" (len .Index)}}{{else}}{{template "ui-overline" overlineCounted "index-heading" "What was seen" (len .Index)}}{{end}}{{end}}
-<ol class="entries">
+<div class="index-group flex shrink-0 flex-col gap-0.5">
+{{if .Decisions}}{{if eq (len .Index) (len .Decisions)}}{{template "ui-overline" overlineCounted "index-heading block px-2.5 pb-2" "Still open" (len .Index)}}{{else}}{{template "ui-overline" overlineCounted "index-heading block px-2.5 pb-2" "What was seen" (len .Index)}}{{end}}{{end}}
+<ol class="entries flex flex-col gap-0.5">
+{{$tracked := .Tracked}}
 {{range .Index}}
 <li class="entry">
-{{if .Decided}}<a class="entry-link" href="#decision-{{.ID}}" data-decision="{{.ID}}" data-section="decision-{{.ID}}">{{template "entry" .}}</a>{{else}}<span class="entry-link">{{template "entry" .}}</span>{{end}}
+{{if .Decided}}<a class="entry-link {{template "entry-link-layout"}} {{if $tracked}}grid-cols-check{{else}}grid-cols-1{{end}} border border-transparent text-fg-1 hover:bg-surface-hover current:border-rule current:bg-surface-card current:shadow-card" href="#decision-{{.ID}}" data-decision="{{.ID}}" data-section="decision-{{.ID}}">{{template "entry" (dict "Entry" . "Tracked" $tracked)}}</a>{{else}}<span class="entry-link {{template "entry-link-layout"}} {{if $tracked}}grid-cols-check{{else}}grid-cols-1{{end}} border border-transparent text-fg-1">{{template "entry" (dict "Entry" . "Tracked" $tracked)}}</span>{{end}}
 </li>
 {{end}}
 </ol>
 </div>
 {{if .Settled}}
-<div class="index-group">
-{{template "ui-overline" overlineCounted "index-heading" "Settled earlier" (len .Settled)}}
-<a class="settled-link" href="#settled">
-<span class="settled-check">{{template "check"}}</span>
-<span class="settled-link-count">{{len .Settled}} settled earlier</span>
-<span class="settled-link-names">{{range $at, $answer := .Settled}}{{if $at}}, {{end}}{{$answer.Name}}{{end}}</span>
+<div class="index-group flex shrink-0 flex-col gap-0.5">
+{{template "ui-overline" overlineCounted "index-heading block px-2.5 pb-2" "Settled earlier" (len .Settled)}}
+<a class="settled-link {{template "entry-link-layout"}} grid-cols-check border border-dashed border-rule-control text-fg-2 hover:border-rule-hover" href="#settled">
+<span class="settled-check inline-flex size-check items-center justify-center rounded-full bg-state-resolved text-fg-on-accent">{{template "check" "size-2.5"}}</span>
+<span class="settled-link-count text-small font-bold text-fg-1">{{len .Settled}} settled earlier</span>
+<span class="settled-link-names col-start-2 min-w-0 truncate text-micro text-fg-3">{{range $at, $answer := .Settled}}{{if $at}}, {{end}}{{$answer.Name}}{{end}}</span>
 </a>
 </div>
 {{end}}{{end}}
-{{define "shell-content"}}<div class="main-inner">
-<header class="heading">
-<span class="meta">{{if .Decisions}}{{len .Decisions}} open{{if .Settled}} · {{len .Settled}} settled earlier{{end}}{{else}}Nothing to answer{{end}}</span>
-<h1>{{.Title}}</h1>
-{{if .Preamble}}<p class="preamble">{{.Preamble}}</p>{{end}}
-<p class="over-notice" role="status"{{if not (and .Over .Decisions)}} hidden{{end}}>{{template "ui-status-dot" statusDot "notice-dot" "neutral"}}<span class="over-notice-said">The exchange is over. Nothing further will be sent from this page.</span></p>
+{{define "shell-content"}}<div class="main-inner flex max-w-main flex-col gap-4">
+<header class="heading mb-4 flex flex-col gap-2 border-b border-rule pb-6">
+<span class="meta text-small text-fg-3">{{if .Decisions}}{{len .Decisions}} open{{if .Settled}} · {{len .Settled}} settled earlier{{end}}{{else}}Nothing to answer{{end}}</span>
+<h1 class="text-display leading-display font-bold tracking-display text-balance max-narrow:text-display-narrow">{{.Title}}</h1>
+{{if .Preamble}}<p class="preamble max-w-lead text-lead leading-lead text-pretty text-fg-2">{{.Preamble}}</p>{{end}}
+<p class="over-notice mt-2 flex items-center gap-3 rounded-md border border-rule bg-surface-muted px-4 py-3 text-small font-bold text-fg-1" role="status"{{if not (and .Over .Decisions)}} hidden{{end}}>{{template "ui-status-dot" statusDot "notice-dot size-2! mt-0" "neutral"}}<span class="over-notice-said">The exchange is over. Nothing further will be sent from this page.</span></p>
 </header>
 
 {{if .Settled}}
-<details class="settled" id="settled"{{if not .Decisions}} open{{end}}>
-<summary class="settled-summary">
-<span class="settled-heading">
-<span class="settled-title">Settled earlier <span class="settled-count">· {{len .Settled}}</span></span>
-<span class="settled-note">Read-only. These will not be asked again.</span>
+<details class="settled group/settled scroll-mt-landing-clearance overflow-hidden rounded-md border border-rule bg-surface-sunk" id="settled"{{if not .Decisions}} open{{end}}>
+<summary class="settled-summary group/summary flex cursor-pointer list-none flex-wrap items-center gap-4 px-6 py-4 max-narrow:px-4 max-narrow:py-3">
+<span class="settled-heading flex min-w-0 flex-1 flex-col gap-0.5">
+<span class="settled-title font-bold">Settled earlier <span class="settled-count font-medium text-fg-3">· {{len .Settled}}</span></span>
+<span class="settled-note text-small text-fg-2">Read-only. These will not be asked again.</span>
 </span>
-<span class="settled-toggle" aria-hidden="true"><span class="when-open">Hide</span><span class="when-closed">Show</span></span>
+<span class="settled-toggle inline-flex h-8 items-center rounded-pill border border-rule-control px-3.5 text-toggle font-bold text-fg-2 transition-colors duration-fast ease-standard group-hover/summary:border-accent group-hover/summary:text-accent" aria-hidden="true"><span class="when-open hidden group-open/settled:inline">Hide</span><span class="when-closed group-open/settled:hidden">Show</span></span>
 </summary>
 <ol class="settled-answers">
 {{range .Settled}}
-<li class="settled-answer" data-settled="{{.ID}}">
-<span class="settled-check">{{template "check"}}</span>
-<div class="settled-attribution">
-<span class="settled-name">{{.Name}}</span>
-{{if .Location}}<span class="location">{{.Location}}</span>{{end}}
+<li class="settled-answer grid grid-cols-check gap-x-3 gap-y-1 border-t border-rule px-6 pt-4 pb-5 max-narrow:px-4 max-narrow:py-3" data-settled="{{.ID}}">
+<span class="settled-check mt-0.5 inline-flex size-check items-center justify-center rounded-full bg-state-resolved text-fg-on-accent">{{template "check" "size-2.5"}}</span>
+<div class="settled-attribution flex min-w-0 flex-wrap items-center gap-2 text-small">
+<span class="settled-name font-bold">{{.Name}}</span>
+{{if .Location}}<span class="location ml-auto min-w-0 font-mono text-micro wrap-anywhere text-fg-3">{{.Location}}</span>{{end}}
 </div>
-<p class="settled-question">{{.Question}}</p>
-<div class="settled-answered">
-{{template "ui-overline" overline "settled-overline" "Settled"}}
-<span class="settled-said">
-{{if .Chosen}}<span class="settled-chosen">{{.Chosen}}</span>{{end}}
+<p class="settled-question col-start-2 text-pretty font-semibold text-fg-2">{{.Question}}</p>
+<div class="settled-answered col-start-2 flex flex-wrap items-baseline gap-x-3 gap-y-2">
+{{template "ui-overline" overline "settled-overline inline-flex h-chip flex-none items-center self-center rounded-pill bg-state-resolved-wash px-2 text-state-resolved! normal-case!" "Settled"}}
+<span class="settled-said flex min-w-0 grow shrink basis-75 flex-col gap-1 text-fg-1">
+{{if .Chosen}}<span class="settled-chosen font-bold">{{.Chosen}}</span>{{end}}
 {{if .Words}}<span class="settled-words">“{{.Words}}”</span>{{end}}
-{{if and (not .Chosen) (not .Words)}}<span class="settled-left">Left to whoever asked</span>{{end}}
+{{if and (not .Chosen) (not .Words)}}<span class="settled-left text-fg-3">Left to whoever asked</span>{{end}}
 </span>
 </div>
 </li>
 {{end}}
 </ol>
 </details>
-{{if .Decisions}}{{template "ui-overline" overline "still-open" "Still open"}}{{end}}
+{{if .Decisions}}{{template "ui-overline" overline "still-open pt-1" "Still open"}}{{end}}
 {{end}}
 
 {{if .Decisions}}
-<ol class="decisions">
+<ol class="decisions flex flex-col gap-4">
 {{range .Decisions}}
-<li class="decisions-item">{{template "ui-card" .Card}}</li>
+<li class="decisions-item min-w-0">{{template "ui-card" (laid .Card "Class" "overflow-hidden scroll-mt-landing-clearance")}}</li>
 {{end}}
 </ol>
 
-{{template "ui-card" .Composer}}
+{{template "ui-card" (laid .Composer "Class" "flex! flex-col gap-4 p-6 max-narrow:p-4 composer-unsent:hidden! in-panel:shrink-0 in-panel:gap-3 in-panel:rounded-none in-panel:border-0 in-panel:border-t in-panel:border-rule in-panel:bg-transparent in-panel:px-4 in-panel:pt-4 in-panel:pb-6 in-panel:shadow-none in-panel:phase-not-open:min-h-0 in-panel:phase-not-open:flex-1 in-panel:phase-not-open:overflow-y-auto in-panel:phase-not-open:border-t-0 in-panel:phase-not-open:pt-6")}}
 {{else}}
-{{template "ui-card" .Nothing}}
+{{template "ui-card" (laid .Nothing "Class" "p-6 max-narrow:p-4")}}
 {{end}}
 </div>{{end}}
-{{define "shell-panel"}}<div class="panel-body">
-{{template "ui-overline" overline "" "Answer summary"}}
-<ol class="summary"></ol>
+{{define "shell-panel"}}<div class="panel-body flex flex-col gap-4 docked:min-h-0 docked:flex-1 docked:overflow-y-auto docked:px-4 docked:py-6 docked:beside-finished-composer:hidden">
+{{template "ui-overline" overline "shrink-0" "Answer summary"}}
+<ol class="summary shrink-0 rounded-md border border-rule bg-surface-card shadow-card"></ol>
 </div>{{end}}
 {{define "shell-overlay"}}{{template "ui-dialog" .Confirmation}}{{end}}
 <div class="surface contents">
 {{if .Decisions}}<form class="exchange" data-interaction="sending">{{end}}
-{{template "ui-app-shell" .Shell}}
+{{template "ui-app-shell" (laid .Shell "Navigation.Class" "flex flex-col gap-6" "Panel.Class" "docked:holding-unsent-composer:hidden!")}}
 {{if .Decisions}}</form>
 {{template "shell-overlay" .}}{{end}}
 </div>

@@ -32,6 +32,7 @@ func parsedPage() *template.Template {
 			}
 			return held, nil
 		},
+		"laid":            laid,
 		"fill":            func(name string) (template.HTML, error) { return filled(root, name, nil) },
 		"fillWith":        func(name string, data any) (template.HTML, error) { return filled(root, name, data) },
 		"overline":        overlineOf,

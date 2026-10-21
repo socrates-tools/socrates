@@ -56,7 +56,7 @@ func TestAShadowRootHoldsTheButtonTheFieldTheCopyControlAndTheExpandControlOfThe
 	held := standing(t)
 	aDrawing(t, held, "counting.html", drawingWithACounter)
 	page := opening(t, held.serve(illustrating(t, copyingDocument(t), "counting.html")))
-	page.waitFor(`document.querySelectorAll('.evidence.code code.hljs').length === 2`)
+	page.waitFor(highlightedCodeBlocks(2))
 
 	for _, each := range page.controlsInShadowRoots() {
 		if each.Drawn == 0 {
@@ -234,7 +234,7 @@ func TestACopyControlTellsAScreenReaderWhereItWasPressedThatTheCopyWasMade(t *te
 	t.Parallel()
 	_, page := read(t, copyingDocument(t))
 	page.mayCopy()
-	page.waitFor(`document.querySelectorAll('.evidence.code code.hljs').length === 2`)
+	page.waitFor(highlightedCodeBlocks(2))
 
 	statuses := func() []string {
 		var said []string
