@@ -17,11 +17,11 @@ const drawingWithACounter = `<!doctype html>
 <script>
 let count = 0;
 window.addEventListener('message', (event) => {
-  if (event.data === 'bump') {
+  if (typeof event.data === 'string' && event.data.startsWith('bump')) {
     count += 1;
     document.getElementById('count').textContent = String(count);
   }
-  parent.postMessage({ count, shown: document.getElementById('count').textContent }, '*');
+  parent.postMessage({ count, shown: document.getElementById('count').textContent, answering: event.data }, '*');
 });
 </script>
 </body></html>`
@@ -72,19 +72,22 @@ func (r *reader) whereTheFrameStands() frameStanding {
 func (r *reader) tellTheDrawing(message string) map[string]any {
 	r.t.Helper()
 
-	r.evaluate(`window.__heard = null; if (!window.__listening) {
+	r.evaluate(`window.__heard = {}; if (!window.__listening) {
   window.__listening = true;
+  window.__asked = 0;
   window.addEventListener('message', (event) => {
-    if (event.source === `+frameOfC1+`.contentWindow && typeof event.data === 'object') window.__heard = event.data;
+    if (event.source === `+frameOfC1+`.contentWindow && typeof event.data === 'object') window.__heard[event.data.answering] = event.data;
   });
-} true`, nil)
-	r.waitFor(`(() => { ` + frameOfC1 + `.contentWindow.postMessage('ask', '*'); return window.__heard !== null; })()`)
+} window.__telling = (told) => { window.__asked += 1; const tag = told + '#' + window.__asked; `+frameOfC1+`.contentWindow.postMessage(tag, '*'); return tag; }; true`, nil)
 
-	r.evaluate(`window.__heard = null; `+frameOfC1+`.contentWindow.postMessage('`+message+`', '*'); true`, nil)
-	r.waitFor(`window.__heard !== null`)
+	r.waitFor(`(() => { window.__telling('ask'); return Object.keys(window.__heard).length > 0; })()`)
+
+	var tag string
+	r.evaluate(`window.__heard = {}; window.__telling(`+jsonOf(r.t, message)+`)`, &tag)
+	r.waitFor(`window.__heard[` + jsonOf(r.t, tag) + `] !== undefined`)
 
 	var heard map[string]any
-	r.evaluate(`window.__heard`, &heard)
+	r.evaluate(`window.__heard[`+jsonOf(r.t, tag)+`]`, &heard)
 	return heard
 }
 

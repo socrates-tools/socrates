@@ -310,6 +310,8 @@ func (r *reader) emulate(preference string) {
 func (r *reader) narrow(width, height int64) {
 	r.t.Helper()
 	r.do(chromedp.EmulateViewport(width, height))
+	r.waitFor(fmt.Sprintf(`window.innerWidth === %d && window.innerHeight === %d`, width, height))
+	r.evaluate(`new Promise((settled) => requestAnimationFrame(() => requestAnimationFrame(settled)))`, nil, awaitingThePromise)
 }
 
 func chose(decision string, option int) string {
