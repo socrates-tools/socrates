@@ -81,3 +81,36 @@ func TestTheCatalogDrawsTheDialogInMoreThanOneState(t *testing.T) {
 		t.Errorf("the catalog draws %d dialogs, and the dialog has more than one state to draw", drawn)
 	}
 }
+
+func framesOf(node *html.Node) []*html.Node {
+	var found []*html.Node
+	var visit func(node *html.Node)
+	visit = func(node *html.Node) {
+		if node.Type == html.ElementNode && node.Data == "iframe" && hasAttribute(node, "srcdoc") {
+			found = append(found, node)
+		}
+		for child := node.FirstChild; child != nil; child = child.NextSibling {
+			visit(child)
+		}
+	}
+	visit(node)
+	return found
+}
+
+func TestTheCatalogDrawsTheShellAtANarrowWidthAtNineSixtyAndAtTwelveEighty(t *testing.T) {
+	var widths []string
+	for _, frame := range framesOf(theCatalog(t)) {
+		inside, err := html.Parse(strings.NewReader(attribute(frame, "srcdoc")))
+		if err != nil {
+			t.Fatalf("reading back a frame of the catalog: %v", err)
+		}
+		if _, drawn := partsOf(inside)["ui-app-shell"]; drawn {
+			widths = append(widths, attribute(frame, "width"))
+		}
+	}
+
+	want := []string{"480", "960", "1280"}
+	if diff := cmp.Diff(want, widths); diff != "" {
+		t.Errorf("the widths the catalog draws the shell at differ (-want +got):\n%s", diff)
+	}
+}

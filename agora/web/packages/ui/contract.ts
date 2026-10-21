@@ -6,6 +6,7 @@ export const contract = {
   'ui-tooltip': ['title', 'hint'],
   'ui-overline': ['count'],
   'ui-card': ['body', 'footer'],
+  'ui-app-shell': ['frame', 'topbar', 'body', 'navigation', 'content', 'panel'],
 } as const
 
 export type Primitive = keyof typeof contract

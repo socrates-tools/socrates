@@ -1,3 +1,4 @@
+export { UiAppShell } from './app-shell/app-shell'
 export { UiBadge } from './badge/badge'
 export { UiCard } from './card/card'
 export { UiDialog } from './dialog/dialog'

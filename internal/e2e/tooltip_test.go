@@ -11,7 +11,7 @@ import (
 
 const (
 	tooltipAnchors  = `Array.from(document.querySelectorAll('button.catalog-anchor')).map((held) => held.id)`
-	scrollableFloor = `document.body.style.minHeight = '4000px'; window.scrollTo(0, 0);`
+	scrollableFloor = `document.body.style.paddingBottom = '4000px'; window.scrollTo(0, 0);`
 )
 
 func tooltipOf(anchor string) string {

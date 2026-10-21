@@ -134,19 +134,10 @@
 <p class="state" role="status" aria-live="polite" data-tone="{{if .Over}}over{{else}}quiet{{end}}">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
 </footer>{{end}}
 {{define "nothing-content"}}<p class="nothing-said">There is nothing on this page to answer, and nobody is waiting on it.</p>{{end}}
-<div class="surface">
-<header class="topbar">
-<div class="topbar-inner">
-<span class="brand"><img class="brand-mark" src="/assets/socrates-mark.svg" width="28" height="28" alt=""><span class="wordmark">socrates</span></span>
+{{define "shell-topbar"}}<span class="brand"><img class="brand-mark" src="/assets/socrates-mark.svg" width="28" height="28" alt=""><span class="wordmark">socrates</span></span>
 <span class="crumb"><span class="crumb-title">{{.Title}}</span></span>
-<span class="status" data-status="{{if not .Decisions}}nothing{{else if .Over}}over{{else}}open{{end}}">{{template "ui-status-dot" statusDot "" ""}}<span class="status-said">{{if not .Decisions}}Nothing to answer{{else if .Over}}Exchange over{{else}}Open{{end}}</span></span>
-</div>
-</header>
-
-{{if .Decisions}}<form class="exchange shell" data-interaction="sending">{{else}}<div class="shell">{{end}}
-{{if .Index}}
-<nav class="index" aria-label="What was seen">
-<div class="progress">
+<span class="status" data-status="{{if not .Decisions}}nothing{{else if .Over}}over{{else}}open{{end}}">{{template "ui-status-dot" statusDot "" ""}}<span class="status-said">{{if not .Decisions}}Nothing to answer{{else if .Over}}Exchange over{{else}}Open{{end}}</span></span>{{end}}
+{{define "shell-navigation"}}<div class="progress">
 {{if .Decisions}}{{template "ui-overline" overline "" "Decisions"}}{{else}}{{template "ui-overline" overline "" "What was seen"}}{{end}}
 {{if .Decisions}}
 <span class="progress-said"><span class="answered-count">{{.AnsweredCount}}</span> of {{len .Decisions}} answered</span>
@@ -158,7 +149,7 @@
 <ol class="entries">
 {{range .Index}}
 <li class="entry">
-{{if .Decided}}<a class="entry-link" href="#decision-{{.ID}}" data-decision="{{.ID}}">{{template "entry" .}}</a>{{else}}<span class="entry-link">{{template "entry" .}}</span>{{end}}
+{{if .Decided}}<a class="entry-link" href="#decision-{{.ID}}" data-decision="{{.ID}}" data-section="decision-{{.ID}}">{{template "entry" .}}</a>{{else}}<span class="entry-link">{{template "entry" .}}</span>{{end}}
 </li>
 {{end}}
 </ol>
@@ -172,12 +163,8 @@
 <span class="settled-link-names">{{range $at, $answer := .Settled}}{{if $at}}, {{end}}{{$answer.Name}}{{end}}</span>
 </a>
 </div>
-{{end}}
-</nav>
-{{end}}
-
-<main class="main">
-<div class="main-inner">
+{{end}}{{end}}
+{{define "shell-content"}}<div class="main-inner">
 <header class="heading">
 <span class="meta">{{if .Decisions}}{{len .Decisions}} open{{if .Settled}} · {{len .Settled}} settled earlier{{end}}{{else}}Nothing to answer{{end}}</span>
 <h1>{{.Title}}</h1>
@@ -229,22 +216,13 @@
 {{else}}
 {{template "ui-card" .Nothing}}
 {{end}}
-</div>
-</main>
-{{if .Decisions}}
-<aside class="panel" aria-label="Reply">
-<div class="panel-body">
+</div>{{end}}
+{{define "shell-panel"}}<div class="panel-body">
 {{template "ui-overline" overline "" "Answer summary"}}
 <ol class="summary"></ol>
-</div>
-</aside>
-</form>
-
-{{template "ui-dialog" .Confirmation}}
-{{else}}
-</div>
-{{end}}
-</div>
+</div>{{end}}
+{{define "shell-overlay"}}{{template "ui-dialog" .Confirmation}}{{end}}
+{{template "ui-app-shell" .Shell}}
 {{template "ui-tooltip" .Tooltip}}
 <script src="/assets/surface.js"></script>
 </body>

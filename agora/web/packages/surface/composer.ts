@@ -1,15 +1,15 @@
+import type { UiAppShell } from '@agora/ui'
 import { find } from './page'
 
-const wideEnoughForThePanel = window.matchMedia('(min-width: 1280px)')
-
 export function placeTheComposer(): void {
+  const shell = find<UiAppShell>('ui-app-shell')
   const composer = find('.composer')
   const panel = find('.panel')
   const decisions = find('.main-inner')
-  if (!composer || !panel || !decisions) {
+  if (!shell || !composer || !panel || !decisions) {
     return
   }
-  const home = wideEnoughForThePanel.matches ? panel : decisions
+  const home = shell.panelHasItsPlace ? panel : decisions
   if (composer.parentElement === home) {
     return
   }
@@ -21,5 +21,5 @@ export function placeTheComposer(): void {
 }
 
 export function followTheWidth(): void {
-  wideEnoughForThePanel.addEventListener('change', placeTheComposer)
+  document.addEventListener('panel-place-changed', placeTheComposer)
 }

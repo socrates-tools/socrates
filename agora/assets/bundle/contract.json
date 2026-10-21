@@ -23,5 +23,13 @@
   "ui-card": [
     "body",
     "footer"
+  ],
+  "ui-app-shell": [
+    "frame",
+    "topbar",
+    "body",
+    "navigation",
+    "content",
+    "panel"
   ]
 }
