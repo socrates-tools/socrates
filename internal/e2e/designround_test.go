@@ -169,7 +169,7 @@ func TestASecondDesignRoundOpensWithWhatWasSettledAheadOfWhatIsStillOpen(t *test
     settled: Array.from(document.querySelectorAll('.settled-answer')).map((held) => held.dataset.settled),
     decisions: Array.from(document.querySelectorAll('.decision')).map((held) => held.dataset.decision),
     first: !!settled && !!decisions && !!(settled.compareDocumentPosition(decisions) & Node.DOCUMENT_POSITION_FOLLOWING),
-    controls: settled ? settled.querySelectorAll('input, textarea, button, select').length : -1,
+    controls: settled ? settled.querySelectorAll('input, textarea, button, select, ui-button, ui-field').length : -1,
     said: (document.querySelector('.settled-answer[data-settled="q2"]') || { textContent: '' }).textContent,
     folded: !!settled && !settled.open && settled.querySelector('.settled-summary').getBoundingClientRect().height > 0,
   };

@@ -121,9 +121,11 @@
   --shadow-dialog: var(--shadow-dialog);
   --shadow-dimmed-dialog: var(--shadow-dimmed-dialog);
   --blur-backdrop: var(--blur-backdrop);
+  --blur-bar: var(--blur-bar);
   --breakpoint-narrow: 44rem;
-  --breakpoint-panel: 80rem;
   --container-pair: 37.5rem;
+  --breakpoint-split: 60rem;
+  --breakpoint-docked: 80rem;
   --shadow-press: var(--shadow-press);
   --shadow-focus-ring: var(--focus-ring);
   --shadow-ring-chosen: var(--ring-chosen);
@@ -168,10 +170,10 @@
 @custom-variant state-closed (&:where([data-state='closed'], [data-state='closed'] *));
 @custom-variant phase-not-open (&:where([data-phase]:not([data-phase='open']), [data-phase]:not([data-phase='open']) *));
 @custom-variant expanded (&:where([data-expanded], [data-expanded] *));
-@custom-variant in-panel (&:where([data-part='panel'] *));
+@custom-variant in-panel (&:where([slot='panel'] *));
 @custom-variant composer-unsent (&[data-phase='over']:has(output[hidden]));
 @custom-variant holding-unsent-composer (&:has(.composer[data-phase='over'] output[hidden]));
-@custom-variant beside-finished-composer (:where([data-part='panel']:has(.composer:not([data-phase='open']))) &);
+@custom-variant beside-finished-composer (:where([slot='panel']:has(.composer:not([data-phase='open']))) &);
 
 @utility content-empty {
   content: '';
@@ -179,6 +181,10 @@
 
 @utility h-drawing {
   height: min(var(--drawing-height, 24rem), 100vh);
+}
+
+@utility landing-clearance-* {
+  --landing-clearance: calc(var(--spacing) * --value(integer));
 }
 
 @layer base {

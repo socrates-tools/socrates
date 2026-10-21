@@ -1,7 +1,9 @@
 package e2e_test
 
 import (
+	"bytes"
 	"fmt"
+	"image/png"
 	"testing"
 	"time"
 
@@ -46,7 +48,7 @@ func TestTheCatalogPressesEveryEnabledButtonStateWithThePointer(t *testing.T) {
 			state := stateOf("ui-button", key)
 			countPresses(page, state)
 
-			page.click(state + " button")
+			page.click(state + " ui-button")
 
 			if got := pressesIn(page, state); got != 1 {
 				t.Errorf("pressing the %s button counted %d presses, want 1", key, got)
@@ -62,7 +64,7 @@ func TestTheCatalogPressesAButtonWithTheKeyboard(t *testing.T) {
 
 	state := stateOf("ui-button", "primary")
 	countPresses(page, state)
-	page.evaluate(`document.querySelector('`+state+` button').focus()`, nil)
+	page.evaluate(`document.querySelector('`+state+` ui-button').focus()`, nil)
 
 	page.press(kb.Enter)
 	page.press(" ")
@@ -80,8 +82,8 @@ func TestTheCatalogDoesNotPressADisabledButton(t *testing.T) {
 	state := stateOf("ui-button", "disabled")
 	countPresses(page, state)
 	var disabled bool
-	page.evaluate(`document.querySelector('`+state+` button').disabled`, &disabled)
-	page.evaluate(`document.querySelector('`+state+` button').click()`, nil)
+	page.evaluate(`document.querySelector('`+state+` ui-button').disabled`, &disabled)
+	page.evaluate(`document.querySelector('`+state+` ui-button').click()`, nil)
 
 	if !disabled {
 		t.Error("the disabled state draws a button that is not disabled")
@@ -98,19 +100,19 @@ func TestTheCatalogTakesTypingInAnEnabledField(t *testing.T) {
 
 	state := stateOf("ui-field", "empty")
 	page.evaluate(`(() => {
-  const control = document.querySelector('`+state+` textarea');
+  const control = document.querySelector('`+state+` ui-field');
   window.__typed = 0;
   control.addEventListener('input', () => { window.__typed += 1; });
   return true;
 })()`, nil)
 
-	page.write(state+" textarea", "in my own words")
+	page.write(state+" ui-field", "in my own words")
 
 	var held struct {
 		Value string `json:"value"`
 		Typed int    `json:"typed"`
 	}
-	page.evaluate(`({ value: document.querySelector('`+state+` textarea').value, typed: window.__typed })`, &held)
+	page.evaluate(`({ value: document.querySelector('`+state+` ui-field').value, typed: window.__typed })`, &held)
 	if held.Value != "in my own words" {
 		t.Errorf("the field holds %q after typing, want what was typed", held.Value)
 	}
@@ -119,21 +121,45 @@ func TestTheCatalogTakesTypingInAnEnabledField(t *testing.T) {
 	}
 }
 
+func (r *reader) inkInsideTheWritingOf(selector string) int {
+	r.t.Helper()
+
+	r.evaluate(`document.querySelector(`+jsonOf(r.t, selector)+`).scrollIntoView({ block: 'center' }); new Promise((settled) => requestAnimationFrame(() => requestAnimationFrame(settled)))`, nil, awaitingThePromise)
+	var box struct{ Left, Top, Width, Height float64 }
+	r.evaluate(`(() => { const box = document.querySelector(`+jsonOf(r.t, selector)+`).getBoundingClientRect(); return { Left: box.left, Top: box.top, Width: box.width, Height: box.height }; })()`, &box)
+
+	shot, err := png.Decode(bytes.NewReader(r.screenshot()))
+	if err != nil {
+		r.t.Fatalf("reading what the page painted: %v", err)
+	}
+	left, top, right, bottom := int(box.Left)+8, int(box.Top+box.Height)-56, int(box.Left+box.Width)-28, int(box.Top+box.Height)-14
+	red, green, blue, _ := shot.At(left, top).RGBA()
+	inked := 0
+	for x := left; x < right; x++ {
+		for y := top; y < bottom; y++ {
+			r2, g2, b2, _ := shot.At(x, y).RGBA()
+			if abs(int(r2>>8)-int(red>>8))+abs(int(g2>>8)-int(green>>8))+abs(int(b2>>8)-int(blue>>8)) > 60 {
+				inked++
+			}
+		}
+	}
+	return inked
+}
+
 func TestTheCatalogShowsAFieldsPlaceholderUntilSomethingIsTyped(t *testing.T) {
-	// scenario: A field state that carries a placeholder shows it while empty and not once typed into
+	// scenario: A field state that carries a placeholder draws words in its writing area while empty and draws none once a space is typed
 	t.Parallel()
 	page := catalogued(t)
 
-	state := stateOf("ui-field", "placeholder")
-	var before bool
-	page.evaluate(`document.querySelector('`+state+` textarea').matches(':placeholder-shown')`, &before)
+	state := stateOf("ui-field", "placeholder") + " ui-field"
+	before := page.inkInsideTheWritingOf(state)
 
-	page.write(state+" textarea", "x")
+	page.write(state, " ")
+	page.evaluate(`document.activeElement.blur(); true`, nil)
 
-	var after bool
-	page.evaluate(`document.querySelector('`+state+` textarea').matches(':placeholder-shown')`, &after)
-	if !before || after {
-		t.Errorf("the placeholder was shown before typing: %v, and after typing: %v; want true then false", before, after)
+	after := page.inkInsideTheWritingOf(state)
+	if before == 0 || after != 0 {
+		t.Errorf("the writing area held %d inked pixels before typing and %d after a space, want some and then none", before, after)
 	}
 }
 
@@ -149,7 +175,7 @@ func TestTheCatalogTakesNoTypingInADisabledField(t *testing.T) {
 		Value    string `json:"value"`
 	}
 	page.evaluate(`(() => {
-  const control = document.querySelector('`+state+` textarea');
+  const control = document.querySelector('`+state+` ui-field');
   control.focus();
   return { disabled: control.disabled, focused: document.activeElement === control, value: control.value };
 })()`, &held)
@@ -166,7 +192,7 @@ func TestTheCatalogCopiesWhatACopyControlHoldsExactlyAsItWasWritten(t *testing.T
 	page.mayCopy()
 	page.clipboardHolds(somethingElseHeld)
 
-	page.click(stateOf("ui-copy", "resting") + " button")
+	page.click(stateOf("ui-copy", "resting") + " ui-copy")
 	page.waitFor(`navigator.clipboard.readText().then((held) => held !== ` + jsonOf(t, somethingElseHeld) + `)`)
 
 	if diff := cmp.Diff(catalogCopiesThis, page.onTheClipboard()); diff != "" {
@@ -182,7 +208,7 @@ func TestTheCatalogCopiesWhatAnOwnerOffersWhenTheControlHoldsNothing(t *testing.
 	page.clipboardHolds(somethingElseHeld)
 	page.evaluate(`document.addEventListener('copyrequested', (event) => { event.detail.text = `+jsonOf(t, theOwnerOffersThis)+`; }); true`, nil)
 
-	page.click(stateOf("ui-copy", "offering-nothing") + " button")
+	page.click(stateOf("ui-copy", "offering-nothing") + " ui-copy")
 	page.waitFor(`navigator.clipboard.readText().then((held) => held !== ` + jsonOf(t, somethingElseHeld) + `)`)
 
 	if diff := cmp.Diff(theOwnerOffersThis, page.onTheClipboard()); diff != "" {
@@ -197,11 +223,11 @@ func TestTheCatalogCopiesNothingWhenNobodyOffersAnyText(t *testing.T) {
 	page.mayCopy()
 	page.clipboardHolds(somethingElseHeld)
 
-	page.click(stateOf("ui-copy", "offering-nothing") + " button")
+	page.click(stateOf("ui-copy", "offering-nothing") + " ui-copy")
 	page.do(chromedp.Sleep(anIdlePressWindow))
 
 	var confirmed bool
-	page.evaluate(`document.querySelector('`+stateOf("ui-copy", "offering-nothing")+` button').dataset.copied !== undefined`, &confirmed)
+	page.evaluate(`document.querySelector('`+stateOf("ui-copy", "offering-nothing")+` ui-copy').dataset.copied !== undefined`, &confirmed)
 	if confirmed {
 		t.Error("the control confirmed a copy it never made")
 	}
@@ -215,23 +241,18 @@ func TestTheCatalogConfirmsACopyWhereItWasPressedAndThenRests(t *testing.T) {
 	t.Parallel()
 	page := catalogued(t)
 	page.mayCopy()
-	control := stateOf("ui-copy", "resting") + " button"
+	control := stateOf("ui-copy", "resting") + " ui-copy"
 
 	page.click(control)
 	page.waitFor(`document.querySelector('` + control + `').dataset.copied === 'yes'`)
 
-	var confirmed struct{ Title, Status string }
-	page.evaluate(`({ Title: document.querySelector('`+control+`').dataset.title, Status: document.querySelector('`+stateOf("ui-copy", "resting")+` [data-part="status"]').textContent })`, &confirmed)
-	if confirmed.Title != "Copied" || confirmed.Status != "Copied" {
-		t.Errorf("after the copy the title says %q and the status says %q, want both to say Copied", confirmed.Title, confirmed.Status)
+	var confirmed string
+	page.evaluate(`document.querySelector('`+control+`').dataset.title`, &confirmed)
+	if confirmed != "Copied" {
+		t.Errorf("after the copy the title says %q, want Copied", confirmed)
 	}
 
 	page.waitFor(`document.querySelector('` + control + `').dataset.copied === undefined && document.querySelector('` + control + `').dataset.title === 'Copy code'`)
-	var resting string
-	page.evaluate(`document.querySelector('`+stateOf("ui-copy", "resting")+` [data-part="status"]').textContent`, &resting)
-	if resting != "" {
-		t.Errorf("the live status still says %q after the control returned to rest", resting)
-	}
 }
 
 func TestTheCatalogSaysACopyFailedWhenTheClipboardRefuses(t *testing.T) {
@@ -239,7 +260,7 @@ func TestTheCatalogSaysACopyFailedWhenTheClipboardRefuses(t *testing.T) {
 	t.Parallel()
 	page := catalogued(t)
 	page.evaluate(`navigator.clipboard.writeText = () => Promise.reject(new Error('refused')); true`, nil)
-	control := stateOf("ui-copy", "resting") + " button"
+	control := stateOf("ui-copy", "resting") + " ui-copy"
 
 	page.click(control)
 	page.waitFor(`document.querySelector('` + control + `').dataset.failed === 'yes'`)
@@ -259,7 +280,7 @@ func TestTheCatalogShowsTheTipOfACopyControlAgainWhenItsTitleChanges(t *testing.
 	t.Parallel()
 	page := catalogued(t)
 	page.mayCopy()
-	control := stateOf("ui-copy", "resting") + " button"
+	control := stateOf("ui-copy", "resting") + " ui-copy"
 	page.evaluate(`window.__retitled = []; document.addEventListener('retitled', (event) => { window.__retitled.push(event.target.dataset.title); }); true`, nil)
 
 	page.click(control)
@@ -280,15 +301,15 @@ func TestTheCatalogExpandsAnExpandControlAndAnnouncesIt(t *testing.T) {
 	state := stateOf("ui-expand", "resting")
 	page.evaluate(`window.__expanding = []; document.addEventListener('expanded', () => { window.__expanding.push('expanded'); }); document.addEventListener('collapsed', () => { window.__expanding.push('collapsed'); }); true`, nil)
 
-	page.click(state + " button")
+	page.click(state + " ui-expand")
 
 	var held struct {
 		Expanded string   `json:"expanded"`
 		Heard    []string `json:"heard"`
 	}
-	page.evaluate(`({ expanded: document.querySelector('`+state+` button').getAttribute('aria-expanded'), heard: window.__expanding })`, &held)
+	page.evaluate(`({ expanded: String(document.querySelector('`+state+` ui-expand').expanded), heard: window.__expanding })`, &held)
 	if held.Expanded != "true" || cmp.Diff([]string{"expanded"}, held.Heard) != "" {
-		t.Errorf("after the press the control is aria-expanded=%q and the page heard %v, want true and one expanded", held.Expanded, held.Heard)
+		t.Errorf("after the press the control is expanded=%q and the page heard %v, want true and one expanded", held.Expanded, held.Heard)
 	}
 }
 
@@ -299,21 +320,21 @@ func TestTheCatalogCollapsesAnExpandedExpandControlWhenItIsPressedAgain(t *testi
 
 	state := stateOf("ui-expand", "expanded")
 	var arrives string
-	page.evaluate(`document.querySelector('`+state+` button').getAttribute('aria-expanded')`, &arrives)
+	page.evaluate(`String(document.querySelector('`+state+` ui-expand').expanded)`, &arrives)
 	page.evaluate(`window.__expanding = []; document.addEventListener('collapsed', () => { window.__expanding.push('collapsed'); }); true`, nil)
 
-	page.click(state + " button")
+	page.click(state + " ui-expand")
 
 	var held struct {
 		Expanded string   `json:"expanded"`
 		Heard    []string `json:"heard"`
 	}
-	page.evaluate(`({ expanded: document.querySelector('`+state+` button').getAttribute('aria-expanded'), heard: window.__expanding })`, &held)
+	page.evaluate(`({ expanded: String(document.querySelector('`+state+` ui-expand').expanded), heard: window.__expanding })`, &held)
 	if arrives != "true" {
-		t.Errorf("the expanded state arrives aria-expanded=%q, want true", arrives)
+		t.Errorf("the expanded state arrives expanded=%q, want true", arrives)
 	}
 	if held.Expanded != "false" || cmp.Diff([]string{"collapsed"}, held.Heard) != "" {
-		t.Errorf("after the press the control is aria-expanded=%q and the page heard %v, want false and one collapsed", held.Expanded, held.Heard)
+		t.Errorf("after the press the control is expanded=%q and the page heard %v, want false and one collapsed", held.Expanded, held.Heard)
 	}
 }
 
@@ -323,14 +344,14 @@ func TestTheCatalogExpandsAnExpandControlWithTheKeyboard(t *testing.T) {
 	page := catalogued(t)
 
 	state := stateOf("ui-expand", "resting")
-	page.evaluate(`document.querySelector('`+state+` button').focus()`, nil)
+	page.evaluate(`document.querySelector('`+state+` ui-expand').focus()`, nil)
 
 	page.press(kb.Enter)
 
 	var expanded string
-	page.evaluate(`document.querySelector('`+state+` button').getAttribute('aria-expanded')`, &expanded)
+	page.evaluate(`String(document.querySelector('`+state+` ui-expand').expanded)`, &expanded)
 	if expanded != "true" {
-		t.Errorf("Enter on the focused control left it aria-expanded=%q, want true", expanded)
+		t.Errorf("Enter on the focused control left it expanded=%q, want true", expanded)
 	}
 }
 
@@ -346,7 +367,7 @@ func TestTheCatalogReturnsTheCursorToAnExpandControlItsOwnerCollapses(t *testing
 		Expanded string `json:"expanded"`
 		Focused  bool   `json:"focused"`
 	}
-	page.evaluate(`({ expanded: document.querySelector('`+state+` button').getAttribute('aria-expanded'), focused: document.activeElement === document.querySelector('`+state+` button') })`, &held)
+	page.evaluate(`({ expanded: String(document.querySelector('`+state+` ui-expand').expanded), focused: document.activeElement === document.querySelector('`+state+` ui-expand') })`, &held)
 	if held.Expanded != "false" || !held.Focused {
 		t.Errorf("after collapse() the control is %+v, want aria-expanded=false and the cursor on it", held)
 	}

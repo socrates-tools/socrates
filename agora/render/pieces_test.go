@@ -25,14 +25,14 @@ func TestAPieceKeepsTheClassThatNamesItBesideTheUtilitiesThatLayItOut(t *testing
 
 	for tag, class := range map[string]string{"ui-card": "decision", "ui-choice-group": "options-list"} {
 		held := firstWithClass(t, page, tag, class)
-		if !hasClass(held, "flex") && !hasClass(held, "overflow-hidden") && !hasClass(held, "panel:@pair:grid") {
+		if !hasClass(held, "flex") && !hasClass(held, "overflow-hidden") && !hasClass(held, "docked:@pair:grid") {
 			t.Errorf("the %s named %q carries no utility laying it out: %q", tag, class, attribute(held, "class"))
 		}
 	}
 	if composer := firstWithClass(t, page, "ui-card", "composer"); !hasClass(composer, "flex-col") {
 		t.Errorf("the composer carries %q, and its layout is written beside its name", attribute(composer, "class"))
 	}
-	if panel := firstWithClass(t, page, "aside", "panel"); !hasClass(panel, "panel:holding-unsent-composer:hidden!") {
+	if panel := firstWithClass(t, page, "aside", "panel"); !hasClass(panel, "docked:holding-unsent-composer:hidden!") {
 		t.Errorf("the panel carries %q, and the shell's part takes its layout from the page", attribute(panel, "class"))
 	}
 }

@@ -41,8 +41,6 @@ func laidOnShell(shell appShellView, path, utilities string) (any, error) {
 	switch path {
 	case "Class":
 		shell.Class = joined(shell.Class, utilities)
-	case "BodyClass":
-		shell.BodyClass = joined(shell.BodyClass, utilities)
 	case "Topbar.Class":
 		shell.Topbar = shell.Topbar.laid(utilities)
 	case "Content.Class":

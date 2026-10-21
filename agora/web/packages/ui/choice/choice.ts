@@ -1,6 +1,7 @@
 import { html, type PropertyValues } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { UiElement } from '../element'
+import { submitByDefault } from '../form'
 
 const frameClasses = 'flex items-start gap-x-3 rounded-md border px-4 py-3 transition-all duration-fast ease-standard'
 
@@ -104,7 +105,10 @@ export class UiChoice extends UiElement {
       event.preventDefault()
       this.choose()
     } else if (event.key === 'Enter' && !this.disabled) {
-      this.closest('form')?.requestSubmit()
+      const form = this.closest('form')
+      if (form) {
+        submitByDefault(form)
+      }
     }
   }
 

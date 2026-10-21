@@ -273,6 +273,27 @@ func TestTheContractDeclaresTheBadgeAsAnElementOfAttributesAndSlots(t *testing.T
 	}
 }
 
+func TestTheContractDeclaresTheControlsAsElementsOfAttributesAndSlots(t *testing.T) {
+	declared := declaredByTheContract(t)
+
+	want := map[string]element{
+		"ui-button": {Attributes: []string{"disabled", "raised", "type", "variant"}, Slots: []string{defaultSlot}},
+		"ui-field":  {Attributes: []string{"disabled", "name", "placeholder", "rows"}, Slots: []string{"caption"}},
+		"ui-copy":   {Attributes: []string{"copied-title", "failed-title", "hint", "label", "text"}},
+		"ui-expand": {Attributes: []string{"expanded", "hint", "label"}},
+	}
+	for name, expected := range want {
+		got := declared.Elements[name]
+		slices.Sort(expected.Attributes)
+		if diff := cmp.Diff(expected, got, cmpopts.EquateEmpty()); diff != "" {
+			t.Errorf("the contract declares <%s> differently (-want +got):\n%s", name, diff)
+		}
+		if _, stillParts := declared.Parts[name]; stillParts {
+			t.Errorf("the contract still declares parts for <%s>: %v", name, declared.Parts[name])
+		}
+	}
+}
+
 func TestTheContractDeclaresTheCardAndTheDialogAsElementsOfSlotsAlone(t *testing.T) {
 	declared := declaredByTheContract(t)
 
@@ -312,6 +333,38 @@ func TestARenderedPageWritesTheCardAndTheDialogOnlyWithTheSlotsTheyDeclare(t *te
 	}
 	if want := []string{"heading", "body", "actions"}; !slices.Equal(written["ui-dialog"].slots, want) {
 		t.Errorf("the confirmation fills the dialog's slots %v, want %v", written["ui-dialog"].slots, want)
+	}
+}
+
+func TestTheContractDeclaresTheAppShellAsAnElementOfSlotsAlone(t *testing.T) {
+	declared := declaredByTheContract(t)
+
+	want := element{Slots: []string{"content", "navigation", "panel", "topbar"}}
+	if diff := cmp.Diff(want, declared.Elements["ui-app-shell"], cmpopts.EquateEmpty()); diff != "" {
+		t.Errorf("the contract declares the app shell differently (-want +got):\n%s", diff)
+	}
+	if _, stillParts := declared.Parts["ui-app-shell"]; stillParts {
+		t.Errorf("the contract still declares parts for the app shell: %v", declared.Parts["ui-app-shell"])
+	}
+}
+
+func TestARenderedPageWritesTheAppShellOnlyWithTheSlotsItDeclares(t *testing.T) {
+	// scenario: A rendered page with an index and decisions fills the shell's topbar, navigation, content and panel slots and writes no part
+	written := writingsOf(rendered(t, oneDecision(document.One)))
+
+	held, reached := written["ui-app-shell"]
+	if !reached {
+		t.Fatalf("the rendered page writes %v, and it draws its frame on <ui-app-shell>", written)
+	}
+	if len(held.parts) != 0 {
+		t.Errorf("the rendered page writes the parts %v inside <ui-app-shell>, and the element draws its own parts", held.parts)
+	}
+	slices.Sort(held.slots)
+	if want := []string{"content", "navigation", "panel", "topbar"}; !slices.Equal(held.slots, want) {
+		t.Errorf("the page fills the shell's slots %v, want %v", held.slots, want)
+	}
+	for _, found := range undeclared(declaredByTheContract(t), written) {
+		t.Error(found)
 	}
 }
 
@@ -465,13 +518,17 @@ func TestARenderedPageReachesEveryControlThroughThePartialThatDrawsIt(t *testing
 	}
 }
 
-func TestEveryControlOfARenderedPageIsHeldByAPrimitive(t *testing.T) {
-	// scenario: No button, input or textarea of a rendered page stands outside a primitive's element
+func TestNoButtonAndNoTextareaOfARenderedPageStandsOutsideAPrimitivesShadowRoot(t *testing.T) {
+	// scenario: A rendered page writes no button and no textarea of its own, since the button and the field draw theirs inside their elements
 	read := oneDecision(document.One)
 	read.Decisions[0].Evidence = document.Evidence{{Code: "x := 1", Language: "go"}}
 	read.Decisions[0].Illustration = document.Illustration{Path: "drawings/c-1.html"}
 
-	for _, control := range elements(rendered(t, read), "button", "input", "textarea") {
+	page := rendered(t, read)
+	for _, control := range elements(page, "button", "textarea") {
+		t.Errorf("the page writes a <%s class=%q>, and the button, the field, the copy control and the expand control draw theirs inside their own shadow roots", control.Data, attribute(control, "class"))
+	}
+	for _, control := range elements(page, "input") {
 		if attribute(control, "data-part") != "control" {
 			t.Errorf("the page offers a <%s class=%q> that is not the control of a primitive", control.Data, attribute(control, "class"))
 		}

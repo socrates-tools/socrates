@@ -1,5 +1,14 @@
 {
   "elements": {
+    "ui-app-shell": {
+      "attributes": [],
+      "slots": [
+        "content",
+        "navigation",
+        "panel",
+        "topbar"
+      ]
+    },
     "ui-badge": {
       "attributes": [
         "icon",
@@ -14,6 +23,17 @@
       "slots": [
         "",
         "mark"
+      ]
+    },
+    "ui-button": {
+      "attributes": [
+        "disabled",
+        "raised",
+        "type",
+        "variant"
+      ],
+      "slots": [
+        ""
       ]
     },
     "ui-card": {
@@ -45,12 +65,41 @@
         ""
       ]
     },
+    "ui-copy": {
+      "attributes": [
+        "copied-title",
+        "failed-title",
+        "hint",
+        "label",
+        "text"
+      ],
+      "slots": []
+    },
     "ui-dialog": {
       "attributes": [],
       "slots": [
         "actions",
         "body",
         "heading"
+      ]
+    },
+    "ui-expand": {
+      "attributes": [
+        "expanded",
+        "hint",
+        "label"
+      ],
+      "slots": []
+    },
+    "ui-field": {
+      "attributes": [
+        "disabled",
+        "name",
+        "placeholder",
+        "rows"
+      ],
+      "slots": [
+        "caption"
       ]
     },
     "ui-overline": {
@@ -81,23 +130,6 @@
     }
   },
   "parts": {
-    "ui-button": [
-      "control"
-    ],
-    "ui-field": [
-      "frame",
-      "caption",
-      "control"
-    ],
-    "ui-copy": [
-      "control",
-      "icon",
-      "done",
-      "status"
-    ],
-    "ui-expand": [
-      "control"
-    ],
     "ui-code-block": [
       "code"
     ],
@@ -109,14 +141,6 @@
       "line",
       "marker",
       "code"
-    ],
-    "ui-app-shell": [
-      "frame",
-      "topbar",
-      "body",
-      "navigation",
-      "content",
-      "panel"
     ]
   }
 }

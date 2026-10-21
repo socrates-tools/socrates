@@ -546,17 +546,17 @@ func TestADecisionWithNoOptionsStillCarriesTheField(t *testing.T) {
 		t.Fatal("a decision that asks nothing renders no field for a person to write in")
 	}
 
-	for _, written := range elements(page, "textarea") {
+	for _, written := range elements(page, "ui-field") {
 		if !hasClass(written, "words-field") {
 			continue
 		}
 		if held := attribute(written, "rows"); held != "2" {
 			t.Errorf("the field a person writes in is %q rows, and its size is the surface's", held)
 		}
-	}
-	for _, labelled := range elements(page, "span") {
-		if hasClass(labelled, "words-label") && strings.TrimSpace(text(labelled)) != "In your own words" {
-			t.Errorf("the field a person writes in is labelled %q, and its label is the surface's", text(labelled))
+		for _, labelled := range elements(written, "span") {
+			if attribute(labelled, "slot") == "caption" && strings.TrimSpace(text(labelled)) != "In your own words" {
+				t.Errorf("the field a person writes in is labelled %q, and its label is the surface's", text(labelled))
+			}
 		}
 	}
 }
@@ -595,7 +595,7 @@ func everyCardCarriesTheField(page *html.Node) bool {
 		}
 		cards++
 		fields := 0
-		for _, written := range elements(card, "textarea") {
+		for _, written := range elements(card, "ui-field") {
 			if hasClass(written, "words-field") {
 				fields++
 			}
@@ -628,7 +628,7 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 	}
 
 	var parts []string
-	for _, control := range elements(page, "ui-choice", "input", "textarea", "button", "select", "form", "output", "ui-dialog") {
+	for _, control := range elements(page, "ui-choice", "input", "textarea", "button", "select", "ui-field", "ui-button", "ui-copy", "ui-expand", "form", "output", "ui-dialog") {
 		part := attribute(control, "data-interaction")
 		if part != answering && part != sending && part != viewing {
 			t.Errorf("the page offers a <%s class=%q> that is part of none of answering, sending or viewing", control.Data, attribute(control, "class"))
@@ -649,7 +649,7 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 		"sending amend",
 		"sending confirmation",
 		"sending confirmation-decision",
-		"sending exchange shell",
+		"sending exchange",
 		"sending finish",
 		"sending go-back",
 		"sending message-field",
@@ -694,13 +694,13 @@ func TestTheConfirmationStandsOutsideTheFormAndSubmitsNothing(t *testing.T) {
 		}
 	}
 
-	for _, press := range elements(asking[0], "button") {
+	for _, press := range elements(asking[0], "ui-button") {
 		if attribute(press, "type") != "button" {
-			t.Errorf("the confirmation offers a <button type=%q>, and a press inside it submits nothing", attribute(press, "type"))
+			t.Errorf("the confirmation offers a <ui-button type=%q>, and a press inside it submits nothing", attribute(press, "type"))
 		}
 	}
 
-	submits := elements(page, "button")
+	submits := elements(page, "ui-button")
 	first := ""
 	for _, press := range submits {
 		if attribute(press, "type") == "submit" {
@@ -710,6 +710,44 @@ func TestTheConfirmationStandsOutsideTheFormAndSubmitsNothing(t *testing.T) {
 	}
 	if first != "send" {
 		t.Errorf("the first submit in document order is %q, and enter reaches the press that waits for a reply", first)
+	}
+}
+
+func TestTheExchangesFormWrapsTheShellSoEveryControlInItsSlotsIsPartOfTheForm(t *testing.T) {
+	// scenario: A page with decisions draws its one exchange form around the shell, holding the decisions, the composer and the presses
+	page := rendered(t, citingASource())
+
+	forms := elements(page, "form")
+	if len(forms) != 1 || !slices.Contains(strings.Fields(attribute(forms[0], "class")), "exchange") {
+		t.Fatalf("the page carries %d forms, want the one exchange", len(forms))
+	}
+	shells := elements(forms[0], "ui-app-shell")
+	if len(shells) != 1 {
+		t.Fatalf("the exchange form holds %d shells, want the one the page draws", len(shells))
+	}
+	for _, class := range []string{"decision", "composer"} {
+		held := elements(shells[0], "ui-card")
+		if !slices.ContainsFunc(held, func(card *html.Node) bool { return slices.Contains(strings.Fields(attribute(card, "class")), class) }) {
+			t.Errorf("the shell inside the exchange form holds no card of class %q", class)
+		}
+	}
+	if len(elements(forms[0], "ui-button", "ui-field", "ui-choice")) == 0 {
+		t.Error("the exchange form holds no control")
+	}
+}
+
+func TestAPageWithNothingToDecideDrawsTheShellWithNoFormAndNoDialog(t *testing.T) {
+	// scenario: A page with no decisions draws the shell alone, with no exchange form and no confirmation
+	page := rendered(t, nothingToDecide())
+
+	if forms := elements(page, "form"); len(forms) != 0 {
+		t.Errorf("the page carries %d forms, and nothing is sent from it", len(forms))
+	}
+	if dialogs := elements(page, "ui-dialog"); len(dialogs) != 0 {
+		t.Errorf("the page carries %d dialogs, and nothing is confirmed in it", len(dialogs))
+	}
+	if shells := elements(page, "ui-app-shell"); len(shells) != 1 {
+		t.Errorf("the page carries %d shells, want one", len(shells))
 	}
 }
 

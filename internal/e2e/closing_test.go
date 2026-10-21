@@ -13,9 +13,9 @@ import (
 	"github.com/socrates-tools/socrates/agora/surface"
 )
 
-const somethingLiveOnThePage = `Array.from(document.querySelectorAll('button, .choice, textarea')).some((held) => !held.disabled)`
+const somethingLiveOnThePage = `Array.from(document.querySelectorAll('ui-button, ui-field, .choice')).some((held) => !held.disabled)`
 
-const everythingOnThePageIsLive = `Array.from(document.querySelectorAll('button, .choice, textarea')).every((held) => !held.disabled)`
+const everythingOnThePageIsLive = `Array.from(document.querySelectorAll('ui-button, ui-field, .choice')).every((held) => !held.disabled)`
 
 const confirmationIsOpen = `document.querySelector('ui-dialog.confirmation').isOpen === true`
 
@@ -29,7 +29,7 @@ const whatTheConfirmationIsHeaded = `document.querySelector('.confirmation-headi
 
 const whatTheConfirmationNames = `Array.from(document.querySelectorAll('.confirmation-decision')).map((held) => held.dataset.decision)`
 
-const whereTheCursorRests = `document.activeElement.classList[0]`
+const whereTheCursorRests = `document.activeElement.classList[0] || ''`
 
 func pressPastTheConfirmation(page *reader, press string) {
 	page.t.Helper()
@@ -555,7 +555,7 @@ const whereTheCursorLanded = `(() => {
   const box = card ? card.getBoundingClientRect() : null;
   return {
     decision: card ? card.dataset.decision : '',
-    control: held.classList.contains('choice') ? 'choice' : held.classList[0],
+    control: ['decline', 'choice', 'words-field'].find((named) => held.classList.contains(named)) || held.className,
     inView: !!box && box.top < window.innerHeight && box.bottom > 0,
     hash: location.hash,
   };

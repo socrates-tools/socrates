@@ -14,6 +14,7 @@
 --bg-bar
 --bg-ground
 --blur-backdrop
+--blur-bar
 --card-pad
 --catalog-max
 --check-border

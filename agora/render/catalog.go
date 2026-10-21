@@ -36,16 +36,14 @@ type buttonView struct {
 }
 
 type fieldView struct {
-	Class        string
-	CaptionClass string
-	ControlClass string
-	Caption      string
-	Name         string
-	Rows         int
-	Placeholder  string
-	Interaction  string
-	Decision     string
-	Disabled     bool
+	Class       string
+	Caption     string
+	Name        string
+	Rows        int
+	Placeholder string
+	Interaction string
+	Decision    string
+	Disabled    bool
 }
 
 type choiceView struct {

@@ -495,7 +495,7 @@ func TestEndingClosesTheExchange(t *testing.T) {
 	}
 
 	var accepting bool
-	page.evaluate(`Array.from(document.querySelectorAll('button, .choice, textarea')).some((held) => !held.disabled)`, &accepting)
+	page.evaluate(`Array.from(document.querySelectorAll('ui-button, ui-field, .choice')).some((held) => !held.disabled)`, &accepting)
 	if accepting {
 		t.Error("a closed exchange still accepts an answer")
 	}
@@ -1135,7 +1135,7 @@ func TestThePageSaysNobodyIsWaiting(t *testing.T) {
 	}
 
 	var offered []string
-	page.evaluate(`Array.from(document.querySelectorAll('input, textarea, button, select, form')).map((held) => held.tagName + '.' + String(held.className))`, &offered)
+	page.evaluate(`Array.from(document.querySelectorAll('input, textarea, button, select, form, ui-button, ui-field')).map((held) => held.tagName + '.' + String(held.className))`, &offered)
 	if len(offered) != 0 {
 		t.Errorf("a page with nothing to answer offers %v, and there is nothing on it to answer and nothing to send", offered)
 	}

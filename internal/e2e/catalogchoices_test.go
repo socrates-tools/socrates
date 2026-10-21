@@ -45,11 +45,6 @@ func (r *reader) focusedChoiceIn(group string) int {
 	return at
 }
 
-func (r *reader) focus(selector string) {
-	r.t.Helper()
-	r.evaluate(`document.querySelector(`+jsonOf(r.t, selector)+`).focus(); true`, nil)
-}
-
 func TestTheCatalogUnchoosesTheChosenChoiceWhenAnotherOfASingleChoiceGroupIsChosen(t *testing.T) {
 	// scenario: Choosing one choice of a single-choice group unchecks the one checked before
 	t.Parallel()

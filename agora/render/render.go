@@ -239,24 +239,18 @@ func viewOf(read document.Document, frame Frame) view {
 
 func shellOf(v view) appShellView {
 	shell := appShellView{
-		Class:     "surface",
-		BodyClass: "shell",
-		Topbar:    shellPartView{Class: "topbar"},
-		Content:   shellPartView{Class: "main"},
-		Slots:     shellSlots{Topbar: "shell-topbar", Content: "shell-content"},
-		Data:      v,
+		Topbar:  shellPartView{Class: "topbar"},
+		Content: shellPartView{Class: "main"},
+		Slots:   shellSlots{Topbar: "shell-topbar", Content: "shell-content"},
+		Data:    v,
 	}
 	if len(v.Index) > 0 {
 		shell.Navigation = &shellPartView{Class: "index", Label: whatWasSeen}
 		shell.Slots.Navigation = "shell-navigation"
 	}
 	if len(v.Decisions) > 0 {
-		shell.Form = true
-		shell.BodyClass = "exchange shell"
-		shell.Interaction = "sending"
 		shell.Panel = &shellPartView{Class: "panel", Label: reply}
 		shell.Slots.Panel = "shell-panel"
-		shell.Slots.Overlay = "shell-overlay"
 	}
 	return shell
 }
