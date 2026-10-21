@@ -10,7 +10,9 @@ import (
 	"strings"
 )
 
-var StyleDirectory = filepath.Join(ToolDirectory("agora"), "web", "src")
+var StyleDirectory = filepath.Join(ToolDirectory("agora"), "web")
+
+var TokensDirectory = filepath.Join(ToolDirectory("agora"), "web", "packages", "ui", "tokens")
 
 var paletteSelector = ":root"
 
@@ -18,12 +20,23 @@ var colourWritten = regexp.MustCompile(`(?i)#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hw
 
 var declaration = regexp.MustCompile(`^\s*([-a-zA-Z0-9_]+)\s*:`)
 
-type Palette struct {
-	Loose []string
+var fontDeclared = regexp.MustCompile(`(?:^|[\s;{])(font-family|font)\s*:\s*([^;{}]*)`)
+
+var commentWritten = regexp.MustCompile(`(?s)/\*.*?\*/`)
+
+var notALineBreak = regexp.MustCompile(`[^\n]`)
+
+var fontLeftToTheTokens = regexp.MustCompile(`^(?:inherit|initial|unset|revert|revert-layer|var\(--font-[a-z-]+\))$`)
+
+var fontTakenFromTheTokens = regexp.MustCompile(`var\(--font-[a-z-]+\)`)
+
+type Painting struct {
+	Colours  []string
+	Families []string
 }
 
-func ColoursWrittenWhereTheyAreUsed(root, directory string) (Palette, error) {
-	var read Palette
+func PaintWrittenWhereItIsUsed(root, directory, tokens string) (Painting, error) {
+	var read Painting
 
 	err := filepath.WalkDir(filepath.Join(root, directory), func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
@@ -48,18 +61,53 @@ func ColoursWrittenWhereTheyAreUsed(root, directory string) (Palette, error) {
 			return relErr
 		}
 
-		read.Loose = append(read.Loose, coloursLooseIn(relative, string(held))...)
+		if isWithin(relative, tokens) {
+			read.Colours = append(read.Colours, coloursLooseIn(relative, string(held), true)...)
+		} else {
+			read.Colours = append(read.Colours, coloursLooseIn(relative, string(held), false)...)
+			read.Families = append(read.Families, familiesNamedIn(relative, string(held))...)
+		}
 		return nil
 	})
 	if err != nil {
-		return Palette{}, err
+		return Painting{}, err
 	}
 
-	slices.Sort(read.Loose)
+	slices.Sort(read.Colours)
+	slices.Sort(read.Families)
 	return read, nil
 }
 
-func coloursLooseIn(named, held string) []string {
+func isWithin(relative, directory string) bool {
+	within, err := filepath.Rel(directory, relative)
+	return err == nil && within != ".." && !strings.HasPrefix(within, ".."+string(filepath.Separator))
+}
+
+func familiesNamedIn(named, held string) []string {
+	var loose []string
+
+	unannotated := commentWritten.ReplaceAllStringFunc(held, func(comment string) string {
+		return notALineBreak.ReplaceAllString(comment, " ")
+	})
+
+	for _, declared := range fontDeclared.FindAllStringSubmatchIndex(unannotated, -1) {
+		property := unannotated[declared[2]:declared[3]]
+		value := strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(unannotated[declared[4]:declared[5]]), "!important"))
+		value = strings.Join(strings.Fields(value), " ")
+		if fontLeftToTheTokens.MatchString(value) {
+			continue
+		}
+		if property == "font" && fontTakenFromTheTokens.MatchString(value) {
+			continue
+		}
+		position := strings.Count(unannotated[:declared[2]], "\n") + 1
+		loose = append(loose, fmt.Sprintf("%s:%d names the font family %s outside the library's tokens", named, position, value))
+	}
+
+	return loose
+}
+
+func coloursLooseIn(named, held string, stated bool) []string {
 	var loose []string
 	var open []string
 
@@ -75,6 +123,8 @@ func coloursLooseIn(named, held string) []string {
 				property = named[1]
 			}
 			switch {
+			case !stated:
+				loose = append(loose, fmt.Sprintf("%s:%d states %q outside the library's tokens", named, position+1, painted))
 			case !strings.HasPrefix(property, "--"):
 				loose = append(loose, fmt.Sprintf("%s:%d paints %q where it is used", named, position+1, painted))
 			case !slices.ContainsFunc(open, func(selector string) bool { return strings.Contains(selector, paletteSelector) }):

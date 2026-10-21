@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="agora/web/brand/socrates-mark.svg" width="128" height="128" alt="socrates">
+  <img src="agora/web/packages/ui/tokens/brand/socrates-mark.svg" width="128" height="128" alt="socrates">
 </p>
 
 <h1 align="center">socrates</h1>

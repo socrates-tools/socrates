@@ -56,6 +56,27 @@ for comment in '// a line comment' '/* a block comment */' '/** a documentation 
   fi
 done
 
+library_imports() {
+  label=$1
+  file=$2
+  content=$3
+  fresh
+  printf '%s\n' "$content" > "$scratch/agora/web/packages/ui/$file"
+  if output=$(build); then
+    fail "$label did not stop the build"
+  elif ! printf '%s' "$output" | grep -Eq "packages/ui/$file"; then
+    fail "$label was refused without naming its file: $output"
+  elif [ -e "$scratch/agora/assets/bundle/surface.js" ]; then
+    fail "$label still wrote a bundle"
+  fi
+}
+
+library_imports "a library module importing the surface by path" "reaching.ts" "import { exchangeIsOver } from '../surface/exchange'
+export const reached = exchangeIsOver"
+library_imports "a library module importing the surface by name" "naming.ts" "import { exchangeIsOver } from '@agora/surface/exchange'
+export const named = exchangeIsOver"
+library_imports "a library stylesheet importing the surface" "tokens/reaching.css" "@import '../../surface/surface.css';"
+
 until_it() {
   for _ in $(seq 1 100); do
     if eval "$1"; then

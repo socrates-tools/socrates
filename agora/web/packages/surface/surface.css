@@ -1,4 +1,4 @@
-@import './tokens.css';
+@import '@agora/ui/tokens/tokens.css';
 
 [hidden] {
   display: none !important;

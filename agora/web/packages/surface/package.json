@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@agora/ui": "workspace:*",
     "highlight.js": "^11.11.1"
   }
 }

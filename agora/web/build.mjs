@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, watch, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { dirname, join, relative, sep } from 'node:path'
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 
@@ -12,10 +12,12 @@ const bundle = join(here, '..', 'assets', 'bundle')
 const stamp = join(here, '..', 'assets', 'bundle.sum')
 const languages = join(here, '..', 'document', 'languages.json')
 const surface = join(here, 'packages', 'surface')
+const library = join(here, 'packages', 'ui')
+const tokens = join(library, 'tokens')
 
 const hljs = createRequire(join(surface, 'package.json'))('highlight.js/lib/common')
 
-const stamped = ['src', 'fonts', 'brand', 'packages', 'build.mjs', 'tsconfig.json', 'package.json', 'pnpm-lock.yaml']
+const stamped = ['packages', 'build.mjs', 'tsconfig.json', 'package.json', 'pnpm-lock.yaml']
 
 function within(path) {
   if (statSync(path).isFile()) {
@@ -140,12 +142,48 @@ async function rebuildOnEverySave() {
   await new Promise(() => {})
 }
 
+function reachesTheSurface(specifier, from) {
+  if (specifier === '@agora/surface' || specifier.startsWith('@agora/surface/')) {
+    return true
+  }
+  if (!specifier.startsWith('.')) {
+    return false
+  }
+  const target = relative(surface, resolve(dirname(from), specifier))
+  return target === '' || (!target.startsWith('..') && !isAbsolute(target))
+}
+
+function importsOf(path) {
+  const text = readFileSync(path, 'utf8')
+  if (path.endsWith('.css')) {
+    return [...text.matchAll(/@import\s+(?:url\(\s*)?['"]([^'"]+)['"]/g)].map((found) => found[1])
+  }
+  if (path.endsWith('.ts')) {
+    return ts.preProcessFile(text, true, true).importedFiles.map((imported) => imported.fileName)
+  }
+  return []
+}
+
+function surfaceImportsInTheLibrary() {
+  const manifest = JSON.parse(readFileSync(join(library, 'package.json'), 'utf8'))
+  const declared = Object.keys({ ...manifest.dependencies, ...manifest.devDependencies, ...manifest.peerDependencies })
+  const refusals = declared
+    .filter((name) => name === '@agora/surface')
+    .map(() => `${relative(here, join(library, 'package.json')).split(sep).join('/')} - the library depends on the surface, and the library imports nothing from the surface`)
+  const imports = within(library).flatMap((path) =>
+    importsOf(path)
+      .filter((specifier) => reachesTheSurface(specifier, path))
+      .map((specifier) => `${relative(here, path).split(sep).join('/')} - imports ${specifier} from the surface, and the library imports nothing from the surface`),
+  )
+  return [...refusals, ...imports]
+}
+
 if (process.argv.includes('--watch')) {
   await rebuildOnEverySave()
 }
 
 const { created, configuration } = program()
-const refused = [...typeErrors(created, configuration), ...sources(created).flatMap(commentsIn)]
+const refused = [...typeErrors(created, configuration), ...sources(created).flatMap(commentsIn), ...surfaceImportsInTheLibrary()]
 if (refused.length > 0) {
   process.stderr.write(`${refused.join('\n')}\n`)
   process.exit(1)
@@ -157,8 +195,8 @@ mkdirSync(bundle, { recursive: true })
 await build({
   entryPoints: [
     { in: join(surface, 'main.ts'), out: 'surface' },
-    { in: join(here, 'src', 'surface.css'), out: 'surface' },
-    { in: join(here, 'src', 'tokens.css'), out: 'tokens' },
+    { in: join(surface, 'surface.css'), out: 'surface' },
+    { in: join(tokens, 'tokens.css'), out: 'tokens' },
     { in: join(surface, 'height.ts'), out: 'height' },
   ],
   bundle: true,
@@ -172,7 +210,7 @@ await build({
   logLevel: 'warning',
 })
 
-copyFileSync(join(here, 'brand', 'socrates-mark.svg'), join(bundle, 'socrates-mark.svg'))
+copyFileSync(join(tokens, 'brand', 'socrates-mark.svg'), join(bundle, 'socrates-mark.svg'))
 
 const answeredTo = [...new Set(hljs.listLanguages().flatMap((name) => [name, ...(hljs.getLanguage(name).aliases ?? [])]))].sort()
 writeFileSync(languages, JSON.stringify(answeredTo, null, 2) + '\n')

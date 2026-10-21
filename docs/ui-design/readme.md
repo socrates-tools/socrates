@@ -6,18 +6,19 @@ A person reads findings there and sends answers back to the coding session.
 
 This is the system that page is painted in: Aegean blue and terracotta clay on whitewashed limestone.
 ADR 53, *"The page is light whatever the reader prefers"*, adopted it and superseded the dark page of ADR 45.
-Where this folder and the shipped page disagree, the shipped page is right: `agora/web/src/surface.css` holds the tokens the page actually paints, and this folder is the reference a change to the page is designed against.
+Where this folder and the shipped page disagree, the shipped page is right: `agora/web/packages/ui/tokens/tokens.css` holds the tokens the page actually paints, and this folder is the reference a change to the page is designed against.
 
 > Naming: **socrates** is the product brand and goes on every surface. **agora** is the internal web server and is never shown to the person.
 
 ## Sources
 
 - `agora/render/page.gohtml`: page structure.
-- `agora/web/src/surface.css`: the shipped tokens and styles.
-- `agora/web/src/surface.js`: answering and sending behaviour.
+- `agora/web/packages/ui/tokens/tokens.css`: the shipped tokens.
+- `agora/web/packages/surface/surface.css`: the shipped styles.
+- `agora/web/packages/surface/`: answering and sending behaviour.
 - `agora/render/icons.go`, `marks.go`, `audiences.go`, `messages.go`: icons, marks, tooltip copy.
 - `agora/document/testdata/source.json`: sample content.
-- `agora/web/fonts/`: Cinzel, Manrope and JetBrains Mono, which `fonts/` here copies byte for byte.
+- `agora/web/packages/ui/tokens/fonts/`: Cinzel, Manrope and JetBrains Mono, which `fonts/` here copies byte for byte.
 
 ---
 
