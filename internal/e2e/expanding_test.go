@@ -7,7 +7,6 @@ import (
 
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/input"
-	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/kb"
 )
 
@@ -26,7 +25,7 @@ window.addEventListener('message', (event) => {
 </script>
 </body></html>`
 
-const expandControl = `.decision[data-decision="c-1"] button.expand`
+const expandControl = `.decision[data-decision="c-1"] ui-expand.expand`
 
 const whereTheFrameStands = `(() => {
   const frame = ` + frameOfC1 + `;
@@ -187,14 +186,12 @@ const whatTheExpandControlSays = `(() => {
   const control = document.querySelector('` + expandControl + `');
   const tip = document.querySelector('.tooltip');
   return {
-    spoken: control.getAttribute('aria-label') || control.textContent.trim(),
     tipShown: !tip.hidden && tip.getBoundingClientRect().height > 0,
     tipSaid: (tip.heading + ' ' + tip.hint).trim(),
   };
 })()`
 
 type controlSaid struct {
-	Spoken   string `json:"spoken"`
 	TipShown bool   `json:"tipShown"`
 	TipSaid  string `json:"tipSaid"`
 }
@@ -207,8 +204,8 @@ func TestTheExpandControlSaysWhatItDoesOnHoverOnFocusAndToAScreenReader(t *testi
 
 	var resting controlSaid
 	page.evaluate(whatTheExpandControlSays, &resting)
-	if !strings.Contains(strings.ToLower(resting.Spoken), "expand") {
-		t.Errorf("a screen reader hears %q from the expand control, want it to say it expands the illustration", resting.Spoken)
+	if heard := page.buttonsNamed("Expand illustration"); len(heard) != 1 || heard[0].Expanded != "false" {
+		t.Errorf("a screen reader hears %+v for the expand control, want one button named Expand illustration that says it is not expanded", heard)
 	}
 	if resting.TipShown {
 		t.Errorf("the control shows %q before anything has its cursor", resting.TipSaid)
@@ -227,7 +224,7 @@ func TestTheExpandControlSaysWhatItDoesOnHoverOnFocusAndToAScreenReader(t *testi
 	}
 
 	page.do(sending(input.DispatchMouseEvent, input.DispatchMouseEventParams{Type: input.DispatchMouseEventTypeMouseMoved, X: 1, Y: 1}))
-	page.do(chromedp.Focus(chromedp.CSS(expandControl)))
+	page.focus(expandControl)
 
 	var focused controlSaid
 	page.evaluate(whatTheExpandControlSays, &focused)

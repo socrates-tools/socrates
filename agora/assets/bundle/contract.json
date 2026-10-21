@@ -25,6 +25,17 @@
         "mark"
       ]
     },
+    "ui-button": {
+      "attributes": [
+        "disabled",
+        "raised",
+        "type",
+        "variant"
+      ],
+      "slots": [
+        ""
+      ]
+    },
     "ui-card": {
       "attributes": [],
       "slots": [
@@ -62,6 +73,16 @@
         ""
       ]
     },
+    "ui-copy": {
+      "attributes": [
+        "copied-title",
+        "failed-title",
+        "hint",
+        "label",
+        "text"
+      ],
+      "slots": []
+    },
     "ui-dialog": {
       "attributes": [],
       "slots": [
@@ -76,6 +97,25 @@
       ],
       "slots": [
         ""
+      ]
+    },
+    "ui-expand": {
+      "attributes": [
+        "expanded",
+        "hint",
+        "label"
+      ],
+      "slots": []
+    },
+    "ui-field": {
+      "attributes": [
+        "disabled",
+        "name",
+        "placeholder",
+        "rows"
+      ],
+      "slots": [
+        "caption"
       ]
     },
     "ui-overline": {
@@ -105,23 +145,5 @@
       "slots": []
     }
   },
-  "parts": {
-    "ui-button": [
-      "control"
-    ],
-    "ui-field": [
-      "frame",
-      "caption",
-      "control"
-    ],
-    "ui-copy": [
-      "control",
-      "icon",
-      "done",
-      "status"
-    ],
-    "ui-expand": [
-      "control"
-    ]
-  }
+  "parts": {}
 }

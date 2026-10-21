@@ -107,7 +107,7 @@ const focused = `(() => {
   const held = document.activeElement;
   if (!held || held === document.body) return { tag: '', name: '', className: '' };
   const label = held.closest('label');
-  const name = held.getAttribute('aria-label') || (label ? label.textContent.trim() : '') || held.textContent.trim();
+  const name = held.getAttribute('aria-label') || held.label || (label ? label.textContent.trim() : '') || held.textContent.trim();
   return { tag: held.tagName, name, className: String(held.className) };
 })()`
 
@@ -448,11 +448,19 @@ var measuringTheContrast = `(() => {
 
   const failing = [];
   let measured = 0;
-  const weigh = (element, colour, what) => {
+  const asPainted = (token) => {
+    const probe = document.createElement('span');
+    probe.style.color = 'var(' + token + ')';
+    document.body.append(probe);
+    const colour = getComputedStyle(probe).color;
+    probe.remove();
+    return colour;
+  };
+  const weigh = (element, colour, what, over) => {
     const painted = parse(colour);
     if (!painted || painted.a < 1) return;
     measured += 1;
-    const held = ratio(painted, behind(element));
+    const held = ratio(painted, over ? parse(over) : behind(element));
     if (held < ` + strconv.FormatFloat(contrastFloor, 'f', -1, 64) + `) {
       failing.push(named(element) + what + ' at ' + held.toFixed(2));
     }
@@ -465,8 +473,11 @@ var measuringTheContrast = `(() => {
 
     const owns = Array.from(element.childNodes).some((node) => node.nodeType === 3 && node.textContent.trim());
     if (owns) weigh(element, style.color, '');
-    if (element.matches('textarea, input:not([type="radio"]):not([type="checkbox"])')) {
+    if (element.matches('input:not([type="radio"]):not([type="checkbox"])')) {
       weigh(element, getComputedStyle(element, '::placeholder').color, ' placeholder');
+    }
+    if (element.matches('ui-field[placeholder]:not([placeholder=""])')) {
+      weigh(element, asPainted('--fg-placeholder'), ' placeholder', asPainted('--surface-card'));
     }
   }
   return { failing, measured };

@@ -1,9 +1,4 @@
-export const contract = {
-  'ui-button': ['control'],
-  'ui-field': ['frame', 'caption', 'control'],
-  'ui-copy': ['control', 'icon', 'done', 'status'],
-  'ui-expand': ['control'],
-} as const
+export const contract = {} as const
 
 export type Primitive = keyof typeof contract
 
