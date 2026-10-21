@@ -18,6 +18,20 @@ var page = parsedPage()
 func parsedPage() *template.Template {
 	var root *template.Template
 	root = template.Must(template.New("page").Funcs(template.FuncMap{
+		"dict": func(pairs ...any) (map[string]any, error) {
+			if len(pairs)%2 != 0 {
+				return nil, fmt.Errorf(dictionaryNeedsPairs, len(pairs))
+			}
+			held := make(map[string]any, len(pairs)/2)
+			for at := 0; at < len(pairs); at += 2 {
+				key, named := pairs[at].(string)
+				if !named {
+					return nil, fmt.Errorf(dictionaryKeyNotAWord, pairs[at])
+				}
+				held[key] = pairs[at+1]
+			}
+			return held, nil
+		},
 		"fill": func(name string) (template.HTML, error) {
 			var written bytes.Buffer
 			if err := root.ExecuteTemplate(&written, name, nil); err != nil {

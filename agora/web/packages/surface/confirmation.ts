@@ -36,14 +36,17 @@ function goTo(card: HTMLElement): void {
   }
 }
 
-function nameInTheConfirmation(card: HTMLElement): HTMLButtonElement {
-  const named = document.createElement('button')
-  named.type = 'button'
-  named.className = 'confirmation-decision'
+function nameInTheConfirmation(card: HTMLElement, held: HTMLElement): Node | null {
+  const drawn = find<HTMLTemplateElement>('template.confirmation-decision-item', held)
+  const item = drawn ? drawn.content.cloneNode(true) : null
+  const named = item instanceof DocumentFragment ? find<HTMLButtonElement>('.confirmation-decision', item) : null
+  if (!named) {
+    return null
+  }
   named.dataset.decision = card.dataset.decision
   named.textContent = nameOf(card)
   named.addEventListener('click', () => goTo(card))
-  return named
+  return item
 }
 
 export function askBeforeSending(blank: HTMLElement[], press: HTMLElement | null, ends: boolean): void {
@@ -59,9 +62,10 @@ export function askBeforeSending(blank: HTMLElement[], press: HTMLElement | null
   if (list) {
     clear(list)
     blank.forEach((card) => {
-      const item = document.createElement('li')
-      item.appendChild(nameInTheConfirmation(card))
-      list.appendChild(item)
+      const item = nameInTheConfirmation(card, held)
+      if (item) {
+        list.appendChild(item)
+      }
     })
   }
 

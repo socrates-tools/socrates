@@ -19,7 +19,7 @@ This file is agora's layout and invariants.
 - `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
   It is a pnpm workspace of two packages.
   `packages/ui` is `@agora/ui`, the library: its `tokens/` holds `tokens.css`, `fonts.css`, the fonts and the mark, and the bundle serves `tokens.css` at `/assets/tokens.css` with every custom property it holds, because illustrations load it by that path.
-  Its `contract.ts` declares each primitive's element and the parts it holds, its `dialog/` holds the first primitive, its `primitives.css` imports every primitive's stylesheet, its `index.ts` exports every element, and its `catalog/` styles the catalog, which `surface.css` imports.
+  Its `contract.ts` declares each primitive's element and the parts it holds, a folder for each primitive holds its stylesheet and its element (`dialog/`, `button/`, `field/`, `choice/`, `copy/`, `expand/`), its `primitives.css` imports every primitive's stylesheet, its `index.ts` exports every element, and its `catalog/` styles the catalog, which `surface.css` imports.
   Adding a primitive is a partial, an entry in `contract.ts`, a folder in `packages/ui` imported from `primitives.css` and `index.ts`, and its states in `catalogued` in `agora/render/catalog.go`.
   The library imports nothing from the surface, and a stylesheet outside `packages/ui/tokens/` that writes a colour or names a font family fails the suite.
   `packages/surface` holds the page's script as strict TypeScript, one module for each of sending and the receipt, the confirmation, the live revision, code blocks, the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
@@ -92,6 +92,9 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.
 - Every primitive is a custom element drawn without a shadow root, whose behaviour is attached when it enters the page and released when it leaves, so a revision that replaces the surface leaves nothing of a dialog listening, per ADR 81.
   A domain piece carries its own class on the primitive's element and on its own dialog, so the confirmation is `<ui-dialog class="confirmation">` around a `<dialog class="confirmation">`.
+  Where the browser suite and the script reach a control by its class, the class sits on the control inside the primitive and not on the primitive's element, so `.send` is the `<button>` inside a `<ui-button>` and `.words-field` is the `<textarea>` inside a `<ui-field>`.
+  The copy control offers what it holds in `data-text`, or asks the listeners above it with a `copyrequested` event whose `detail.text` they set, and the expand control announces `expanded` and `collapsed` to its owner, which lays out what it expands.
+  A stylesheet of the surface names no `button`, `input`, `textarea` or class a primitive draws its own parts with, and the suite fails where it does.
   `data-part` marks only a primitive's parts, and `data-interaction` is what says which of answering, sending and viewing a control belongs to.
 - The catalog has no document behind it and is drawn by the real partials with every primitive in every state it has, and a primitive the contract declares that the catalog does not draw fails the suite naming it.
   Only the `agoradev` build routes `/catalog`, so a released binary answers it with not found, and the browser suite proves each primitive's behaviour against it.

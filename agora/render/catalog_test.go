@@ -81,3 +81,28 @@ func TestTheCatalogDrawsTheDialogInMoreThanOneState(t *testing.T) {
 		t.Errorf("the catalog draws %d dialogs, and the dialog has more than one state to draw", drawn)
 	}
 }
+
+func TestTheCatalogDrawsEveryControlInMoreThanOneState(t *testing.T) {
+	// scenario: The button, field, choice, copy and expand each have more than one state drawn
+	held := map[string]int{}
+	var visit func(node *html.Node)
+	visit = func(node *html.Node) {
+		if node.Type == html.ElementNode && node.Data == "article" && attribute(node, "class") == "catalog-state" {
+			for child := node.FirstChild; child != nil; child = child.NextSibling {
+				if child.Type == html.ElementNode && strings.HasPrefix(child.Data, "ui-") {
+					held[child.Data]++
+				}
+			}
+		}
+		for child := node.FirstChild; child != nil; child = child.NextSibling {
+			visit(child)
+		}
+	}
+	visit(theCatalog(t))
+
+	for _, element := range []string{"ui-button", "ui-field", "ui-choice", "ui-copy", "ui-expand"} {
+		if held[element] < 2 {
+			t.Errorf("the catalog draws %d states of <%s>, and it has more than one to draw", held[element], element)
+		}
+	}
+}

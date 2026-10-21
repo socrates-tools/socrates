@@ -73,5 +73,11 @@ export function followTheMarks(): void {
       hideTheTip()
     }
   })
+  document.addEventListener('retitled', (event) => {
+    const control = event.target
+    if (control instanceof HTMLElement && tipIsOn(control)) {
+      showTheTipFor(control)
+    }
+  })
   window.addEventListener('scroll', followTheScroll, true)
 }

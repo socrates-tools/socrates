@@ -20,6 +20,8 @@ var mostSevereFirst = []string{"error", "warning", "info"}
 
 const chosenJoined = " · "
 
+const viewing = "viewing"
+
 //go:embed page.gohtml
 var pageSource string
 
@@ -87,13 +89,6 @@ type blockView struct {
 	Copy     *copyView
 }
 
-type copyView struct {
-	Label  string
-	Hint   string
-	Copied string
-	Failed string
-}
-
 type drawingView struct {
 	Source string
 	Title  string
@@ -104,6 +99,7 @@ type optionView struct {
 	Label       string
 	Meaning     string
 	Recommended bool
+	Tag         string
 }
 
 func Page(read document.Document, frame Frame) (string, error) {
@@ -239,7 +235,7 @@ func blocksRead(written document.Evidence) []blockView {
 	for _, block := range written {
 		read := blockView{Caption: block.Caption, Language: block.Language, Code: block.Code}
 		if block.Code != "" {
-			read.Copy = &copyView{Label: copyLabel, Hint: copyHint, Copied: copiedWord, Failed: notCopied}
+			read.Copy = &copyView{Label: copyLabel, Hint: copyHint, Copied: copiedWord, Failed: notCopied, Interaction: viewing}
 		}
 		if block.Patch != "" {
 			patched := ReadPatch(block.Patch)
@@ -287,6 +283,7 @@ func optionsRead(offered []document.Option) []optionView {
 			Recommended: option.Recommended,
 		}
 		if option.Recommended {
+			read.Tag = recommendedTag
 			recommended = append(recommended, read)
 			continue
 		}

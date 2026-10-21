@@ -1,3 +1,4 @@
+import { UiExpand } from '@agora/ui'
 import { closestTo, find } from './page'
 import { hideTheTip } from './tooltip'
 
@@ -30,51 +31,61 @@ export function releaseEverythingBehind(): void {
   madeInert = []
 }
 
-function expand(control: HTMLElement): void {
+function stageOf(control: Element): HTMLElement | null {
   const evidence = control.closest('.evidence')
-  const stage = evidence ? find('.drawing-stage', evidence) : null
-  if (!stage) {
-    return
-  }
+  return evidence ? find('.drawing-stage', evidence) : null
+}
+
+function expand(stage: HTMLElement): void {
   stage.style.height = `${stage.getBoundingClientRect().height}px`
   stage.dataset.expanded = ''
-  control.setAttribute('aria-expanded', 'true')
   holdEverythingBehind(stage)
   hideTheTip()
   find('.drawing-close', stage)?.focus()
 }
 
-function collapse(): void {
-  const stage = expandedStage()
-  if (!stage) {
-    return
-  }
-  const evidence = stage.closest('.evidence')
-  const control = evidence ? find('.expand', evidence) : null
+function collapse(stage: HTMLElement): void {
   delete stage.dataset.expanded
   stage.style.height = ''
   releaseEverythingBehind()
-  if (control) {
-    control.setAttribute('aria-expanded', 'false')
-    control.focus()
+}
+
+function collapseTheExpanded(): void {
+  const stage = expandedStage()
+  const evidence = stage ? stage.closest('.evidence') : null
+  const control = evidence ? find('ui-expand', evidence) : null
+  if (control instanceof UiExpand) {
+    control.collapse()
   }
 }
 
+function stageOfTheEvent(event: Event): HTMLElement | null {
+  const target = event.target
+  return target instanceof Element ? stageOf(target) : null
+}
+
 export function followTheExpanding(): void {
-  document.addEventListener('click', (event) => {
-    const control = closestTo(event, '.expand')
-    if (control) {
-      expand(control)
-      return
+  document.addEventListener('expanded', (event) => {
+    const stage = stageOfTheEvent(event)
+    if (stage) {
+      expand(stage)
     }
+  })
+  document.addEventListener('collapsed', (event) => {
+    const stage = stageOfTheEvent(event)
+    if (stage) {
+      collapse(stage)
+    }
+  })
+  document.addEventListener('click', (event) => {
     if (closestTo(event, '.drawing-close, .drawing-backdrop')) {
-      collapse()
+      collapseTheExpanded()
     }
   })
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && expandedStage()) {
       event.preventDefault()
-      collapse()
+      collapseTheExpanded()
     }
   })
 }
