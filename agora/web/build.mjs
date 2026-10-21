@@ -1,6 +1,7 @@
 import { build } from 'esbuild'
+import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, watch, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -92,6 +93,55 @@ function commentsIn(file) {
   }
   visit(file)
   return [...found.values()].map((range) => `${where(file, range.pos)} - a comment is not allowed in the client's TypeScript`)
+}
+
+const settlingMilliseconds = 100
+
+function buildOnce() {
+  return new Promise((done) => {
+    spawn(process.execPath, [fileURLToPath(import.meta.url)], { stdio: 'inherit' }).on('close', (code) => done(code === 0))
+  })
+}
+
+async function rebuildOnEverySave() {
+  let building = false
+  let changedWhileBuilding = false
+  let settling
+
+  const rebuild = async () => {
+    building = true
+    const rebuilt = await buildOnce()
+    process.stdout.write(rebuilt ? 'rebuilt the bundle, watching for a save\n' : 'the bundle was not rebuilt, fix what is printed above and save again\n')
+    building = false
+    if (changedWhileBuilding) {
+      changedWhileBuilding = false
+      await rebuild()
+    }
+  }
+
+  const saved = (_, name) => {
+    if (name?.split(sep).includes('node_modules')) {
+      return
+    }
+    if (building) {
+      changedWhileBuilding = true
+      return
+    }
+    clearTimeout(settling)
+    settling = setTimeout(rebuild, settlingMilliseconds)
+  }
+
+  stamped.map((name) => join(here, name)).filter(existsSync).forEach((path) => watch(path, { recursive: true }, saved))
+  await rebuild()
+
+  const interrupted = () => process.exit(0)
+  process.once('SIGINT', interrupted)
+  process.once('SIGTERM', interrupted)
+  await new Promise(() => {})
+}
+
+if (process.argv.includes('--watch')) {
+  await rebuildOnEverySave()
 }
 
 const { created, configuration } = program()

@@ -14,6 +14,7 @@ This file is agora's layout and invariants.
 - `agora/document` - what a caller writes for the surface to render, what it copies rather than accepts, and the languages the page can highlight.
 - `agora/render` - a document to one HTML page, the marks a severity and an audience are drawn as, and a patch to the rows of a split diff.
 - `agora/assets` - the built client bundle and fonts, embedded, and the stamp of their source.
+  A file under the `agoradev` build tag serves the bundle from disk instead, for `make dev`.
 - `agora/surface` - the loopback server and its guards, the one address bound where nothing states one, the sessions it holds, what it writes about itself and about each page, the copy of each illustration and the route that serves it, the exchange, and the bounds on waiting.
 - `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
   It is a pnpm workspace, and `packages/surface` holds the page's script as strict TypeScript, one module for each of sending and the receipt, the confirmation, the live revision, code blocks, the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
