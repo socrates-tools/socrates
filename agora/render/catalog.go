@@ -123,6 +123,10 @@ func tooltipState(name string, id string, anchor anchorView) state {
 	return state{Name: name, Anchor: &anchor, View: tooltipView{ID: id, Class: "tooltip"}}
 }
 
+func diffBlockOf(language, patch string) diffBlockView {
+	return diffBlockView{Language: language, Hunks: ReadPatch(patch).Hunks}
+}
+
 func markedBadge(tone string) badgeView {
 	return badgeView{Tone: tone, Icon: icon("info"), Label: catalogBadgeLabel}
 }
@@ -156,6 +160,16 @@ var catalogued = map[string][]state{
 		cardState(cardWithSections, cardView{Content: "catalog-card-sections"}),
 		cardState(cardWithABodyAlone, cardView{Content: "catalog-card-body"}),
 		cardState(cardWithNoSections, cardView{Content: "catalog-card-plain"}),
+	},
+	"ui-code-block": {
+		stateDrawn("short-line", codeShortLine, codeBlockView{Language: catalogLanguage, Code: catalogShortCode}),
+		stateDrawn("wrapped-line", codeWrappedLine, codeBlockView{Language: catalogLanguage, Code: catalogWrappedCode}),
+		stateDrawn("tab-indented-line", codeTabIndentedLine, codeBlockView{Language: catalogLanguage, Code: catalogTabIndentedCode}),
+		stateDrawn("unknown-language", codeUnknownLanguage, codeBlockView{Language: catalogUnknownLanguage, Code: catalogUnknownCode}),
+	},
+	"ui-diff-block": {
+		stateDrawn("patch", diffPatch, diffBlockOf(catalogLanguage, catalogPatch)),
+		stateDrawn("patch-in-an-unknown-language", diffPatchInAnUnknownLanguage, diffBlockOf(catalogUnknownLanguage, catalogPatch)),
 	},
 	"ui-dialog": {
 		dialogState("with-everything", dialogWithEverything, dialogView{

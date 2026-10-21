@@ -18,6 +18,16 @@ type badgeView struct {
 	Label     string
 }
 
+type codeBlockView struct {
+	Language string
+	Code     string
+}
+
+type diffBlockView struct {
+	Language string
+	Hunks    []Hunk
+}
+
 type cardView struct {
 	ID      string
 	Class   string

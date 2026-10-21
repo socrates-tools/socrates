@@ -1,0 +1,88 @@
+ui-code-block {
+  display: block;
+  min-width: 0;
+  background: var(--surface-card);
+}
+
+ui-code-block pre {
+  --gutter: 48px;
+  margin: 0;
+  padding: 12px 12px 12px 0;
+  color: var(--fg-1);
+  font-family: var(--font-mono);
+  font-size: var(--size-code);
+  line-height: var(--leading-code);
+  tab-size: 4;
+}
+
+ui-code-block [data-part='code'] {
+  font-family: var(--font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+ui-code-block .code-line {
+  position: relative;
+  display: block;
+  padding-left: calc(var(--gutter) + var(--continuation) * 1ch);
+  text-indent: calc(var(--continuation) * -1ch);
+}
+
+ui-code-block .code-line::before {
+  content: attr(data-number);
+  position: absolute;
+  left: 0;
+  width: var(--gutter);
+  padding-right: 16px;
+  box-sizing: border-box;
+  text-align: right;
+  text-indent: 0;
+  color: var(--fg-3);
+  user-select: none;
+}
+
+:is(ui-code-block, ui-diff-block) .hljs-keyword,
+:is(ui-code-block, ui-diff-block) .hljs-built_in,
+:is(ui-code-block, ui-diff-block) .hljs-literal {
+  color: var(--token-keyword);
+  font-weight: 600;
+}
+
+:is(ui-code-block, ui-diff-block) .hljs-string,
+:is(ui-code-block, ui-diff-block) .hljs-regexp {
+  color: var(--token-string);
+}
+
+:is(ui-code-block, ui-diff-block) .hljs-number {
+  color: var(--token-number);
+}
+
+:is(ui-code-block, ui-diff-block) .hljs-comment,
+:is(ui-code-block, ui-diff-block) .hljs-quote {
+  color: var(--token-comment);
+  font-style: italic;
+}
+
+:is(ui-code-block, ui-diff-block) .hljs-title,
+:is(ui-code-block, ui-diff-block) .hljs-title.function_ {
+  color: var(--token-call);
+}
+
+:is(ui-code-block, ui-diff-block) .hljs-type,
+:is(ui-code-block, ui-diff-block) .hljs-title.class_ {
+  color: var(--token-type);
+}
+
+:is(ui-code-block, ui-diff-block) .hljs-variable {
+  color: var(--token-receiver);
+}
+
+:is(ui-code-block, ui-diff-block) .hljs-punctuation,
+:is(ui-code-block, ui-diff-block) .hljs-operator {
+  color: var(--token-punct);
+}
+
+:is(ui-code-block, ui-diff-block) .hljs-name,
+:is(ui-code-block, ui-diff-block) .hljs-attr {
+  color: var(--token-name);
+}

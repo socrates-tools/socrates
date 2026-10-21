@@ -69,3 +69,8 @@ body.catalog {
   margin: 0;
   padding: var(--card-pad);
 }
+
+.catalog-state ui-code-block,
+.catalog-state ui-diff-block {
+  flex: 1 1 100%;
+}

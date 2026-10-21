@@ -16,7 +16,7 @@ const surface = join(here, 'packages', 'surface')
 const library = join(here, 'packages', 'ui')
 const tokens = join(library, 'tokens')
 
-const hljs = createRequire(join(surface, 'package.json'))('highlight.js/lib/common')
+const hljs = createRequire(join(library, 'package.json'))('highlight.js/lib/common')
 
 async function contractOf() {
   const source = readFileSync(join(library, 'contract.ts'), 'utf8')

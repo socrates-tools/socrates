@@ -1,17 +1,7 @@
-/*! This bundle carries highlight.js, under the BSD 3-Clause License.
-    Copyright (c) 2006, Ivan Sagalaev.
-    The full text, and every other notice this binary carries, is in NOTICE at
-    the root of the repository this was built from. */
-import hljs from 'highlight.js/lib/common'
-import { find, findAll } from './page'
-
-const statedCode = new WeakMap<Element, string>()
+import { partNamed } from '../parts'
+import { hljs } from './highlighting'
 
 const columnsPerTab = 4
-
-export function codeAsStated(code: Element): string {
-  return statedCode.get(code) ?? code.textContent ?? ''
-}
 
 function indentInColumns(text: string): number {
   let columns = 0
@@ -69,36 +59,38 @@ function splitIntoLines(root: Node): HTMLElement[] {
   return lines
 }
 
-function hangTheLines(block: Element): void {
-  const lines = splitIntoLines(block)
+function hangTheLines(code: HTMLElement): void {
+  const lines = splitIntoLines(code)
   lines.forEach((line, position) => {
     line.dataset.number = String(position + 1)
     line.style.setProperty('--continuation', String(continuationColumn(line.textContent ?? '')))
   })
-  block.replaceChildren(...lines)
+  code.replaceChildren(...lines)
 }
 
-function colourTheLines(diff: HTMLElement): void {
-  const language = diff.dataset.language
-  if (!language || !hljs.getLanguage(language)) {
-    return
+export class UiCodeBlock extends HTMLElement {
+  private stated: string | undefined
+
+  connectedCallback(): void {
+    if (this.stated !== undefined) {
+      return
+    }
+    const code = this.code()
+    const text = code.textContent ?? ''
+    this.stated = text
+    if (text.trim()) {
+      hljs.highlightElement(code)
+      hangTheLines(code)
+    }
   }
-  findAll('.hunk .line code', diff).forEach((line) => {
-    const text = line.textContent ?? ''
-    if (text.trim()) {
-      line.innerHTML = hljs.highlight(text, { language, ignoreIllegals: true }).value
-    }
-  })
+
+  statedText(): string {
+    return this.stated ?? this.code().textContent ?? ''
+  }
+
+  code(): HTMLElement {
+    return partNamed<'ui-code-block'>(this, 'code')
+  }
 }
 
-export function highlightTheCode(): void {
-  findAll('pre code[class^="language-"]').forEach((block) => {
-    const text = block.textContent ?? ''
-    statedCode.set(block, text)
-    if (text.trim()) {
-      hljs.highlightElement(block)
-      hangTheLines(block)
-    }
-  })
-  findAll('.evidence.diff').forEach(colourTheLines)
-}
+customElements.define('ui-code-block', UiCodeBlock)

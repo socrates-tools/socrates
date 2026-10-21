@@ -1,5 +1,7 @@
 @import './badge/badge.css';
 @import './card/card.css';
+@import './code-block/code-block.css';
+@import './diff-block/diff-block.css';
 @import './dialog/dialog.css';
 @import './button/button.css';
 @import './field/field.css';

@@ -36,32 +36,18 @@
 <div class="evidences">
 {{range .Evidence}}
 {{if .Diff}}
-<div class="evidence diff" data-layout="split" data-language="{{.Written}}">
+<div class="evidence diff" data-layout="split">
 <div class="evidence-heading diff-heading">
 <span class="evidence-label">{{with .Caption}}<span class="evidence-caption">{{.}}</span> {{end}}{{if eq .Diff.From .Diff.To}}<span class="diff-file">{{.Diff.From}}</span>{{else}}<span class="diff-from">{{.Diff.From}}</span> → <span class="diff-to">{{.Diff.To}}</span>{{end}}</span>
 <span class="evidence-aside"><span class="diff-added">+{{.Diff.Added}}</span>
 <span class="diff-removed">−{{.Diff.Removed}}</span></span>
 </div>
-{{range .Diff.Hunks}}
-<table class="hunk">
-{{if .Heading}}<caption>{{.Heading}}</caption>{{end}}
-<tbody>
-{{range .Rows}}
-<tr class="row">
-<td class="number" data-side="left" data-kind="{{.Left.Kind}}">{{.Left.Numbered}}</td>
-<td class="line" data-side="left" data-kind="{{.Left.Kind}}"><span class="marker">{{.Left.Marker}}</span><code>{{.Left.Text}}</code></td>
-<td class="number" data-side="right" data-kind="{{.Right.Kind}}">{{.Right.Numbered}}</td>
-<td class="line" data-side="right" data-kind="{{.Right.Kind}}"><span class="marker">{{.Right.Marker}}</span><code>{{.Right.Text}}</code></td>
-</tr>
-{{end}}
-</tbody>
-</table>
-{{end}}
+{{template "ui-diff-block" (dict "Language" .Written "Hunks" .Diff.Hunks)}}
 </div>
 {{else}}
 <div class="evidence code">
 <div class="evidence-heading"><span class="evidence-label">{{with .Caption}}<span class="evidence-caption">{{.}}</span> {{end}}{{if .Language}}{{.Language}}{{else if not .Caption}}code{{end}}</span>{{with .Copy}}{{template "ui-copy" .}}{{end}}</div>
-<pre><code class="language-{{.Language}}">{{.Code}}</code></pre>
+{{template "ui-code-block" (dict "Language" .Language "Code" .Code)}}
 </div>
 {{end}}
 {{end}}

@@ -2,5 +2,8 @@
   "name": "@agora/ui",
   "private": true,
   "type": "module",
-  "main": "index.ts"
+  "main": "index.ts",
+  "dependencies": {
+    "highlight.js": "^11.11.1"
+  }
 }

@@ -173,12 +173,12 @@ func TestADiffIsWrittenInTheLanguageStatedOrElseItsFilesOwn(t *testing.T) {
 		read := oneDecision(document.One)
 		read.Decisions[0].Evidence = document.Evidence{{Language: stated.language, Patch: stated.patch}}
 
-		for _, held := range elements(rendered(t, read), "div") {
-			if hasClass(held, "diff") {
-				if written := attribute(held, "data-language"); written != stated.written {
-					t.Errorf("a diff of %q stating %q is written in %q, want %q", stated.patch, stated.language, written, stated.written)
-				}
-			}
+		blocks := elements(rendered(t, read), "ui-diff-block")
+		if len(blocks) != 1 {
+			t.Fatalf("a diff of %q is drawn as %d diff blocks, want one", stated.patch, len(blocks))
+		}
+		if written := attribute(blocks[0], "data-language"); written != stated.written {
+			t.Errorf("a diff of %q stating %q is written in %q, want %q", stated.patch, stated.language, written, stated.written)
 		}
 	}
 }

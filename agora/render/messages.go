@@ -1,5 +1,7 @@
 package render
 
+import "strings"
+
 const (
 	renderingThePage = "rendering the page: %w"
 
@@ -117,4 +119,25 @@ const (
 
 	expandLabel = "Expand"
 	expandHint  = "Lays what it expands over the whole window. Escape closes it."
+)
+
+const (
+	codeShortLine                = "a short line"
+	codeWrappedLine              = "lines wider than its block, unindented and indented"
+	codeTabIndentedLine          = "lines indented with a tab"
+	codeUnknownLanguage          = "a language the page does not highlight"
+	diffPatch                    = "a patch"
+	diffPatchInAnUnknownLanguage = "a patch in a language the page does not highlight"
+
+	catalogLanguage        = "go"
+	catalogUnknownLanguage = "klingon"
+	catalogShortCode       = "return limit\n"
+	catalogTabIndentedCode = "func Write() {\n\tmu.Lock()\n\treturn\n}\n"
+	catalogUnknownCode     = "qapla'\nbatlh\n"
+	catalogPatch           = "--- a/limit.go\n+++ b/limit.go\n@@ -1,3 +1,4 @@ func Limit\n func Limit() int {\n-\treturn 2\n+\t// the limit, raised\n+\treturn 3\n }\n"
+)
+
+var (
+	catalogLongLine    = `fmt.Println("` + strings.Repeat("a line wider than its block ", 14) + `")`
+	catalogWrappedCode = catalogLongLine + "\n\t" + catalogLongLine + "\n      " + catalogLongLine + "\n"
 )

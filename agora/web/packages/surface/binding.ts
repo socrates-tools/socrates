@@ -1,5 +1,4 @@
 import { bindTheAnswering, countAnswered } from './answers'
-import { highlightTheCode } from './codeblocks'
 import { placeTheComposer } from './composer'
 import { bindTheConfirmation } from './confirmation'
 import { bindTheNavigation, markTheDecisionInView } from './navigation'
@@ -13,5 +12,4 @@ export function bind(): void {
   placeTheComposer()
   countAnswered()
   markTheDecisionInView()
-  highlightTheCode()
 }

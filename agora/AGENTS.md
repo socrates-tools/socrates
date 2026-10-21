@@ -21,8 +21,9 @@ This file is agora's layout and invariants.
   `packages/ui` is `@agora/ui`, the library: its `tokens/` holds `tokens.css`, `fonts.css`, the fonts and the mark, and the bundle serves `tokens.css` at `/assets/tokens.css` with every custom property it holds, because illustrations load it by that path.
   Its `contract.ts` declares each primitive's element and the parts it holds, one folder for each primitive holding its stylesheet and, where it has behaviour, its element, its `primitives.css` imports every primitive's stylesheet, its `index.ts` exports every element, and its `catalog/` styles the catalog, which `surface.css` imports.
   Adding a primitive is a partial, an entry in `contract.ts`, a folder in `packages/ui` imported from `primitives.css` and `index.ts`, and its states in `catalogued` in `agora/render/catalog.go`.
+  The code block highlights, numbers and hangs the lines of its code, the diff block holds a patch's tables and their own scroll, and the library is where highlight.js is a dependency.
   The library imports nothing from the surface, and a stylesheet outside `packages/ui/tokens/` that writes a colour or names a font family fails the suite.
-  `packages/surface` holds the page's script as strict TypeScript, one module for each of sending and the receipt, the confirmation, the live revision, code blocks, the calls that show and hide the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
+  `packages/surface` holds the page's script as strict TypeScript, one module for each of sending and the receipt, the confirmation, the live revision, the calls that show and hide the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
 
 ## Invariants
 
