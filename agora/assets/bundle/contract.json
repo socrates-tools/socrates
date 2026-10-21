@@ -9,6 +9,14 @@
         "label"
       ]
     },
+    "ui-card": {
+      "attributes": [],
+      "slots": [
+        "",
+        "body",
+        "footer"
+      ]
+    },
     "ui-choice": {
       "attributes": [
         "checked",
@@ -29,15 +37,17 @@
       "slots": [
         ""
       ]
+    },
+    "ui-dialog": {
+      "attributes": [],
+      "slots": [
+        "actions",
+        "body",
+        "heading"
+      ]
     }
   },
   "parts": {
-    "ui-dialog": [
-      "panel",
-      "heading",
-      "body",
-      "actions"
-    ],
     "ui-button": [
       "control"
     ],
@@ -69,10 +79,6 @@
     ],
     "ui-overline": [
       "count"
-    ],
-    "ui-card": [
-      "body",
-      "footer"
     ],
     "ui-code-block": [
       "code"

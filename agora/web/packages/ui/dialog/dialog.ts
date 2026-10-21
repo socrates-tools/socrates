@@ -1,43 +1,50 @@
-import type { PartOf } from '../contract'
+import { html } from 'lit'
+import { customElement, query } from 'lit/decorators.js'
+import { UiElement } from '../element'
 
-export class UiDialog extends HTMLElement {
-  connectedCallback(): void {
-    const panel = this.partNamed('panel')
-    panel.addEventListener('cancel', this.cancelled)
-    panel.addEventListener('click', this.pressed)
+const panelClasses = 'inset-x-4 m-auto h-fit w-auto max-w-120 rounded-dialog bg-surface-card p-6 text-fg-1 shadow-dimmed-dialog max-narrow:p-4 backdrop:bg-transparent backdrop:backdrop-blur-backdrop'
+const headingClasses = 'text-title leading-title font-bold tracking-title'
+const actionsClasses = 'mt-6 flex flex-wrap justify-end gap-3'
+
+@customElement('ui-dialog')
+export class UiDialog extends UiElement {
+  @query('dialog') private accessor panel!: HTMLDialogElement
+
+  get isOpen(): boolean {
+    return this.panel?.open ?? false
   }
 
-  disconnectedCallback(): void {
-    const panel = this.partNamed('panel')
-    panel.removeEventListener('cancel', this.cancelled)
-    panel.removeEventListener('click', this.pressed)
+  get isModal(): boolean {
+    return this.panel?.matches(':modal') ?? false
+  }
+
+  protected override hostClasses(): string {
+    return 'contents'
   }
 
   open(): void {
-    this.panel().showModal()
+    this.panel.showModal()
   }
 
   close(): void {
-    const panel = this.panel()
-    if (panel.open) {
-      panel.close()
+    if (this.panel?.open) {
+      this.panel.close()
     }
   }
 
   headed(words: string): void {
-    this.partNamed('heading').textContent = words
-  }
-
-  partNamed(name: PartOf<'ui-dialog'>): HTMLElement {
-    const held = this.querySelector<HTMLElement>(`[data-part="${name}"]`)
-    if (!held) {
-      throw new Error(`ui-dialog holds no ${name}`)
+    const heading = this.querySelector(':scope > [slot="heading"]')
+    if (heading) {
+      heading.textContent = words
     }
-    return held
   }
 
-  private panel(): HTMLDialogElement {
-    return this.partNamed('panel') as HTMLDialogElement
+  protected override render() {
+    return html`<dialog class=${panelClasses} aria-labelledby="heading" @cancel=${this.cancelled} @click=${this.pressed}>
+      <h2 id="heading" class=${headingClasses}><slot name="heading"></slot></h2>
+      <slot name="body"></slot>
+      <div class=${actionsClasses}><slot name="actions"></slot></div>
+    </dialog>`
   }
 
   private dismiss(): void {
@@ -45,14 +52,13 @@ export class UiDialog extends HTMLElement {
     this.dispatchEvent(new CustomEvent('dismissed', { bubbles: true }))
   }
 
-  private cancelled = (event: Event): void => {
+  private cancelled(event: Event): void {
     event.preventDefault()
     this.dismiss()
   }
 
-  private pressed = (event: MouseEvent): void => {
-    const panel = this.partNamed('panel')
-    if (event.target === panel && pressedOutside(panel, event)) {
+  private pressed(event: MouseEvent): void {
+    if (event.target === this.panel && pressedOutside(this.panel, event)) {
       this.dismiss()
     }
   }
@@ -67,12 +73,9 @@ function dialogNamedBy(press: Event, attribute: 'opens' | 'closes'): UiDialog | 
   const target = press.target
   const asking = target instanceof Element ? target.closest<HTMLElement>(`[data-${attribute}]`) : null
   const named = asking?.dataset[attribute]
-  const panel = named ? document.getElementById(named) : null
-  const held = panel?.closest('ui-dialog')
+  const held = named ? document.getElementById(named) : null
   return held instanceof UiDialog ? held : null
 }
-
-customElements.define('ui-dialog', UiDialog)
 
 document.addEventListener('click', (press) => {
   dialogNamedBy(press, 'opens')?.open()
