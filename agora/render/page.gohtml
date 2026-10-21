@@ -21,7 +21,7 @@
 {{define "entry"}}<span class="answered" data-answered="{{if .Decided}}{{if .Answered}}yes{{else}}no{{end}}{{else}}none{{end}}" aria-hidden="true">{{template "check"}}</span>
 <span class="entry-heading"><span class="entry-name">{{.Name}}</span>{{with .Severity}}{{template "mark" .}}{{end}}</span>
 {{if .Location}}<span class="location">{{.Location}}</span>{{end}}{{end}}
-{{define "decision-content"}}<div class="seen" data-part="body">
+{{define "decision-content"}}<div class="seen" slot="body">
 <div class="attribution">
 <span class="answered" data-answered="{{if .Answered}}yes{{else}}no{{end}}" aria-hidden="true">{{template "check"}}</span>
 <span class="name">{{.Name}}</span>
@@ -66,7 +66,7 @@
 {{end}}
 </div>
 
-<div class="answering" data-part="footer">
+<div class="answering" slot="footer">
 {{if .Options}}
 <fieldset class="options">
 <legend>{{if .Multiple}}Choose as many as apply{{else}}Choose one{{end}}</legend>
