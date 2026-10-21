@@ -1,7 +1,6 @@
-{{define "ui-app-shell"}}<ui-app-shell{{with .Class}} class="{{.}}"{{end}}><div data-part="frame">
-<header{{with .Topbar.Class}} class="{{.}}"{{end}} data-part="topbar">{{fillWith .Slots.Topbar .Data}}</header>
-{{if .Form}}<form class="{{.BodyClass}}"{{with .Interaction}} data-interaction="{{.}}"{{end}} data-part="body">{{template "ui-app-shell.parts" .}}</form>{{else}}<div class="{{.BodyClass}}" data-part="body">{{template "ui-app-shell.parts" .}}</div>{{end}}
-</div>{{with .Slots.Overlay}}{{fillWith . $.Data}}{{end}}</ui-app-shell>{{end}}
-{{define "ui-app-shell.parts"}}{{with .Navigation}}<nav{{with .Class}} class="{{.}}"{{end}} aria-label="{{.Label}}" data-part="navigation">{{fillWith $.Slots.Navigation $.Data}}</nav>{{end}}
-<main{{with .Content.Class}} class="{{.}}"{{end}} data-part="content">{{fillWith .Slots.Content .Data}}</main>
-{{with .Panel}}<aside{{with .Class}} class="{{.}}"{{end}} aria-label="{{.Label}}" data-part="panel">{{fillWith $.Slots.Panel $.Data}}</aside>{{end}}{{end}}
+{{define "ui-app-shell"}}<ui-app-shell{{with .Class}} class="{{.}}"{{end}}>
+<header{{with .Topbar.Class}} class="{{.}}"{{end}} slot="topbar">{{fillWith .Slots.Topbar .Data}}</header>
+{{with .Navigation}}<nav{{with .Class}} class="{{.}}"{{end}} aria-label="{{.Label}}" slot="navigation">{{fillWith $.Slots.Navigation $.Data}}</nav>{{end}}
+<main{{with .Content.Class}} class="{{.}}"{{end}} slot="content">{{fillWith .Slots.Content .Data}}</main>
+{{with .Panel}}<aside{{with .Class}} class="{{.}}"{{end}} aria-label="{{.Label}}" slot="panel">{{fillWith $.Slots.Panel $.Data}}</aside>{{end}}
+</ui-app-shell>{{end}}

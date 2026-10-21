@@ -25,7 +25,7 @@ func shellCatalogued(t *testing.T) *reader {
 	for _, frame := range []string{shellFrameNarrow, shellFrameAtNineSixty, shellFrameAtTwelveEighty} {
 		page.waitFor(fmt.Sprintf(`(() => {
   const inside = document.querySelector(%q).contentWindow;
-  return !!inside.customElements.get('ui-app-shell') && !!inside.document.querySelector('ui-app-shell [data-part="content"]');
+  return !!inside.customElements.get('ui-app-shell') && !!inside.document.querySelector('ui-app-shell > [slot="content"]');
 })()`, frame))
 	}
 	return page
@@ -35,8 +35,8 @@ func inFrame(frame string) string {
 	return fmt.Sprintf(`document.querySelector(%q).contentWindow`, frame)
 }
 
-func shellPart(frame, part string) string {
-	return fmt.Sprintf(`%s.document.querySelector('ui-app-shell > [data-part="frame"] > [data-part="body"] > [data-part="%s"]')`, inFrame(frame), part)
+func shellPart(frame, slot string) string {
+	return fmt.Sprintf(`%s.document.querySelector('ui-app-shell > [slot="%s"]')`, inFrame(frame), slot)
 }
 
 func howTheShellStateScrolls(frame string) string {
@@ -75,6 +75,23 @@ func readingTheShellState(page *reader, frame string) shellStateScrolling {
 	var read shellStateScrolling
 	page.evaluate(howTheShellStateScrolls(frame), &read)
 	return read
+}
+
+func TestTheCatalogDrawsTheShellInAShadowRootAtEveryWidth(t *testing.T) {
+	// scenario: The shell the catalog frames at 480px, 960px and 1280px has a shadow root in each frame
+	t.Parallel()
+	page := shellCatalogued(t)
+
+	for _, frame := range []string{shellFrameNarrow, shellFrameAtNineSixty, shellFrameAtTwelveEighty} {
+		t.Run(frame, func(t *testing.T) {
+			var shadowed bool
+			page.evaluate(inFrame(frame)+`.document.querySelector('ui-app-shell').shadowRoot !== null`, &shadowed)
+
+			if !shadowed {
+				t.Error("the shell has no shadow root, and it renders into one and slots what Go writes")
+			}
+		})
+	}
 }
 
 func TestTheCatalogDrawsTheShellBelowNineSixtyStackedAndScrollingWithTheWindow(t *testing.T) {
@@ -140,7 +157,7 @@ func TestTheCatalogDrawsThePanelOnlyFromTwelveEighty(t *testing.T) {
 }
 
 func markedSectionsOf(frame string) string {
-	return fmt.Sprintf(`JSON.stringify(Array.from(%s.document.querySelectorAll('ui-app-shell > [data-part="frame"] > [data-part="body"] > [data-part="navigation"] a[data-section]'))
+	return fmt.Sprintf(`JSON.stringify(Array.from(%s.document.querySelectorAll('ui-app-shell > [slot="navigation"] a[data-section]'))
   .filter((link) => link.getAttribute('aria-current') === 'location')
   .map((link) => link.dataset.section))`, inFrame(frame))
 }

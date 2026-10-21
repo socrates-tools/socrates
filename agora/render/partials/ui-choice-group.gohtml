@@ -1,0 +1,1 @@
+{{define "ui-choice-group"}}<ui-choice-group{{with .Class}} class="{{.}}"{{end}}{{if .Multiple}} multiple{{end}}{{with .Label}} aria-label="{{.}}"{{end}}>{{range .Choices}}{{template "ui-choice" .}}{{end}}</ui-choice-group>{{end}}

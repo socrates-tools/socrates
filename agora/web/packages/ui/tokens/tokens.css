@@ -114,6 +114,7 @@
   --shadow-dialog: 0 24px 64px -16px rgba(20, 40, 60, 0.35);
   --shadow-dimmed-dialog: var(--shadow-dialog), 0 0 0 100vmax var(--scrim);
   --blur-backdrop: 4px;
+  --blur-bar: 12px;
   --shadow-press: 0 6px 16px -6px rgba(18, 89, 168, 0.55);
   --glyph-check-on-accent: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linecap='square'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
 
@@ -174,6 +175,7 @@
   --pill-height: 24px;
   --check-size: 18px;
   --marker-width: 2ch;
+  --check-border: 1.5px;
 
   --ease: cubic-bezier(0.2, 0, 0, 1);
   --duration-fast: 160ms;

@@ -282,10 +282,24 @@ func TestADocumentRendersWithoutTheCallerWritingMarkup(t *testing.T) {
 		}
 	}
 
-	for _, choice := range elements(card, "input") {
-		if attribute(choice, "type") != "radio" {
-			t.Errorf("a single-choice decision renders a %q", attribute(choice, "type"))
-		}
+	groups := elements(card, "ui-choice-group")
+	if len(groups) != 1 {
+		t.Fatalf("a single-choice decision renders %d groups of choices, want one", len(groups))
+	}
+	if hasAttribute(groups[0], "multiple") {
+		t.Error("a single-choice decision renders a group that lets several be chosen at once")
+	}
+}
+
+func TestAMultipleChoiceDecisionRendersOneGroupLettingSeveralBeChosenAtOnce(t *testing.T) {
+	page := rendered(t, oneDecision(document.Many))
+
+	groups := elements(page, "ui-choice-group")
+	if len(groups) != 1 {
+		t.Fatalf("a multiple-choice decision renders %d groups of choices, want one", len(groups))
+	}
+	if !hasAttribute(groups[0], "multiple") {
+		t.Error("a multiple-choice decision renders a group that keeps one choice chosen")
 	}
 }
 
@@ -308,7 +322,7 @@ func threeOptions() document.Document {
 
 func optionsIn(page *html.Node) []*html.Node {
 	var found []*html.Node
-	for _, held := range elements(page, "label") {
+	for _, held := range elements(page, "ui-choice") {
 		if hasClass(held, "option") {
 			found = append(found, held)
 		}
@@ -331,14 +345,10 @@ func labelsIn(page *html.Node) []string {
 func positionsIn(page *html.Node) map[string]string {
 	held := map[string]string{}
 	for _, option := range optionsIn(page) {
-		label := ""
 		for _, named := range elements(option, "span") {
 			if hasClass(named, "option-label") {
-				label = strings.TrimSpace(text(named))
+				held[strings.TrimSpace(text(named))] = attribute(option, "value")
 			}
-		}
-		for _, choice := range elements(option, "input") {
-			held[label] = attribute(choice, "value")
 		}
 	}
 	return held
@@ -383,7 +393,7 @@ func TestTheRecommendedOptionArrivesChosen(t *testing.T) {
 	page := rendered(t, read)
 
 	var chosen []string
-	for _, choice := range elements(page, "input") {
+	for _, choice := range elements(page, "ui-choice") {
 		if hasAttribute(choice, "checked") {
 			chosen = append(chosen, attribute(choice, "value"))
 		}
@@ -410,7 +420,7 @@ func TestADocumentThatMarksNothingIsUnaffected(t *testing.T) {
 			}
 		}
 	}
-	for _, choice := range elements(page, "input") {
+	for _, choice := range elements(page, "ui-choice") {
 		if hasAttribute(choice, "checked") {
 			t.Errorf("the option %q arrives chosen, and the document marked nothing", attribute(choice, "value"))
 		}
@@ -418,14 +428,9 @@ func TestADocumentThatMarksNothingIsUnaffected(t *testing.T) {
 }
 
 func noneControlIn(page *html.Node, decision string) *html.Node {
-	for _, held := range elements(page, "label") {
-		if !hasClass(held, "none") {
-			continue
-		}
-		for _, input := range elements(held, "input") {
-			if attribute(input, "data-decision") == decision {
-				return held
-			}
+	for _, held := range elements(page, "ui-choice") {
+		if hasClass(held, "none") && attribute(held, "data-decision") == decision {
+			return held
 		}
 	}
 	return nil
@@ -441,36 +446,24 @@ func TestASingleChoiceDecisionOffersTakingNoneOfThem(t *testing.T) {
 	if hasClass(none, "option") {
 		t.Error("the control for taking none of the options is counted as an option")
 	}
-
-	inputs := elements(none, "input")
-	if len(inputs) != 1 {
-		t.Fatalf("the control for taking none of the options carries %d inputs, want one", len(inputs))
-	}
-
-	control := inputs[0]
-	if attribute(control, "type") != "radio" {
-		t.Errorf("the control for taking none of the options renders as %q, want a radio", attribute(control, "type"))
-	}
-	if attribute(control, "data-interaction") != answering {
-		t.Errorf("the control for taking none of the options carries data-interaction %q, want %q", attribute(control, "data-interaction"), answering)
-	}
-	if hasClass(control, "choice") {
+	if hasClass(none, "choice") {
 		t.Error("the control for taking none of the options is counted as a choice")
 	}
-
-	var named string
-	for _, choice := range elements(page, "input") {
-		if hasClass(choice, "choice") && attribute(choice, "data-decision") == "c-1" {
-			named = attribute(choice, "name")
-			break
-		}
+	if attribute(none, "variant") != "dashed" {
+		t.Errorf("the control for taking none of the options is drawn %q, want dashed", attribute(none, "variant"))
 	}
-	if named == "" || attribute(control, "name") != named {
-		t.Errorf("the control for taking none of the options is named %q, want the radio group %q", attribute(control, "name"), named)
+	if attribute(none, "data-interaction") != answering {
+		t.Errorf("the control for taking none of the options carries data-interaction %q, want %q", attribute(none, "data-interaction"), answering)
 	}
 
-	if offered := len(optionsIn(page)); offered != 2 {
+	options := optionsIn(page)
+	if offered := len(options); offered != 2 {
 		t.Errorf("a single-choice decision offering two options and a way to take none of them counts %d options", offered)
+	}
+	for _, option := range options {
+		if option.Parent != none.Parent {
+			t.Error("the control for taking none of the options is not in the group its options are in")
+		}
 	}
 }
 
@@ -635,7 +628,7 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 	}
 
 	var parts []string
-	for _, control := range elements(page, "input", "textarea", "button", "select", "form", "output", "ui-dialog") {
+	for _, control := range elements(page, "ui-choice", "input", "textarea", "button", "select", "form", "output", "ui-dialog") {
 		part := attribute(control, "data-interaction")
 		if part != answering && part != sending && part != viewing {
 			t.Errorf("the page offers a <%s class=%q> that is part of none of answering, sending or viewing", control.Data, attribute(control, "class"))
@@ -646,17 +639,17 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 
 	slices.Sort(parts)
 	want := []string{
-		"answering choice",
-		"answering choice",
-		"answering choice",
-		"answering choice",
-		"answering decline",
+		"answering none decline",
+		"answering option choice",
+		"answering option choice",
+		"answering option choice",
+		"answering option choice",
 		"answering words-field",
 		"answering words-field",
 		"sending amend",
 		"sending confirmation",
 		"sending confirmation-decision",
-		"sending exchange shell",
+		"sending exchange",
 		"sending finish",
 		"sending go-back",
 		"sending message-field",
@@ -701,6 +694,44 @@ func TestTheConfirmationStandsOutsideTheFormAndSubmitsNothing(t *testing.T) {
 	}
 	if first != "send" {
 		t.Errorf("the first submit in document order is %q, and enter reaches the press that waits for a reply", first)
+	}
+}
+
+func TestTheExchangesFormWrapsTheShellSoEveryControlInItsSlotsIsPartOfTheForm(t *testing.T) {
+	// scenario: A page with decisions draws its one exchange form around the shell, holding the decisions, the composer and the presses
+	page := rendered(t, citingASource())
+
+	forms := elements(page, "form")
+	if len(forms) != 1 || !slices.Contains(strings.Fields(attribute(forms[0], "class")), "exchange") {
+		t.Fatalf("the page carries %d forms, want the one exchange", len(forms))
+	}
+	shells := elements(forms[0], "ui-app-shell")
+	if len(shells) != 1 {
+		t.Fatalf("the exchange form holds %d shells, want the one the page draws", len(shells))
+	}
+	for _, class := range []string{"decision", "composer"} {
+		held := elements(shells[0], "ui-card")
+		if !slices.ContainsFunc(held, func(card *html.Node) bool { return slices.Contains(strings.Fields(attribute(card, "class")), class) }) {
+			t.Errorf("the shell inside the exchange form holds no card of class %q", class)
+		}
+	}
+	if len(elements(forms[0], "button", "textarea", "input")) == 0 {
+		t.Error("the exchange form holds no control")
+	}
+}
+
+func TestAPageWithNothingToDecideDrawsTheShellWithNoFormAndNoDialog(t *testing.T) {
+	// scenario: A page with no decisions draws the shell alone, with no exchange form and no confirmation
+	page := rendered(t, nothingToDecide())
+
+	if forms := elements(page, "form"); len(forms) != 0 {
+		t.Errorf("the page carries %d forms, and nothing is sent from it", len(forms))
+	}
+	if dialogs := elements(page, "ui-dialog"); len(dialogs) != 0 {
+		t.Errorf("the page carries %d dialogs, and nothing is confirmed in it", len(dialogs))
+	}
+	if shells := elements(page, "ui-app-shell"); len(shells) != 1 {
+		t.Errorf("the page carries %d shells, want one", len(shells))
 	}
 }
 
@@ -1003,7 +1034,7 @@ func TestAPageWithNothingToAnswerOffersNeitherControl(t *testing.T) {
 	// scenario: A page with nothing to answer offers neither of the two
 	page := rendered(t, nothingToDecide())
 
-	for _, control := range elements(page, "input", "textarea", "button", "select", "form", "output", "dialog", "ui-dialog") {
+	for _, control := range elements(page, "ui-choice", "ui-choice-group", "input", "textarea", "button", "select", "form", "output", "dialog", "ui-dialog") {
 		t.Errorf("a page holding no decision offers a <%s class=%q>, and there is nothing on it to answer and nothing to send",
 			control.Data, attribute(control, "class"))
 	}

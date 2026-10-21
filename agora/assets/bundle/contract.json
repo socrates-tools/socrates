@@ -1,5 +1,14 @@
 {
   "elements": {
+    "ui-app-shell": {
+      "attributes": [],
+      "slots": [
+        "content",
+        "navigation",
+        "panel",
+        "topbar"
+      ]
+    },
     "ui-badge": {
       "attributes": [
         "icon",
@@ -22,6 +31,27 @@
         "",
         "body",
         "footer"
+      ]
+    },
+    "ui-choice": {
+      "attributes": [
+        "checked",
+        "disabled",
+        "value",
+        "variant"
+      ],
+      "slots": [
+        "label",
+        "meaning",
+        "tag"
+      ]
+    },
+    "ui-choice-group": {
+      "attributes": [
+        "multiple"
+      ],
+      "slots": [
+        ""
       ]
     },
     "ui-code-block": {
@@ -84,13 +114,6 @@
       "caption",
       "control"
     ],
-    "ui-choice": [
-      "frame",
-      "control",
-      "label",
-      "meaning",
-      "tag"
-    ],
     "ui-copy": [
       "control",
       "icon",
@@ -99,14 +122,6 @@
     ],
     "ui-expand": [
       "control"
-    ],
-    "ui-app-shell": [
-      "frame",
-      "topbar",
-      "body",
-      "navigation",
-      "content",
-      "panel"
     ]
   }
 }

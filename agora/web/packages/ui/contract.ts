@@ -1,10 +1,8 @@
 export const contract = {
   'ui-button': ['control'],
   'ui-field': ['frame', 'caption', 'control'],
-  'ui-choice': ['frame', 'control', 'label', 'meaning', 'tag'],
   'ui-copy': ['control', 'icon', 'done', 'status'],
   'ui-expand': ['control'],
-  'ui-app-shell': ['frame', 'topbar', 'body', 'navigation', 'content', 'panel'],
 } as const
 
 export type Primitive = keyof typeof contract

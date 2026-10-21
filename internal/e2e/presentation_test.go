@@ -156,7 +156,7 @@ func TestADecisionCanBeAnsweredWithoutAPointer(t *testing.T) {
 const narrowly = `(() => {
   const page = document.documentElement;
   const hunk = document.querySelector('ui-diff-block table');
-  const surface = document.querySelector('.surface');
+  const surface = document.querySelector('ui-app-shell');
   return {
     pageScroll: page.scrollWidth - page.clientWidth,
     hunkOverflows: hunk ? getComputedStyle(hunk).overflowX : '',

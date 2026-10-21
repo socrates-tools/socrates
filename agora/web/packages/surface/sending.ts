@@ -1,3 +1,4 @@
+import type { UiChoice } from '@agora/ui'
 import { type HeldDecision, blankCards, decisionsHeld, describe } from './answers'
 import { askBeforeSending, closeConfirmation } from './confirmation'
 import { exchange, exchangeIsOver } from './exchange'
@@ -9,7 +10,7 @@ interface Sent {
   ends: boolean
 }
 
-type Control = HTMLButtonElement | HTMLInputElement | HTMLTextAreaElement
+type Control = HTMLButtonElement | HTMLInputElement | HTMLTextAreaElement | UiChoice
 
 const readOnlyWhileSent = '.choice, .decline, .words-field, .message-field, .send, .finish'
 
