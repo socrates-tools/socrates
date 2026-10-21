@@ -1,75 +1,84 @@
 {
-  "ui-dialog": [
-    "panel",
-    "heading",
-    "body",
-    "actions"
-  ],
-  "ui-button": [
-    "control"
-  ],
-  "ui-field": [
-    "frame",
-    "caption",
-    "control"
-  ],
-  "ui-choice": [
-    "frame",
-    "control",
-    "label",
-    "meaning",
-    "tag"
-  ],
-  "ui-copy": [
-    "control",
-    "icon",
-    "done",
-    "status"
-  ],
-  "ui-expand": [
-    "control"
-  ],
-  "ui-badge": [
-    "icon",
-    "label"
-  ],
-  "ui-brand": [
-    "mark",
-    "wordmark"
-  ],
-  "ui-progress-bar": [
-    "track"
-  ],
-  "ui-status-dot": [],
-  "ui-tooltip": [
-    "title",
-    "hint"
-  ],
-  "ui-overline": [
-    "count"
-  ],
-  "ui-card": [
-    "body",
-    "footer"
-  ],
-  "ui-code-block": [
-    "code"
-  ],
-  "ui-diff-block": [
-    "hunk",
-    "heading",
-    "row",
-    "number",
-    "line",
-    "marker",
-    "code"
-  ],
-  "ui-app-shell": [
-    "frame",
-    "topbar",
-    "body",
-    "navigation",
-    "content",
-    "panel"
-  ]
+  "elements": {
+    "ui-badge": {
+      "attributes": [
+        "icon",
+        "tone"
+      ],
+      "slots": [
+        "label"
+      ]
+    }
+  },
+  "parts": {
+    "ui-dialog": [
+      "panel",
+      "heading",
+      "body",
+      "actions"
+    ],
+    "ui-button": [
+      "control"
+    ],
+    "ui-field": [
+      "frame",
+      "caption",
+      "control"
+    ],
+    "ui-choice": [
+      "frame",
+      "control",
+      "label",
+      "meaning",
+      "tag"
+    ],
+    "ui-copy": [
+      "control",
+      "icon",
+      "done",
+      "status"
+    ],
+    "ui-expand": [
+      "control"
+    ],
+    "ui-brand": [
+      "mark",
+      "wordmark"
+    ],
+    "ui-progress-bar": [
+      "track"
+    ],
+    "ui-status-dot": [],
+    "ui-tooltip": [
+      "title",
+      "hint"
+    ],
+    "ui-overline": [
+      "count"
+    ],
+    "ui-card": [
+      "body",
+      "footer"
+    ],
+    "ui-code-block": [
+      "code"
+    ],
+    "ui-diff-block": [
+      "hunk",
+      "heading",
+      "row",
+      "number",
+      "line",
+      "marker",
+      "code"
+    ],
+    "ui-app-shell": [
+      "frame",
+      "topbar",
+      "body",
+      "navigation",
+      "content",
+      "panel"
+    ]
+  }
 }

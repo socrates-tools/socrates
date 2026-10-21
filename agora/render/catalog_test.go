@@ -25,9 +25,16 @@ func theCatalog(t *testing.T) *html.Node {
 	return parsed
 }
 
-func absentFromTheCatalog(declared, drawn parts) []string {
+func absentFromTheCatalog(declared contract, drawn writings) []string {
 	var found []string
-	for element := range declared {
+	var names []string
+	for element := range declared.Elements {
+		names = append(names, element)
+	}
+	for element := range declared.Parts {
+		names = append(names, element)
+	}
+	for _, element := range names {
 		if _, known := drawn[element]; !known {
 			found = append(found, fmt.Sprintf("the contract declares <%s>, and the catalog draws no state of it", element))
 		}
@@ -37,26 +44,29 @@ func absentFromTheCatalog(declared, drawn parts) []string {
 }
 
 func TestEveryPrimitiveTheContractDeclaresIsDrawnInTheCatalog(t *testing.T) {
-	for _, found := range absentFromTheCatalog(declaredByTheContract(t), partsOf(theCatalog(t))) {
+	for _, found := range absentFromTheCatalog(declaredByTheContract(t), writingsOf(theCatalog(t))) {
 		t.Error(found)
 	}
 }
 
 func TestTheCatalogWritesNoElementAndNoPartTheContractDoesNotDeclare(t *testing.T) {
-	for _, found := range undeclared(declaredByTheContract(t), partsOf(theCatalog(t))) {
+	for _, found := range undeclared(declaredByTheContract(t), writingsOf(theCatalog(t))) {
 		t.Error(found)
 	}
 }
 
 func TestTheCatalogDrawsEveryPartOfEveryPrimitiveTheContractDeclares(t *testing.T) {
-	for _, found := range unwritten(declaredByTheContract(t), partsOf(theCatalog(t))) {
+	for _, found := range unwritten(declaredByTheContract(t), writingsOf(theCatalog(t))) {
 		t.Error(found)
 	}
 }
 
 func TestAPrimitiveTheContractDeclaresAndTheCatalogDoesNotDrawIsReportedNamingIt(t *testing.T) {
-	declared := parts{"ui-dialog": {"panel"}, "ui-tooltip": {"bubble"}}
-	drawn := parts{"ui-dialog": {"panel"}}
+	declared := contract{
+		Parts:    map[string][]string{"ui-dialog": {"panel"}},
+		Elements: map[string]element{"ui-tooltip": {Attributes: []string{"tone"}}},
+	}
+	drawn := writings{"ui-dialog": {parts: []string{"panel"}}}
 
 	want := []string{`the contract declares <ui-tooltip>, and the catalog draws no state of it`}
 	if diff := cmp.Diff(want, absentFromTheCatalog(declared, drawn)); diff != "" {
@@ -104,7 +114,7 @@ func TestTheCatalogDrawsTheShellAtANarrowWidthAtNineSixtyAndAtTwelveEighty(t *te
 		if err != nil {
 			t.Fatalf("reading back a frame of the catalog: %v", err)
 		}
-		if _, drawn := partsOf(inside)["ui-app-shell"]; drawn {
+		if _, drawn := writingsOf(inside)["ui-app-shell"]; drawn {
 			widths = append(widths, attribute(frame, "width"))
 		}
 	}

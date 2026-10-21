@@ -40,7 +40,7 @@ type badgeView struct {
 	Hint      string
 	Spoken    string
 	Focusable bool
-	Icon      template.HTML
+	Icon      string
 	Label     string
 }
 

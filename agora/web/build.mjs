@@ -1,4 +1,6 @@
-import { build } from 'esbuild'
+import { compile } from '@tailwindcss/node'
+import { Scanner } from '@tailwindcss/oxide'
+import { build, transform } from 'esbuild'
 import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, watch, writeFileSync } from 'node:fs'
@@ -16,14 +18,70 @@ const surface = join(here, 'packages', 'surface')
 const library = join(here, 'packages', 'ui')
 const tokens = join(library, 'tokens')
 
+const theme = join(library, 'theme.css')
+const targets = ['chrome120', 'firefox121', 'safari17']
+
 const hljs = createRequire(join(library, 'package.json'))('highlight.js/lib/common')
 
-async function contractOf() {
+async function partsOfThePrimitivesNotYetMoved() {
   const source = readFileSync(join(library, 'contract.ts'), 'utf8')
   const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } })
   const loaded = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`)
   return loaded.contract
 }
+
+function decoratorCalled(node, name) {
+  return (ts.getDecorators(node) ?? []).map((decorator) => decorator.expression).find((call) => ts.isCallExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === name)
+}
+
+function attributeOf(member) {
+  const call = decoratorCalled(member, 'property')
+  if (!call || !ts.isIdentifier(member.name)) {
+    return undefined
+  }
+  const options = call.arguments.find(ts.isObjectLiteralExpression)
+  const stated = options?.properties.find((property) => ts.isPropertyAssignment(property) && ts.isIdentifier(property.name) && property.name.text === 'attribute')
+  if (!stated) {
+    return member.name.text.toLowerCase()
+  }
+  if (ts.isStringLiteralLike(stated.initializer)) {
+    return stated.initializer.text
+  }
+  return undefined
+}
+
+function slotsIn(node) {
+  const slots = []
+  const visit = (child) => {
+    if (ts.isTaggedTemplateExpression(child) && ts.isIdentifier(child.tag) && child.tag.text === 'html') {
+      const template = child.template
+      const text = ts.isNoSubstitutionTemplateLiteral(template) ? template.text : template.head.text + template.templateSpans.map((span) => `\u0000${span.literal.text}`).join('')
+      for (const found of text.matchAll(/<slot(\s[^>]*)?>/g)) {
+        slots.push(found[1]?.match(/\sname="([^"]*)"/)?.[1] ?? '')
+      }
+    }
+    ts.forEachChild(child, visit)
+  }
+  visit(node)
+  return slots
+}
+
+function elementsDeclaredBy(created) {
+  const declared = {}
+  for (const file of sources(created)) {
+    for (const node of file.statements) {
+      const named = ts.isClassDeclaration(node) ? decoratorCalled(node, 'customElement') : undefined
+      if (!named || !ts.isStringLiteralLike(named.arguments[0])) {
+        continue
+      }
+      const attributes = node.members.map(attributeOf).filter((attribute) => attribute !== undefined)
+      declared[named.arguments[0].text] = { attributes: [...new Set(attributes)].sort(), slots: [...new Set(slotsIn(node))].sort() }
+    }
+  }
+  return Object.fromEntries(Object.entries(declared).sort(([first], [second]) => first.localeCompare(second)))
+}
+
+const classSourcesOutsideTheClient = [join(here, '..', 'render'), join(here, '..', '..', 'site')]
 
 const stamped = ['packages', 'build.mjs', 'tsconfig.json', 'package.json', 'pnpm-lock.yaml']
 
@@ -130,7 +188,7 @@ async function rebuildOnEverySave() {
   }
 
   const saved = (_, name) => {
-    if (name?.split(sep).includes('node_modules')) {
+    if (name?.split(sep).includes('node_modules') || name?.endsWith('.go')) {
       return
     }
     if (building) {
@@ -141,7 +199,8 @@ async function rebuildOnEverySave() {
     settling = setTimeout(rebuild, settlingMilliseconds)
   }
 
-  stamped.map((name) => join(here, name)).filter(existsSync).forEach((path) => watch(path, { recursive: true }, saved))
+  const watched = [...stamped.map((name) => join(here, name)), ...classSourcesOutsideTheClient]
+  watched.filter(existsSync).forEach((path) => watch(path, { recursive: true }, saved))
   await rebuild()
 
   const interrupted = () => process.exit(0)
@@ -186,16 +245,57 @@ function surfaceImportsInTheLibrary() {
   return [...refusals, ...imports]
 }
 
+function shadowRootsReachedByTheSurface(created) {
+  const refusals = []
+  for (const file of sources(created)) {
+    const inside = relative(library, file.fileName)
+    if (!inside.startsWith('..') && !isAbsolute(inside)) {
+      continue
+    }
+    const visit = (node) => {
+      if ((ts.isIdentifier(node) || ts.isStringLiteralLike(node)) && node.text === 'shadowRoot') {
+        refusals.push(`${where(file, node.getStart(file))} - names shadowRoot, and the surface reaches a primitive only through its own properties and events`)
+      }
+      ts.forEachChild(node, visit)
+    }
+    visit(file)
+  }
+  return refusals
+}
+
+async function compiledStylesheet() {
+  const compiler = await compile(readFileSync(theme, 'utf8'), { base: dirname(theme), onDependency: () => {} })
+  return compiler.build(new Scanner({ sources: compiler.sources }).scan())
+}
+
+function stylesheetModule(stylesheet) {
+  return {
+    name: 'agora-stylesheet',
+    setup(bundling) {
+      bundling.onResolve({ filter: /^agora:stylesheet$/ }, (asked) => ({ path: asked.kind === 'import-rule' ? 'css' : 'text', namespace: 'agora-stylesheet' }))
+      bundling.onLoad({ filter: /.*/, namespace: 'agora-stylesheet' }, async (loaded) => {
+        if (loaded.path === 'css') {
+          return { contents: stylesheet, loader: 'css' }
+        }
+        const { code } = await transform(stylesheet, { loader: 'css', minify: true, target: targets, legalComments: 'none' })
+        return { contents: code, loader: 'text' }
+      })
+    },
+  }
+}
+
 if (process.argv.includes('--watch')) {
   await rebuildOnEverySave()
 }
 
 const { created, configuration } = program()
-const refused = [...typeErrors(created, configuration), ...sources(created).flatMap(commentsIn), ...surfaceImportsInTheLibrary()]
+const refused = [...typeErrors(created, configuration), ...sources(created).flatMap(commentsIn), ...surfaceImportsInTheLibrary(), ...shadowRootsReachedByTheSurface(created)]
 if (refused.length > 0) {
   process.stderr.write(`${refused.join('\n')}\n`)
   process.exit(1)
 }
+
+const stylesheet = await compiledStylesheet()
 
 rmSync(bundle, { recursive: true, force: true })
 mkdirSync(bundle, { recursive: true })
@@ -210,7 +310,8 @@ await build({
   bundle: true,
   minify: true,
   format: 'iife',
-  target: ['chrome120', 'firefox121', 'safari17'],
+  target: targets,
+  plugins: [stylesheetModule(stylesheet)],
   outdir: bundle,
   loader: { '.woff2': 'file' },
   assetNames: 'fonts/[name]',
@@ -221,7 +322,7 @@ await build({
 copyFileSync(join(tokens, 'brand', 'socrates-mark.svg'), join(bundle, 'socrates-mark.svg'))
 
 const answeredTo = [...new Set(hljs.listLanguages().flatMap((name) => [name, ...(hljs.getLanguage(name).aliases ?? [])]))].sort()
-writeFileSync(declared, JSON.stringify(await contractOf(), null, 2) + '\n')
+writeFileSync(declared, JSON.stringify({ elements: elementsDeclaredBy(created), parts: await partsOfThePrimitivesNotYetMoved() }, null, 2) + '\n')
 writeFileSync(languages, JSON.stringify(answeredTo, null, 2) + '\n')
 writeFileSync(stamp, sum() + '\n')
 

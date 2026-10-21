@@ -4,8 +4,8 @@ This file is about what it carries that socrates did not author.
 Three kinds of borrowed work reach the shipped binary.
 The first is embedded as an asset by agora/assets, which is the client bundle
 built from web/ and the font faces beside it.
-The second is the drawing of six icons, which agora/render carries as the path
-data of the marks it draws on the page.
+The second is the drawing of six icons, which agora's client carries as the path
+data of the marks its badge draws on the page.
 The third is linked in by the Go compiler, which is the module dependencies
 cmd/socrates reaches.
 Each is named below with the licence it is published under and that licence's
@@ -14,8 +14,8 @@ to accompany the copy and a link is not the text.
 
 What agora/assets embeds, by the path it embeds it under:
 
-  bundle/surface.js                          agora's client, carrying highlight.js
-  bundle/surface.css                         agora's stylesheet
+  bundle/surface.js                          agora's client, carrying highlight.js and Lit
+  bundle/surface.css                         agora's stylesheet, carrying Tailwind CSS
   bundle/tokens.css                          agora's colour tokens, type scale and fonts, which a drawing may link
   bundle/height.js                           the script the surface adds to a drawing, which posts its height to the page
   bundle/contract.json                       the elements and parts agora's primitives declare, which the partials are checked against
@@ -28,8 +28,9 @@ What agora/assets embeds, by the path it embeds it under:
 bundle/surface.js, bundle/surface.css, bundle/tokens.css, bundle/height.js, bundle/contract.json, bundle/socrates-mark.svg and bundle.sum
 are socrates' own work, written by make assets, and are published under the
 terms in LICENSE.
-What bundle/surface.js bundles is highlight.js, whose notice is below and whose
-licence text esbuild collects at the end of the bundle itself.
+What bundle/surface.js bundles is highlight.js and Lit, and what bundle/surface.css
+bundles is Tailwind CSS, whose notices are below and whose licence text esbuild
+collects at the end of the file itself where the library keeps it in its code.
 
 ==============================================================================
 highlight.js 11.12.0
@@ -66,6 +67,70 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+==============================================================================
+lit 3.3.3
+Bundled into bundle/surface.js, with lit-html, lit-element and
+@lit/reactive-element, which it pulls in under the same licence.
+BSD 3-Clause License.
+==============================================================================
+
+BSD 3-Clause License
+
+Copyright (c) 2017 Google LLC. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+==============================================================================
+tailwindcss 4.3.3
+Bundled into bundle/surface.css, as its theme, Preflight and utilities.
+MIT License.
+==============================================================================
+
+MIT License
+
+Copyright (c) Tailwind Labs, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ==============================================================================
 Cinzel, Manrope and JetBrains Mono
@@ -176,7 +241,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 ==============================================================================
 Lucide
 The path data of circle-alert, triangle-alert, info, user, wrench and eye,
-carried by agora/render as the icons of the marks it draws.
+carried by agora's client, bundled into bundle/surface.js, as the icons the badge draws.
 ISC License, and the MIT License for the icons derived from Feather.
 ==============================================================================
 

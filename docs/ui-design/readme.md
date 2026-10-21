@@ -16,7 +16,8 @@ Where this folder and the shipped page disagree, the shipped page is right: `ago
 - `agora/web/packages/ui/tokens/tokens.css`: the shipped tokens.
 - `agora/web/packages/surface/surface.css`: the shipped styles.
 - `agora/web/packages/surface/`: answering and sending behaviour.
-- `agora/render/icons.go`, `marks.go`, `audiences.go`, `messages.go`: icons, marks, tooltip copy.
+- `agora/web/packages/ui/badge/icons.ts`: the icons.
+- `agora/render/marks.go`, `audiences.go`, `messages.go`: marks, tooltip copy.
 - `agora/document/testdata/source.json`: sample content.
 - `agora/web/packages/ui/tokens/fonts/`: Cinzel, Manrope and JetBrains Mono, which `fonts/` here copies byte for byte.
 
@@ -93,7 +94,7 @@ Where this folder and the shipped page disagree, the shipped page is right: `ago
 
 ## Iconography
 
-- The set is the six Lucide stroke icons that socrates ships in `agora/render/icons.go`: circle-alert, triangle-alert, info, user, wrench and eye.
+- The set is the six Lucide stroke icons that socrates ships in `agora/web/packages/ui/badge/icons.ts`: circle-alert, triangle-alert, info, user, wrench and eye.
   There is also a square-capped check from `page.gohtml`.
   They are inline SVG, 2px stroke, round caps and single colour (currentColor).
   The `Icon` component reproduces them from those exact paths, so components don't repeat SVG markup.

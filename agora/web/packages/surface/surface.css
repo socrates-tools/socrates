@@ -1,4 +1,5 @@
 @import '@agora/ui/tokens/tokens.css';
+@import 'agora:stylesheet';
 @import '@agora/ui/primitives.css';
 @import '@agora/ui/catalog/catalog.css';
 

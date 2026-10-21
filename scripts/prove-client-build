@@ -7,9 +7,11 @@ trap 'rm -rf "$scratch"' EXIT
 failures=0
 
 fresh() {
-  rm -rf "$scratch/agora"
-  mkdir -p "$scratch/agora/assets" "$scratch/agora/document"
+  rm -rf "$scratch/agora" "$scratch/site"
+  mkdir -p "$scratch/agora/assets" "$scratch/agora/document" "$scratch/site"
   cp -a "$root/agora/web" "$scratch/agora/web"
+  cp -a "$root/agora/render" "$scratch/agora/render"
+  cp "$root/site/index.html" "$scratch/site/index.html"
 }
 
 build() {
@@ -26,6 +28,44 @@ if ! output=$(build); then
   fail "an untouched client did not build: $output"
 elif ! grep -q 'Ivan Sagalaev' "$scratch/agora/assets/bundle/surface.js"; then
   fail "the highlight.js notice did not reach the bundle"
+elif ! grep -q 'Copyright (c) 2017 Google LLC' "$scratch/agora/assets/bundle/surface.js"; then
+  fail "the Lit notice did not reach surface.js"
+elif ! grep -q 'Copyright (c) Tailwind Labs, Inc.' "$scratch/agora/assets/bundle/surface.css"; then
+  fail "the Tailwind notice did not reach surface.css"
+fi
+
+fresh
+printf "export const classes = 'bg-red-500 rounded-lg bg-accent rounded-pill font-body p-4'\n" > "$scratch/agora/web/packages/surface/probe.ts"
+if ! output=$(build); then
+  fail "a template naming utilities did not build: $output"
+else
+  css="$scratch/agora/assets/bundle/surface.css"
+  for rule in '.bg-accent{' '.rounded-pill{' '.font-body{' '.p-4{padding:calc(var(--spacing) * 4)}'; do
+    if ! grep -qF "$rule" "$css"; then
+      fail "the stylesheet holds no rule $rule for a utility that is a token"
+    fi
+  done
+  for rule in '.bg-red-500' '.rounded-lg'; do
+    if grep -qF "$rule" "$css"; then
+      fail "the stylesheet holds a rule $rule for a utility that is not a token"
+    fi
+  done
+fi
+
+fresh
+printf "export const reached = document.body.shadowRoot\n" >> "$scratch/agora/web/packages/surface/exchange.ts"
+if output=$(build); then
+  fail "a surface file naming shadowRoot did not stop the build"
+elif ! printf '%s' "$output" | grep -Eq 'packages/surface/exchange\.ts:[0-9]+'; then
+  fail "a surface file naming shadowRoot was refused without naming its file and line: $output"
+elif [ -e "$scratch/agora/assets/bundle/surface.js" ]; then
+  fail "a surface file naming shadowRoot still wrote a bundle"
+fi
+
+fresh
+printf "export const inside = (element: Element) => element.shadowRoot\n" > "$scratch/agora/web/packages/ui/inside.ts"
+if ! output=$(build); then
+  fail "a library file naming shadowRoot was refused, and a primitive's own file may: $output"
 fi
 
 fresh

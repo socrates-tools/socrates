@@ -19,10 +19,13 @@ var copyrightStated = regexp.MustCompile(`(?m)^Copyright .+$`)
 
 type MissingNotice struct {
 	Library string
+	File    string
 	Line    string
 }
 
-func NoticesTheClientDoesNotCarry(client, notice string, bundled []string) []MissingNotice {
+var shippedFileNamed = regexp.MustCompile(`bundle/([A-Za-z0-9_-]+\.(?:js|css))`)
+
+func NoticesTheBundleDoesNotCarry(bundle fs.FS, notice string, bundled []string) []MissingNotice {
 	var missing []MissingNotice
 
 	for _, library := range bundled {
@@ -32,13 +35,44 @@ func NoticesTheClientDoesNotCarry(client, notice string, bundled []string) []Mis
 			continue
 		}
 
-		for _, line := range stated {
-			if !strings.Contains(client, line) {
-				missing = append(missing, MissingNotice{Library: library, Line: line})
+		files := shippedFilesOf(notice, library)
+		if len(files) == 0 {
+			missing = append(missing, MissingNotice{Library: library, Line: stated[0]})
+			continue
+		}
+
+		for _, file := range files {
+			shipped, err := fs.ReadFile(bundle, file)
+			if err != nil {
+				missing = append(missing, MissingNotice{Library: library, File: file, Line: stated[0]})
+				continue
+			}
+			for _, line := range stated {
+				if !strings.Contains(string(shipped), line) {
+					missing = append(missing, MissingNotice{Library: library, File: file, Line: line})
+				}
 			}
 		}
 	}
 	return missing
+}
+
+func shippedFilesOf(notice, library string) []string {
+	sections := noticeSeparator.Split(notice, -1)
+
+	for position, section := range sections {
+		if !strings.HasPrefix(strings.TrimSpace(section), library) || position+1 >= len(sections) {
+			continue
+		}
+		var files []string
+		for _, found := range shippedFileNamed.FindAllStringSubmatch(section, -1) {
+			if !slices.Contains(files, found[1]) {
+				files = append(files, found[1])
+			}
+		}
+		return files
+	}
+	return nil
 }
 
 func copyrightStatedFor(notice, library string) []string {

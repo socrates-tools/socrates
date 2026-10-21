@@ -30,6 +30,18 @@ var licenceOfAFontFamily = map[string][]string{
 }
 
 var licenceOfABundledLibrary = map[string][]string{
+	"lit": {
+		"BSD 3-Clause License",
+		"Copyright (c) 2017 Google LLC. All rights reserved.",
+		"Redistribution and use in source and binary forms, with or without",
+		`THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"`,
+	},
+	"tailwindcss": {
+		"MIT License",
+		"Copyright (c) Tailwind Labs, Inc.",
+		"Permission is hereby granted, free of charge, to any person obtaining a copy",
+		`THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND`,
+	},
 	"highlight.js": {
 		"BSD 3-Clause License",
 		"Copyright (c) 2006, Ivan Sagalaev.",

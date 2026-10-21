@@ -27,22 +27,71 @@ func TestAnEmbeddedAssetWithNoEntryFailsTheCheck(t *testing.T) {
 	}
 }
 
-func TestABundlerThatDeletesNoticesFailsTheSuite(t *testing.T) {
-	notice := "==========================\n" +
-		"highlight.js 11.12.0\n" +
-		"BSD 3-Clause License.\n" +
-		"==========================\n\n" +
-		"Copyright (c) 2006, Ivan Sagalaev.\nAll rights reserved.\n"
-	bundled := []string{"highlight.js"}
+const aNoticeNamingALibraryOfEachShippedFile = "==========================\n" +
+	"lit 3.3.3\n" +
+	"Bundled into bundle/surface.js.\n" +
+	"==========================\n\n" +
+	"Copyright (c) 2017 Google LLC. All rights reserved.\n\n" +
+	"==========================\n" +
+	"tailwindcss 4.3.3\n" +
+	"Bundled into bundle/surface.css.\n" +
+	"==========================\n\n" +
+	"Copyright (c) Tailwind Labs, Inc.\n"
 
-	carried := "(()=>{})();\n/*! Copyright (c) 2006, Ivan Sagalaev. */\n"
-	if missing := NoticesTheClientDoesNotCarry(carried, notice, bundled); len(missing) != 0 {
-		t.Errorf("the check reported %v against a bundle that carries the notice", missing)
+func theBundle(js, css string) fstest.MapFS {
+	return fstest.MapFS{
+		"surface.js":  &fstest.MapFile{Data: []byte(js)},
+		"surface.css": &fstest.MapFile{Data: []byte(css)},
+	}
+}
+
+func TestABundlerThatDeletesNoticesFailsTheSuite(t *testing.T) {
+	bundled := []string{"lit", "tailwindcss"}
+
+	carried := theBundle("(()=>{})();\n/*! Copyright (c) 2017 Google LLC. All rights reserved. */\n", "/*! Copyright (c) Tailwind Labs, Inc. */\n.a{}\n")
+	if missing := NoticesTheBundleDoesNotCarry(carried, aNoticeNamingALibraryOfEachShippedFile, bundled); len(missing) != 0 {
+		t.Errorf("the check reported %v against a bundle that carries each notice", missing)
 	}
 
-	deleted := "(()=>{})();\n"
-	want := []MissingNotice{{Library: "highlight.js", Line: "Copyright (c) 2006, Ivan Sagalaev."}}
-	if diff := cmp.Diff(want, NoticesTheClientDoesNotCarry(deleted, notice, bundled)); diff != "" {
+	deleted := theBundle("(()=>{})();\n", ".a{}\n")
+	want := []MissingNotice{
+		{Library: "lit", File: "surface.js", Line: "Copyright (c) 2017 Google LLC. All rights reserved."},
+		{Library: "tailwindcss", File: "surface.css", Line: "Copyright (c) Tailwind Labs, Inc."},
+	}
+	if diff := cmp.Diff(want, NoticesTheBundleDoesNotCarry(deleted, aNoticeNamingALibraryOfEachShippedFile, bundled)); diff != "" {
+		t.Errorf("what the bundle does not carry differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestANoticeCarriedByTheWrongShippedFileDoesNotCountForTheFileTheLibraryShipsIn(t *testing.T) {
+	bundled := []string{"lit", "tailwindcss"}
+
+	swapped := theBundle("(()=>{})();\n/*! Copyright (c) Tailwind Labs, Inc. */\n", "/*! Copyright (c) 2017 Google LLC. All rights reserved. */\n.a{}\n")
+	want := []MissingNotice{
+		{Library: "lit", File: "surface.js", Line: "Copyright (c) 2017 Google LLC. All rights reserved."},
+		{Library: "tailwindcss", File: "surface.css", Line: "Copyright (c) Tailwind Labs, Inc."},
+	}
+	if diff := cmp.Diff(want, NoticesTheBundleDoesNotCarry(swapped, aNoticeNamingALibraryOfEachShippedFile, bundled)); diff != "" {
+		t.Errorf("what the bundle does not carry differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestALibraryWhoseNoticeNamesNoShippedFileFailsTheCheck(t *testing.T) {
+	notice := "==========================\n" +
+		"lit 3.3.3\n" +
+		"BSD 3-Clause License.\n" +
+		"==========================\n\n" +
+		"Copyright (c) 2017 Google LLC. All rights reserved.\n"
+
+	want := []MissingNotice{{Library: "lit", Line: "Copyright (c) 2017 Google LLC. All rights reserved."}}
+	if diff := cmp.Diff(want, NoticesTheBundleDoesNotCarry(theBundle("", ""), notice, []string{"lit"})); diff != "" {
+		t.Errorf("what the bundle does not carry differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestALibraryTheNoticeStatesNoCopyrightLineForFailsTheCheck(t *testing.T) {
+	want := []MissingNotice{{Library: "left-pad"}}
+	if diff := cmp.Diff(want, NoticesTheBundleDoesNotCarry(theBundle("", ""), aNoticeNamingALibraryOfEachShippedFile, []string{"left-pad"})); diff != "" {
 		t.Errorf("what the bundle does not carry differs (-want +got):\n%s", diff)
 	}
 }

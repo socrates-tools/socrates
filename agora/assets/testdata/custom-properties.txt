@@ -111,6 +111,7 @@
 --size-title
 --size-toggle
 --size-wordmark
+--spacing
 --stack
 --state-error
 --state-error-wash
@@ -142,5 +143,9 @@
 --tracking-overline
 --tracking-title
 --tracking-wordmark
+--weight-bold
+--weight-medium
+--weight-regular
+--weight-semibold
 --your-call
 --your-call-wash

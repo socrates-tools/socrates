@@ -1,7 +1,6 @@
 package assets_test
 
 import (
-	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -23,11 +22,6 @@ func TestEveryEmbeddedFileIsAccountedForInTheNotice(t *testing.T) {
 }
 
 func TestTheShippedBundleCarriesTheNoticeOfWhatItBundles(t *testing.T) {
-	client, err := fs.ReadFile(assets.Files(), "surface.js")
-	if err != nil {
-		t.Fatalf("reading the embedded client: %v", err)
-	}
-
 	bundled, err := convention.LibrariesTheClientBundles(source.Root(t))
 	if err != nil {
 		t.Fatalf("reading what the client bundles: %v", err)
@@ -36,12 +30,15 @@ func TestTheShippedBundleCarriesTheNoticeOfWhatItBundles(t *testing.T) {
 		t.Fatalf("the client bundles nothing, so this test proves nothing")
 	}
 
-	for _, missing := range convention.NoticesTheClientDoesNotCarry(string(client), theNotice(t), bundled) {
-		if missing.Line == "" {
+	for _, missing := range convention.NoticesTheBundleDoesNotCarry(assets.Files(), theNotice(t), bundled) {
+		switch {
+		case missing.Line == "":
 			t.Errorf("%s states no copyright line for %s, so there is nothing for the bundle to carry", convention.NoticeFile, missing.Library)
-			continue
+		case missing.File == "":
+			t.Errorf("%s names no file of the bundle that %s is bundled into, so there is nowhere to look for %q", convention.NoticeFile, missing.Library, missing.Line)
+		default:
+			t.Errorf("the %s that ships carries no %q, and %s is bundled into it", missing.File, missing.Line, missing.Library)
 		}
-		t.Errorf("the bundle that ships carries no %q, and %s is bundled into it", missing.Line, missing.Library)
 	}
 }
 

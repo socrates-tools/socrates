@@ -80,7 +80,7 @@ func (m markView) Badge() badgeView {
 		Hint:      m.Hint,
 		Spoken:    m.Spoken,
 		Focusable: m.Focusable,
-		Icon:      icon(m.Icon),
+		Icon:      m.Icon,
 	}
 	if m.Named {
 		shown.Label = m.Name

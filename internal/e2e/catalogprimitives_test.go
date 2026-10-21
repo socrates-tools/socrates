@@ -1,6 +1,9 @@
 package e2e_test
 
 import (
+	"bytes"
+	"fmt"
+	"image/png"
 	"strings"
 	"testing"
 
@@ -119,6 +122,42 @@ func badgeOf(key string) string {
 	return stateOf("ui-badge", key) + " ui-badge"
 }
 
+func (r *reader) inkBetween(selector string, from, to float64) int {
+	r.t.Helper()
+
+	r.evaluate(`document.querySelector(`+jsonOf(r.t, selector)+`).scrollIntoView({ block: 'center' }); new Promise((settled) => requestAnimationFrame(() => requestAnimationFrame(settled)))`, nil, awaitingThePromise)
+	var box struct{ Left, Top, Width, Height float64 }
+	r.evaluate(`(() => { const box = document.querySelector(`+jsonOf(r.t, selector)+`).getBoundingClientRect(); return { Left: box.left, Top: box.top, Width: box.width, Height: box.height }; })()`, &box)
+	painted := r.paintedOf(selector, "background-color")["background-color"]
+
+	shot, err := png.Decode(bytes.NewReader(r.screenshot()))
+	if err != nil {
+		r.t.Fatalf("reading what the page painted: %v", err)
+	}
+	var wash [3]int
+	if _, err := fmt.Sscanf(painted, "rgb(%d, %d, %d)", &wash[0], &wash[1], &wash[2]); err != nil {
+		r.t.Fatalf("reading the colour %q the badge is painted: %v", painted, err)
+	}
+
+	inked := 0
+	for x := int(box.Left + from); x < int(box.Left+to); x++ {
+		for y := int(box.Top) + 5; y < int(box.Top+box.Height)-5; y++ {
+			red, green, blue, _ := shot.At(x, y).RGBA()
+			if abs(int(red>>8)-wash[0])+abs(int(green>>8)-wash[1])+abs(int(blue>>8)-wash[2]) > 60 {
+				inked++
+			}
+		}
+	}
+	return inked
+}
+
+func abs(value int) int {
+	if value < 0 {
+		return -value
+	}
+	return value
+}
+
 func TestTheCatalogPaintsEachBadgeToneInItsOwnWashAndInk(t *testing.T) {
 	// scenario: A badge state with a tone paints its background and its text in that tone's tokens
 	t.Parallel()
@@ -141,7 +180,7 @@ func TestTheCatalogPaintsEachBadgeToneInItsOwnWashAndInk(t *testing.T) {
 			if want := page.pageColourOf(tone.ink); painted["color"] != want {
 				t.Errorf("the %s badge's text is %s, want %s", tone.name, painted["color"], want)
 			}
-			if got := page.attributeOf(badge, "data-tone"); got != tone.name {
+			if got := page.attributeOf(badge, "tone"); got != tone.name {
 				t.Errorf("the badge states its tone as %q, want %q", got, tone.name)
 			}
 		})
@@ -157,11 +196,14 @@ func TestTheCatalogDrawsABadgeWithALabelAsAnIconBesideItsWordInAPill(t *testing.
 		t.Run(key, func(t *testing.T) {
 			badge := badgeOf(key)
 
-			if got := page.textOf(badge + ` [data-part="label"]`); got != "A badge" {
+			if got := page.textOf(badge + ` [slot="label"]`); got != "A badge" {
 				t.Errorf("the badge says %q, want its label", got)
 			}
-			if page.countOf(badge+` [data-part="icon"] svg`) != 1 {
+			if page.inkBetween(badge, 6, 18) == 0 {
 				t.Error("the badge draws no icon beside its label")
+			}
+			if page.inkBetween(badge, 19, 21) != 0 {
+				t.Error("the badge's label does not start after the icon and the gap that sets them apart")
 			}
 			if got, want := page.pixelsOf(badge, "height"), page.pixelsOfToken("--chip-height"); got != want {
 				t.Errorf("the badge stands %vpx tall, want the chip height %vpx", got, want)
@@ -179,19 +221,19 @@ func TestTheCatalogDrawsAnIconAloneBadgeAsACircleThatStillSaysWhatItMeansToAScre
 	page := catalogued(t)
 	badge := badgeOf(badgeIconAloneKey)
 
-	if page.countOf(badge+` [data-part="label"]`) != 0 {
+	if page.countOf(badge+` [slot="label"]`) != 0 {
 		t.Error("the icon-alone badge draws a label")
 	}
-	if page.countOf(badge+` [data-part="icon"] svg`) != 1 {
+	check := page.pixelsOfToken("--check-size")
+	if page.inkBetween(badge, 4, check-4) == 0 {
 		t.Error("the icon-alone badge draws no icon")
 	}
-	check := page.pixelsOfToken("--check-size")
-	painted := page.paintedOf(badge, "width", "height", "border-top-left-radius")
+	painted := page.paintedOf(badge, "width", "height")
 	if painted["width"] != painted["height"] || page.pixelsOf(badge, "width") != check {
 		t.Errorf("the icon-alone badge is %s by %s, want a square of %vpx", painted["width"], painted["height"], check)
 	}
-	if painted["border-top-left-radius"] != "50%" {
-		t.Errorf("the icon-alone badge's corners are %q, want a circle", painted["border-top-left-radius"])
+	if got := page.pixelsOf(badge, "border-top-left-radius"); got < check/2 {
+		t.Errorf("the icon-alone badge's corners are %vpx round, want a circle of at least %vpx", got, check/2)
 	}
 
 	if got := page.attributeOf(badge, "role"); got != "img" {
@@ -243,6 +285,49 @@ func TestTheCatalogNamesAnExplainedBadgeToAScreenReaderAndShowsItsTipOnHoverAndO
 
 	page.do(chromedp.Focus(chromedp.CSS(badge)))
 	page.waitFor(tipSays)
+}
+
+func TestAShadowRootHoldsEveryBadgeOfTheCatalogAndTheyStillCarryTheirTone(t *testing.T) {
+	// scenario: Every ui-badge the catalog draws renders into a shadow root that adopts the shared stylesheet
+	t.Parallel()
+	page := catalogued(t)
+
+	var drawn struct{ Badges, Shadowed, Adopting int }
+	page.evaluate(`(() => {
+  const badges = Array.from(document.querySelectorAll('ui-badge'));
+  return {
+    Badges: badges.length,
+    Shadowed: badges.filter((badge) => badge.shadowRoot !== null).length,
+    Adopting: badges.filter((badge) => badge.shadowRoot !== null && badge.shadowRoot.adoptedStyleSheets.length > 0).length,
+  };
+})()`, &drawn)
+
+	if drawn.Badges == 0 {
+		t.Fatal("the catalog draws no badge, so this proves nothing")
+	}
+	if drawn.Shadowed != drawn.Badges || drawn.Adopting != drawn.Badges {
+		t.Errorf("of %d badges, %d have a shadow root and %d of those adopt the shared stylesheet, want all", drawn.Badges, drawn.Shadowed, drawn.Adopting)
+	}
+}
+
+func TestABadgeWhoseLabelIsRemovedBecomesTheCircleOfTheChecksSize(t *testing.T) {
+	// scenario: A badge that loses its slotted label is a circle of the check's size, and one that gains it is a pill of the chip's height
+	t.Parallel()
+	page := catalogued(t)
+	badge := badgeOf(badgeNeutralKey)
+	check := page.pixelsOfToken("--check-size")
+
+	page.evaluate(`(() => { const label = document.querySelector(`+jsonOf(t, badge+` [slot="label"]`)+`); window.__label = label; label.remove(); })()`, nil)
+	page.waitFor(`Math.round(document.querySelector(` + jsonOf(t, badge) + `).getBoundingClientRect().width) === ` + fmt.Sprint(check))
+	if got := page.pixelsOf(badge, "height"); got != check {
+		t.Errorf("a badge without its label is %vpx tall, want the check's %vpx", got, check)
+	}
+
+	page.evaluate(`document.querySelector(`+jsonOf(t, badge)+`).append(window.__label)`, nil)
+	page.waitFor(`document.querySelector(` + jsonOf(t, badge) + `).getBoundingClientRect().width > ` + fmt.Sprint(check))
+	if got, want := page.pixelsOf(badge, "height"), page.pixelsOfToken("--chip-height"); got != want {
+		t.Errorf("a badge given its label back is %vpx tall, want the chip's %vpx", got, want)
+	}
 }
 
 func overlineOfState(key string) string {
