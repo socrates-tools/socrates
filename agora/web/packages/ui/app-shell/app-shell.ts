@@ -1,51 +1,47 @@
-import type { PartOf } from '../contract'
+import { html } from 'lit'
+import { customElement } from 'lit/decorators.js'
+import { UiElement } from '../element'
 
-const wideEnoughForThePanelQuery = '(min-width: 1280px)'
-const frame = '[data-part="frame"]'
-const body = `${frame} > [data-part="body"]`
-const pathTo: Record<PartOf<'ui-app-shell'>, string> = {
-  frame,
-  topbar: `${frame} > [data-part="topbar"]`,
-  body,
-  navigation: `${body} > [data-part="navigation"]`,
-  content: `${body} > [data-part="content"]`,
-  panel: `${body} > [data-part="panel"]`,
-}
+const wideEnoughForThePanelQuery = '(min-width: 80rem)'
 const whereASectionIsInView = 0.3
 
-export class UiAppShell extends HTMLElement {
-  private marking = false
-  private wideEnoughForThePanel: MediaQueryList | null = null
+const topbarClasses =
+  'slotted:sticky slotted:top-0 slotted:z-10 slotted:box-content! slotted:flex slotted:h-topbar slotted:items-center slotted:gap-4 slotted:border-b! slotted:border-rule! slotted:bg-bg-bar slotted:px-6! slotted:backdrop-blur-bar slotted:max-narrow:px-4!'
+const navigationClasses =
+  'slotted:relative slotted:border-b! slotted:border-rule! slotted:bg-surface-sunk slotted:p-6! slotted:max-narrow:p-4! slotted:split:w-sidebar slotted:split:flex-none slotted:split:overflow-y-auto slotted:split:border-r! slotted:split:border-b-0! slotted:split:px-4!'
+const contentClasses =
+  'slotted:relative slotted:min-w-0 slotted:flex-1 slotted:px-6! slotted:pt-8! slotted:pb-16! slotted:max-narrow:px-4! slotted:max-narrow:pt-6! slotted:max-narrow:pb-12! slotted:split:overflow-y-auto slotted:split:px-8!'
+const panelClasses =
+  'slotted:hidden slotted:docked:flex slotted:docked:min-h-0 slotted:docked:w-panel slotted:docked:flex-none slotted:docked:flex-col slotted:docked:border-l! slotted:docked:border-rule! slotted:docked:bg-surface-sunk'
 
-  connectedCallback(): void {
-    this.wideEnoughForThePanel = window.matchMedia(wideEnoughForThePanelQuery)
-    this.wideEnoughForThePanel.addEventListener('change', this.panelPlaceChanged)
-    document.addEventListener('scroll', this.scrolled, true)
-    window.addEventListener('resize', this.scrolled)
-    this.scheduleMarking()
-  }
-
-  disconnectedCallback(): void {
-    this.wideEnoughForThePanel?.removeEventListener('change', this.panelPlaceChanged)
-    this.wideEnoughForThePanel = null
-    document.removeEventListener('scroll', this.scrolled, true)
-    window.removeEventListener('resize', this.scrolled)
-  }
+@customElement('ui-app-shell')
+export class UiAppShell extends UiElement {
+  #marking = false
+  #wideEnoughForThePanel: MediaQueryList | null = null
 
   get panelHasItsPlace(): boolean {
     return window.matchMedia(wideEnoughForThePanelQuery).matches
   }
 
-  partNamed(name: PartOf<'ui-app-shell'>): HTMLElement {
-    const held = this.querySelector<HTMLElement>(`:scope > ${pathTo[name]}`)
-    if (!held) {
-      throw new Error(`ui-app-shell holds no ${name}`)
-    }
-    return held
+  override connectedCallback(): void {
+    super.connectedCallback()
+    this.#wideEnoughForThePanel = window.matchMedia(wideEnoughForThePanelQuery)
+    this.#wideEnoughForThePanel.addEventListener('change', this.panelPlaceChanged)
+    document.addEventListener('scroll', this.scrolled, true)
+    window.addEventListener('resize', this.scrolled)
+    this.scheduleMarking()
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback()
+    this.#wideEnoughForThePanel?.removeEventListener('change', this.panelPlaceChanged)
+    this.#wideEnoughForThePanel = null
+    document.removeEventListener('scroll', this.scrolled, true)
+    window.removeEventListener('resize', this.scrolled)
   }
 
   markTheSectionInView(): void {
-    this.marking = false
+    this.#marking = false
     const links = this.sectionLinks()
     const sections = links
       .map((link) => ({ link, target: this.targetOf(link) }))
@@ -66,6 +62,23 @@ export class UiAppShell extends HTMLElement {
     })
   }
 
+  protected override hostClasses(): string {
+    return 'flex min-h-screen flex-col split:h-screen split:min-h-0 split:overflow-hidden'
+  }
+
+  protected override render() {
+    return html`<slot name="topbar" class=${topbarClasses}></slot>
+      <div class="flex flex-1 flex-col split:min-h-0 split:flex-row">
+        <slot name="navigation" class=${navigationClasses}></slot>
+        <slot name="content" class=${contentClasses}></slot>
+        <slot name="panel" class=${panelClasses}></slot>
+      </div>`
+  }
+
+  private slotted(name: string): HTMLElement | null {
+    return this.querySelector<HTMLElement>(`:scope > [slot="${name}"]`)
+  }
+
   private lineOfView(): number {
     const box = this.getBoundingClientRect()
     const top = Math.max(box.top, 0)
@@ -74,17 +87,17 @@ export class UiAppShell extends HTMLElement {
   }
 
   private sectionLinks(): HTMLAnchorElement[] {
-    return Array.from(this.partNamed('navigation').querySelectorAll<HTMLAnchorElement>('a[data-section]'))
+    return Array.from(this.slotted('navigation')?.querySelectorAll<HTMLAnchorElement>('a[data-section]') ?? [])
   }
 
   private targetOf(link: HTMLAnchorElement): HTMLElement | null {
     const target = document.getElementById(link.dataset.section ?? '')
-    return target && this.partNamed('content').contains(target) ? target : null
+    return target && this.slotted('content')?.contains(target) ? target : null
   }
 
   private scheduleMarking(): void {
-    if (!this.marking) {
-      this.marking = true
+    if (!this.#marking) {
+      this.#marking = true
       window.requestAnimationFrame(() => this.markTheSectionInView())
     }
   }
@@ -97,5 +110,3 @@ export class UiAppShell extends HTMLElement {
     this.dispatchEvent(new CustomEvent('panel-place-changed', { bubbles: true }))
   }
 }
-
-customElements.define('ui-app-shell', UiAppShell)

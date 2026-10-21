@@ -315,6 +315,38 @@ func TestARenderedPageWritesTheCardAndTheDialogOnlyWithTheSlotsTheyDeclare(t *te
 	}
 }
 
+func TestTheContractDeclaresTheAppShellAsAnElementOfSlotsAlone(t *testing.T) {
+	declared := declaredByTheContract(t)
+
+	want := element{Slots: []string{"content", "navigation", "panel", "topbar"}}
+	if diff := cmp.Diff(want, declared.Elements["ui-app-shell"], cmpopts.EquateEmpty()); diff != "" {
+		t.Errorf("the contract declares the app shell differently (-want +got):\n%s", diff)
+	}
+	if _, stillParts := declared.Parts["ui-app-shell"]; stillParts {
+		t.Errorf("the contract still declares parts for the app shell: %v", declared.Parts["ui-app-shell"])
+	}
+}
+
+func TestARenderedPageWritesTheAppShellOnlyWithTheSlotsItDeclares(t *testing.T) {
+	// scenario: A rendered page with an index and decisions fills the shell's topbar, navigation, content and panel slots and writes no part
+	written := writingsOf(rendered(t, oneDecision(document.One)))
+
+	held, reached := written["ui-app-shell"]
+	if !reached {
+		t.Fatalf("the rendered page writes %v, and it draws its frame on <ui-app-shell>", written)
+	}
+	if len(held.parts) != 0 {
+		t.Errorf("the rendered page writes the parts %v inside <ui-app-shell>, and the element draws its own parts", held.parts)
+	}
+	slices.Sort(held.slots)
+	if want := []string{"content", "navigation", "panel", "topbar"}; !slices.Equal(held.slots, want) {
+		t.Errorf("the page fills the shell's slots %v, want %v", held.slots, want)
+	}
+	for _, found := range undeclared(declaredByTheContract(t), written) {
+		t.Error(found)
+	}
+}
+
 func TestAnElementNoContractDeclaresIsReported(t *testing.T) {
 	declared := contract{Parts: map[string][]string{"ui-dialog": {"panel"}}}
 	written := writings{"ui-dialog": {parts: []string{"panel"}}, "ui-tooltip": {}}

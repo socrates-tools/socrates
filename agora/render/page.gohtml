@@ -194,6 +194,7 @@
 </div>{{end}}
 {{define "shell-overlay"}}{{template "ui-dialog" .Confirmation}}{{end}}
 {{template "ui-app-shell" .Shell}}
+{{if .Decisions}}{{template "shell-overlay" .}}{{end}}
 {{template "ui-tooltip" .Tooltip}}
 <script src="/assets/surface.js"></script>
 </body>

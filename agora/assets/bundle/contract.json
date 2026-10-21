@@ -1,5 +1,14 @@
 {
   "elements": {
+    "ui-app-shell": {
+      "attributes": [],
+      "slots": [
+        "content",
+        "navigation",
+        "panel",
+        "topbar"
+      ]
+    },
     "ui-badge": {
       "attributes": [
         "icon",
@@ -77,14 +86,6 @@
       "line",
       "marker",
       "code"
-    ],
-    "ui-app-shell": [
-      "frame",
-      "topbar",
-      "body",
-      "navigation",
-      "content",
-      "panel"
     ]
   }
 }

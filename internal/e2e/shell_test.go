@@ -1,6 +1,7 @@
 package e2e_test
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
@@ -61,6 +62,31 @@ func TestAWideWindowHoldsTheShellAndOnlyItsPartsScroll(t *testing.T) {
 	}
 	if read.BarLeft != 0 || read.BarRight < read.Width-1 {
 		t.Errorf("the top bar runs from %vpx to %vpx in a window %vpx wide, and it runs the full width", read.BarLeft, read.BarRight, read.Width)
+	}
+}
+
+func TestTheShellOfThePageHasAShadowRoot(t *testing.T) {
+	// scenario: The page's shell renders into a shadow root and slots the topbar, the navigation, the content and the panel
+	t.Parallel()
+	page := openingAt(t, twoDecisionDocument, aWindowWideEnoughForThePanel, aShortWindow)
+
+	var read struct {
+		Shadowed bool     `json:"shadowed"`
+		Slotted  []string `json:"slotted"`
+	}
+	page.evaluate(`(() => {
+  const shell = document.querySelector('ui-app-shell');
+  return {
+    shadowed: shell.shadowRoot !== null,
+    slotted: Array.from(shell.children).map((child) => child.localName + '[' + child.getAttribute('slot') + ']'),
+  };
+})()`, &read)
+
+	if !read.Shadowed {
+		t.Error("the page's shell has no shadow root")
+	}
+	if want := []string{"header[topbar]", "nav[navigation]", "main[content]", "aside[panel]"}; !slices.Equal(read.Slotted, want) {
+		t.Errorf("the shell holds %v, want %v", read.Slotted, want)
 	}
 }
 

@@ -13,7 +13,6 @@ type shellPartView struct {
 
 type appShellView struct {
 	Class       string
-	BodyClass   string
 	Form        bool
 	Interaction string
 	Topbar      shellPartView
@@ -29,7 +28,6 @@ type shellSlots struct {
 	Navigation string
 	Content    string
 	Panel      string
-	Overlay    string
 }
 
 type badgeView struct {

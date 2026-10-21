@@ -11,7 +11,6 @@ export const contract = {
   'ui-overline': ['count'],
   'ui-code-block': ['code'],
   'ui-diff-block': ['hunk', 'heading', 'row', 'number', 'line', 'marker', 'code'],
-  'ui-app-shell': ['frame', 'topbar', 'body', 'navigation', 'content', 'panel'],
 } as const
 
 export type Primitive = keyof typeof contract
