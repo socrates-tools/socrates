@@ -18,7 +18,7 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 82](../../../../agora/docs/adr/0
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1.1: The foundation, proved on the badge](1.1-the-foundation-and-the-badge.md) | None | pending |
+| [1.1: The foundation, proved on the badge](1.1-the-foundation-and-the-badge.md) | None | in progress |
 | [1.2: No class string carries an arbitrary value](1.2-no-arbitrary-value.md) | None | pending |
 | [2.1: The indicators, the brand and the tooltip as Lit elements](2.1-the-indicators-and-the-tooltip.md) | 1.1 | pending |
 | [2.2: The button, the field, the copy control and the expand control as Lit elements](2.2-the-controls.md) | 1.1 | pending |
