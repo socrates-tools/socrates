@@ -27,17 +27,3 @@ export function pressOf(event: SubmitEvent): HTMLElement | null {
   }
   return pressesBeingSubmitted.get(form) ?? event.submitter
 }
-
-const takesEnterAsASubmit = 'ui-choice, input[type="radio"], input[type="checkbox"]'
-
-document.addEventListener('keydown', (event) => {
-  if (event.key !== 'Enter' || event.defaultPrevented || event.isComposing) {
-    return
-  }
-  const target = event.target
-  const form = target instanceof Element && target.matches(takesEnterAsASubmit) ? target.closest('form') : null
-  if (form) {
-    event.preventDefault()
-    submitByDefault(form)
-  }
-})

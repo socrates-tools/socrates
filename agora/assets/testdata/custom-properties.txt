@@ -15,6 +15,7 @@
 --bg-ground
 --blur-backdrop
 --card-pad
+--check-border
 --check-size
 --chip-height
 --cinnabar-25
@@ -58,6 +59,7 @@
 --leading-display
 --leading-field
 --leading-lead
+--leading-tip
 --leading-title
 --limestone-0
 --limestone-100

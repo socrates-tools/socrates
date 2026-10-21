@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"html/template"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -46,21 +47,25 @@ type fieldView struct {
 }
 
 type choiceView struct {
-	Class        string
-	ControlClass string
-	Family       string
-	Variant      string
-	Type         string
-	Name         string
-	Value        string
-	Interaction  string
-	Decision     string
-	Label        string
-	Meaning      string
-	Tag          string
-	Recommended  bool
-	Checked      bool
-	Disabled     bool
+	Class       string
+	Family      string
+	Variant     string
+	Value       string
+	Interaction string
+	Decision    string
+	Label       string
+	Meaning     string
+	Tag         string
+	Recommended bool
+	Checked     bool
+	Disabled    bool
+}
+
+type choiceGroupView struct {
+	Class    string
+	Label    string
+	Multiple bool
+	Choices  []choiceView
 }
 
 type copyView struct {
@@ -171,6 +176,47 @@ func dialogState(key, name string, view dialogView) state {
 	return state{Key: key, Name: name, Opens: view.ID, View: view}
 }
 
+func catalogChoice(held choiceView) choiceView {
+	held.Family = "catalog-choice"
+	held.Label = catalogChoiceLabel
+	if held.Variant == "" {
+		held.Variant = "solid"
+	}
+	return held
+}
+
+func catalogChoices(checked int, disabled bool) []choiceView {
+	choices := make([]choiceView, catalogChoiceCount)
+	for at := range choices {
+		choices[at] = catalogChoice(choiceView{
+			Class:    "catalog-choice",
+			Value:    strconv.Itoa(at),
+			Checked:  at == checked,
+			Disabled: disabled,
+		})
+	}
+	return choices
+}
+
+func catalogChoicesWithNoneOfThese() []choiceView {
+	choices := catalogChoices(-1, false)
+	none := catalogChoice(choiceView{Class: "catalog-choice", Variant: "dashed", Meaning: catalogChoiceMeaning})
+	none.Label = noneOfThese
+	return append(choices, none)
+}
+
+func catalogRecommendedChoices() []choiceView {
+	choices := catalogChoices(0, false)
+	choices[0].Meaning = catalogChoiceMeaning
+	choices[0].Tag = catalogChoiceTag
+	choices[0].Recommended = true
+	return choices
+}
+
+func catalogChoiceGroup(multiple bool, choices []choiceView) choiceGroupView {
+	return choiceGroupView{Class: "catalog-choice-group", Label: catalogChoiceGroupLabel, Multiple: multiple, Choices: choices}
+}
+
 func stateDrawn(key, name string, view any) state {
 	return state{Key: key, Name: name, View: view}
 }
@@ -250,12 +296,20 @@ var catalogued = map[string][]state{
 		stateDrawn("disabled", fieldDisabled, fieldView{Class: "catalog-field", Caption: catalogFieldCaption, Name: "catalog-disabled", Rows: 2, Disabled: true}),
 	},
 	"ui-choice": {
-		stateDrawn("radio", choiceRadio, choiceView{Family: "catalog-choice", Variant: "solid", Type: "radio", Name: "catalog-radio", Value: "0", Label: catalogChoiceLabel}),
-		stateDrawn("radio-chosen", choiceRadioChosen, choiceView{Family: "catalog-choice", Variant: "solid", Type: "radio", Name: "catalog-radio", Value: "1", Label: catalogChoiceLabel, Checked: true}),
-		stateDrawn("checkbox", choiceCheckbox, choiceView{Family: "catalog-choice", Variant: "solid", Type: "checkbox", Name: "catalog-checkbox", Value: "0", Label: catalogChoiceLabel}),
-		stateDrawn("with-everything", choiceWithEverything, choiceView{Family: "catalog-choice", Variant: "solid", Type: "radio", Name: "catalog-everything", Value: "0", Label: catalogChoiceLabel, Meaning: catalogChoiceMeaning, Tag: catalogChoiceTag, Recommended: true}),
-		stateDrawn("dashed", choiceDashed, choiceView{Family: "catalog-choice", Variant: "dashed", Type: "radio", Name: "catalog-dashed", Label: catalogChoiceLabel, Meaning: catalogChoiceMeaning}),
-		stateDrawn("disabled", choiceDisabled, choiceView{Family: "catalog-choice", Variant: "solid", Type: "checkbox", Name: "catalog-disabled-choice", Value: "0", Label: catalogChoiceLabel, Disabled: true}),
+		stateDrawn("radio", choiceRadio, catalogChoice(choiceView{Value: "0"})),
+		stateDrawn("radio-chosen", choiceRadioChosen, catalogChoice(choiceView{Value: "1", Checked: true})),
+		stateDrawn("with-everything", choiceWithEverything, catalogChoice(choiceView{Value: "0", Meaning: catalogChoiceMeaning, Tag: catalogChoiceTag, Recommended: true})),
+		stateDrawn("dashed", choiceDashed, catalogChoice(choiceView{Variant: "dashed", Meaning: catalogChoiceMeaning})),
+		stateDrawn("dashed-chosen", choiceDashedChosen, catalogChoice(choiceView{Variant: "dashed", Meaning: catalogChoiceMeaning, Checked: true})),
+		stateDrawn("disabled", choiceDisabled, catalogChoice(choiceView{Value: "0", Disabled: true})),
+	},
+	"ui-choice-group": {
+		stateDrawn("single-choice", choiceGroupSingle, catalogChoiceGroup(false, catalogChoices(-1, false))),
+		stateDrawn("single-choice-with-one-chosen", choiceGroupSingleChosen, catalogChoiceGroup(false, catalogChoices(1, false))),
+		stateDrawn("single-choice-with-none-of-these", choiceGroupWithNoneOfThese, catalogChoiceGroup(false, catalogChoicesWithNoneOfThese())),
+		stateDrawn("single-choice-with-a-recommendation", choiceGroupWithARecommendation, catalogChoiceGroup(false, catalogRecommendedChoices())),
+		stateDrawn("multiple-choice", choiceGroupMultiple, catalogChoiceGroup(true, catalogChoices(0, false))),
+		stateDrawn("disabled", choiceGroupDisabled, catalogChoiceGroup(false, catalogChoices(0, true))),
 	},
 	"ui-copy": {
 		stateDrawn("resting", copyResting, copyView{Label: copyLabel, Hint: copyHint, Copied: copiedWord, Failed: notCopied, Text: catalogCopyText}),

@@ -146,6 +146,7 @@
   --leading-field: 1.6;
   --leading-control: 1.5;
   --leading-code: 1.6;
+  --leading-tip: 1.45;
 
   --tracking-display: -0.015em;
   --tracking-title: -0.01em;
@@ -172,6 +173,7 @@
   --chip-height: 22px;
   --pill-height: 24px;
   --check-size: 18px;
+  --check-border: 1.5px;
 
   --ease: cubic-bezier(0.2, 0, 0, 1);
   --duration-fast: 160ms;

@@ -68,19 +68,11 @@
 
 <div class="answering" slot="footer">
 {{if .Options}}
-<fieldset class="options">
-<legend>{{if .Multiple}}Choose as many as apply{{else}}Choose one{{end}}</legend>
-{{$decision := .}}
-{{$kind := "radio"}}{{if .Multiple}}{{$kind = "checkbox"}}{{end}}
-<div class="options-list">
-{{range .Options}}
-{{template "ui-choice" (dict "Class" "option" "ControlClass" "choice" "Family" "option" "Variant" "solid" "Type" $kind "Name" (printf "choice-%s" $decision.ID) "Value" (printf "%d" .Position) "Interaction" "answering" "Decision" $decision.ID "Label" .Label "Meaning" .Meaning "Tag" .Tag "Recommended" .Recommended "Checked" .Recommended "Disabled" $.Over)}}
-{{end}}
-{{if not .Multiple}}
-{{template "ui-choice" (dict "Class" "none" "ControlClass" "decline" "Family" "option" "Variant" "dashed" "Type" "radio" "Name" (printf "choice-%s" .ID) "Interaction" "answering" "Decision" .ID "Label" "None of these" "Meaning" "Write your own answer below, or leave this to whoever asked." "Disabled" $.Over)}}
-{{end}}
+{{$group := .ChoiceGroup}}
+<div class="options">
+<p class="options-legend" aria-hidden="true">{{$group.Label}}</p>
+{{template "ui-choice-group" $group}}
 </div>
-</fieldset>
 {{end}}
 
 {{template "ui-field" (dict "Class" "words-field" "Caption" "In your own words" "Name" (printf "words-%s" .ID) "Rows" 2 "Placeholder" "Answering here alone is a complete answer." "Interaction" "answering" "Decision" .ID "Disabled" $.Over)}}

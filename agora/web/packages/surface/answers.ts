@@ -1,4 +1,4 @@
-import type { UiField, UiProgressBar } from '@agora/ui'
+import type { UiChoice, UiField, UiProgressBar } from '@agora/ui'
 import { cards, clear, closestTo, decisionNamed, find, findAll, nameOf } from './page'
 
 export interface HeldDecision {
@@ -8,7 +8,7 @@ export interface HeldDecision {
 }
 
 export function chosenIn(card: HTMLElement): number[] {
-  return findAll<HTMLInputElement>('.choice', card)
+  return findAll<UiChoice>('.choice', card)
     .filter((choice) => choice.checked)
     .map((choice) => Number(choice.value))
 }
@@ -33,8 +33,7 @@ export function blankCards(): HTMLElement[] {
 }
 
 function labelAt(card: HTMLElement | null, position: number): string {
-  const input = card ? find<HTMLInputElement>(`.choice[value="${CSS.escape(String(position))}"]`, card) : null
-  const option = input ? input.closest('.option') : null
+  const option = card ? find(`.choice[value="${CSS.escape(String(position))}"]`, card) : null
   const label = option ? find('.option-label', option) : null
   return label ? (label.textContent ?? '').trim() : String(position)
 }

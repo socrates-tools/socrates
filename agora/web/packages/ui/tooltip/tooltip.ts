@@ -1,4 +1,6 @@
-import type { PartOf } from '../contract'
+import { html, nothing } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { UiElement } from '../element'
 
 const anchorSelector = '[data-title]'
 const gapAboveTheAnchor = 8
@@ -14,10 +16,15 @@ export function tooltipFor(anchor: HTMLElement): UiTooltip | null {
   return found instanceof UiTooltip ? found : null
 }
 
-export class UiTooltip extends HTMLElement {
+@customElement('ui-tooltip')
+export class UiTooltip extends UiElement {
+  @property({ attribute: false }) accessor heading = ''
+  @property({ attribute: false }) accessor hint = ''
+
   private anchor: HTMLElement | null = null
 
-  connectedCallback(): void {
+  override connectedCallback(): void {
+    super.connectedCallback()
     document.addEventListener('mouseover', this.enteredAnAnchor)
     document.addEventListener('mouseout', this.leftAnAnchor)
     document.addEventListener('focusin', this.focusedAnAnchor)
@@ -26,7 +33,8 @@ export class UiTooltip extends HTMLElement {
     window.addEventListener('scroll', this.scrolled, true)
   }
 
-  disconnectedCallback(): void {
+  override disconnectedCallback(): void {
+    super.disconnectedCallback()
     document.removeEventListener('mouseover', this.enteredAnAnchor)
     document.removeEventListener('mouseout', this.leftAnAnchor)
     document.removeEventListener('focusin', this.focusedAnAnchor)
@@ -42,8 +50,8 @@ export class UiTooltip extends HTMLElement {
 
   showFor(anchor: HTMLElement): void {
     this.anchor = anchor
-    this.partNamed('title').textContent = anchor.dataset.title ?? ''
-    this.partNamed('hint').textContent = anchor.dataset.hint ?? ''
+    this.heading = anchor.dataset.title ?? ''
+    this.hint = anchor.dataset.hint ?? ''
     const box = anchor.getBoundingClientRect()
     this.style.left = `${box.left + box.width / 2}px`
     this.style.top = `${box.top - gapAboveTheAnchor}px`
@@ -55,12 +63,12 @@ export class UiTooltip extends HTMLElement {
     this.hidden = true
   }
 
-  partNamed(name: PartOf<'ui-tooltip'>): HTMLElement {
-    const held = this.querySelector<HTMLElement>(`[data-part="${name}"]`)
-    if (!held) {
-      throw new Error(`ui-tooltip holds no ${name}`)
-    }
-    return held
+  protected override hostClasses(): string {
+    return 'fixed z-2147483000 block w-max max-w-65 -translate-x-1/2 -translate-y-full rounded-md bg-surface-tip px-3 py-2 text-left text-small leading-tip text-fg-on-tip shadow-dialog pointer-events-none'
+  }
+
+  protected override render() {
+    return html`<span class="block font-bold">${this.heading}</span>${this.hint === '' ? nothing : html`<span class="mt-0.5 block text-fg-on-tip-quiet">${this.hint}</span>`}`
   }
 
   private speaksFor(anchor: HTMLElement): boolean {
@@ -111,5 +119,3 @@ export class UiTooltip extends HTMLElement {
     this.hide()
   }
 }
-
-customElements.define('ui-tooltip', UiTooltip)

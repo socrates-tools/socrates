@@ -260,3 +260,30 @@ func TestACopyControlTellsAScreenReaderWhereItWasPressedThatTheCopyWasMade(t *te
 		t.Errorf("once the control rested a live status still says %v", after)
 	}
 }
+
+func TestOneEnterOnAChoiceSubmitsTheFormOnceAndSendsWithoutEnding(t *testing.T) {
+	// scenario: A single Enter on a focused choice raises one submit of the exchange form and delivers one answer that does not end
+	t.Parallel()
+	held, page := read(t, oneDecisionDocument)
+	page.evaluate(`window.__submits = []; document.addEventListener('submit', (event) => { window.__submits.push('submit'); }, true); true`, nil)
+	page.evaluate(chose("c-1", 1), nil)
+	page.focus(within("c-1", ".choice"))
+
+	page.press(kb.Enter)
+
+	delivered, arrived := held.awaiting(5 * time.Second)
+	if !arrived {
+		t.Fatal("Enter on a choice delivered nothing")
+	}
+	if delivered.Ended {
+		t.Error("Enter on a choice finished the exchange, and it presses the send button")
+	}
+	if again, arrivedAgain := held.awaiting(shortWindow); arrivedAgain {
+		t.Errorf("one Enter on a choice delivered a second answer: %+v", again)
+	}
+	var submits []string
+	page.evaluate(`window.__submits`, &submits)
+	if len(submits) != 1 {
+		t.Errorf("one Enter on a choice raised %d submits of the form, want 1", len(submits))
+	}
+}

@@ -162,7 +162,7 @@ func TestACopyControlIsReachedAndPressedByKeyboardAndIsNamedToAScreenReader(t *t
 		t.Fatal("the copy control cannot be reached by keyboard alone")
 	}
 	page.clipboardHolds("something else entirely")
-	page.waitFor(`!document.querySelector('.tooltip').hidden && document.querySelector('.tooltip-title').textContent !== ''`)
+	page.waitFor(`!document.querySelector('.tooltip').hidden && document.querySelector('.tooltip').heading !== ''`)
 	page.press(kb.Enter)
 	page.waitFor(`navigator.clipboard.readText().then((held) => held !== "something else entirely")`)
 
@@ -184,7 +184,7 @@ func TestACopyControlConfirmsTheCopyWhereItWasPressed(t *testing.T) {
 		Others int    `json:"others"`
 	}
 	page.evaluate(`({
-  title: document.querySelector('.tooltip-title').textContent,
+  title: document.querySelector('.tooltip').heading,
   others: document.querySelectorAll('.copy[data-copied]').length,
 })`, &confirmed)
 
