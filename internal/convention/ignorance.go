@@ -17,7 +17,6 @@ var SurfaceDirectories = []string{
 	filepath.Join(ToolDirectory("agora"), "document"),
 	filepath.Join(ToolDirectory("agora"), "render"),
 	filepath.Join(ToolDirectory("agora"), "surface"),
-	filepath.Join(ToolDirectory("agora"), "web", "src"),
 	filepath.Join(ToolDirectory("agora"), "web", "packages"),
 }
 
