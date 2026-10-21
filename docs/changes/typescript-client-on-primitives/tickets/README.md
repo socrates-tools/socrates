@@ -24,8 +24,8 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 79](../../../../agora/docs/adr/0
 | [3.1: The dialog is the first primitive, and the contract holds it to its markup](3.1-the-dialog-as-the-first-primitive.md) | 2.2-tokens-in-the-library | done |
 | [3.2: The landing page is painted by the library's tokens](3.2-landing-page-on-the-tokens.md) | 2.2-tokens-in-the-library | done |
 | [4: The catalog draws every primitive in every state](4-the-catalog.md) | 3.1-the-dialog-as-the-first-primitive, 2.1-development-build | done |
-| [5.1: The page's controls are primitives](5.1-controls-as-primitives.md) | 4-the-catalog | in progress |
+| [5.1: The page's controls are primitives](5.1-controls-as-primitives.md) | 4-the-catalog | done |
 | [5.2: Badges, progress, status and tooltips are primitives](5.2-marks-and-status-as-primitives.md) | 4-the-catalog | done |
-| [5.3: Code blocks and diff blocks are primitives](5.3-code-blocks-as-primitives.md) | 4-the-catalog | pending |
+| [5.3: Code blocks and diff blocks are primitives](5.3-code-blocks-as-primitives.md) | 4-the-catalog | in progress |
 | [5.4: The app shell is a primitive](5.4-app-shell-as-a-primitive.md) | 4-the-catalog | in progress |
 | [6: The surface is built on primitives only](6-the-surface-built-on-primitives-only.md) | 5.1-controls-as-primitives, 5.2-marks-and-status-as-primitives, 5.3-code-blocks-as-primitives, 5.4-app-shell-as-a-primitive | pending |
