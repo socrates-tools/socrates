@@ -33,4 +33,43 @@ const (
 	dialogWithEverything    = "a heading, a body and actions"
 	dialogWithAHeadingAlone = "a heading alone"
 	catalogDialogHeading    = "A dialog"
+
+	badgeNeutral   = "a neutral tone with a label"
+	badgeAccent    = "an accent tone with a label"
+	badgeWarning   = "a warning tone with a label"
+	badgeError     = "an error tone with a label"
+	badgeIconAlone = "an icon alone"
+	badgeExplained = "a label that says what it means on hover, on focus and to a screen reader"
+
+	catalogBadgeLabel = "A badge"
+	catalogBadgeTitle = "What this badge is"
+	catalogBadgeHint  = "A sentence saying what it means."
+
+	cardWithSections   = "a body and a footer"
+	cardWithABodyAlone = "a body alone"
+	cardWithNoSections = "no sections"
+
+	overlineWordsAlone = "words alone"
+	overlineWithACount = "words and a count"
+
+	catalogOverlineWords = "An overline"
+
+	progressNothingDone = "nothing done"
+	progressPartlyDone  = "partly done"
+	progressAllDone     = "all done"
+	progressNamed       = "named to a screen reader"
+
+	catalogProgressLabel = "Progress"
+
+	dotInTheColourAround = "the colour around it"
+	dotNeutral           = "a neutral tone"
+	dotAccent            = "an accent tone"
+	dotResolved          = "a resolved tone"
+	dotWarning           = "a warning tone"
+	dotError             = "an error tone"
+
+	tooltipWithATitleAndAHint = "a title and a hint"
+	tooltipWithATitleAlone    = "a title alone"
+
+	catalogAnchorLabel = "Hover or focus me"
 )

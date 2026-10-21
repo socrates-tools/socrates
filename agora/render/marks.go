@@ -1,9 +1,6 @@
 package render
 
-import (
-	"fmt"
-	"html/template"
-)
+import "fmt"
 
 type markView struct {
 	Kind      string
@@ -74,6 +71,19 @@ func quietly(mark *markView) *markView {
 	return &quiet
 }
 
-func (m markView) Drawn() template.HTML {
-	return icon(m.Icon)
+func (m markView) Badge() badgeView {
+	shown := badgeView{
+		Class:     "mark " + m.Kind,
+		Tone:      m.Tone,
+		Dataset:   map[string]string{m.Kind: m.Value},
+		Title:     m.Title,
+		Hint:      m.Hint,
+		Spoken:    m.Spoken,
+		Focusable: m.Focusable,
+		Icon:      icon(m.Icon),
+	}
+	if m.Named {
+		shown.Label = m.Name
+	}
+	return shown
 }

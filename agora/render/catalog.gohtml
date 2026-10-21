@@ -11,6 +11,9 @@
 </head>
 <body class="catalog">
 {{define "catalog-dialog-body"}}<p>This dialog is drawn by the same partial the page draws a confirmation with.</p>{{end}}
+{{define "catalog-card-sections"}}<div data-part="body"><p>This card holds a body.</p></div><div data-part="footer"><p>And a footer under it.</p></div>{{end}}
+{{define "catalog-card-body"}}<div data-part="body"><p>This card holds a body alone.</p></div>{{end}}
+{{define "catalog-card-plain"}}<p class="catalog-card-plain">This card holds no sections, and sits as the page lays it out.</p>{{end}}
 {{define "catalog-dialog-actions"}}<button class="catalog-action" type="button" data-closes="catalog-dialog">Close</button>{{end}}
 <main class="catalog-page">
 <h1 class="catalog-title">{{.Title}}</h1>
@@ -19,6 +22,7 @@
 {{range .States}}<article class="catalog-state">
 <h3 class="catalog-state-name">{{.Name}}</h3>
 {{if .Opens}}<button class="catalog-opener" id="open-{{.Opens}}" type="button" data-opens="{{.Opens}}">Open</button>{{end}}
+{{with .Anchor}}<button class="catalog-anchor" id="{{.ID}}" type="button" data-tooltip="{{.Tooltip}}" data-title="{{.Title}}"{{with .Hint}} data-hint="{{.}}"{{end}}>{{.Label}}</button>{{end}}
 {{.Drawn}}
 </article>
 {{end}}</section>

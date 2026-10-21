@@ -1,1 +1,7 @@
+export { UiBadge } from './badge/badge'
+export { UiCard } from './card/card'
 export { UiDialog } from './dialog/dialog'
+export { UiOverline } from './overline/overline'
+export { UiProgressBar } from './progress-bar/progress-bar'
+export { UiStatusDot } from './status-dot/status-dot'
+export { tooltipFor, UiTooltip } from './tooltip/tooltip'

@@ -290,7 +290,7 @@ func TestADocumentRendersWithoutTheCallerWritingMarkup(t *testing.T) {
 }
 
 func markIn(node *html.Node, kind string) *html.Node {
-	for _, held := range elements(node, "span") {
+	for _, held := range elements(node, "ui-badge") {
 		if hasClass(held, "mark") && hasClass(held, kind) {
 			return held
 		}
@@ -491,7 +491,7 @@ func statingSomething() document.Document {
 
 func cardsIn(page *html.Node) []*html.Node {
 	var found []*html.Node
-	for _, held := range elements(page, "li") {
+	for _, held := range elements(page, "ui-card") {
 		if hasClass(held, "decision") {
 			found = append(found, held)
 		}
@@ -596,7 +596,7 @@ func TestTheFreeTextFieldCannotBeSuppressed(t *testing.T) {
 
 func everyCardCarriesTheField(page *html.Node) bool {
 	cards := 0
-	for _, card := range elements(page, "li") {
+	for _, card := range elements(page, "ui-card") {
 		if !hasClass(card, "decision") {
 			continue
 		}
@@ -763,7 +763,7 @@ func severitiesRead(within []*html.Node) []string {
 	var read []string
 	for _, held := range within {
 		stated := ""
-		for _, badge := range elements(held, "span") {
+		for _, badge := range elements(held, "ui-badge") {
 			if hasClass(badge, "severity") {
 				stated = attribute(badge, "data-severity")
 			}
@@ -914,7 +914,7 @@ func TestAnEntryNoDecisionCitesIsStillShown(t *testing.T) {
 	}
 
 	cards := 0
-	for _, held := range elements(page, "li") {
+	for _, held := range elements(page, "ui-card") {
 		if hasClass(held, "decision") {
 			cards++
 		}
@@ -946,7 +946,7 @@ func TestAnEntryLeadsToTheDecisionThatCoversIt(t *testing.T) {
 	}
 
 	held := false
-	for _, card := range elements(page, "li") {
+	for _, card := range elements(page, "ui-card") {
 		if hasClass(card, "decision") && attribute(card, "id") == "decision-c-1" {
 			held = true
 		}

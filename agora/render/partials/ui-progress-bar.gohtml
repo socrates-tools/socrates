@@ -1,0 +1,1 @@
+{{define "ui-progress-bar"}}<ui-progress-bar{{with .Class}} class="{{.}}"{{end}}{{if not .Label}} aria-hidden="true"{{end}}><progress data-part="track" max="{{.Max}}" value="{{.Value}}"{{with .Label}} aria-label="{{.}}"{{end}}></progress></ui-progress-bar>{{end}}

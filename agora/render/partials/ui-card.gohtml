@@ -1,0 +1,1 @@
+{{define "ui-card"}}<ui-card{{with .Class}} class="{{.}}"{{end}}{{with .ID}} id="{{.}}"{{end}}{{range $name, $value := .Dataset}} data-{{$name}}="{{$value}}"{{end}}>{{fillWith .Content .Data}}</ui-card>{{end}}

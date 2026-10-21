@@ -1,3 +1,4 @@
+import type { UiProgressBar } from '@agora/ui'
 import { cards, clear, decisionNamed, find, findAll, nameOf } from './page'
 
 export interface HeldDecision {
@@ -99,7 +100,7 @@ export function countAnswered(): void {
   if (count) {
     count.textContent = String(answered)
   }
-  const bar = find<HTMLProgressElement>('.progress-bar')
+  const bar = find<UiProgressBar>('.progress-bar')
   if (bar) {
     bar.value = answered
   }

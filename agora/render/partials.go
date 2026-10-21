@@ -18,13 +18,12 @@ var page = parsedPage()
 func parsedPage() *template.Template {
 	var root *template.Template
 	root = template.Must(template.New("page").Funcs(template.FuncMap{
-		"fill": func(name string) (template.HTML, error) {
-			var written bytes.Buffer
-			if err := root.ExecuteTemplate(&written, name, nil); err != nil {
-				return "", err
-			}
-			return template.HTML(written.String()), nil
-		},
+		"fill":            func(name string) (template.HTML, error) { return filled(root, name, nil) },
+		"fillWith":        func(name string, data any) (template.HTML, error) { return filled(root, name, data) },
+		"overline":        overlineOf,
+		"overlineCounted": overlineCounting,
+		"progressBar":     progressBarOf,
+		"statusDot":       statusDotOf,
 	}).Parse(pageSource))
 	template.Must(root.ParseFS(partialSources, "partials/*.gohtml"))
 	template.Must(root.New("catalog").Parse(catalogSource))

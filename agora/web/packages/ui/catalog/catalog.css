@@ -50,6 +50,7 @@ body.catalog {
 }
 
 .catalog-opener,
+.catalog-anchor,
 .catalog-action {
   padding: 8px 16px;
   border: 1px solid var(--rule);
@@ -58,4 +59,13 @@ body.catalog {
   color: var(--fg-1);
   font: inherit;
   cursor: pointer;
+}
+
+.catalog-state ui-card {
+  flex: 1 1 20rem;
+}
+
+.catalog-card-plain {
+  margin: 0;
+  padding: var(--card-pad);
 }
