@@ -27,6 +27,7 @@ This file is agora's layout and invariants.
   Adding a primitive is a Lit element in its own folder exported from `index.ts`, a partial writing the element with the attributes it declares and what it slots, and its states in `catalogued` in `agora/render/catalog.go`.
   The code block highlights, numbers and hangs the lines of its code, the diff block holds a patch's tables and their own scroll, and the library is where highlight.js is a dependency.
   The library imports nothing from the surface, and a stylesheet outside `packages/ui/tokens/` that writes a colour or names a font family fails the suite.
+  A class written with an arbitrary value, `p-[13px]` or `bg-[#fff]` or `bg-(--x)`, in any file `theme.css`'s `@source` lines name fails the suite naming the file and the line, and the check reads those lines rather than a list of its own, per ADR 84.
   `packages/surface` holds the page's script as strict TypeScript and the stylesheet of the pieces the glossary names, built from the library's primitives and nothing else: one module for each of sending and the receipt, the confirmation, the live revision, the calls that show and hide the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
   Each follows the page through a listener on the document attached once when the page starts, so a revision fetches the page and replaces the surface and binds nothing.
 
