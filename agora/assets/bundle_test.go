@@ -16,7 +16,7 @@ import (
 	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
-var stamped = []string{"packages", "build.mjs", "tsconfig.json", "package.json", "pnpm-lock.yaml"}
+var stamped = []string{"packages", "build.mjs", "tsconfig.json", "package.json", "pnpm-lock.yaml", filepath.Join("..", "..", "site")}
 
 func TestTheCommittedBundleIsWhatItsSourceBuilds(t *testing.T) {
 	root := source.Root(t)

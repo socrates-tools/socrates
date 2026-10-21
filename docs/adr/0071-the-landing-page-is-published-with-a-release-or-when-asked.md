@@ -3,10 +3,12 @@
 - Status: accepted
 - Date: 2026-10-15
 - Part of: site
+- Amended by: ADR 84, which styles the page with utilities and commits the stylesheet `make assets` builds for it
 
 ## Decision
 
-`site/` holds the landing page GitHub Pages serves: one HTML page, its stylesheet and a script that copies the install command, written by hand with no framework and no build step.
+`site/` holds the landing page GitHub Pages serves: one HTML page, the Tailwind entry its stylesheet is built from, that stylesheet as a generated file `make assets` writes and a script that copies the install command, written by hand with no framework.
+`make site` copies the committed stylesheet and builds nothing, so it needs no Node.
 `make site` assembles it into `bin/site` beside the fonts under `agora/web/fonts`, the mark under `agora/web/brand` and `NOTICE`, so the page paints with the bytes the decisions page ships and no second copy of them is committed.
 
 `.github/workflows/pages.yml` publishes what `make site` assembled, when somebody asks for it and as a job of every release that needs the verification matrix and the code scan, like every other job that publishes.

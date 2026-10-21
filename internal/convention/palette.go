@@ -16,6 +16,8 @@ var LandingPageStyleDirectory = "site"
 
 var TokensDirectory = filepath.Join(ToolDirectory("agora"), "web", "packages", "ui", "tokens")
 
+const GeneratedStylesheetSuffix = ".generated.css"
+
 var paletteSelector = ":root"
 
 var colourWritten = regexp.MustCompile(`(?i)#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(|[:\s,(](?:white|black|silver|gainsboro|whitesmoke)[;\s,)]`)
@@ -50,7 +52,7 @@ func PaintWrittenWhereItIsUsed(root, directory, tokens string) (Painting, error)
 			}
 			return nil
 		}
-		if filepath.Ext(path) != ".css" {
+		if filepath.Ext(path) != ".css" || strings.HasSuffix(path, GeneratedStylesheetSuffix) {
 			return nil
 		}
 

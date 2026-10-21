@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth scroll-pt-clearance motion-reduce:scroll-auto">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,151 +12,151 @@
   <link rel="icon" type="image/svg+xml" href="socrates-mark.svg">
   <link rel="preload" href="fonts/Manrope-Variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="tokens.css">
-  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="site.generated.css">
   <script src="site.js" defer></script>
 </head>
-<body>
+<body class="bg-bg-ground text-body text-fg-1 antialiased selection:bg-selection selection:text-fg-1">
 
-<header class="top">
-  <div class="wrap">
-    <a class="brand" href="#top">
-      <img class="mark" src="socrates-mark.svg" width="28" height="28" alt="">
-      <span class="wordmark">socrates</span>
+<header class="fixed inset-x-0 top-0 z-10 border-b border-rule bg-bg-bar backdrop-blur-bar">
+  <div class="mx-auto max-w-300 px-5 flex h-topbar items-center justify-between gap-4">
+    <a class="flex items-center gap-2.5 text-fg-1" href="#top">
+      <img class="flex-none rounded-mark-brand" src="socrates-mark.svg" width="28" height="28" alt="">
+      <span class="font-display text-wordmark font-bold tracking-wordmark">socrates</span>
     </a>
-    <nav aria-label="Sections">
-      <a class="section-link" href="#why">About</a>
-      <a class="section-link" href="#workflow">Workflow</a>
-      <a class="section-link" href="#install">Install</a>
-      <a class="section-link" href="#contribute">Contribute</a>
-      <a class="pill pill-quiet" href="https://github.com/socrates-tools/socrates"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+    <nav aria-label="Sections" class="flex items-center gap-1">
+      <a class="rounded-pill px-3 py-2 text-small font-semibold text-fg-receipt hover:bg-surface-hover hover:text-accent max-wide:hidden" href="#why">About</a>
+      <a class="rounded-pill px-3 py-2 text-small font-semibold text-fg-receipt hover:bg-surface-hover hover:text-accent max-wide:hidden" href="#workflow">Workflow</a>
+      <a class="rounded-pill px-3 py-2 text-small font-semibold text-fg-receipt hover:bg-surface-hover hover:text-accent max-wide:hidden" href="#install">Install</a>
+      <a class="rounded-pill px-3 py-2 text-small font-semibold text-fg-receipt hover:bg-surface-hover hover:text-accent max-wide:hidden" href="#contribute">Contribute</a>
+      <a class="inline-flex items-center rounded-pill border border-rule-control bg-surface-card text-small font-bold text-fg-1 hover:border-accent hover:text-accent transition-paint motion-reduce:transition-none ml-1 h-9 gap-2 px-3.5" href="https://github.com/socrates-tools/socrates"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
     </nav>
   </div>
 </header>
 
-<main id="top">
+<main id="top" class="pt-clearance">
 
-<section class="hero">
-  <div class="wrap">
-    <div class="hero-body">
-      <img class="mark hero-mark" src="socrates-mark.svg" width="72" height="72" alt="socrates">
-      <h1>A workflow for delivering features with AI, from first idea to reviewed branch.</h1>
-      <p>socrates takes your coding session through design, tickets, implementation and review. When it needs you, it opens a clear, interactive page in your browser instead of printing walls of markdown in the terminal.</p>
-      <div class="actions">
-        <a class="pill pill-primary" href="#install">Install socrates</a>
-        <a class="pill pill-secondary" href="#workflow">See the workflow</a>
+<section>
+  <div class="mx-auto max-w-300 px-5 pt-hero-top pb-hero-bottom">
+    <div class="flex max-w-190 flex-col gap-5 max-wide:items-center max-wide:text-center">
+      <img class="mb-1 flex-none rounded-mark-hero shadow-press wide:hidden" src="socrates-mark.svg" width="72" height="72" alt="socrates">
+      <h1 class="text-hero leading-hero font-bold tracking-hero text-balance">A workflow for delivering features with AI, from first idea to reviewed branch.</h1>
+      <p class="max-w-150 text-large leading-reading text-fg-receipt text-pretty">socrates takes your coding session through design, tickets, implementation and review. When it needs you, it opens a clear, interactive page in your browser instead of printing walls of markdown in the terminal.</p>
+      <div class="flex flex-wrap gap-2 pt-1 max-wide:flex-col max-wide:gap-3 max-wide:self-stretch">
+        <a class="inline-flex h-10 items-center rounded-pill bg-accent px-5 text-body font-bold text-fg-on-accent shadow-press hover:bg-accent-hover max-wide:h-11 max-wide:justify-center transition-paint motion-reduce:transition-none" href="#install">Install socrates</a>
+        <a class="inline-flex h-10 items-center rounded-pill border border-rule-control bg-surface-card px-5 text-body font-bold text-fg-1 hover:border-accent hover:text-accent max-wide:h-11 max-wide:justify-center transition-paint motion-reduce:transition-none" href="#workflow">See the workflow</a>
       </div>
     </div>
   </div>
 </section>
 
-<section id="why" class="why on-card">
-  <div class="wrap">
-    <img class="mark why-mark" src="socrates-mark.svg" width="96" height="96" alt="socrates">
-    <span class="overline">Why it was built</span>
-    <h2 class="section-title">Humans and AI understanding each other before work starts</h2>
-    <p class="lede">socrates exists so that people and AI reach a shared understanding before any work begins, rather than handing tasks over blindly. The <code>socrates-design</code> skill, for instance, settles every open question with you before a single line of the spec is written.</p>
+<section id="why" class="border-t border-rule bg-surface-card">
+  <div class="mx-auto max-w-300 px-5 flex flex-col items-center gap-3 py-band text-center">
+    <img class="mb-5 flex-none rounded-mark-why shadow-press max-wide:hidden" src="socrates-mark.svg" width="96" height="96" alt="socrates">
+    <span class="text-micro font-bold tracking-eyebrow text-fg-placeholder uppercase">Why it was built</span>
+    <h2 class="max-w-180 text-section leading-display font-bold tracking-section text-balance">Humans and AI understanding each other before work starts</h2>
+    <p class="max-w-160 text-lede leading-reading text-fg-receipt text-pretty">socrates exists so that people and AI reach a shared understanding before any work begins, rather than handing tasks over blindly. The <code>socrates-design</code> skill, for instance, settles every open question with you before a single line of the spec is written.</p>
   </div>
 </section>
 
-<section class="inspired">
-  <div class="wrap">
-    <span class="overline">Inspired by</span>
-    <h2>Two projects that inspired socrates</h2>
-    <div class="inspirations">
-      <a class="card inspiration" href="https://github.com/kunchenguid/lavish-axi">
-        <span class="inspiration-name"><strong>lavish</strong><code>kunchenguid/lavish-axi</code></span>
-        <span class="arrow" aria-hidden="true">→</span>
+<section class="border-t border-rule">
+  <div class="mx-auto max-w-300 px-5 flex flex-col items-center gap-5 py-band-short text-center">
+    <span class="text-micro font-bold tracking-eyebrow text-fg-placeholder uppercase">Inspired by</span>
+    <h2 class="text-subtitle leading-subtitle font-bold tracking-display">Two projects that inspired socrates</h2>
+    <div class="flex w-full flex-wrap justify-center gap-4">
+      <a class="rounded-md border border-rule bg-surface-card shadow-card flex max-w-90 shrink grow basis-65 items-center justify-between gap-4 px-6 py-5 text-left text-fg-1 transition-border hover:border-accent motion-reduce:transition-none" href="https://github.com/kunchenguid/lavish-axi">
+        <span class="flex flex-col gap-0.5"><strong class="text-large">lavish</strong><code class="text-fg-placeholder">kunchenguid/lavish-axi</code></span>
+        <span class="text-large text-accent" aria-hidden="true">→</span>
       </a>
-      <a class="card inspiration" href="https://github.com/mattpocock/skills">
-        <span class="inspiration-name"><strong>grill</strong><code>mattpocock/skills</code></span>
-        <span class="arrow" aria-hidden="true">→</span>
+      <a class="rounded-md border border-rule bg-surface-card shadow-card flex max-w-90 shrink grow basis-65 items-center justify-between gap-4 px-6 py-5 text-left text-fg-1 transition-border hover:border-accent motion-reduce:transition-none" href="https://github.com/mattpocock/skills">
+        <span class="flex flex-col gap-0.5"><strong class="text-large">grill</strong><code class="text-fg-placeholder">mattpocock/skills</code></span>
+        <span class="text-large text-accent" aria-hidden="true">→</span>
       </a>
     </div>
   </div>
 </section>
 
-<section id="workflow" class="stacked">
-  <div class="wrap">
-    <div class="heading">
-      <span class="overline">The workflow</span>
-      <h2 class="section-title">From an idea to a reviewed branch</h2>
-      <p class="lede">You work through four skills in your coding session. Use all four for a new feature, or go straight to review for a change you already have.</p>
+<section id="workflow" class="border-t border-rule">
+  <div class="mx-auto max-w-300 px-5 flex flex-col gap-10 py-band">
+    <div class="flex max-w-160 flex-col gap-3">
+      <span class="text-micro font-bold tracking-eyebrow text-fg-placeholder uppercase">The workflow</span>
+      <h2 class="text-section leading-display font-bold tracking-section text-balance">From an idea to a reviewed branch</h2>
+      <p class="text-lede leading-reading text-fg-receipt text-pretty">You work through four skills in your coding session. Use all four for a new feature, or go straight to review for a change you already have.</p>
     </div>
 
-    <ol class="steps">
-      <li class="card step">
-        <div class="step-name"><h3>Design</h3><code>socrates-design</code></div>
-        <p class="step-when">When you have an idea and no spec yet.</p>
-        <p class="step-body">Interviews you over a decisions page until every open question is settled, then writes the spec and its decisions.</p>
+    <ol class="grid grid-fit-60 gap-4">
+      <li class="rounded-md border border-rule bg-surface-card shadow-card flex flex-col gap-3 p-6">
+        <div class="flex flex-col gap-1"><h3 class="text-title font-bold tracking-title">Design</h3><code class="font-semibold text-accent">socrates-design</code></div>
+        <p class="text-small font-bold text-token-call">When you have an idea and no spec yet.</p>
+        <p class="leading-reading text-fg-receipt text-pretty">Interviews you over a decisions page until every open question is settled, then writes the spec and its decisions.</p>
       </li>
-      <li class="card step">
-        <div class="step-name"><h3>Tickets</h3><code>socrates-tickets</code></div>
-        <p class="step-when">Once the spec is committed.</p>
-        <p class="step-body">Cuts the spec into tickets ordered by their blockers, so independent ones can be built in parallel.</p>
+      <li class="rounded-md border border-rule bg-surface-card shadow-card flex flex-col gap-3 p-6">
+        <div class="flex flex-col gap-1"><h3 class="text-title font-bold tracking-title">Tickets</h3><code class="font-semibold text-accent">socrates-tickets</code></div>
+        <p class="text-small font-bold text-token-call">Once the spec is committed.</p>
+        <p class="leading-reading text-fg-receipt text-pretty">Cuts the spec into tickets ordered by their blockers, so independent ones can be built in parallel.</p>
       </li>
-      <li class="card step">
-        <div class="step-name"><h3>Implement</h3><code>socrates-implement</code></div>
-        <p class="step-when">Once the tickets are committed.</p>
-        <p class="step-body">Tickets that don’t block each other are built in parallel, each in its own worktree, and landed on one branch. Keep talking to it while it works. Nothing is pushed.</p>
+      <li class="rounded-md border border-rule bg-surface-card shadow-card flex flex-col gap-3 p-6">
+        <div class="flex flex-col gap-1"><h3 class="text-title font-bold tracking-title">Implement</h3><code class="font-semibold text-accent">socrates-implement</code></div>
+        <p class="text-small font-bold text-token-call">Once the tickets are committed.</p>
+        <p class="leading-reading text-fg-receipt text-pretty">Tickets that don’t block each other are built in parallel, each in its own worktree, and landed on one branch. Keep talking to it while it works. Nothing is pushed.</p>
       </li>
-      <li class="card step">
-        <div class="step-name"><h3>Review</h3><code>socrates-review</code></div>
-        <p class="step-when">Before you push.</p>
-        <p class="step-body">A reviewer that did not write the change checks it. Your session fixes what it can and asks you the rest.</p>
+      <li class="rounded-md border border-rule bg-surface-card shadow-card flex flex-col gap-3 p-6">
+        <div class="flex flex-col gap-1"><h3 class="text-title font-bold tracking-title">Review</h3><code class="font-semibold text-accent">socrates-review</code></div>
+        <p class="text-small font-bold text-token-call">Before you push.</p>
+        <p class="leading-reading text-fg-receipt text-pretty">A reviewer that did not write the change checks it. Your session fixes what it can and asks you the rest.</p>
       </li>
     </ol>
 
-    <div class="decisions">
-      <div class="heading">
-        <span class="overline">The decisions page</span>
-        <h3>Decisions on a page, not walls of markdown in a terminal</h3>
-        <p>When a skill needs your input, socrates opens a page in your browser. Each question shows its options and what each one means, with the recommended choice marked. You click to answer, and your session picks it up from there.</p>
+    <div class="grid grid-fit-90 items-center gap-10 pt-6">
+      <div class="flex max-w-160 flex-col gap-3">
+        <span class="text-micro font-bold tracking-eyebrow text-fg-placeholder uppercase">The decisions page</span>
+        <h3 class="text-subtitle leading-subtitle font-bold tracking-display text-balance">Decisions on a page, not walls of markdown in a terminal</h3>
+        <p class="leading-reading text-fg-receipt text-pretty">When a skill needs your input, socrates opens a page in your browser. Each question shows its options and what each one means, with the recommended choice marked. You click to answer, and your session picks it up from there.</p>
       </div>
-      <figure class="preview" aria-label="A decisions page asking about one finding">
-        <div class="preview-bar">
-          <span class="brand"><img class="mark" src="socrates-mark.svg" width="22" height="22" alt=""><span class="wordmark">socrates</span></span>
-          <span class="chip chip-open">Open</span>
+      <figure class="min-w-0 overflow-hidden rounded-md border border-rule bg-bg-ground shadow-card" aria-label="A decisions page asking about one finding">
+        <div class="flex h-11 items-center justify-between gap-3 border-b border-rule px-4">
+          <span class="flex items-center gap-2 text-fg-1"><img class="flex-none rounded-box" src="socrates-mark.svg" width="22" height="22" alt=""><span class="font-display text-small font-bold tracking-wordmark">socrates</span></span>
+          <span class="inline-flex h-chip items-center gap-1.5 rounded-pill bg-accent-selected px-2.5 text-micro font-bold text-accent before:size-1.5 before:rounded-full before:bg-current">Open</span>
         </div>
-        <div class="preview-body">
-          <div class="finding">
-            <div class="finding-head">
-              <div class="finding-meta">
-                <span class="number">01</span>
-                <span class="title">Finding 1</span>
-                <span class="chip chip-warning"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Warning</span>
-                <span class="chip chip-yours"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Your call</span>
-                <span class="location">cmd/flags.go:15</span>
+        <div class="p-4">
+          <div class="overflow-hidden rounded-md border border-rule bg-surface-card">
+            <div class="flex flex-col gap-2.5 px-5 py-4">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="font-mono text-code text-fg-3">01</span>
+                <span class="mr-1 text-small font-bold">Finding 1</span>
+                <span class="inline-flex h-chip items-center gap-1 rounded-pill pr-2 pl-1.5 text-micro font-bold bg-state-warning-wash text-state-warning"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Warning</span>
+                <span class="inline-flex h-chip items-center gap-1 rounded-pill pr-2 pl-1.5 text-micro font-bold bg-your-call-wash text-your-call"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Your call</span>
+                <span class="ml-auto font-mono text-code text-fg-3">cmd/flags.go:15</span>
               </div>
-              <span class="finding-question">keep the old flag for one release, or remove it now?</span>
-              <span class="finding-consequence">scripts that still pass <code>--legacy-cache</code> will fail to start.</span>
-              <div class="diff">
-                <div class="diff-head">
+              <span class="text-large leading-title font-bold tracking-title">keep the old flag for one release, or remove it now?</span>
+              <span class="text-small text-fg-2">scripts that still pass <code>--legacy-cache</code> will fail to start.</span>
+              <div class="overflow-hidden rounded-entry border border-rule">
+                <div class="flex h-8 items-center justify-between gap-3 border-b border-rule bg-surface-evidence-heading px-3 font-mono text-code font-semibold">
                   <span>cmd/flags.go</span>
-                  <span class="diff-counts"><span class="count-added">+1</span><span class="count-removed">-1</span></span>
+                  <span class="flex gap-2.5 font-bold"><span class="text-diff-added-mark">+1</span><span class="text-diff-removed-mark">-1</span></span>
                 </div>
-                <div class="diff-scroll">
-                  <div class="diff-lines"><span class="gutter">14</span><span class="gutter">14</span><span class="line"><span class="sign"> </span><span class="keyword">func</span> <span class="function">registerFlags</span><span class="punctuation">(</span>fs <span class="punctuation">*</span><span class="type">flag.FlagSet</span><span class="punctuation">) {</span></span>
-<span class="removed gutter">15</span><span class="removed gutter"></span><span class="removed line"><span class="sign">-</span>  fs.<span class="function">BoolVar</span><span class="punctuation">(&amp;</span>cfg.Legacy<span class="punctuation">,</span> <span class="string">"legacy-cache"</span><span class="punctuation">,</span> <span class="keyword">false</span><span class="punctuation">,</span> <span class="string">"use the old cache"</span><span class="punctuation">)</span></span>
-<span class="added gutter"></span><span class="added gutter">15</span><span class="added line"><span class="sign">+</span>  fs.<span class="function">IntVar</span><span class="punctuation">(&amp;</span>cfg.CacheSize<span class="punctuation">,</span> <span class="string">"cache-size"</span><span class="punctuation">,</span> <span class="number-literal">1000</span><span class="punctuation">,</span> <span class="string">"entries to keep"</span><span class="punctuation">)</span></span>
-<span class="gutter">16</span><span class="gutter">16</span><span class="line"><span class="sign"> </span><span class="punctuation">}</span></span></div>
+                <div class="overflow-x-auto bg-surface-card">
+                  <div class="grid grid-cols-diff-lines py-1.5 font-mono text-code leading-listing whitespace-pre"><span class="px-1.5 text-right text-fg-placeholder">14</span><span class="px-1.5 text-right text-fg-placeholder">14</span><span class="pr-3"><span class="inline-block w-sign text-fg-placeholder"> </span><span class="text-token-keyword">func</span> <span class="text-token-call">registerFlags</span><span class="text-token-punct">(</span>fs <span class="text-token-punct">*</span><span class="text-token-type">flag.FlagSet</span><span class="text-token-punct">) {</span></span>
+<span class="bg-diff-removed-gutter px-1.5 text-right text-fg-2">15</span><span class="bg-diff-removed-gutter px-1.5 text-right text-fg-2"></span><span class="bg-diff-removed pr-3"><span class="inline-block w-sign text-diff-removed-mark">-</span>  fs.<span class="text-token-call">BoolVar</span><span class="text-token-punct">(&amp;</span>cfg.Legacy<span class="text-token-punct">,</span> <span class="text-token-string">"legacy-cache"</span><span class="text-token-punct">,</span> <span class="text-token-keyword">false</span><span class="text-token-punct">,</span> <span class="text-token-string">"use the old cache"</span><span class="text-token-punct">)</span></span>
+<span class="bg-diff-added-gutter px-1.5 text-right text-fg-2"></span><span class="bg-diff-added-gutter px-1.5 text-right text-fg-2">15</span><span class="bg-diff-added pr-3"><span class="inline-block w-sign text-diff-added-mark">+</span>  fs.<span class="text-token-call">IntVar</span><span class="text-token-punct">(&amp;</span>cfg.CacheSize<span class="text-token-punct">,</span> <span class="text-token-string">"cache-size"</span><span class="text-token-punct">,</span> <span class="text-token-number">1000</span><span class="text-token-punct">,</span> <span class="text-token-string">"entries to keep"</span><span class="text-token-punct">)</span></span>
+<span class="px-1.5 text-right text-fg-placeholder">16</span><span class="px-1.5 text-right text-fg-placeholder">16</span><span class="pr-3"><span class="inline-block w-sign text-fg-placeholder"> </span><span class="text-token-punct">}</span></span></div>
                 </div>
               </div>
             </div>
-            <div class="answer">
-              <fieldset>
-                <legend class="overline" hidden>Your answer</legend>
-                <label class="option">
-                  <input type="radio" name="preview-answer" checked>
-                  <span class="option-head"><span class="option-label">Keep it for one release</span><span class="chip chip-recommended">Recommended</span></span>
-                  <span class="option-meaning">callers get a release to move before it goes</span>
+            <div class="flex flex-col gap-2 border-t border-rule bg-surface-sunk px-5 py-4">
+              <fieldset class="flex min-w-0 flex-col gap-2">
+                <legend hidden>Your answer</legend>
+                <label class="grid cursor-pointer grid-cols-choice items-start gap-x-3 gap-y-0.5 rounded-md border border-rule bg-surface-card px-4 py-3 transition-border hover:border-accent has-checked:border-accent has-checked:bg-accent-selected has-checked:shadow-ring-chosen has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent motion-reduce:transition-none">
+                  <input class="row-span-2 mt-0.5 size-check cursor-pointer appearance-none rounded-full border-check border-rule-hover bg-surface-card checked:border-5 checked:border-accent focus-visible:outline-none" type="radio" name="preview-answer" checked>
+                  <span class="col-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1"><span class="font-bold">Keep it for one release</span><span class="inline-flex h-chip items-center gap-1 rounded-pill bg-recommended-wash px-2 text-micro font-bold text-recommended">Recommended</span></span>
+                  <span class="col-2 text-small text-fg-2">callers get a release to move before it goes</span>
                 </label>
-                <label class="option">
-                  <input type="radio" name="preview-answer">
-                  <span class="option-head"><span class="option-label">Remove it now</span></span>
-                  <span class="option-meaning">a smaller change, and a breaking one</span>
+                <label class="grid cursor-pointer grid-cols-choice items-start gap-x-3 gap-y-0.5 rounded-md border border-rule bg-surface-card px-4 py-3 transition-border hover:border-accent has-checked:border-accent has-checked:bg-accent-selected has-checked:shadow-ring-chosen has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent motion-reduce:transition-none">
+                  <input class="row-span-2 mt-0.5 size-check cursor-pointer appearance-none rounded-full border-check border-rule-hover bg-surface-card checked:border-5 checked:border-accent focus-visible:outline-none" type="radio" name="preview-answer">
+                  <span class="col-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1"><span class="font-bold">Remove it now</span></span>
+                  <span class="col-2 text-small text-fg-2">a smaller change, and a breaking one</span>
                 </label>
               </fieldset>
-              <div class="send"><span class="pill">Send and wait for a reply</span></div>
+              <div class="flex justify-end pt-1"><span class="inline-flex h-9 items-center rounded-pill bg-accent px-4 text-small font-bold text-fg-on-accent">Send and wait for a reply</span></div>
             </div>
           </div>
         </div>
@@ -165,65 +165,65 @@
   </div>
 </section>
 
-<section id="install" class="install on-card">
-  <div class="wrap">
-    <div class="needs">
-      <span class="overline">Install</span>
-      <h2 class="section-title">What it needs</h2>
-      <ul>
-        <li><strong>Claude Code</strong><span>It runs the skills.</span></li>
-        <li><strong>For review, <code>claude</code>, <code>codex</code> or <code>opencode</code> on your <code>PATH</code></strong><span>Signed in to an account. socrates is free, but every review is a model call billed to that account.</span></li>
-        <li><strong>Linux or macOS</strong><span>On Windows, use WSL.</span></li>
-        <li><strong><code>git</code></strong></li>
+<section id="install" class="border-t border-rule bg-surface-card">
+  <div class="mx-auto max-w-300 px-5 grid grid-fit-100 items-start gap-12 py-band">
+    <div class="flex flex-col gap-5">
+      <span class="text-micro font-bold tracking-eyebrow text-fg-placeholder uppercase">Install</span>
+      <h2 class="text-section leading-display font-bold tracking-section text-balance">What it needs</h2>
+      <ul class="flex flex-col border-t border-rule">
+        <li class="flex flex-col gap-0.5 border-b border-rule py-3"><strong class="text-body">Claude Code</strong><span class="text-small text-fg-receipt">It runs the skills.</span></li>
+        <li class="flex flex-col gap-0.5 border-b border-rule py-3"><strong class="text-body">For review, <code>claude</code>, <code>codex</code> or <code>opencode</code> on your <code>PATH</code></strong><span class="text-small text-fg-receipt">Signed in to an account. socrates is free, but every review is a model call billed to that account.</span></li>
+        <li class="flex flex-col gap-0.5 border-b border-rule py-3"><strong class="text-body">Linux or macOS</strong><span class="text-small text-fg-receipt">On Windows, use WSL.</span></li>
+        <li class="flex flex-col gap-0.5 border-b border-rule py-3"><strong class="text-body"><code>git</code></strong></li>
       </ul>
     </div>
-    <div class="ways">
-      <div class="way">
-        <div class="way-head">
-          <h3>From binary</h3>
-          <button class="pill pill-quiet copy" type="button" data-copies="install-command">Copy</button>
+    <div class="flex flex-col gap-8 pt-1">
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="text-large font-bold">From binary</h3>
+          <button class="inline-flex items-center rounded-pill border border-rule-control bg-surface-card text-small font-bold text-fg-1 hover:border-accent hover:text-accent transition-paint motion-reduce:transition-none h-7.5 cursor-pointer px-3.5" type="button" data-copies="install-command">Copy</button>
         </div>
-        <pre class="terminal wraps" id="install-command"><span class="call">curl</span> <span class="flag">-fsSL</span> <span class="string">https://github.com/socrates-tools/socrates/releases/latest/download/install.sh</span> <span class="punctuation">|</span> <span class="call">sh</span></pre>
-        <p>This installs socrates and all four skills. It checks the download before installing anything, and running it again upgrades everything.</p>
+        <pre class="overflow-x-auto rounded-md border border-rule bg-surface-sunk p-4 leading-listing text-fg-1 break-all whitespace-pre-wrap" id="install-command"><span class="font-semibold text-token-keyword">curl</span> <span class="text-token-number">-fsSL</span> <span class="text-token-string">https://github.com/socrates-tools/socrates/releases/latest/download/install.sh</span> <span class="text-token-punct">|</span> <span class="font-semibold text-token-keyword">sh</span></pre>
+        <p class="leading-reading text-fg-receipt text-pretty">This installs socrates and all four skills. It checks the download before installing anything, and running it again upgrades everything.</p>
       </div>
-      <div class="way">
-        <h3>From source</h3>
-        <pre class="terminal"><span class="call">git</span> <span class="subcommand">clone</span> <span class="string">https://github.com/socrates-tools/socrates</span>
-<span class="call">cd</span> socrates
-<span class="call">make</span> <span class="subcommand">install</span></pre>
-        <p>Does the same as the binary install. Needs Go 1.26 or later.</p>
+      <div class="flex flex-col gap-3">
+        <h3 class="text-large font-bold">From source</h3>
+        <pre class="overflow-x-auto rounded-md border border-rule bg-surface-sunk p-4 leading-listing text-fg-1"><span class="font-semibold text-token-keyword">git</span> <span class="text-token-type">clone</span> <span class="text-token-string">https://github.com/socrates-tools/socrates</span>
+<span class="font-semibold text-token-keyword">cd</span> socrates
+<span class="font-semibold text-token-keyword">make</span> <span class="text-token-type">install</span></pre>
+        <p class="leading-reading text-fg-receipt text-pretty">Does the same as the binary install. Needs Go 1.26 or later.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="contribute" class="stacked">
-  <div class="wrap">
-    <div class="heading">
-      <span class="overline">Contribute</span>
-      <h2 class="section-title">socrates is open source, and built the way it works</h2>
-      <p class="lede">Every change here starts as a spec in <code>docs/changes/&lt;slug&gt;/</code>, with its tickets beside it. Run <code>/socrates-design</code> on your idea, or open an issue if you are not sure it needs one.</p>
+<section id="contribute" class="border-t border-rule">
+  <div class="mx-auto max-w-300 px-5 flex flex-col gap-10 py-band">
+    <div class="flex max-w-160 flex-col gap-3">
+      <span class="text-micro font-bold tracking-eyebrow text-fg-placeholder uppercase">Contribute</span>
+      <h2 class="text-section leading-display font-bold tracking-section text-balance">socrates is open source, and built the way it works</h2>
+      <p class="text-lede leading-reading text-fg-receipt text-pretty">Every change here starts as a spec in <code>docs/changes/&lt;slug&gt;/</code>, with its tickets beside it. Run <code>/socrates-design</code> on your idea, or open an issue if you are not sure it needs one.</p>
     </div>
-    <div class="contribute-cards">
-      <div class="card contribute-card">
-        <h3>Architecture</h3>
-        <p>One Go binary. Each namespace is a tool with its own directory.</p>
-        <dl class="layout">
-          <div><dt><code>design/</code></dt><dd>The interview and the spec, and cutting it into tickets.</dd></div>
-          <div><dt><code>implement/</code></dt><dd>Builds a change’s tickets through implementers.</dd></div>
-          <div><dt><code>review/</code></dt><dd>The independent reviewer.</dd></div>
-          <div><dt><code>agora/</code></dt><dd>Serves the decisions page and waits for your answer.</dd></div>
-          <div><dt><code>internal/dispatcher</code></dt><dd>Routes <code>socrates</code> to each tool.</dd></div>
+    <div class="grid grid-fit-90 items-start gap-4">
+      <div class="rounded-md border border-rule bg-surface-card shadow-card flex flex-col gap-4 p-6">
+        <h3 class="text-large font-bold">Architecture</h3>
+        <p class="text-small text-fg-receipt">One Go binary. Each namespace is a tool with its own directory.</p>
+        <dl class="flex flex-col border-t border-rule">
+          <div class="flex flex-wrap gap-x-4 gap-y-0.5 border-b border-rule py-2.5"><dt class="shrink-0 grow-0 basis-37.5"><code class="font-semibold text-accent">design/</code></dt><dd class="shrink grow basis-50 text-small text-fg-receipt">The interview and the spec, and cutting it into tickets.</dd></div>
+          <div class="flex flex-wrap gap-x-4 gap-y-0.5 border-b border-rule py-2.5"><dt class="shrink-0 grow-0 basis-37.5"><code class="font-semibold text-accent">implement/</code></dt><dd class="shrink grow basis-50 text-small text-fg-receipt">Builds a change’s tickets through implementers.</dd></div>
+          <div class="flex flex-wrap gap-x-4 gap-y-0.5 border-b border-rule py-2.5"><dt class="shrink-0 grow-0 basis-37.5"><code class="font-semibold text-accent">review/</code></dt><dd class="shrink grow basis-50 text-small text-fg-receipt">The independent reviewer.</dd></div>
+          <div class="flex flex-wrap gap-x-4 gap-y-0.5 border-b border-rule py-2.5"><dt class="shrink-0 grow-0 basis-37.5"><code class="font-semibold text-accent">agora/</code></dt><dd class="shrink grow basis-50 text-small text-fg-receipt">Serves the decisions page and waits for your answer.</dd></div>
+          <div class="flex flex-wrap gap-x-4 gap-y-0.5 border-b border-rule py-2.5"><dt class="shrink-0 grow-0 basis-37.5"><code class="font-semibold text-accent">internal/dispatcher</code></dt><dd class="shrink grow basis-50 text-small text-fg-receipt">Routes <code>socrates</code> to each tool.</dd></div>
         </dl>
-        <p><code>AGENTS.md</code> maps the layout and invariants, <code>CONTEXT-MAP.md</code> the vocabulary, and <code>docs/adr/</code> the decisions.</p>
+        <p class="text-small text-fg-receipt"><code>AGENTS.md</code> maps the layout and invariants, <code>CONTEXT-MAP.md</code> the vocabulary, and <code>docs/adr/</code> the decisions.</p>
       </div>
-      <div class="card contribute-card">
-        <h3>Run it locally</h3>
-        <pre class="terminal"><span class="call">git</span> <span class="subcommand">clone</span> <span class="string">https://github.com/socrates-tools/socrates</span>
-<span class="call">cd</span> socrates
-<span class="call">make</span> <span class="subcommand">install</span>
-<span class="call">make</span> <span class="subcommand">verify</span>   <span class="aside"># every gate, the same as CI</span></pre>
-        <p>Needs Go 1.26 or later, <code>git</code>, and Chrome or Chromium for the page tests. Read <code>CONTRIBUTING.md</code> before opening a pull request.</p>
+      <div class="rounded-md border border-rule bg-surface-card shadow-card flex flex-col gap-4 p-6">
+        <h3 class="text-large font-bold">Run it locally</h3>
+        <pre class="overflow-x-auto rounded-md border border-rule bg-surface-sunk p-4 leading-listing text-fg-1"><span class="font-semibold text-token-keyword">git</span> <span class="text-token-type">clone</span> <span class="text-token-string">https://github.com/socrates-tools/socrates</span>
+<span class="font-semibold text-token-keyword">cd</span> socrates
+<span class="font-semibold text-token-keyword">make</span> <span class="text-token-type">install</span>
+<span class="font-semibold text-token-keyword">make</span> <span class="text-token-type">verify</span>   <span class="text-token-punct"># every gate, the same as CI</span></pre>
+        <p class="text-small text-fg-receipt">Needs Go 1.26 or later, <code>git</code>, and Chrome or Chromium for the page tests. Read <code>CONTRIBUTING.md</code> before opening a pull request.</p>
       </div>
     </div>
   </div>
@@ -231,13 +231,13 @@
 
 </main>
 
-<footer>
-  <div class="wrap">
-    <span class="licence"><img class="mark" src="socrates-mark.svg" width="20" height="20" alt="">MIT licence</span>
-    <nav aria-label="Project">
-      <a href="https://github.com/socrates-tools/socrates">GitHub</a>
-      <a href="https://github.com/socrates-tools/socrates/blob/main/CHANGELOG.md">Changelog</a>
-      <a href="https://github.com/socrates-tools/socrates/blob/main/SECURITY.md">Security</a>
+<footer class="border-t border-rule">
+  <div class="mx-auto max-w-300 px-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 py-6 text-small text-fg-placeholder">
+    <span class="flex items-center gap-2.5"><img class="flex-none rounded-mark-footer" src="socrates-mark.svg" width="20" height="20" alt="">MIT licence</span>
+    <nav aria-label="Project" class="flex flex-wrap gap-5">
+      <a class="text-accent hover:text-accent-hover" href="https://github.com/socrates-tools/socrates">GitHub</a>
+      <a class="text-accent hover:text-accent-hover" href="https://github.com/socrates-tools/socrates/blob/main/CHANGELOG.md">Changelog</a>
+      <a class="text-accent hover:text-accent-hover" href="https://github.com/socrates-tools/socrates/blob/main/SECURITY.md">Security</a>
     </nav>
   </div>
 </footer>

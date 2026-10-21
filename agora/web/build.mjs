@@ -19,6 +19,9 @@ const library = join(here, 'packages', 'ui')
 const tokens = join(library, 'tokens')
 
 const theme = join(library, 'theme.css')
+const landing = join(here, '..', '..', 'site')
+const landingEntry = join(landing, 'site.css')
+const landingStylesheet = join(landing, 'site.generated.css')
 const targets = ['chrome120', 'firefox121', 'safari17']
 
 const hljs = createRequire(join(library, 'package.json'))('highlight.js/lib/common')
@@ -81,9 +84,9 @@ function elementsDeclaredBy(created) {
   return Object.fromEntries(Object.entries(declared).sort(([first], [second]) => first.localeCompare(second)))
 }
 
-const classSourcesOutsideTheClient = [join(here, '..', 'render'), join(here, '..', '..', 'site')]
+const classSourcesOutsideTheClient = [join(here, '..', 'render'), landing]
 
-const stamped = ['packages', 'build.mjs', 'tsconfig.json', 'package.json', 'pnpm-lock.yaml']
+const stamped = ['packages', 'build.mjs', 'tsconfig.json', 'package.json', 'pnpm-lock.yaml', join('..', '..', 'site')]
 
 function within(path) {
   if (statSync(path).isFile()) {
@@ -188,7 +191,7 @@ async function rebuildOnEverySave() {
   }
 
   const saved = (_, name) => {
-    if (name?.split(sep).includes('node_modules') || name?.endsWith('.go')) {
+    if (name?.split(sep).includes('node_modules') || name?.endsWith('.go') || name?.endsWith('.generated.css')) {
       return
     }
     if (building) {
@@ -263,8 +266,8 @@ function shadowRootsReachedByTheSurface(created) {
   return refusals
 }
 
-async function compiledStylesheet() {
-  const compiler = await compile(readFileSync(theme, 'utf8'), { base: dirname(theme), onDependency: () => {} })
+async function compiledStylesheet(entry) {
+  const compiler = await compile(readFileSync(entry, 'utf8'), { base: dirname(entry), onDependency: () => {} })
   return compiler.build(new Scanner({ sources: compiler.sources }).scan())
 }
 
@@ -295,7 +298,7 @@ if (refused.length > 0) {
   process.exit(1)
 }
 
-const stylesheet = await compiledStylesheet()
+const stylesheet = await compiledStylesheet(theme)
 
 rmSync(bundle, { recursive: true, force: true })
 mkdirSync(bundle, { recursive: true })
@@ -320,6 +323,9 @@ await build({
 })
 
 copyFileSync(join(tokens, 'brand', 'socrates-mark.svg'), join(bundle, 'socrates-mark.svg'))
+
+const { code: landingCode } = await transform(await compiledStylesheet(landingEntry), { loader: 'css', minify: true, target: targets, legalComments: 'inline' })
+writeFileSync(landingStylesheet, landingCode)
 
 const answeredTo = [...new Set(hljs.listLanguages().flatMap((name) => [name, ...(hljs.getLanguage(name).aliases ?? [])]))].sort()
 writeFileSync(declared, JSON.stringify({ elements: elementsDeclaredBy(created), parts: await partsOfThePrimitivesNotYetMoved() }, null, 2) + '\n')

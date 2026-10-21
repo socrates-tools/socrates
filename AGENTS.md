@@ -39,7 +39,7 @@ What holds them all:
 - `internal/tty` - whether a stream is a terminal at all, for every tool that draws something only a person can answer.
 - `internal/skill` - the machinery no tool owns: the ceiling a skill is held to, installing one under a directory, and reading which invocations a document names so one the binary does not offer fails the suite.
 - `internal/settingsmenu` - the menu a settings file is changed from, for any tool: the rows, the view, the write that leaves the rest of the file alone, the write offered one key at a time to a writer that is not the menu, and the reading of a line the loader could not read.
-- `site/` - the landing page GitHub Pages serves, which `make site` assembles with the fonts and the mark the decisions page ships and which a release publishes, per ADR 71.
+- `site/` - the landing page GitHub Pages serves, styled with the utilities and the theme the decisions page uses and carrying its stylesheet as a generated file `make assets` writes, which `make site` assembles with the fonts and the mark the decisions page ships and which a release publishes, per ADR 71 as amended by ADR 84.
 
 ## Verification
 

@@ -25,6 +25,8 @@ type MissingNotice struct {
 
 var shippedFileNamed = regexp.MustCompile(`bundle/([A-Za-z0-9_-]+\.(?:js|css))`)
 
+var landingFileNamed = regexp.MustCompile(`site/([A-Za-z0-9_.-]+\.css)`)
+
 func NoticesTheBundleDoesNotCarry(bundle fs.FS, notice string, bundled []string) []MissingNotice {
 	var missing []MissingNotice
 
@@ -35,7 +37,7 @@ func NoticesTheBundleDoesNotCarry(bundle fs.FS, notice string, bundled []string)
 			continue
 		}
 
-		files := shippedFilesOf(notice, library)
+		files := filesNamedBy(notice, library, shippedFileNamed)
 		if len(files) == 0 {
 			missing = append(missing, MissingNotice{Library: library, Line: stated[0]})
 			continue
@@ -57,7 +59,37 @@ func NoticesTheBundleDoesNotCarry(bundle fs.FS, notice string, bundled []string)
 	return missing
 }
 
-func shippedFilesOf(notice, library string) []string {
+func NoticesTheLandingPageDoesNotCarry(site fs.FS, notice string, bundled []string) []MissingNotice {
+	var missing []MissingNotice
+	named := map[string]bool{}
+
+	for _, library := range bundled {
+		stated := copyrightStatedFor(notice, library)
+		for _, file := range filesNamedBy(notice, library, landingFileNamed) {
+			named[file] = true
+			shipped, err := fs.ReadFile(site, file)
+			if err != nil {
+				missing = append(missing, MissingNotice{Library: library, File: file, Line: strings.Join(stated, "\n")})
+				continue
+			}
+			for _, line := range stated {
+				if !strings.Contains(string(shipped), line) {
+					missing = append(missing, MissingNotice{Library: library, File: file, Line: line})
+				}
+			}
+		}
+	}
+
+	generated, _ := fs.Glob(site, "*"+GeneratedStylesheetSuffix)
+	for _, file := range generated {
+		if !named[file] {
+			missing = append(missing, MissingNotice{File: file})
+		}
+	}
+	return missing
+}
+
+func filesNamedBy(notice, library string, named *regexp.Regexp) []string {
 	sections := noticeSeparator.Split(notice, -1)
 
 	for position, section := range sections {
@@ -65,7 +97,7 @@ func shippedFilesOf(notice, library string) []string {
 			continue
 		}
 		var files []string
-		for _, found := range shippedFileNamed.FindAllStringSubmatch(section, -1) {
+		for _, found := range named.FindAllStringSubmatch(section, -1) {
 			if !slices.Contains(files, found[1]) {
 				files = append(files, found[1])
 			}

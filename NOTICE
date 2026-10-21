@@ -32,6 +32,11 @@ What bundle/surface.js bundles is highlight.js and Lit, and what bundle/surface.
 bundles is Tailwind CSS, whose notices are below and whose licence text esbuild
 collects at the end of the file itself where the library keeps it in its code.
 
+The landing page that make site assembles is published beside the binary rather
+than inside it, and its stylesheet, site/site.generated.css, is socrates' own work
+written by make assets and published under the terms in LICENSE.
+What site/site.generated.css bundles is Tailwind CSS, whose notice is below.
+
 ==============================================================================
 highlight.js 11.12.0
 Bundled into bundle/surface.js.
@@ -106,7 +111,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 tailwindcss 4.3.3
-Bundled into bundle/surface.css, as its theme, Preflight and utilities.
+Bundled into bundle/surface.css and site/site.generated.css, as their theme, Preflight and utilities.
 MIT License.
 ==============================================================================
 

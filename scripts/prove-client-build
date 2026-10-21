@@ -11,7 +11,7 @@ fresh() {
   mkdir -p "$scratch/agora/assets" "$scratch/agora/document" "$scratch/site"
   cp -a "$root/agora/web" "$scratch/agora/web"
   cp -a "$root/agora/render" "$scratch/agora/render"
-  cp "$root/site/index.html" "$scratch/site/index.html"
+  cp "$root/site/index.html" "$root/site/site.css" "$scratch/site/"
 }
 
 build() {
@@ -32,6 +32,18 @@ elif ! grep -q 'Copyright (c) 2017 Google LLC' "$scratch/agora/assets/bundle/sur
   fail "the Lit notice did not reach surface.js"
 elif ! grep -q 'Copyright (c) Tailwind Labs, Inc.' "$scratch/agora/assets/bundle/surface.css"; then
   fail "the Tailwind notice did not reach surface.css"
+elif ! grep -q 'Copyright (c) Tailwind Labs, Inc.' "$scratch/site/site.generated.css"; then
+  fail "the Tailwind notice did not reach the landing page's stylesheet"
+elif ! grep -qF '.bg-accent{' "$scratch/site/site.generated.css"; then
+  fail "the landing page's stylesheet holds no rule for a utility the page uses"
+fi
+
+fresh
+printf '<p class="bg-state-error-wash"></p>\n' >> "$scratch/site/index.html"
+if ! output=$(build); then
+  fail "a landing page naming a utility did not build: $output"
+elif ! grep -qF '.bg-state-error-wash{' "$scratch/site/site.generated.css"; then
+  fail "the landing page's stylesheet holds no rule for a utility added to the page"
 fi
 
 fresh

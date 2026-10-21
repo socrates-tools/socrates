@@ -23,5 +23,6 @@ Makefile text eol=lf
 
 agora/assets/bundle/** linguist-generated
 agora/document/languages.json linguist-generated
+site/site.generated.css linguist-generated
 .claude/skills/socrates-review/SKILL.md linguist-generated
 platforms.json linguist-generated

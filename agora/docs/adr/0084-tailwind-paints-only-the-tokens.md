@@ -3,6 +3,7 @@
 - Status: accepted
 - Date: 2026-10-21
 - Part of: lit-and-tailwind-primitives
+- Amends: ADR 71
 
 ## Decision
 

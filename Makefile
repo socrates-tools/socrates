@@ -72,11 +72,11 @@ platforms:
 site:
 	rm -rf $(SITE)
 	mkdir -p $(SITE)/fonts
-	cp site/* $(SITE)/
+	cp site/index.html site/site.generated.css site/site.js $(SITE)/
 	cp agora/web/packages/ui/tokens/tokens.css agora/web/packages/ui/tokens/fonts.css $(SITE)/
 	cp agora/web/packages/ui/tokens/fonts/*.woff2 $(SITE)/fonts/
 	cp agora/web/packages/ui/tokens/brand/socrates-mark.svg NOTICE $(SITE)/
-	for asset in tokens.css site.css site.js; do \
+	for asset in tokens.css site.generated.css site.js; do \
 		fingerprint=$$(git hash-object $(SITE)/$$asset | cut -c1-12); \
 		sed "s|\"$$asset\"|\"$$asset?v=$$fingerprint\"|" $(SITE)/index.html > $(SITE)/index.html.next && mv $(SITE)/index.html.next $(SITE)/index.html; \
 	done

@@ -51,3 +51,20 @@ func theNotice(t *testing.T) string {
 	}
 	return string(held)
 }
+
+func TestTheLandingPagesStylesheetCarriesTheNoticeOfWhatItBundles(t *testing.T) {
+	bundled, err := convention.LibrariesTheClientBundles(source.Root(t))
+	if err != nil {
+		t.Fatalf("reading what the client bundles: %v", err)
+	}
+
+	site := os.DirFS(filepath.Join(source.Root(t), "site"))
+	for _, missing := range convention.NoticesTheLandingPageDoesNotCarry(site, theNotice(t), bundled) {
+		switch {
+		case missing.Library == "":
+			t.Errorf("%s names no library bundled into site/%s, and it ships beside the landing page", convention.NoticeFile, missing.File)
+		default:
+			t.Errorf("the site/%s that ships carries no %q, and %s is bundled into it", missing.File, missing.Line, missing.Library)
+		}
+	}
+}

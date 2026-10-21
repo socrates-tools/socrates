@@ -375,3 +375,45 @@ func TestALibraryAddedToAnyWorkspacePackageIsOneTheClientBundles(t *testing.T) {
 		t.Errorf("the libraries the client bundles differ (-want +got):\n%s", diff)
 	}
 }
+
+const aNoticeNamingTheLandingStylesheet = "==========================\n" +
+	"tailwindcss 4.3.3\n" +
+	"Bundled into bundle/surface.css and site/site.generated.css.\n" +
+	"==========================\n\n" +
+	"Copyright (c) Tailwind Labs, Inc.\n"
+
+func theLandingPage(css string) fstest.MapFS {
+	return fstest.MapFS{
+		"index.html":         &fstest.MapFile{Data: []byte("<!doctype html>")},
+		"site.generated.css": &fstest.MapFile{Data: []byte(css)},
+	}
+}
+
+func TestALandingStylesheetThatDropsTailwindsNoticeFailsTheSuite(t *testing.T) {
+	bundled := []string{"tailwindcss"}
+
+	carried := theLandingPage("/*! Copyright (c) Tailwind Labs, Inc. */\n.a{}\n")
+	if missing := NoticesTheLandingPageDoesNotCarry(carried, aNoticeNamingTheLandingStylesheet, bundled); len(missing) != 0 {
+		t.Errorf("the check reported %v against a landing stylesheet that carries the notice", missing)
+	}
+
+	dropped := theLandingPage(".a{}\n")
+	want := []MissingNotice{{Library: "tailwindcss", File: "site.generated.css", Line: "Copyright (c) Tailwind Labs, Inc."}}
+	if diff := cmp.Diff(want, NoticesTheLandingPageDoesNotCarry(dropped, aNoticeNamingTheLandingStylesheet, bundled)); diff != "" {
+		t.Errorf("what the landing stylesheet does not carry differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestALandingStylesheetNoNoticeNamesFailsTheSuite(t *testing.T) {
+	notice := "==========================\n" +
+		"tailwindcss 4.3.3\n" +
+		"Bundled into bundle/surface.css.\n" +
+		"==========================\n\n" +
+		"Copyright (c) Tailwind Labs, Inc.\n"
+
+	carried := theLandingPage("/*! Copyright (c) Tailwind Labs, Inc. */\n.a{}\n")
+	want := []MissingNotice{{File: "site.generated.css"}}
+	if diff := cmp.Diff(want, NoticesTheLandingPageDoesNotCarry(carried, notice, []string{"tailwindcss"})); diff != "" {
+		t.Errorf("what the notice leaves unnamed differs (-want +got):\n%s", diff)
+	}
+}

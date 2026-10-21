@@ -169,3 +169,25 @@ a { color: var(--ink-900); font: 12px Arial }
 		t.Errorf("what a stylesheet naming its own font on one line reports differs (-want +got):\n%s", diff)
 	}
 }
+
+func TestAGeneratedStylesheetIsNotReadAndItsSourceIs(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "page", "page.css"), `.own {
+  color: #aabbcc;
+}
+`)
+	writeNested(t, filepath.Join(root, "page", "page.generated.css"), `.own{color:#aabbcc;font-family:Georgia,serif}`)
+
+	read, err := convention.PaintWrittenWhereItIsUsed(root, "page", filepath.Join("page", "tokens"))
+	if err != nil {
+		t.Fatalf("reading what a fabricated page paints: %v", err)
+	}
+
+	want := []string{`page/page.css:2 states "#aabbcc" outside the library's tokens`}
+	if diff := cmp.Diff(want, read.Colours); diff != "" {
+		t.Errorf("what a source stylesheet beside a generated one reports differs (-want +got):\n%s", diff)
+	}
+	if len(read.Families) != 0 {
+		t.Errorf("a generated stylesheet's font families were read: %v", read.Families)
+	}
+}

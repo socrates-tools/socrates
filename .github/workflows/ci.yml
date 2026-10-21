@@ -63,7 +63,7 @@ jobs:
         run: |
           corepack enable
           make assets
-          git diff --exit-code -- agora/assets
+          git diff --exit-code -- agora/assets site/site.generated.css
 
       - name: Check the build refuses a type error and a comment
         run: scripts/prove-client-build

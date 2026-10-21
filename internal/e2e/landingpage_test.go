@@ -30,7 +30,7 @@ const readingTheLandingPaint = `(async () => {
   return {
     ground: getComputedStyle(document.body).backgroundColor,
     bodyFont: getComputedStyle(document.body).fontFamily,
-    wordmarkFont: getComputedStyle(document.querySelector('.wordmark')).fontFamily,
+    wordmarkFont: getComputedStyle(document.querySelector('header a span')).fontFamily,
     loadedFaces: [...document.fonts].filter((face) => face.status === 'loaded').map((face) => face.family.replace(/["']/g, '')),
   };
 })()`
@@ -46,7 +46,7 @@ func servedLandingPage(t *testing.T, site string) string {
 func paintOfTheLandingPage(t *testing.T, site string) landingPaint {
 	t.Helper()
 
-	page := openingFor(t, servedLandingPage(t, site), ".top", ".top")
+	page := openingFor(t, servedLandingPage(t, site), "header", "header")
 	var painted landingPaint
 	page.evaluate(readingTheLandingPaint, &painted, awaitingThePromise)
 	return painted
@@ -90,9 +90,9 @@ func TestTheLandingPageLoadsTheTokensAheadOfItsOwnStylesheet(t *testing.T) {
 	}
 
 	tokens := strings.Index(string(page), `href="tokens.css`)
-	own := strings.Index(string(page), `href="site.css`)
+	own := strings.Index(string(page), `href="site.generated.css`)
 	if tokens < 0 || own < 0 || tokens > own {
-		t.Errorf("the assembled page loads tokens.css at %d and site.css at %d, and the tokens must come first", tokens, own)
+		t.Errorf("the assembled page loads tokens.css at %d and site.generated.css at %d, and the tokens must come first", tokens, own)
 	}
 }
 
