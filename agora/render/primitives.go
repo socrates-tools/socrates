@@ -12,16 +12,13 @@ type shellPartView struct {
 }
 
 type appShellView struct {
-	Class       string
-	BodyClass   string
-	Form        bool
-	Interaction string
-	Topbar      shellPartView
-	Navigation  *shellPartView
-	Content     shellPartView
-	Panel       *shellPartView
-	Slots       shellSlots
-	Data        any
+	Class      string
+	Topbar     shellPartView
+	Navigation *shellPartView
+	Content    shellPartView
+	Panel      *shellPartView
+	Slots      shellSlots
+	Data       any
 }
 
 type shellSlots struct {
@@ -29,7 +26,6 @@ type shellSlots struct {
 	Navigation string
 	Content    string
 	Panel      string
-	Overlay    string
 }
 
 type badgeView struct {

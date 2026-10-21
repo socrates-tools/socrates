@@ -121,7 +121,10 @@
   --shadow-dialog: var(--shadow-dialog);
   --shadow-dimmed-dialog: var(--shadow-dimmed-dialog);
   --blur-backdrop: var(--blur-backdrop);
+  --blur-bar: var(--blur-bar);
   --breakpoint-narrow: 44rem;
+  --breakpoint-split: 60rem;
+  --breakpoint-docked: 80rem;
   --shadow-press: var(--shadow-press);
   --shadow-focus-ring: var(--focus-ring);
   --shadow-ring-chosen: var(--ring-chosen);
@@ -147,6 +150,10 @@
 @custom-variant progress-moz-fill (&::-moz-progress-bar);
 @custom-variant slotted (&::slotted(*));
 @custom-variant host-focused (:host(:focus-visible) &);
+
+@utility landing-clearance-* {
+  --landing-clearance: calc(var(--spacing) * --value(integer));
+}
 
 @layer base {
   :not(:defined) {

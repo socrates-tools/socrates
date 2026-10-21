@@ -649,7 +649,7 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 		"sending amend",
 		"sending confirmation",
 		"sending confirmation-decision",
-		"sending exchange shell",
+		"sending exchange",
 		"sending finish",
 		"sending go-back",
 		"sending message-field",
@@ -694,6 +694,44 @@ func TestTheConfirmationStandsOutsideTheFormAndSubmitsNothing(t *testing.T) {
 	}
 	if first != "send" {
 		t.Errorf("the first submit in document order is %q, and enter reaches the press that waits for a reply", first)
+	}
+}
+
+func TestTheExchangesFormWrapsTheShellSoEveryControlInItsSlotsIsPartOfTheForm(t *testing.T) {
+	// scenario: A page with decisions draws its one exchange form around the shell, holding the decisions, the composer and the presses
+	page := rendered(t, citingASource())
+
+	forms := elements(page, "form")
+	if len(forms) != 1 || !slices.Contains(strings.Fields(attribute(forms[0], "class")), "exchange") {
+		t.Fatalf("the page carries %d forms, want the one exchange", len(forms))
+	}
+	shells := elements(forms[0], "ui-app-shell")
+	if len(shells) != 1 {
+		t.Fatalf("the exchange form holds %d shells, want the one the page draws", len(shells))
+	}
+	for _, class := range []string{"decision", "composer"} {
+		held := elements(shells[0], "ui-card")
+		if !slices.ContainsFunc(held, func(card *html.Node) bool { return slices.Contains(strings.Fields(attribute(card, "class")), class) }) {
+			t.Errorf("the shell inside the exchange form holds no card of class %q", class)
+		}
+	}
+	if len(elements(forms[0], "ui-button", "ui-field", "ui-choice")) == 0 {
+		t.Error("the exchange form holds no control")
+	}
+}
+
+func TestAPageWithNothingToDecideDrawsTheShellWithNoFormAndNoDialog(t *testing.T) {
+	// scenario: A page with no decisions draws the shell alone, with no exchange form and no confirmation
+	page := rendered(t, nothingToDecide())
+
+	if forms := elements(page, "form"); len(forms) != 0 {
+		t.Errorf("the page carries %d forms, and nothing is sent from it", len(forms))
+	}
+	if dialogs := elements(page, "ui-dialog"); len(dialogs) != 0 {
+		t.Errorf("the page carries %d dialogs, and nothing is confirmed in it", len(dialogs))
+	}
+	if shells := elements(page, "ui-app-shell"); len(shells) != 1 {
+		t.Errorf("the page carries %d shells, want one", len(shells))
 	}
 }
 
