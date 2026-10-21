@@ -1,9 +1,11 @@
 package e2e_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/socrates-tools/socrates/agora/document"
 )
 
 const inTwoLanguagesDocument = `{
@@ -148,3 +150,25 @@ const patchInAnAliasDocument = `{
      "evidence": [{"language": "ts", "patch": "--- a/limit.txt\n+++ b/limit.txt\n@@ -1,1 +1,1 @@\n-export const limit: number = 2\n+export const limit: number = 3\n"}]}
   ]
 }`
+
+func TestEveryLanguageThePageHighlightsIsHighlightedByACodeBlockNamingIt(t *testing.T) {
+	// scenario: A code block naming any language or alias the page highlights is highlighted, none is left plain
+	t.Parallel()
+	var blocks []map[string]string
+	for _, named := range document.Languages() {
+		blocks = append(blocks, map[string]string{"language": named, "code": "x = 1\n"})
+	}
+	evidence, err := json.Marshal(blocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	held := standing(t)
+	page := opening(t, held.serve(evidenceDocument(string(evidence))))
+	page.waitFor(highlightedCodeBlocks(len(blocks)))
+
+	var plain []string
+	page.evaluate(`Array.from(document.querySelectorAll('.evidence.code ui-code-block')).filter((block) => !block.highlighted).map((block) => block.language)`, &plain)
+	if len(plain) != 0 {
+		t.Errorf("the code blocks naming %v are left plain, though the page highlights those languages", plain)
+	}
+}
