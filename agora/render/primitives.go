@@ -12,15 +12,13 @@ type shellPartView struct {
 }
 
 type appShellView struct {
-	Class       string
-	Form        bool
-	Interaction string
-	Topbar      shellPartView
-	Navigation  *shellPartView
-	Content     shellPartView
-	Panel       *shellPartView
-	Slots       shellSlots
-	Data        any
+	Class      string
+	Topbar     shellPartView
+	Navigation *shellPartView
+	Content    shellPartView
+	Panel      *shellPartView
+	Slots      shellSlots
+	Data       any
 }
 
 type shellSlots struct {

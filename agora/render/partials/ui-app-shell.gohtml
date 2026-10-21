@@ -1,6 +1,6 @@
-{{define "ui-app-shell"}}{{if .Form}}<form class="exchange"{{with .Interaction}} data-interaction="{{.}}"{{end}}>{{end}}<ui-app-shell{{with .Class}} class="{{.}}"{{end}}>
+{{define "ui-app-shell"}}<ui-app-shell{{with .Class}} class="{{.}}"{{end}}>
 <header{{with .Topbar.Class}} class="{{.}}"{{end}} slot="topbar">{{fillWith .Slots.Topbar .Data}}</header>
 {{with .Navigation}}<nav{{with .Class}} class="{{.}}"{{end}} aria-label="{{.Label}}" slot="navigation">{{fillWith $.Slots.Navigation $.Data}}</nav>{{end}}
 <main{{with .Content.Class}} class="{{.}}"{{end}} slot="content">{{fillWith .Slots.Content .Data}}</main>
 {{with .Panel}}<aside{{with .Class}} class="{{.}}"{{end}} aria-label="{{.Label}}" slot="panel">{{fillWith $.Slots.Panel $.Data}}</aside>{{end}}
-</ui-app-shell>{{if .Form}}</form>{{end}}{{end}}
+</ui-app-shell>{{end}}

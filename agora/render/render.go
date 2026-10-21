@@ -211,8 +211,6 @@ func shellOf(v view) appShellView {
 		shell.Slots.Navigation = "shell-navigation"
 	}
 	if len(v.Decisions) > 0 {
-		shell.Form = true
-		shell.Interaction = "sending"
 		shell.Panel = &shellPartView{Class: "panel", Label: reply}
 		shell.Slots.Panel = "shell-panel"
 	}

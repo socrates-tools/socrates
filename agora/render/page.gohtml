@@ -194,8 +194,10 @@
 </div>{{end}}
 {{define "shell-overlay"}}{{template "ui-dialog" .Confirmation}}{{end}}
 <div class="surface contents">
+{{if .Decisions}}<form class="exchange" data-interaction="sending">{{end}}
 {{template "ui-app-shell" .Shell}}
-{{if .Decisions}}{{template "shell-overlay" .}}{{end}}
+{{if .Decisions}}</form>
+{{template "shell-overlay" .}}{{end}}
 </div>
 {{template "ui-tooltip" .Tooltip}}
 <script src="/assets/surface.js"></script>
