@@ -12,6 +12,8 @@ import (
 
 var StyleDirectory = filepath.Join(ToolDirectory("agora"), "web")
 
+var LandingPageStyleDirectory = "site"
+
 var TokensDirectory = filepath.Join(ToolDirectory("agora"), "web", "packages", "ui", "tokens")
 
 var paletteSelector = ":root"

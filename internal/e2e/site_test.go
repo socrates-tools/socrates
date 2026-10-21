@@ -16,7 +16,7 @@ import (
 
 const fingerprintLength = 12
 
-var assetsThePageFingerprints = []string{"site.css", "site.js"}
+var assetsThePageFingerprints = []string{"tokens.css", "site.css", "site.js"}
 
 func TestTheAssembledPageAsksForEachAssetByWhatItHolds(t *testing.T) {
 	site := assembledSite(t, requireMake(t))
