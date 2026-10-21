@@ -10,6 +10,6 @@
     "@tailwindcss/node": "^4.3.3",
     "@tailwindcss/oxide": "^4.3.3",
     "esbuild": "^0.28.2",
-    "typescript": "~6.0.3"
+    "typescript": "~7.0.2"
   }
 }
