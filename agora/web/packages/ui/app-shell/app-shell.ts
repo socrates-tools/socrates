@@ -10,7 +10,7 @@ const topbarClasses =
 const navigationClasses =
   'slotted:relative slotted:border-b! slotted:border-rule! slotted:bg-surface-sunk slotted:p-6! slotted:max-narrow:p-4! slotted:split:w-sidebar slotted:split:flex-none slotted:split:overflow-y-auto slotted:split:border-r! slotted:split:border-b-0! slotted:split:px-4!'
 const contentClasses =
-  'slotted:relative slotted:min-w-0 slotted:flex-1 slotted:px-6! slotted:pt-8! slotted:pb-16! slotted:max-narrow:px-4! slotted:max-narrow:pt-6! slotted:max-narrow:pb-12! slotted:split:overflow-y-auto slotted:split:px-8!'
+  'slotted:relative slotted:min-w-0 slotted:flex-1 slotted:px-6! slotted:pt-8! slotted:pb-16! slotted:max-narrow:px-4! slotted:max-narrow:pt-6! slotted:max-narrow:pb-12! slotted:split:landing-clearance-6 slotted:split:overflow-y-auto slotted:split:px-8!'
 const panelClasses =
   'slotted:hidden slotted:docked:flex slotted:docked:min-h-0 slotted:docked:w-panel slotted:docked:flex-none slotted:docked:flex-col slotted:docked:border-l! slotted:docked:border-rule! slotted:docked:bg-surface-sunk'
 

@@ -193,8 +193,10 @@
 <ol class="summary"></ol>
 </div>{{end}}
 {{define "shell-overlay"}}{{template "ui-dialog" .Confirmation}}{{end}}
+<div class="surface contents">
 {{template "ui-app-shell" .Shell}}
 {{if .Decisions}}{{template "shell-overlay" .}}{{end}}
+</div>
 {{template "ui-tooltip" .Tooltip}}
 <script src="/assets/surface.js"></script>
 </body>

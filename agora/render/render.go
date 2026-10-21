@@ -201,7 +201,6 @@ func viewOf(read document.Document, frame Frame) view {
 
 func shellOf(v view) appShellView {
 	shell := appShellView{
-		Class:   "surface",
 		Topbar:  shellPartView{Class: "topbar"},
 		Content: shellPartView{Class: "main"},
 		Slots:   shellSlots{Topbar: "shell-topbar", Content: "shell-content"},

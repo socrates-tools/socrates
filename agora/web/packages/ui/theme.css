@@ -149,6 +149,10 @@
 @custom-variant progress-moz-fill (&::-moz-progress-bar);
 @custom-variant slotted (&::slotted(*));
 
+@utility landing-clearance-* {
+  --landing-clearance: calc(var(--spacing) * --value(integer));
+}
+
 @layer base {
   :not(:defined) {
     display: none !important;
