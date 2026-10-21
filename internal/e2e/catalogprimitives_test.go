@@ -465,8 +465,7 @@ func (r *reader) boxOfWhatItHolds(selector string) boxOnThePage {
   const last = held.lastElementChild.getBoundingClientRect();
   const marginTop = parseFloat(getComputedStyle(held.firstElementChild).marginTop);
   const marginBottom = parseFloat(getComputedStyle(held.lastElementChild).marginBottom);
-  const box = held.getBoundingClientRect();
-  return { Left: box.left, Top: first.top - marginTop, Right: box.right, Bottom: last.bottom + marginBottom };
+  return { Left: first.left, Top: first.top - marginTop, Right: last.right, Bottom: last.bottom + marginBottom };
 })()`, &box)
 	return box
 }

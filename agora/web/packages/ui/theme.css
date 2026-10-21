@@ -140,6 +140,8 @@
   --max-width-main: var(--main-max);
 }
 
+@custom-variant slotted (&::slotted(*));
+
 @layer base {
   :not(:defined) {
     display: none !important;
