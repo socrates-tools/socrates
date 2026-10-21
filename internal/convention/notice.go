@@ -67,7 +67,10 @@ func LibrariesTheClientBundles(root string) ([]string, error) {
 	}
 
 	bundled := make([]string, 0, len(declared.Dependencies))
-	for library := range declared.Dependencies {
+	for library, version := range declared.Dependencies {
+		if strings.HasPrefix(version, "workspace:") {
+			continue
+		}
 		bundled = append(bundled, library)
 	}
 	slices.Sort(bundled)

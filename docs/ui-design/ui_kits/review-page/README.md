@@ -4,7 +4,7 @@ The one browser surface socrates has: the decisions page served by agora (`socra
 
 This kit shows the decisions page as ADR 53 adopted it and ADR 70 amended it: Aegean and sea on limestone.
 
-Source: `agora/render/page.gohtml`, `agora/web/src/surface.css`, `agora/web/src/surface.js`, `agora/render/{icons,marks,audiences,messages}.go`, sample content `agora/document/testdata/source.json`.
+Source: `agora/render/page.gohtml`, `agora/web/packages/surface/surface.css`, `agora/web/packages/surface/`, `agora/render/{icons,marks,audiences,messages}.go`, sample content `agora/document/testdata/source.json`.
 
 Layout: an app shell that uses the whole window.
 - A full-width top bar (`TopBar fluid`): wordmark, the exchange title as a breadcrumb, status on the right.

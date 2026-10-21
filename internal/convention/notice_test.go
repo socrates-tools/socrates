@@ -271,3 +271,24 @@ func TestAModuleTheNoticeDoesNotNameIsLeftToTheCheckForMissingEntries(t *testing
 		t.Errorf("the licence check reported %v for a module the notice does not name", disagreeing)
 	}
 }
+
+func TestAWorkspacePackageTheClientDependsOnIsNotALibraryItBundlesFromElsewhere(t *testing.T) {
+	tree := t.TempDir()
+	write(t, tree, ClientManifest, `{
+  "name": "@agora/surface",
+  "dependencies": {
+    "@agora/ui": "workspace:*",
+    "highlight.js": "^11.11.1"
+  }
+}
+`)
+
+	bundled, err := LibrariesTheClientBundles(tree)
+	if err != nil {
+		t.Fatalf("reading what the client bundles: %v", err)
+	}
+
+	if diff := cmp.Diff([]string{"highlight.js"}, bundled); diff != "" {
+		t.Errorf("the libraries the client bundles differ (-want +got):\n%s", diff)
+	}
+}
