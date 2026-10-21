@@ -442,13 +442,54 @@ func cardOf(key string) string {
 	return stateOf("ui-card", key) + " ui-card"
 }
 
+type boxOnThePage struct{ Left, Top, Right, Bottom float64 }
+
+func (r *reader) boxOf(selector string) boxOnThePage {
+	r.t.Helper()
+
+	var box boxOnThePage
+	r.evaluate(`(() => {
+  const box = document.querySelector(`+jsonOf(r.t, selector)+`).getBoundingClientRect();
+  return { Left: box.left, Top: box.top, Right: box.right, Bottom: box.bottom };
+})()`, &box)
+	return box
+}
+
+func (r *reader) boxOfWhatItHolds(selector string) boxOnThePage {
+	r.t.Helper()
+
+	var box boxOnThePage
+	r.evaluate(`(() => {
+  const held = document.querySelector(`+jsonOf(r.t, selector)+`);
+  const first = held.firstElementChild.getBoundingClientRect();
+  const last = held.lastElementChild.getBoundingClientRect();
+  const marginTop = parseFloat(getComputedStyle(held.firstElementChild).marginTop);
+  const marginBottom = parseFloat(getComputedStyle(held.lastElementChild).marginBottom);
+  return { Left: first.left, Top: first.top - marginTop, Right: last.right, Bottom: last.bottom + marginBottom };
+})()`, &box)
+	return box
+}
+
+func (r *reader) paintedAt(selector string, x, y float64) string {
+	r.t.Helper()
+
+	r.evaluate(`document.querySelector(`+jsonOf(r.t, selector)+`).scrollIntoView({ block: 'center' }); new Promise((settled) => requestAnimationFrame(() => requestAnimationFrame(settled)))`, nil, awaitingThePromise)
+	shot, err := png.Decode(bytes.NewReader(r.screenshot()))
+	if err != nil {
+		r.t.Fatalf("reading what the page painted: %v", err)
+	}
+	box := r.boxOf(selector)
+	red, green, blue, _ := shot.At(int(box.Left+x), int(box.Top+y)).RGBA()
+	return fmt.Sprintf("rgb(%d, %d, %d)", red>>8, green>>8, blue>>8)
+}
+
 func TestTheCatalogDrawsACardWithABodyAndAFooterWithTheFooterSunkUnderTheBody(t *testing.T) {
 	// scenario: A card state with a body and a footer pads each section and sets the footer under the body on a sunk ground
 	t.Parallel()
 	page := catalogued(t)
 	card := cardOf(cardSectionsKey)
-	body := card + ` [data-part="body"]`
-	footer := card + ` [data-part="footer"]`
+	body := card + ` [slot="body"]`
+	footer := card + ` [slot="footer"]`
 
 	painted := page.paintedOf(card, "display", "background-color", "border-top-width", "border-top-left-radius")
 	if painted["display"] != "block" || painted["border-top-width"] != "1px" {
@@ -462,29 +503,32 @@ func TestTheCatalogDrawsACardWithABodyAndAFooterWithTheFooterSunkUnderTheBody(t 
 	}
 
 	pad := page.pixelsOfToken("--card-pad")
-	for name, section := range map[string]string{"body": body, "footer": footer} {
-		if got := page.pixelsOf(section, "padding-left"); got != pad {
-			t.Errorf("the card's %s is padded %vpx, want %vpx", name, got, pad)
-		}
+	frame := page.boxOf(card)
+	inBody, inFooter := page.boxOfWhatItHolds(body), page.boxOfWhatItHolds(footer)
+	if got := inBody.Left - frame.Left - 1; got != pad {
+		t.Errorf("the card's body is padded %vpx from the card's edge, want %vpx", got, pad)
 	}
-	ground := page.paintedOf(footer, "background-color", "border-top-width")
-	if want := page.pageColourOf("--surface-sunk"); ground["background-color"] != want {
-		t.Errorf("the footer is painted %s, want %s", ground["background-color"], want)
+	if got := inBody.Top - frame.Top - 1; got != pad {
+		t.Errorf("the card's body begins %vpx under the card's top, want %vpx", got, pad)
 	}
-	if ground["border-top-width"] != "1px" {
-		t.Errorf("the footer's top border is %s, want a rule one pixel thick", ground["border-top-width"])
+	if got := inFooter.Left - frame.Left - 1; got != pad {
+		t.Errorf("the card's footer is padded %vpx from the card's edge, want %vpx", got, pad)
+	}
+	if got := frame.Bottom - 1 - inFooter.Bottom; got != pad {
+		t.Errorf("the card's footer ends %vpx above the card's bottom, want %vpx", got, pad)
+	}
+	if inFooter.Top-pad-1 < inBody.Bottom+pad-1 {
+		t.Errorf("the footer's rule begins at %v, above the body's end at %v with its padding", inFooter.Top-pad-1, inBody.Bottom+pad)
 	}
 
-	var order struct {
-		BodyBottom float64 `json:"bodyBottom"`
-		FooterTop  float64 `json:"footerTop"`
+	if got, want := page.paintedAt(card, inBody.Left-frame.Left-4, inBody.Top-frame.Top+4), page.pageColourOf("--surface-card"); got != want {
+		t.Errorf("the ground under the body is painted %s, want %s", got, want)
 	}
-	page.evaluate(`({
-  bodyBottom: document.querySelector(`+jsonOf(t, body)+`).getBoundingClientRect().bottom,
-  footerTop: document.querySelector(`+jsonOf(t, footer)+`).getBoundingClientRect().top,
-})`, &order)
-	if order.FooterTop < order.BodyBottom-1 {
-		t.Errorf("the footer begins at %v, above the body's end at %v", order.FooterTop, order.BodyBottom)
+	if got, want := page.paintedAt(card, inFooter.Left-frame.Left-4, inFooter.Top-frame.Top+4), page.pageColourOf("--surface-sunk"); got != want {
+		t.Errorf("the ground under the footer is painted %s, want %s", got, want)
+	}
+	if got, want := page.paintedAt(card, inFooter.Left-frame.Left+4, inFooter.Top-frame.Top-pad-1), page.pageColourOf("--rule"); got != want {
+		t.Errorf("the rule over the footer is painted %s, want %s one pixel above its padding", got, want)
 	}
 }
 
@@ -494,11 +538,17 @@ func TestTheCatalogDrawsACardWithABodyAloneAndNoFooter(t *testing.T) {
 	page := catalogued(t)
 	card := cardOf(cardBodyKey)
 
-	if page.countOf(card+` [data-part="footer"]`) != 0 {
-		t.Error("the body-alone card draws a footer")
+	if page.countOf(card+` [slot="footer"]`) != 0 {
+		t.Error("the body-alone card writes a footer")
 	}
-	if got, want := page.pixelsOf(card+` [data-part="body"]`, "padding-top"), page.pixelsOfToken("--card-pad"); got != want {
-		t.Errorf("the body is padded %vpx, want %vpx", got, want)
+	frame := page.boxOf(card)
+	inBody := page.boxOfWhatItHolds(card + ` [slot="body"]`)
+	pad := page.pixelsOfToken("--card-pad")
+	if got := inBody.Left - frame.Left - 1; got != pad {
+		t.Errorf("the body is padded %vpx from the card's edge, want %vpx", got, pad)
+	}
+	if got := frame.Bottom - 1 - inBody.Bottom; got != pad {
+		t.Errorf("the body ends %vpx above the card's bottom, want %vpx, and nothing is drawn under it", got, pad)
 	}
 	if got := page.paintedOf(card, "border-top-width")["border-top-width"]; got != "1px" {
 		t.Errorf("the body-alone card's border is %s, want one pixel", got)
@@ -511,8 +561,8 @@ func TestTheCatalogDrawsACardWithNoSectionsAsTheCardAroundWhatItHolds(t *testing
 	page := catalogued(t)
 	card := cardOf(cardPlainKey)
 
-	if page.countOf(card+` [data-part]`) != 0 {
-		t.Error("the card with no sections draws a section")
+	if page.countOf(card+` [slot]`) != 0 {
+		t.Error("the card with no sections fills a slot of a section")
 	}
 	if page.countOf(card+` p.catalog-card-plain`) != 1 {
 		t.Error("the card with no sections holds no content")
@@ -527,6 +577,31 @@ func TestTheCatalogDrawsACardWithNoSectionsAsTheCardAroundWhatItHolds(t *testing
 	if painted["padding-left"] != "0px" {
 		t.Errorf("the card pads %s of its own, want none, since the page lays its content out", painted["padding-left"])
 	}
+	frame := page.boxOf(card)
+	inside := page.boxOf(card + ` p.catalog-card-plain`)
+	if got := inside.Left - frame.Left - 1; got != 0 {
+		t.Errorf("the content sits %vpx in from the card's border, want it against it", got)
+	}
+}
+
+func TestACardsFooterThePageHidesTakesItsRuleAndGroundAndPaddingWithIt(t *testing.T) {
+	// scenario: A card whose slotted footer is hidden by the page draws no empty strip where the footer was, and draws it again when it is shown
+	t.Parallel()
+	page := catalogued(t)
+	card := cardOf(cardSectionsKey)
+	frame := page.boxOf(card)
+	withFooter := frame.Bottom - frame.Top
+
+	page.evaluate(`document.querySelector(`+jsonOf(t, card+` [slot="footer"]`)+`).style.display = 'none'`, nil)
+	page.waitFor(`Math.round(document.querySelector(` + jsonOf(t, card) + `).getBoundingClientRect().height) < ` + fmt.Sprint(int(withFooter)))
+	hidden := page.boxOf(card)
+	body := page.boxOfWhatItHolds(card + ` [slot="body"]`)
+	if got, want := hidden.Bottom-1-body.Bottom, page.pixelsOfToken("--card-pad"); got != want {
+		t.Errorf("a card whose footer is hidden ends %vpx under its body, want %vpx and no strip for a footer", got, want)
+	}
+
+	page.evaluate(`document.querySelector(`+jsonOf(t, card+` [slot="footer"]`)+`).style.display = ''`, nil)
+	page.waitFor(`Math.round(document.querySelector(` + jsonOf(t, card) + `).getBoundingClientRect().height) === ` + fmt.Sprint(int(withFooter)))
 }
 
 func TestTheCatalogDrawsABrandAsADecorativeMarkBeforeItsNameInTheDisplayFace(t *testing.T) {

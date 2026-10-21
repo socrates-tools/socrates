@@ -294,10 +294,45 @@ func TestTheContractDeclaresTheControlsAsElementsOfAttributesAndSlots(t *testing
 	}
 }
 
-func TestTheContractDeclaresTheDialog(t *testing.T) {
+func TestTheContractDeclaresTheCardAndTheDialogAsElementsOfSlotsAlone(t *testing.T) {
 	declared := declaredByTheContract(t)
-	if _, known := declared.Parts["ui-dialog"]; !known {
-		t.Errorf("the contract declares %v, and the dialog is the first primitive it declares", declared)
+
+	wants := map[string]element{
+		"ui-card":   {Slots: []string{defaultSlot, "body", "footer"}},
+		"ui-dialog": {Slots: []string{"actions", "body", "heading"}},
+	}
+	for name, want := range wants {
+		if diff := cmp.Diff(want, declared.Elements[name], cmpopts.EquateEmpty()); diff != "" {
+			t.Errorf("the contract declares <%s> differently (-want +got):\n%s", name, diff)
+		}
+		if _, stillParts := declared.Parts[name]; stillParts {
+			t.Errorf("the contract still declares parts for <%s>: %v", name, declared.Parts[name])
+		}
+	}
+}
+
+func TestARenderedPageWritesTheCardAndTheDialogOnlyWithTheSlotsTheyDeclare(t *testing.T) {
+	// scenario: A rendered page writes each decision, the composer and the confirmation as a card or a dialog holding only the slots it renders
+	read := oneDecision(document.One)
+	written := writingsOf(rendered(t, read))
+
+	for _, name := range []string{"ui-card", "ui-dialog"} {
+		held, reached := written[name]
+		if !reached {
+			t.Fatalf("the rendered page writes %v, and it draws a decision and its confirmation on <%s>", written, name)
+		}
+		if len(held.parts) != 0 {
+			t.Errorf("the rendered page writes the parts %v inside <%s>, and the element draws its own parts", held.parts, name)
+		}
+	}
+	for _, found := range undeclared(declaredByTheContract(t), written) {
+		t.Error(found)
+	}
+	if !slices.Contains(written["ui-card"].slots, "body") || !slices.Contains(written["ui-card"].slots, "footer") {
+		t.Errorf("a decision fills the card's slots %v, want its body and its footer", written["ui-card"].slots)
+	}
+	if want := []string{"heading", "body", "actions"}; !slices.Equal(written["ui-dialog"].slots, want) {
+		t.Errorf("the confirmation fills the dialog's slots %v, want %v", written["ui-dialog"].slots, want)
 	}
 }
 
@@ -465,5 +500,84 @@ func TestNoButtonAndNoTextareaOfARenderedPageStandsOutsideAPrimitivesShadowRoot(
 		if attribute(control, "data-part") != "control" {
 			t.Errorf("the page offers a <%s class=%q> that is not the control of a primitive", control.Data, attribute(control, "class"))
 		}
+	}
+}
+
+func aCardAndADialog() contract {
+	return contract{Elements: map[string]element{
+		"ui-card":   {Slots: []string{defaultSlot, "body", "footer"}},
+		"ui-dialog": {Slots: []string{"heading", "body", "actions"}},
+	}}
+}
+
+func TestASlotACardDoesNotRenderIsReportedNamingTheCardAndTheSlot(t *testing.T) {
+	written := writings{
+		"ui-card":   {slots: []string{"body", "footer", defaultSlot, "aside"}},
+		"ui-dialog": {slots: []string{"heading", "body", "actions"}},
+	}
+
+	want := []string{`the markup writes the slot "aside" of <ui-card>, and the element does not render it`}
+	if diff := cmp.Diff(want, disagreements(aCardAndADialog(), written)); diff != "" {
+		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestAnAttributeACardDoesNotDeclareIsReportedNamingTheCardAndTheAttribute(t *testing.T) {
+	written := writings{
+		"ui-card":   {attributes: []string{"class", "padding"}, slots: []string{"body", "footer", defaultSlot}},
+		"ui-dialog": {slots: []string{"heading", "body", "actions"}},
+	}
+
+	want := []string{`the markup writes the attribute "padding" on <ui-card>, and the element does not declare it`}
+	if diff := cmp.Diff(want, disagreements(aCardAndADialog(), written)); diff != "" {
+		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestASlotADialogRendersAndNoPartialWritesIsReportedNamingTheDialogAndTheSlot(t *testing.T) {
+	written := writings{
+		"ui-card":   {slots: []string{"body", "footer", defaultSlot}},
+		"ui-dialog": {slots: []string{"heading", "body"}},
+	}
+
+	want := []string{`the contract declares the slot "actions" of <ui-dialog>, and no partial writes it`}
+	if diff := cmp.Diff(want, disagreements(aCardAndADialog(), written)); diff != "" {
+		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestAnAttributeADialogDoesNotDeclareIsReportedNamingTheDialogAndTheAttribute(t *testing.T) {
+	written := writings{
+		"ui-card":   {slots: []string{"body", "footer", defaultSlot}},
+		"ui-dialog": {attributes: []string{"open"}, slots: []string{"heading", "body", "actions"}},
+	}
+
+	want := []string{`the markup writes the attribute "open" on <ui-dialog>, and the element does not declare it`}
+	if diff := cmp.Diff(want, disagreements(aCardAndADialog(), written)); diff != "" {
+		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestContentWrittenIntoADialogOutsideAnySlotIsReportedNamingTheDialog(t *testing.T) {
+	written := writings{
+		"ui-card":   {slots: []string{"body", "footer", defaultSlot}},
+		"ui-dialog": {slots: []string{"heading", "body", "actions", defaultSlot}},
+	}
+
+	want := []string{`the markup writes content into <ui-dialog> outside any named slot, and the element renders no default slot`}
+	if diff := cmp.Diff(want, disagreements(aCardAndADialog(), written)); diff != "" {
+		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestAPartWrittenInsideADialogIsReportedBecauseTheDialogDrawsItsOwnParts(t *testing.T) {
+	written := writings{
+		"ui-card":   {slots: []string{"body", "footer", defaultSlot}},
+		"ui-dialog": {slots: []string{"heading", "body", "actions"}, parts: []string{"panel"}},
+	}
+
+	want := []string{`the markup writes the part "panel" of <ui-dialog>, and the element draws its own parts`}
+	if diff := cmp.Diff(want, disagreements(aCardAndADialog(), written)); diff != "" {
+		t.Errorf("the disagreements differ (-want +got):\n%s", diff)
 	}
 }

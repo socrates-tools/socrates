@@ -11,8 +11,8 @@
 </head>
 <body class="catalog">
 {{define "catalog-dialog-body"}}<p>This dialog is drawn by the same partial the page draws a confirmation with.</p>{{end}}
-{{define "catalog-card-sections"}}<div data-part="body"><p>This card holds a body.</p></div><div data-part="footer"><p>And a footer under it.</p></div>{{end}}
-{{define "catalog-card-body"}}<div data-part="body"><p>This card holds a body alone.</p></div>{{end}}
+{{define "catalog-card-sections"}}<div slot="body"><p>This card holds a body.</p></div><div slot="footer"><p>And a footer under it.</p></div>{{end}}
+{{define "catalog-card-body"}}<div slot="body"><p>This card holds a body alone.</p></div>{{end}}
 {{define "catalog-card-plain"}}<p class="catalog-card-plain">This card holds no sections, and sits as the page lays it out.</p>{{end}}
 {{define "catalog-shell-topbar"}}<span class="catalog-shell-title">A shell</span>{{end}}
 {{define "catalog-shell-navigation"}}<ol class="catalog-shell-links">{{range .Sections}}<li><a class="catalog-shell-link" href="#section-{{.}}" data-section="section-{{.}}">Section {{.}}</a></li>{{end}}</ol>{{end}}

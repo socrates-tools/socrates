@@ -674,13 +674,13 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 func TestTheConfirmationStandsOutsideTheFormAndSubmitsNothing(t *testing.T) {
 	page := rendered(t, citingASource())
 
-	asking := elements(page, "dialog")
+	asking := elements(page, "ui-dialog")
 	if len(asking) != 1 {
 		t.Fatalf("the page carries %d dialogs, want the one a blank decision is confirmed in", len(asking))
 	}
 
 	for _, form := range elements(page, "form") {
-		if len(elements(form, "dialog")) != 0 {
+		if len(elements(form, "ui-dialog")) != 0 {
 			t.Error("the confirmation stands inside the form, so its presses would submit it")
 		}
 	}

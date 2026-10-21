@@ -1,5 +1,5 @@
-{{define "ui-dialog"}}<ui-dialog class="{{.Class}}"{{with .Interaction}} data-interaction="{{.}}"{{end}}><dialog class="{{.Class}}"{{with .ID}} id="{{.}}"{{end}} data-part="panel" aria-labelledby="{{.Class}}-heading">
-<h2 class="{{.Class}}-heading" id="{{.Class}}-heading" data-part="heading">{{.Heading}}</h2>
-<div data-part="body">{{with .Body}}{{fill .}}{{end}}</div>
-<div data-part="actions">{{with .Actions}}{{fill .}}{{end}}</div>
-</dialog></ui-dialog>{{end}}
+{{define "ui-dialog"}}<ui-dialog class="{{.Class}}"{{with .ID}} id="{{.}}"{{end}}{{with .Interaction}} data-interaction="{{.}}"{{end}}>
+<span slot="heading" class="{{.Class}}-heading">{{.Heading}}</span>
+{{with .Body}}<div slot="body">{{fill .}}</div>{{end}}
+{{with .Actions}}<div slot="actions">{{fill .}}</div>{{end}}
+</ui-dialog>{{end}}

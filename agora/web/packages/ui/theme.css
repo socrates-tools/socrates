@@ -118,6 +118,9 @@
 
   --shadow-card: var(--shadow-card);
   --shadow-dialog: var(--shadow-dialog);
+  --shadow-dimmed-dialog: var(--shadow-dimmed-dialog);
+  --blur-backdrop: var(--blur-backdrop);
+  --breakpoint-narrow: 44rem;
   --shadow-press: var(--shadow-press);
   --shadow-focus-ring: var(--focus-ring);
   --shadow-ring-chosen: var(--ring-chosen);
@@ -136,6 +139,8 @@
   --width-panel: var(--panel-width);
   --max-width-main: var(--main-max);
 }
+
+@custom-variant slotted (&::slotted(*));
 
 @layer base {
   :not(:defined) {

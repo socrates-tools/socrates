@@ -20,6 +20,14 @@
         ""
       ]
     },
+    "ui-card": {
+      "attributes": [],
+      "slots": [
+        "",
+        "body",
+        "footer"
+      ]
+    },
     "ui-copy": {
       "attributes": [
         "copied-title",
@@ -29,6 +37,14 @@
         "text"
       ],
       "slots": []
+    },
+    "ui-dialog": {
+      "attributes": [],
+      "slots": [
+        "actions",
+        "body",
+        "heading"
+      ]
     },
     "ui-expand": {
       "attributes": [
@@ -51,12 +67,6 @@
     }
   },
   "parts": {
-    "ui-dialog": [
-      "panel",
-      "heading",
-      "body",
-      "actions"
-    ],
     "ui-choice": [
       "frame",
       "control",
@@ -78,10 +88,6 @@
     ],
     "ui-overline": [
       "count"
-    ],
-    "ui-card": [
-      "body",
-      "footer"
     ],
     "ui-code-block": [
       "code"

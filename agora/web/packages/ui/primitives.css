@@ -1,9 +1,7 @@
 @import './app-shell/app-shell.css';
 @import './brand/brand.css';
-@import './card/card.css';
 @import './code-block/code-block.css';
 @import './diff-block/diff-block.css';
-@import './dialog/dialog.css';
 @import './choice/choice.css';
 @import './overline/overline.css';
 @import './progress-bar/progress-bar.css';
