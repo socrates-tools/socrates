@@ -59,5 +59,13 @@
     "line",
     "marker",
     "code"
+  ],
+  "ui-app-shell": [
+    "frame",
+    "topbar",
+    "body",
+    "navigation",
+    "content",
+    "panel"
   ]
 }

@@ -6,6 +6,32 @@ import (
 	"strconv"
 )
 
+type shellPartView struct {
+	Class string
+	Label string
+}
+
+type appShellView struct {
+	Class       string
+	BodyClass   string
+	Form        bool
+	Interaction string
+	Topbar      shellPartView
+	Navigation  *shellPartView
+	Content     shellPartView
+	Panel       *shellPartView
+	Slots       shellSlots
+	Data        any
+}
+
+type shellSlots struct {
+	Topbar     string
+	Navigation string
+	Content    string
+	Panel      string
+	Overlay    string
+}
+
 type badgeView struct {
 	Class     string
 	Tone      string

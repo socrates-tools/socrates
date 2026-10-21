@@ -58,6 +58,13 @@ func partsOf(node *html.Node) parts {
 	var visit func(node *html.Node, within string)
 	visit = func(node *html.Node, within string) {
 		if node.Type == html.ElementNode {
+			if node.Data == "iframe" {
+				if framed, err := html.Parse(strings.NewReader(attribute(node, "srcdoc"))); err == nil {
+					for key, held := range partsOf(framed) {
+						found[key] = append(found[key], held...)
+					}
+				}
+			}
 			if strings.HasPrefix(node.Data, primitivePrefix) {
 				within = node.Data
 				if _, seen := found[within]; !seen {

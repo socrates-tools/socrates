@@ -1,3 +1,4 @@
+export { UiAppShell } from './app-shell/app-shell'
 export { UiButton } from './button/button'
 export { UiChoice } from './choice/choice'
 export { UiCopy } from './copy/copy'

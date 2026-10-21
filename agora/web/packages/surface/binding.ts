@@ -1,7 +1,7 @@
 import { bindTheAnswering, countAnswered } from './answers'
 import { placeTheComposer } from './composer'
 import { bindTheConfirmation } from './confirmation'
-import { bindTheNavigation, markTheDecisionInView } from './navigation'
+import { bindTheNavigation } from './navigation'
 import { bindTheForm, sendAnyway } from './sending'
 
 export function bind(): void {
@@ -11,5 +11,4 @@ export function bind(): void {
   bindTheNavigation()
   placeTheComposer()
   countAnswered()
-  markTheDecisionInView()
 }

@@ -89,12 +89,46 @@ type anchorView struct {
 	Hint    string
 }
 
+type frameSize struct {
+	Width  int
+	Height int
+}
+
 type state struct {
 	Key    string
 	Name   string
 	Opens  string
 	Anchor *anchorView
+	Frame  *frameSize
 	View   any
+}
+
+func appShellState(name string, width int, view appShellView) state {
+	return state{Name: name, Frame: &frameSize{Width: width, Height: catalogShellHeight}, View: view}
+}
+
+type catalogShellView struct {
+	Sections []int
+}
+
+func catalogShell() appShellView {
+	sections := make([]int, catalogShellSections)
+	for at := range sections {
+		sections[at] = at + 1
+	}
+	return appShellView{
+		Topbar:     shellPartView{},
+		Navigation: &shellPartView{Label: catalogShellNavigation},
+		Content:    shellPartView{},
+		Panel:      &shellPartView{Label: catalogShellPanel},
+		Slots: shellSlots{
+			Topbar:     "catalog-shell-topbar",
+			Navigation: "catalog-shell-navigation",
+			Content:    "catalog-shell-content",
+			Panel:      "catalog-shell-panel",
+		},
+		Data: catalogShellView{Sections: sections},
+	}
 }
 
 func badgeState(name string, view badgeView) state {
@@ -140,6 +174,11 @@ func stateDrawn(key, name string, view any) state {
 }
 
 var catalogued = map[string][]state{
+	"ui-app-shell": {
+		appShellState(shellNarrow, catalogNarrowWidth, catalogShell()),
+		appShellState(shellAtNineSixty, 960, catalogShell()),
+		appShellState(shellAtTwelveEighty, 1280, catalogShell()),
+	},
 	"ui-badge": {
 		badgeState(badgeNeutral, markedBadge("neutral")),
 		badgeState(badgeAccent, markedBadge("accent")),
@@ -238,11 +277,19 @@ var catalogued = map[string][]state{
 	},
 }
 
+type catalogFrame struct {
+	Width    int
+	Height   int
+	Title    string
+	Document string
+}
+
 type catalogState struct {
 	Key    string
 	Name   string
 	Opens  string
 	Anchor *anchorView
+	Frame  *catalogFrame
 	Drawn  template.HTML
 }
 
@@ -272,7 +319,15 @@ func Catalog() (string, error) {
 			if err != nil {
 				return "", err
 			}
-			primitive.States = append(primitive.States, catalogState{Key: keyOf(held), Name: held.Name, Opens: held.Opens, Anchor: held.Anchor, Drawn: markup})
+			drawn := catalogState{Key: keyOf(held), Name: held.Name, Opens: held.Opens, Anchor: held.Anchor, Drawn: markup}
+			if held.Frame != nil {
+				framed, err := framedInADocument(markup, held)
+				if err != nil {
+					return "", err
+				}
+				drawn.Frame = framed
+			}
+			primitive.States = append(primitive.States, drawn)
 		}
 		view.Primitives = append(view.Primitives, primitive)
 	}
@@ -282,6 +337,14 @@ func Catalog() (string, error) {
 		return "", err
 	}
 	return written.String(), nil
+}
+
+func framedInADocument(markup template.HTML, held state) (*catalogFrame, error) {
+	var written bytes.Buffer
+	if err := page.ExecuteTemplate(&written, "catalog-frame-document", markup); err != nil {
+		return nil, err
+	}
+	return &catalogFrame{Width: held.Frame.Width, Height: held.Frame.Height, Title: held.Name, Document: written.String()}, nil
 }
 
 var keySpelling = strings.NewReplacer(" ", "-", ",", "", ".", "", "'", "")

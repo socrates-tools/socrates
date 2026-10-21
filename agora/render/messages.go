@@ -35,6 +35,11 @@ const (
 )
 
 const (
+	whatWasSeen = "What was seen"
+	reply       = "Reply"
+)
+
+const (
 	catalogTitle = "Catalog"
 
 	dialogWithEverything    = "a heading, a body and actions"
@@ -79,6 +84,17 @@ const (
 	tooltipWithATitleAlone    = "a title alone"
 
 	catalogAnchorLabel = "Hover or focus me"
+
+	shellNarrow         = "narrower than 960px, stacked and scrolling with the window"
+	shellAtNineSixty    = "960px wide, with the navigation and the content scrolling on their own"
+	shellAtTwelveEighty = "1280px wide, with the panel's place at the right"
+
+	catalogShellTitle      = "A shell"
+	catalogShellNavigation = "Sections"
+	catalogShellPanel      = "Panel"
+	catalogShellSections   = 12
+	catalogShellHeight     = 480
+	catalogNarrowWidth     = 480
 )
 
 const (

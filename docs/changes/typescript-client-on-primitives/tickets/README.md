@@ -27,5 +27,5 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 79](../../../../agora/docs/adr/0
 | [5.1: The page's controls are primitives](5.1-controls-as-primitives.md) | 4-the-catalog | done |
 | [5.2: Badges, progress, status and tooltips are primitives](5.2-marks-and-status-as-primitives.md) | 4-the-catalog | done |
 | [5.3: Code blocks and diff blocks are primitives](5.3-code-blocks-as-primitives.md) | 4-the-catalog | in progress |
-| [5.4: The app shell is a primitive](5.4-app-shell-as-a-primitive.md) | 4-the-catalog | in progress |
+| [5.4: The app shell is a primitive](5.4-app-shell-as-a-primitive.md) | 4-the-catalog | done |
 | [6: The surface is built on primitives only](6-the-surface-built-on-primitives-only.md) | 5.1-controls-as-primitives, 5.2-marks-and-status-as-primitives, 5.3-code-blocks-as-primitives, 5.4-app-shell-as-a-primitive | pending |
