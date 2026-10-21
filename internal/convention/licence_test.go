@@ -51,6 +51,17 @@ func TestALicenceHeaderIsReported(t *testing.T) {
 			reported: []LicenceHeader{{Line: 1, Text: "/*! highlight.js, all rights reserved */"}},
 		},
 		{
+			name:     "a header in a TypeScript source is reported",
+			file:     filepath.Join("web", "packages", "surface", "thing.ts"),
+			content:  "/*! highlight.js, all rights reserved */\nexport const thing = 1\n",
+			reported: []LicenceHeader{{Line: 1, Text: "/*! highlight.js, all rights reserved */"}},
+		},
+		{
+			name:    "a borrowed work's notice in a TypeScript source is not the header this forbids",
+			file:    filepath.Join("web", "packages", "surface", "main.ts"),
+			content: "/*! highlight.js is bundled here.\n    BSD 3-Clause License.\n    Copyright (c) 2006, Ivan Sagalaev.\n    The full text is in " + NoticeFile + " at the root. */\nimport hljs from 'highlight.js/lib/core'\n",
+		},
+		{
 			// scenario: A borrowed work's notice is not the header this forbids
 			name:    "a borrowed work's notice is not the header this forbids",
 			file:    filepath.Join("web", "src", "surface.js"),

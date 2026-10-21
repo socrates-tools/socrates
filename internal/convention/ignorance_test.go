@@ -3,6 +3,7 @@ package convention_test
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -65,6 +66,28 @@ func TestAWordOfTheOtherToolIsReported(t *testing.T) {
 	}
 	if diff := cmp.Diff(want, read.Naming); diff != "" {
 		t.Errorf("what a file naming the other tool reports differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestAWordOfTheOtherToolInTypeScriptIsReported(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "held", "knowing.ts"), "export const said = 'the reviewer read it'\n")
+
+	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil)
+	if err != nil {
+		t.Fatalf("reading what a fabricated tree names: %v", err)
+	}
+
+	want := []string{`held/knowing.ts:1 names "reviewer"`}
+	if diff := cmp.Diff(want, read.Naming); diff != "" {
+		t.Errorf("what a TypeScript file naming the other tool reports differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestTheClientsPackagesAreReadForTheOtherToolsWords(t *testing.T) {
+	want := filepath.Join(convention.ToolDirectory("agora"), "web", "packages")
+	if !slices.Contains(convention.SurfaceDirectories, want) {
+		t.Errorf("%s is not in convention.SurfaceDirectories, so what the client's TypeScript names goes unread", want)
 	}
 }
 

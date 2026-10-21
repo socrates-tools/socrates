@@ -1,0 +1,61 @@
+#!/bin/sh
+set -eu
+root=$(cd "$(dirname "$0")/.." && pwd)
+scratch=$(mktemp -d)
+trap 'rm -rf "$scratch"' EXIT
+
+failures=0
+
+fresh() {
+  rm -rf "$scratch/agora"
+  mkdir -p "$scratch/agora/assets" "$scratch/agora/document"
+  cp -a "$root/agora/web" "$scratch/agora/web"
+}
+
+build() {
+  (cd "$scratch/agora/web" && node build.mjs 2>&1)
+}
+
+fail() {
+  echo "FAIL: $1" >&2
+  failures=$((failures + 1))
+}
+
+fresh
+if ! output=$(build); then
+  fail "an untouched client did not build: $output"
+elif ! grep -q 'Ivan Sagalaev' "$scratch/agora/assets/bundle/surface.js"; then
+  fail "the highlight.js notice did not reach the bundle"
+fi
+
+fresh
+printf "export const quoted = 'http://example.com/*not a comment*/'\nexport const templated = \`//\${quoted}\`\n" >> "$scratch/agora/web/packages/surface/exchange.ts"
+if ! output=$(build); then
+  fail "a string holding comment markers was refused as a comment: $output"
+fi
+
+fresh
+printf "export const wrong: number = 'not a number'\n" >> "$scratch/agora/web/packages/surface/exchange.ts"
+if output=$(build); then
+  fail "a type error did not stop the build"
+elif ! printf '%s' "$output" | grep -Eq 'packages/surface/exchange\.ts:[0-9]+'; then
+  fail "a type error was refused without naming its file and line: $output"
+elif [ -e "$scratch/agora/assets/bundle/surface.js" ]; then
+  fail "a type error still wrote a bundle"
+fi
+
+for comment in '// a line comment' '/* a block comment */' '/** a documentation comment */'; do
+  fresh
+  printf 'export const commented = 1 %s\n' "$comment" >> "$scratch/agora/web/packages/surface/exchange.ts"
+  if output=$(build); then
+    fail "a comment ($comment) did not stop the build"
+  elif ! printf '%s' "$output" | grep -Eq 'packages/surface/exchange\.ts:[0-9]+'; then
+    fail "a comment ($comment) was refused without naming its file and line: $output"
+  elif [ -e "$scratch/agora/assets/bundle/surface.js" ]; then
+    fail "a comment ($comment) still wrote a bundle"
+  fi
+done
+
+if [ "$failures" -ne 0 ]; then
+  exit 1
+fi

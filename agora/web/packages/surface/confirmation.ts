@@ -1,0 +1,102 @@
+import { cards, clear, find, firstControlOf, nameOf } from './page'
+
+export interface Raising {
+  press: HTMLElement | null
+  ends: boolean
+}
+
+let raisedBy: Raising | null = null
+
+function confirmation(): HTMLDialogElement | null {
+  return find<HTMLDialogElement>('dialog.confirmation')
+}
+
+export function closeConfirmation(): Raising | null {
+  const raised = raisedBy
+  raisedBy = null
+  const held = confirmation()
+  if (held && held.open) {
+    held.close()
+  }
+  return raised
+}
+
+function goBackAndAnswer(): void {
+  const raised = closeConfirmation()
+  if (raised && raised.press) {
+    raised.press.focus()
+  }
+}
+
+function pressedOutside(held: HTMLElement, event: MouseEvent): boolean {
+  const box = held.getBoundingClientRect()
+  return event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom
+}
+
+function goTo(card: HTMLElement): void {
+  closeConfirmation()
+  card.scrollIntoView({ block: 'center' })
+  const first = firstControlOf(card)
+  if (first) {
+    first.focus()
+  }
+}
+
+function nameInTheConfirmation(card: HTMLElement): HTMLButtonElement {
+  const named = document.createElement('button')
+  named.type = 'button'
+  named.className = 'confirmation-decision'
+  named.dataset.decision = card.dataset.decision
+  named.textContent = nameOf(card)
+  named.addEventListener('click', () => goTo(card))
+  return named
+}
+
+export function askBeforeSending(blank: HTMLElement[], press: HTMLElement | null, ends: boolean): void {
+  const held = confirmation()
+  if (!held) {
+    return
+  }
+  raisedBy = { press, ends }
+
+  const heading = find('.confirmation-heading', held)
+  if (heading) {
+    heading.textContent = `Send with ${blank.length} of ${cards().length} left blank?`
+  }
+
+  const list = find('.confirmation-decisions', held)
+  if (list) {
+    clear(list)
+    blank.forEach((card) => {
+      const item = document.createElement('li')
+      item.appendChild(nameInTheConfirmation(card))
+      list.appendChild(item)
+    })
+  }
+
+  held.showModal()
+}
+
+export function bindTheConfirmation(sendAnyway: () => void): void {
+  const asking = confirmation()
+  if (!asking) {
+    return
+  }
+  asking.addEventListener('cancel', (event) => {
+    event.preventDefault()
+    goBackAndAnswer()
+  })
+  asking.addEventListener('click', (event) => {
+    if (event.target === asking && pressedOutside(asking, event)) {
+      goBackAndAnswer()
+    }
+  })
+  const anyway = find('.send-anyway', asking)
+  if (anyway) {
+    anyway.addEventListener('click', sendAnyway)
+  }
+  const back = find('.go-back', asking)
+  if (back) {
+    back.addEventListener('click', goBackAndAnswer)
+  }
+}

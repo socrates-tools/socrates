@@ -1,7 +1,7 @@
 bin/
 .serena/
 review/fidelity/testdata/failures/
-agora/web/node_modules/
+agora/web/**/node_modules/
 dist/
 .claude/worktrees/
 .DS_Store

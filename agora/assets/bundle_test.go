@@ -16,7 +16,7 @@ import (
 	"github.com/socrates-tools/socrates/internal/testing/source"
 )
 
-var stamped = []string{"src", "fonts", "brand", "build.mjs", "package.json", "pnpm-lock.yaml"}
+var stamped = []string{"src", "fonts", "brand", "packages", "build.mjs", "tsconfig.json", "package.json", "pnpm-lock.yaml"}
 
 func TestTheCommittedBundleIsWhatItsSourceBuilds(t *testing.T) {
 	root := source.Root(t)
@@ -121,7 +121,9 @@ func within(t *testing.T, root string) []string {
 
 	names := make([]string, 0, len(entries))
 	for _, entry := range entries {
-		names = append(names, entry.Name())
+		if entry.Name() != "node_modules" {
+			names = append(names, entry.Name())
+		}
 	}
 	slices.Sort(names)
 

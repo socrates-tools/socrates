@@ -18,9 +18,10 @@ var SurfaceDirectories = []string{
 	filepath.Join(ToolDirectory("agora"), "render"),
 	filepath.Join(ToolDirectory("agora"), "surface"),
 	filepath.Join(ToolDirectory("agora"), "web", "src"),
+	filepath.Join(ToolDirectory("agora"), "web", "packages"),
 }
 
-var surfaceExtensions = []string{".go", ".gohtml", ".css", ".js", ".json"}
+var surfaceExtensions = []string{".go", ".gohtml", ".css", ".js", ".ts", ".json"}
 
 var generatedDirectories = []string{"bundle", "node_modules"}
 

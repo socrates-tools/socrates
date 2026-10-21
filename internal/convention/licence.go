@@ -16,7 +16,7 @@ const (
 
 var GeneratedBundle = filepath.Join(ToolDirectory("agora"), "assets", "bundle")
 
-var sourceExtensions = []string{".go", ".js", ".mjs", ".css", ".gohtml", ".yaml", ".yml", ".sh"}
+var sourceExtensions = []string{".go", ".js", ".mjs", ".ts", ".css", ".gohtml", ".yaml", ".yml", ".sh"}
 
 var sourceNames = []string{"Makefile"}
 

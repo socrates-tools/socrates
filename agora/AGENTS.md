@@ -16,6 +16,7 @@ This file is agora's layout and invariants.
 - `agora/assets` - the built client bundle and fonts, embedded, and the stamp of their source.
 - `agora/surface` - the loopback server and its guards, the one address bound where nothing states one, the sessions it holds, what it writes about itself and about each page, the copy of each illustration and the route that serves it, the exchange, and the bounds on waiting.
 - `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
+  It is a pnpm workspace, and `packages/surface` holds the page's script as strict TypeScript, one module for each of sending and the receipt, the confirmation, the live revision, code blocks, the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
 
 ## Invariants
 
@@ -83,6 +84,10 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - The end of an exchange stops the page offering to answer and not the page listening, so a caller who writes again reaches the page the person is already looking at, and only the test about reloading reloads before it asserts.
   A closed exchange says so under the title and draws no field nothing will read, per ADR 53.
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.
+- The client holds no JavaScript but its build script, and `make assets` type-checks it under `strict` before bundling anything, so a type error stops the build naming the file and line and writes no bundle, per ADR 79.
+  `make lint` does not run the type checker, so `make verify` needs no Node.
+- The client's TypeScript holds no comment, and `make assets` refuses one, naming the file and line, except the `/*!` notice that carries a bundled library's licence.
+  `scripts/prove-client-build` runs the build over a scratch copy holding each violation, in the step continuous integration runs after `make verify`.
 - An element it hides paints nothing, every colour it paints is a token stated once, and every text meets a contrast floor under both preferences.
   The page is light whatever the reader prefers, so both preferences are painted alike, per ADR 53.
 - A severity the surface orders by is marked by what it means, each audience socrates review writes is marked as the design drew it and any other in the caller's own words, and every mark says what it means on hover, on focus and to a screen reader, per ADR 47.

@@ -1,12 +1,12 @@
-let posted = null
+let posted: number | null = null
 
-function post() {
+function post(): void {
   const height = Math.ceil(document.documentElement.getBoundingClientRect().height)
   posted = height
   parent.postMessage(height, '*')
 }
 
-function postWhenChanged() {
+function postWhenChanged(): void {
   if (Math.ceil(document.documentElement.getBoundingClientRect().height) !== posted) {
     post()
   }

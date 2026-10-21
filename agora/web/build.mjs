@@ -1,22 +1,27 @@
 import { build } from 'esbuild'
-import hljs from 'highlight.js/lib/common'
 import { createHash } from 'node:crypto'
 import { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import ts from 'typescript'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const bundle = join(here, '..', 'assets', 'bundle')
 const stamp = join(here, '..', 'assets', 'bundle.sum')
 const languages = join(here, '..', 'document', 'languages.json')
+const surface = join(here, 'packages', 'surface')
 
-const stamped = ['src', 'fonts', 'brand', 'build.mjs', 'package.json', 'pnpm-lock.yaml']
+const hljs = createRequire(join(surface, 'package.json'))('highlight.js/lib/common')
+
+const stamped = ['src', 'fonts', 'brand', 'packages', 'build.mjs', 'tsconfig.json', 'package.json', 'pnpm-lock.yaml']
 
 function within(path) {
   if (statSync(path).isFile()) {
     return [path]
   }
   return readdirSync(path)
+    .filter((entry) => entry !== 'node_modules')
     .sort()
     .flatMap((entry) => within(join(path, entry)))
 }
@@ -32,11 +37,80 @@ function sum() {
   return digest.digest('hex')
 }
 
+function named(file) {
+  return relative(here, file.fileName).split(sep).join('/')
+}
+
+function where(file, position) {
+  const { line, character } = ts.getLineAndCharacterOfPosition(file, position)
+  return `${named(file)}:${line + 1}:${character + 1}`
+}
+
+function program() {
+  const configFile = join(here, 'tsconfig.json')
+  const read = ts.readConfigFile(configFile, ts.sys.readFile)
+  const parsed = ts.parseJsonConfigFileContent(read.config, ts.sys, here, undefined, configFile)
+  return {
+    created: ts.createProgram({ rootNames: parsed.fileNames, options: parsed.options }),
+    configuration: [...(read.error ? [read.error] : []), ...parsed.errors],
+  }
+}
+
+function sources(created) {
+  return created.getSourceFiles().filter((file) => !file.isDeclarationFile && !created.isSourceFileFromExternalLibrary(file))
+}
+
+function typeErrors(created, configuration) {
+  return [...configuration, ...ts.getPreEmitDiagnostics(created)].map((diagnostic) => {
+    const message = `error TS${diagnostic.code}: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')}`
+    if (!diagnostic.file || diagnostic.start === undefined) {
+      return message
+    }
+    return `${where(diagnostic.file, diagnostic.start)} - ${message}`
+  })
+}
+
+function commentsIn(file) {
+  const found = new Map()
+  const note = (range) => {
+    if (!file.text.startsWith('/*!', range.pos)) {
+      found.set(range.pos, range)
+    }
+  }
+  const visit = (node) => {
+    if (node.kind >= ts.SyntaxKind.FirstJSDocNode && node.kind <= ts.SyntaxKind.LastJSDocNode) {
+      return
+    }
+    const children = node.getChildren(file)
+    if (children.length > 0) {
+      children.forEach(visit)
+      return
+    }
+    const leading = ts.getLeadingCommentRanges(file.text, node.pos) ?? []
+    const trailing = ts.getTrailingCommentRanges(file.text, node.pos) ?? []
+    leading.concat(trailing).forEach(note)
+  }
+  visit(file)
+  return [...found.values()].map((range) => `${where(file, range.pos)} - a comment is not allowed in the client's TypeScript`)
+}
+
+const { created, configuration } = program()
+const refused = [...typeErrors(created, configuration), ...sources(created).flatMap(commentsIn)]
+if (refused.length > 0) {
+  process.stderr.write(`${refused.join('\n')}\n`)
+  process.exit(1)
+}
+
 rmSync(bundle, { recursive: true, force: true })
 mkdirSync(bundle, { recursive: true })
 
 await build({
-  entryPoints: [join(here, 'src', 'surface.js'), join(here, 'src', 'surface.css'), join(here, 'src', 'tokens.css'), join(here, 'src', 'height.js')],
+  entryPoints: [
+    { in: join(surface, 'main.ts'), out: 'surface' },
+    { in: join(here, 'src', 'surface.css'), out: 'surface' },
+    { in: join(here, 'src', 'tokens.css'), out: 'tokens' },
+    { in: join(surface, 'height.ts'), out: 'height' },
+  ],
   bundle: true,
   minify: true,
   format: 'iife',

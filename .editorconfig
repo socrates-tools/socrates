@@ -13,7 +13,7 @@ indent_size = 4
 [Makefile]
 indent_style = tab
 
-[*.{md,yaml,yml,json,js,mjs,css,html,gohtml,sh}]
+[*.{md,yaml,yml,json,js,mjs,ts,css,html,gohtml,sh}]
 indent_style = space
 indent_size = 2
 
