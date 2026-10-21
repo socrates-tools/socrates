@@ -7,22 +7,22 @@
 <meta http-equiv="Content-Security-Policy" content="{{.Policy}}">
 <title>{{.Title}}</title>
 <link rel="icon" type="image/svg+xml" href="/assets/socrates-mark.svg">
-<link rel="stylesheet" href="/assets/ui.css">
+<link rel="stylesheet" href="/assets/surface.css">
 </head>
 <body class="catalog">
 {{define "catalog-dialog-body"}}<p>This dialog is drawn by the same partial the page draws a confirmation with.</p>{{end}}
-{{define "catalog-dialog-actions"}}<button class="catalog-action" type="button" commandfor="catalog-dialog" command="close">Close</button>{{end}}
+{{define "catalog-dialog-actions"}}<button class="catalog-action" type="button" data-closes="catalog-dialog">Close</button>{{end}}
 <main class="catalog-page">
 <h1 class="catalog-title">{{.Title}}</h1>
 {{range .Primitives}}<section class="catalog-primitive" data-primitive="{{.Name}}">
 <h2 class="catalog-primitive-name">{{.Name}}</h2>
 {{range .States}}<article class="catalog-state">
 <h3 class="catalog-state-name">{{.Name}}</h3>
-{{if .Opens}}<button class="catalog-opener" id="open-{{.Opens}}" type="button" commandfor="{{.Opens}}" command="show-modal">Open</button>{{end}}
+{{if .Opens}}<button class="catalog-opener" id="open-{{.Opens}}" type="button" data-opens="{{.Opens}}">Open</button>{{end}}
 {{.Drawn}}
 </article>
 {{end}}</section>
 {{end}}</main>
-<script src="/assets/ui.js"></script>
+<script src="/assets/surface.js"></script>
 </body>
 </html>

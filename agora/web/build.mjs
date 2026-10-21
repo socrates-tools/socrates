@@ -206,8 +206,6 @@ await build({
     { in: join(surface, 'surface.css'), out: 'surface' },
     { in: join(tokens, 'tokens.css'), out: 'tokens' },
     { in: join(surface, 'height.ts'), out: 'height' },
-    { in: join(library, 'index.ts'), out: 'ui' },
-    { in: join(library, 'index.css'), out: 'ui' },
   ],
   bundle: true,
   minify: true,

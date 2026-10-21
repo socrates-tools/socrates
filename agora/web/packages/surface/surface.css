@@ -1,5 +1,6 @@
 @import '@agora/ui/tokens/tokens.css';
 @import '@agora/ui/primitives.css';
+@import '@agora/ui/catalog/catalog.css';
 
 [hidden] {
   display: none !important;

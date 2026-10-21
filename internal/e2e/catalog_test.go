@@ -25,7 +25,7 @@ func catalogued(t *testing.T) *reader {
 }
 
 func dialogOf(opener string) string {
-	return fmt.Sprintf(`document.getElementById(document.getElementById(%q).getAttribute('commandfor'))`, opener)
+	return fmt.Sprintf(`document.getElementById(document.getElementById(%q).dataset.opens)`, opener)
 }
 
 func isOpen(opener string) string {
@@ -148,6 +148,23 @@ func TestTheCatalogOpensADialogStateAgainAfterItWasClosed(t *testing.T) {
 		page.press(kb.Escape)
 		page.waitFor(isClosed(opener))
 	})
+}
+
+func TestTheCatalogPageStartsNoLiveStreamAndReachesOnlyItsOwnAssets(t *testing.T) {
+	// scenario: The catalog draws the primitives with the page's own script and the page's features start only where there is a surface
+	t.Parallel()
+	page := catalogued(t)
+	var openers []string
+	page.evaluate(dialogOpeners, &openers)
+
+	for _, asked := range page.requests.all() {
+		if strings.HasSuffix(asked, "/live") {
+			t.Errorf("the catalog requested %q, and a page with no surface follows no exchange", asked)
+		}
+		if !strings.Contains(asked, "/assets/") && !strings.HasSuffix(asked, catalogRoute) {
+			t.Errorf("the catalog requested %q, and it asks for nothing but itself and the bundle", asked)
+		}
+	}
 }
 
 func TestTheDevelopmentBuildServesTheCatalogAtARouteUnderTheSurface(t *testing.T) {

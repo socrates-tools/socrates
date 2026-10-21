@@ -63,4 +63,18 @@ function pressedOutside(panel: HTMLElement, event: MouseEvent): boolean {
   return event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom
 }
 
+function dialogNamedBy(press: Event, attribute: 'opens' | 'closes'): UiDialog | null {
+  const target = press.target
+  const asking = target instanceof Element ? target.closest<HTMLElement>(`[data-${attribute}]`) : null
+  const named = asking?.dataset[attribute]
+  const panel = named ? document.getElementById(named) : null
+  const held = panel?.closest('ui-dialog')
+  return held instanceof UiDialog ? held : null
+}
+
 customElements.define('ui-dialog', UiDialog)
+
+document.addEventListener('click', (press) => {
+  dialogNamedBy(press, 'opens')?.open()
+  dialogNamedBy(press, 'closes')?.close()
+})

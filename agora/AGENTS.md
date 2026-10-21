@@ -19,7 +19,7 @@ This file is agora's layout and invariants.
 - `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
   It is a pnpm workspace of two packages.
   `packages/ui` is `@agora/ui`, the library: its `tokens/` holds `tokens.css`, `fonts.css`, the fonts and the mark, and the bundle serves `tokens.css` at `/assets/tokens.css` with every custom property it holds, because illustrations load it by that path.
-  Its `contract.ts` declares each primitive's element and the parts it holds, its `dialog/` holds the first primitive, its `primitives.css` imports every primitive's stylesheet, its `index.ts` exports every element, and its `catalog/` styles the catalog.
+  Its `contract.ts` declares each primitive's element and the parts it holds, its `dialog/` holds the first primitive, its `primitives.css` imports every primitive's stylesheet, its `index.ts` exports every element, and its `catalog/` styles the catalog, which `surface.css` imports.
   Adding a primitive is a partial, an entry in `contract.ts`, a folder in `packages/ui` imported from `primitives.css` and `index.ts`, and its states in `catalogued` in `agora/render/catalog.go`.
   The library imports nothing from the surface, and a stylesheet outside `packages/ui/tokens/` that writes a colour or names a font family fails the suite.
   `packages/surface` holds the page's script as strict TypeScript, one module for each of sending and the receipt, the confirmation, the live revision, code blocks, the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
@@ -95,7 +95,8 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
   `data-part` marks only a primitive's parts, and `data-interaction` is what says which of answering, sending and viewing a control belongs to.
 - The catalog has no document behind it and is drawn by the real partials with every primitive in every state it has, and a primitive the contract declares that the catalog does not draw fails the suite naming it.
   Only the `agoradev` build routes `/catalog`, so a released binary answers it with not found, and the browser suite proves each primitive's behaviour against it.
-  It loads `ui.js` and `ui.css`, which bundle the library alone, so no surface script runs on it.
+  It loads the page's own `surface.js` and `surface.css`, so the primitives are proved as the page ships them, and the script starts the page's features only where there is a surface, so the catalog follows no exchange.
+  Its opening control names a dialog with `data-opens`, and the dialog's own `open()` answers it.
 - `make assets` writes `contract.json` from the library's `contract.ts`, and a Go test in `agora/render` fails on an element or a part a partial writes that the committed contract does not declare and on a declared one no partial writes, naming the element and the part, so changing a partial's markup needs no Node, per ADR 80.
 - The client holds no JavaScript but its build script, and `make assets` type-checks it under `strict` before bundling anything, so a type error stops the build naming the file and line and writes no bundle, per ADR 79.
   `make lint` does not run the type checker, so `make verify` needs no Node.

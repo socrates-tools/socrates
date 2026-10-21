@@ -42,7 +42,7 @@ func TestTheCommittedBundleIsWhatItsSourceBuilds(t *testing.T) {
 
 func TestTheBundleHoldsWhatThePageAsksFor(t *testing.T) {
 	// scenario: Rendering needs no network
-	for _, asked := range []string{"surface.css", "surface.js", "tokens.css", "height.js", "ui.css", "ui.js"} {
+	for _, asked := range []string{"surface.css", "surface.js", "tokens.css", "height.js"} {
 		held, err := fs.ReadFile(assets.Files(), asked)
 		if err != nil {
 			t.Errorf("the bundle holds no %s, and the page asks for it: %v", asked, err)
@@ -68,7 +68,7 @@ var absoluteRequest = regexp.MustCompile("(fetch|EventSource|WebSocket|importScr
 
 func TestNothingInTheBundleReachesAHost(t *testing.T) {
 	// scenario: The page reaches nothing
-	for _, named := range []string{"surface.css", "tokens.css", "ui.css"} {
+	for _, named := range []string{"surface.css", "tokens.css"} {
 		style, err := fs.ReadFile(assets.Files(), named)
 		if err != nil {
 			t.Fatalf("reading %s: %v", named, err)
@@ -78,7 +78,7 @@ func TestNothingInTheBundleReachesAHost(t *testing.T) {
 		}
 	}
 
-	for _, named := range []string{"surface.js", "height.js", "ui.js"} {
+	for _, named := range []string{"surface.js", "height.js"} {
 		client, err := fs.ReadFile(assets.Files(), named)
 		if err != nil {
 			t.Fatalf("reading %s: %v", named, err)
