@@ -11,11 +11,19 @@ const here = dirname(fileURLToPath(import.meta.url))
 const bundle = join(here, '..', 'assets', 'bundle')
 const stamp = join(here, '..', 'assets', 'bundle.sum')
 const languages = join(here, '..', 'document', 'languages.json')
+const declared = join(bundle, 'contract.json')
 const surface = join(here, 'packages', 'surface')
 const library = join(here, 'packages', 'ui')
 const tokens = join(library, 'tokens')
 
 const hljs = createRequire(join(surface, 'package.json'))('highlight.js/lib/common')
+
+async function contractOf() {
+  const source = readFileSync(join(library, 'contract.ts'), 'utf8')
+  const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } })
+  const loaded = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`)
+  return loaded.contract
+}
 
 const stamped = ['packages', 'build.mjs', 'tsconfig.json', 'package.json', 'pnpm-lock.yaml']
 
@@ -213,6 +221,7 @@ await build({
 copyFileSync(join(tokens, 'brand', 'socrates-mark.svg'), join(bundle, 'socrates-mark.svg'))
 
 const answeredTo = [...new Set(hljs.listLanguages().flatMap((name) => [name, ...(hljs.getLanguage(name).aliases ?? [])]))].sort()
+writeFileSync(declared, JSON.stringify(await contractOf(), null, 2) + '\n')
 writeFileSync(languages, JSON.stringify(answeredTo, null, 2) + '\n')
 writeFileSync(stamp, sum() + '\n')
 

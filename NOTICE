@@ -18,13 +18,14 @@ What agora/assets embeds, by the path it embeds it under:
   bundle/surface.css                         agora's stylesheet
   bundle/tokens.css                          agora's colour tokens, type scale and fonts, which a drawing may link
   bundle/height.js                           the script the surface adds to a drawing, which posts its height to the page
+  bundle/contract.json                       the elements and parts agora's primitives declare, which the partials are checked against
   bundle/socrates-mark.svg                   the socrates mark
   bundle/fonts/Cinzel-Variable.woff2         Cinzel, every weight
   bundle/fonts/Manrope-Variable.woff2        Manrope, every weight
   bundle/fonts/JetBrainsMono-Variable.woff2  JetBrains Mono, every weight
   bundle.sum                                 the digest of the source the bundle was built from
 
-bundle/surface.js, bundle/surface.css, bundle/tokens.css, bundle/height.js, bundle/socrates-mark.svg and bundle.sum
+bundle/surface.js, bundle/surface.css, bundle/tokens.css, bundle/height.js, bundle/contract.json, bundle/socrates-mark.svg and bundle.sum
 are socrates' own work, written by make assets, and are published under the
 terms in LICENSE.
 What bundle/surface.js bundles is highlight.js, whose notice is below and whose

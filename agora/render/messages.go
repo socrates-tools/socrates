@@ -3,6 +3,9 @@ package render
 const (
 	renderingThePage = "rendering the page: %w"
 
+	partialDrawnWithNothing = "the partial %s has no data to be drawn with"
+	drawingAPartial         = "drawing the partial %s: %w"
+
 	illustrationTitle = "Illustration for %s"
 
 	copyLabel  = "Copy code"

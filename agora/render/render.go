@@ -3,7 +3,6 @@ package render
 import (
 	_ "embed"
 	"fmt"
-	"html/template"
 	"net/url"
 	"slices"
 	"strings"
@@ -24,8 +23,6 @@ const chosenJoined = " · "
 //go:embed page.gohtml
 var pageSource string
 
-var page = template.Must(template.New("page").Parse(pageSource))
-
 type Frame struct {
 	Base     string
 	Token    string
@@ -34,16 +31,17 @@ type Frame struct {
 }
 
 type view struct {
-	Title     string
-	Preamble  string
-	Base      string
-	Token     string
-	Revision  int
-	Over      bool
-	Policy    string
-	Index     []entryView
-	Settled   []settledView
-	Decisions []decisionView
+	Title        string
+	Preamble     string
+	Base         string
+	Token        string
+	Revision     int
+	Over         bool
+	Policy       string
+	Confirmation dialogView
+	Index        []entryView
+	Settled      []settledView
+	Decisions    []decisionView
 }
 
 type entryView struct {
@@ -118,13 +116,14 @@ func Page(read document.Document, frame Frame) (string, error) {
 
 func viewOf(read document.Document, frame Frame) view {
 	shown := view{
-		Title:    read.Title,
-		Preamble: read.Preamble,
-		Base:     frame.Base,
-		Token:    frame.Token,
-		Revision: frame.Revision,
-		Over:     frame.Over,
-		Policy:   policy,
+		Title:        read.Title,
+		Preamble:     read.Preamble,
+		Base:         frame.Base,
+		Token:        frame.Token,
+		Revision:     frame.Revision,
+		Over:         frame.Over,
+		Policy:       policy,
+		Confirmation: dialogView{Class: "confirmation", Interaction: "sending", Body: "confirmation-body", Actions: "confirmation-actions"},
 	}
 
 	answered := map[string]bool{}
