@@ -11,7 +11,7 @@ UNCOMMITTED = $(if $(shell git status --porcelain 2>/dev/null),yes,)
 VERSION = $(shell git describe --tags --exact-match 2>/dev/null)
 STAMP = -X $(MODULE)/internal/version.version=$(VERSION) -X $(MODULE)/internal/version.commit=$(COMMIT) -X $(MODULE)/internal/version.uncommitted=$(UNCOMMITTED)
 
-TARGETS := build install release release-snapshot verify test lint fmt help skill assets platforms site corpus-outcomes fixtures fixtures-diff live-smoke forge-smoke
+TARGETS := build install release release-snapshot verify test lint fmt help skill assets dev platforms site corpus-outcomes fixtures fixtures-diff live-smoke forge-smoke
 
 .PHONY: $(TARGETS)
 
@@ -61,6 +61,10 @@ skill:
 
 assets:
 	cd agora/web && pnpm install --frozen-lockfile && node build.mjs
+
+dev:
+	go build -tags agoradev -ldflags '$(STAMP)' -o $(BINARY) ./cmd/socrates
+	cd agora/web && pnpm install --frozen-lockfile && node build.mjs --watch
 
 platforms:
 	go run ./review/cmd/platforms

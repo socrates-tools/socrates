@@ -77,6 +77,37 @@ library_imports "a library module importing the surface by name" "naming.ts" "im
 export const named = exchangeIsOver"
 library_imports "a library stylesheet importing the surface" "tokens/reaching.css" "@import '../../surface/surface.css';"
 
+until_it() {
+  for _ in $(seq 1 100); do
+    if eval "$1"; then
+      return 0
+    fi
+    sleep 0.3
+  done
+  return 1
+}
+
+fresh
+watching="$scratch/watching.log"
+(cd "$scratch/agora/web" && exec node build.mjs --watch >"$watching" 2>&1) &
+watcher=$!
+if ! until_it "[ -e '$scratch/agora/assets/bundle/surface.js' ]"; then
+  fail "the watch did not build the bundle"
+fi
+printf "export const wrong: number = 'not a number'\n" >> "$scratch/agora/web/packages/surface/exchange.ts"
+if ! until_it "grep -Eq 'packages/surface/exchange\\.ts:[0-9]+' '$watching'"; then
+  fail "the watch did not print a saved type error"
+elif ! kill -0 "$watcher" 2>/dev/null; then
+  fail "the watch stopped on a saved type error"
+fi
+printf "console.log('rebuilt after the fix')\n" >> "$scratch/agora/web/packages/surface/height.ts"
+sed -i '/export const wrong/d' "$scratch/agora/web/packages/surface/exchange.ts"
+if ! until_it "grep -q 'rebuilt after the fix' '$scratch/agora/assets/bundle/height.js'"; then
+  fail "the watch did not rebuild the bundle once the type error was fixed: $(cat "$watching")"
+fi
+kill "$watcher" 2>/dev/null || true
+wait "$watcher" 2>/dev/null || true
+
 if [ "$failures" -ne 0 ]; then
   exit 1
 fi

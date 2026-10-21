@@ -15,14 +15,6 @@ func Embedded() fs.FS {
 	return embedded
 }
 
-func Files() fs.FS {
-	held, err := fs.Sub(embedded, "bundle")
-	if err != nil {
-		panic(err)
-	}
-	return held
-}
-
 func Sum() string {
 	held, err := fs.ReadFile(embedded, sumFile)
 	if err != nil {
