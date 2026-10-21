@@ -28,4 +28,4 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 82](../../../../agora/docs/adr/0
 | [2.6: The code block and the diff block as Lit elements](2.6-the-code-and-diff-blocks.md) | 1.1 | done |
 | [2.7: The glossary's pieces and the catalog laid out by utilities](2.7-the-pieces-and-the-catalog-on-utilities.md) | 1.1 | done |
 | [2.8: The landing page styled with utilities](2.8-the-landing-page-on-utilities.md) | 1.1 | in progress |
-| [3: Every primitive a Lit element, and the light-DOM primitive gone](3-every-primitive-a-lit-element.md) | 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 | in progress |
+| [3: Every primitive a Lit element, and the light-DOM primitive gone](3-every-primitive-a-lit-element.md) | 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 | done |
