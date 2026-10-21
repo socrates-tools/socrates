@@ -189,7 +189,7 @@ const whatTheExpandControlSays = `(() => {
   return {
     spoken: control.getAttribute('aria-label') || control.textContent.trim(),
     tipShown: !tip.hidden && tip.getBoundingClientRect().height > 0,
-    tipSaid: tip.textContent.replace(/\s+/g, ' ').trim(),
+    tipSaid: (tip.heading + ' ' + tip.hint).trim(),
   };
 })()`
 

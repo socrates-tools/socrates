@@ -57,6 +57,7 @@
 --leading-display
 --leading-field
 --leading-lead
+--leading-tip
 --leading-title
 --limestone-0
 --limestone-100

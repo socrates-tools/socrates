@@ -270,7 +270,7 @@ func TestTheCatalogNamesAnExplainedBadgeToAScreenReaderAndShowsItsTipOnHoverAndO
 
 	tipSays := `(() => {
   const tip = document.querySelector('.tooltip');
-  return !tip.hidden && tip.getBoundingClientRect().height > 0 && tip.textContent.includes(` + jsonOf(t, catalogBadgeTitleSaid) + `) && tip.textContent.includes(` + jsonOf(t, catalogBadgeHintSaid) + `);
+  return !tip.hidden && tip.getBoundingClientRect().height > 0 && tip.heading === ` + jsonOf(t, catalogBadgeTitleSaid) + ` && tip.hint === ` + jsonOf(t, catalogBadgeHintSaid) + `;
 })()`
 	tipIsHidden := `document.querySelector('.tooltip').hidden === true`
 
@@ -330,6 +330,47 @@ func TestABadgeWhoseLabelIsRemovedBecomesTheCircleOfTheChecksSize(t *testing.T) 
 	}
 }
 
+func (r *reader) renderedTextOf(selector string) string {
+	r.t.Helper()
+
+	var text string
+	r.evaluate(`(() => {
+  const drawn = (node) => {
+    if (node.nodeType === Node.COMMENT_NODE) {
+      return '';
+    }
+    if (node instanceof HTMLSlotElement) {
+      return node.assignedNodes({ flatten: true }).map(drawn).join('');
+    }
+    return node.nodeType === Node.TEXT_NODE ? node.textContent : Array.from(node.childNodes).map(drawn).join('');
+  };
+  return drawn(document.querySelector(`+jsonOf(r.t, selector)+`).shadowRoot).replace(/\s+/g, ' ').trim();
+})()`, &text)
+	return text
+}
+
+func (r *reader) insideTheShadowRootOf(selector, within string, properties ...string) map[string]string {
+	r.t.Helper()
+
+	var painted map[string]string
+	r.evaluate(`(() => {
+  const held = document.querySelector(`+jsonOf(r.t, selector)+`).shadowRoot.querySelector(`+jsonOf(r.t, within)+`);
+  if (!held) {
+    return null;
+  }
+  const style = getComputedStyle(held);
+  const painted = {};
+  for (const property of `+jsonOfList(r.t, properties)+`) {
+    painted[property] = style.getPropertyValue(property);
+  }
+  return painted;
+})()`, &painted)
+	if painted == nil {
+		r.t.Fatalf("%s draws nothing at %s", selector, within)
+	}
+	return painted
+}
+
 func overlineOfState(key string) string {
 	return stateOf("ui-overline", key) + " ui-overline"
 }
@@ -354,8 +395,8 @@ func TestTheCatalogDrawsAnOverlineWithWordsAloneInCapitalsAndNoCount(t *testing.
 	if painted["font-weight"] != "700" {
 		t.Errorf("the overline's weight is %s, want bold", painted["font-weight"])
 	}
-	if page.countOf(overline+` [data-part="count"]`) != 0 {
-		t.Error("the overline draws a count it was not given")
+	if got := page.renderedTextOf(overline); got != "An overline" {
+		t.Errorf("the overline draws %q, want its words alone and no count it was not given", got)
 	}
 }
 
@@ -364,24 +405,26 @@ func TestTheCatalogDrawsAnOverlinesCountAfterItsWordsInALighterWeight(t *testing
 	t.Parallel()
 	page := catalogued(t)
 	overline := overlineOfState(overlineCountedKey)
-	count := overline + ` [data-part="count"]`
 
-	if got := page.textOf(overline); got != "An overline · 3" {
-		t.Errorf("the overline says %q, want its words and its count", got)
+	if got := page.textOf(overline); got != "An overline" {
+		t.Errorf("the overline's own words are %q, want its words with the count left to the element", got)
 	}
-	if got := page.textOf(count); got != "· 3" {
-		t.Errorf("the count says %q, want the number set apart by a dot", got)
+	if got := page.attributeOf(overline, "count"); got != "3" {
+		t.Errorf("the overline is given the count %q, want 3", got)
 	}
-	words := page.paintedOf(overline, "font-weight", "letter-spacing")
-	counted := page.paintedOf(count, "font-weight", "letter-spacing")
+	if got := page.renderedTextOf(overline); got != "An overline · 3" {
+		t.Errorf("the overline draws %q, want its words and its count set apart by a dot", got)
+	}
+	words := page.paintedOf(overline, "font-weight")
+	counted := page.insideTheShadowRootOf(overline, "span:last-child", "font-weight", "letter-spacing")
 	if counted["font-weight"] != "500" || words["font-weight"] != "700" {
 		t.Errorf("the count is weight %s beside words of weight %s, want 500 beside 700", counted["font-weight"], words["font-weight"])
 	}
 	if counted["letter-spacing"] != "normal" && counted["letter-spacing"] != "0px" {
 		t.Errorf("the count is spaced %q, want it set tight", counted["letter-spacing"])
 	}
-	if words["letter-spacing"] == counted["letter-spacing"] {
-		t.Errorf("the count and the words are spaced alike (%q), want the words spread", words["letter-spacing"])
+	if spread := page.insideTheShadowRootOf(overline, "span:first-child", "letter-spacing")["letter-spacing"]; spread == counted["letter-spacing"] {
+		t.Errorf("the count and the words are spaced alike (%q), want the words spread", spread)
 	}
 }
 
@@ -404,13 +447,13 @@ func TestTheCatalogPaintsEachStatusDotToneInItsToken(t *testing.T) {
 		t.Run(tone.name, func(t *testing.T) {
 			dot := dotOf(tone.key)
 
-			painted := page.paintedOf(dot, "background-color", "width", "height", "border-top-left-radius")
+			painted := page.paintedOf(dot, "background-color", "width", "height")
 
 			if want := page.pageColourOf(tone.token); painted["background-color"] != want {
 				t.Errorf("the %s dot is painted %s, want %s", tone.name, painted["background-color"], want)
 			}
-			if painted["width"] != "6px" || painted["height"] != "6px" || painted["border-top-left-radius"] != "50%" {
-				t.Errorf("the %s dot is %s by %s with corners %s, want a six pixel circle", tone.name, painted["width"], painted["height"], painted["border-top-left-radius"])
+			if painted["width"] != "6px" || painted["height"] != "6px" || page.pixelsOf(dot, "border-top-left-radius") < 3 {
+				t.Errorf("the %s dot is %s by %s with corners %vpx round, want a six pixel circle", tone.name, painted["width"], painted["height"], page.pixelsOf(dot, "border-top-left-radius"))
 			}
 			if got := page.attributeOf(dot, "aria-hidden"); got != "true" {
 				t.Errorf("the %s dot is hidden from a screen reader as %q, want true", tone.name, got)
@@ -427,7 +470,7 @@ func TestTheCatalogPaintsAStatusDotWithNoToneInTheColourAroundIt(t *testing.T) {
 
 	painted := page.paintedOf(dot, "background-color", "color")
 
-	if page.attributeOf(dot, "data-tone") != "" {
+	if page.attributeOf(dot, "tone") != "" {
 		t.Error("the dot with no tone states a tone")
 	}
 	if painted["background-color"] != painted["color"] {
@@ -534,8 +577,8 @@ func TestTheCatalogDrawsABrandAsADecorativeMarkBeforeItsNameInTheDisplayFace(t *
 	t.Parallel()
 	page := catalogued(t)
 	brand := stateOf("ui-brand", brandKey) + " ui-brand"
-	mark := brand + ` [data-part="mark"]`
-	name := brand + ` [data-part="wordmark"]`
+	mark := brand + ` img[slot="mark"]`
+	name := brand + ` span`
 
 	if got := page.textOf(name); got != "A brand" {
 		t.Errorf("the brand says %q, want its name", got)

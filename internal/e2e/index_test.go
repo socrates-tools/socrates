@@ -69,7 +69,7 @@ func TestTheIndexCountsADecisionAsThePersonAnswersIt(t *testing.T) {
 
 const whatTheTipSays = `(() => {
   const tip = document.querySelector('.tooltip');
-  return { shown: !tip.hidden && tip.getBoundingClientRect().height > 0, said: tip.textContent.replace(/\s+/g, ' ').trim() };
+  return { shown: !tip.hidden && tip.getBoundingClientRect().height > 0, said: (tip.heading + ' ' + tip.hint).trim() };
 })()`
 
 type tipped struct {
