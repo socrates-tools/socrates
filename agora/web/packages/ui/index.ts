@@ -1,6 +1,7 @@
 export { UiAppShell } from './app-shell/app-shell'
 export { UiButton } from './button/button'
 export { UiChoice } from './choice/choice'
+export { UiChoiceGroup } from './choice-group/choice-group'
 export { UiCopy } from './copy/copy'
 export type { CopyRequest } from './copy/copy'
 export { UiBadge } from './badge/badge'

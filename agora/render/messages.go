@@ -15,6 +15,12 @@ const (
 
 	recommendedTag = "Recommended"
 
+	answering          = "answering"
+	choiceOneLegend    = "Choose one"
+	choiceManyLegend   = "Choose as many as apply"
+	noneOfThese        = "None of these"
+	noneOfTheseMeaning = "Write your own answer below, or leave this to whoever asked."
+
 	copyLabel  = "Copy code"
 	copyHint   = "Puts this code on your clipboard, exactly as it was written. Nothing is sent."
 	copiedWord = "Copied"
@@ -98,6 +104,7 @@ const (
 	catalogShellNavigation = "Sections"
 	catalogShellPanel      = "Panel"
 	catalogShellSections   = 12
+	catalogChoiceCount     = 3
 	catalogShellHeight     = 480
 	catalogNarrowWidth     = 480
 )
@@ -121,14 +128,23 @@ const (
 
 	choiceRadio          = "a radio, one of a group, not chosen"
 	choiceRadioChosen    = "a radio, one of a group, chosen"
-	choiceCheckbox       = "a checkbox"
 	choiceWithEverything = "a choice with a meaning and a tag"
 	choiceDashed         = "a choice drawn dashed"
+	choiceDashedChosen   = "a choice drawn dashed, chosen"
 	choiceDisabled       = "a choice that cannot be chosen"
 
 	catalogChoiceLabel   = "A choice"
 	catalogChoiceMeaning = "What choosing it means."
 	catalogChoiceTag     = "A tag"
+
+	catalogChoiceGroupLabel = "Some choices"
+
+	choiceGroupSingle              = "a group of choices, one at most chosen, none yet"
+	choiceGroupSingleChosen        = "a group of choices, one at most chosen, the second chosen"
+	choiceGroupWithNoneOfThese     = "a group of choices ending in a choice of none of them"
+	choiceGroupWithARecommendation = "a group of choices whose first is recommended and arrives chosen"
+	choiceGroupMultiple            = "a group of choices, several chosen at once"
+	choiceGroupDisabled            = "a group of choices that cannot be chosen"
 
 	copyResting         = "a copy control holding text"
 	copyOfferingNothing = "a copy control holding no text"

@@ -33,6 +33,27 @@
         "footer"
       ]
     },
+    "ui-choice": {
+      "attributes": [
+        "checked",
+        "disabled",
+        "value",
+        "variant"
+      ],
+      "slots": [
+        "label",
+        "meaning",
+        "tag"
+      ]
+    },
+    "ui-choice-group": {
+      "attributes": [
+        "multiple"
+      ],
+      "slots": [
+        ""
+      ]
+    },
     "ui-dialog": {
       "attributes": [],
       "slots": [
@@ -76,13 +97,6 @@
       "frame",
       "caption",
       "control"
-    ],
-    "ui-choice": [
-      "frame",
-      "control",
-      "label",
-      "meaning",
-      "tag"
     ],
     "ui-copy": [
       "control",

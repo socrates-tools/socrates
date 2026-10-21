@@ -1,7 +1,6 @@
 export const contract = {
   'ui-button': ['control'],
   'ui-field': ['frame', 'caption', 'control'],
-  'ui-choice': ['frame', 'control', 'label', 'meaning', 'tag'],
   'ui-copy': ['control', 'icon', 'done', 'status'],
   'ui-expand': ['control'],
   'ui-code-block': ['code'],

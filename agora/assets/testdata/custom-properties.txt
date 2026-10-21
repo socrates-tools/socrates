@@ -16,6 +16,7 @@
 --blur-backdrop
 --blur-bar
 --card-pad
+--check-border
 --check-size
 --chip-height
 --cinnabar-25

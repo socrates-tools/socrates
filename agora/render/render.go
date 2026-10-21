@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/socrates-tools/socrates/agora/document"
@@ -101,6 +102,43 @@ func (d decisionView) Card() cardView {
 		Content: "decision-content",
 		Data:    d,
 	}
+}
+
+func (d decisionView) ChoiceGroup() choiceGroupView {
+	legend := choiceOneLegend
+	if d.Multiple {
+		legend = choiceManyLegend
+	}
+	choices := make([]choiceView, 0, len(d.Options)+1)
+	for _, option := range d.Options {
+		choices = append(choices, choiceView{
+			Class:       "option choice",
+			Family:      "option",
+			Variant:     "solid",
+			Value:       strconv.Itoa(option.Position),
+			Interaction: answering,
+			Decision:    d.ID,
+			Label:       option.Label,
+			Meaning:     option.Meaning,
+			Tag:         option.Tag,
+			Recommended: option.Recommended,
+			Checked:     option.Recommended,
+			Disabled:    d.Over,
+		})
+	}
+	if !d.Multiple {
+		choices = append(choices, choiceView{
+			Class:       "none decline",
+			Family:      "option",
+			Variant:     "dashed",
+			Interaction: answering,
+			Decision:    d.ID,
+			Label:       noneOfThese,
+			Meaning:     noneOfTheseMeaning,
+			Disabled:    d.Over,
+		})
+	}
+	return choiceGroupView{Class: "options-list", Label: legend, Multiple: d.Multiple, Choices: choices}
 }
 
 type blockView struct {
