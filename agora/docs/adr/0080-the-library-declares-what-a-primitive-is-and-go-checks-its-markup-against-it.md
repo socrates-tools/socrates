@@ -1,6 +1,6 @@
 # 80. The library declares what a primitive is, and Go checks its markup against it
 
-- Status: accepted
+- Status: superseded by ADR 82
 - Date: 2026-10-21
 - Part of: typescript-client-on-primitives
 

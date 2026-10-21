@@ -1,6 +1,6 @@
 # 81. A primitive is a custom element in the light DOM
 
-- Status: accepted
+- Status: superseded by ADR 83
 - Date: 2026-10-21
 - Part of: typescript-client-on-primitives
 
