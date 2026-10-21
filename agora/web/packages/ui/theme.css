@@ -161,6 +161,7 @@
 @custom-variant progress-moz-fill (&::-moz-progress-bar);
 @custom-variant slotted (&::slotted(*));
 @custom-variant host-focused (:host(:focus-visible) &);
+@custom-variant hover (&:hover);
 @custom-variant current (&[aria-current='location']);
 @custom-variant status-open (&[data-status='open']);
 @custom-variant status-sent (&[data-status='sent']);
