@@ -21,6 +21,8 @@ var BuildConstrainedFiles = map[string]string{
 	filepath.Join("review", "fidelity", "forgesmoke_test.go"): "posting what one review forwarded to a real pull request",
 	filepath.Join("review", "fidelity", "livesmoke_test.go"):  "one real review against the real CLI",
 	filepath.Join("review", "fidelity", "record_test.go"):     "recording what the real CLI answers",
+	filepath.Join("agora", "assets", "files.go"):              "the page's assets from the embedded bundle in every build but the development one",
+	filepath.Join("agora", "assets", "files_dev.go"):          "the page's assets from the bundle on disk in the development build",
 	filepath.Join("internal", "process", "process_other.go"):  "the process group on a platform that has no process groups",
 	filepath.Join("internal", "process", "process_unix.go"):   "the process group on a platform that has them",
 }
