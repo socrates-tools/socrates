@@ -69,8 +69,13 @@ func standing(t *testing.T) *surfaced {
 
 func servingSurface(t *testing.T) *surfaced {
 	t.Helper()
+	return servingSurfaceBuiltWith(t)
+}
 
-	binary := source.Shared(t, "./cmd/socrates")
+func servingSurfaceBuiltWith(t *testing.T, tags ...string) *surfaced {
+	t.Helper()
+
+	binary := source.Shared(t, "./cmd/socrates", tags...)
 
 	home := t.TempDir()
 	held := &surfaced{t: t, environment: gitrepo.NewEnvironment(t), binary: binary, home: home, where: t.TempDir(), bind: aPortTheOperatingSystemChooses}

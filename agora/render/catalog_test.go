@@ -1,0 +1,83 @@
+package render_test
+
+import (
+	"fmt"
+	"slices"
+	"strings"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/socrates-tools/socrates/agora/render"
+	"golang.org/x/net/html"
+)
+
+func theCatalog(t *testing.T) *html.Node {
+	t.Helper()
+
+	written, err := render.Catalog()
+	if err != nil {
+		t.Fatalf("drawing the catalog: %v", err)
+	}
+	parsed, err := html.Parse(strings.NewReader(written))
+	if err != nil {
+		t.Fatalf("reading back the catalog: %v", err)
+	}
+	return parsed
+}
+
+func absentFromTheCatalog(declared, drawn parts) []string {
+	var found []string
+	for element := range declared {
+		if _, known := drawn[element]; !known {
+			found = append(found, fmt.Sprintf("the contract declares <%s>, and the catalog draws no state of it", element))
+		}
+	}
+	slices.Sort(found)
+	return found
+}
+
+func TestEveryPrimitiveTheContractDeclaresIsDrawnInTheCatalog(t *testing.T) {
+	for _, found := range absentFromTheCatalog(declaredByTheContract(t), partsOf(theCatalog(t))) {
+		t.Error(found)
+	}
+}
+
+func TestTheCatalogWritesNoElementAndNoPartTheContractDoesNotDeclare(t *testing.T) {
+	for _, found := range undeclared(declaredByTheContract(t), partsOf(theCatalog(t))) {
+		t.Error(found)
+	}
+}
+
+func TestTheCatalogDrawsEveryPartOfEveryPrimitiveTheContractDeclares(t *testing.T) {
+	for _, found := range unwritten(declaredByTheContract(t), partsOf(theCatalog(t))) {
+		t.Error(found)
+	}
+}
+
+func TestAPrimitiveTheContractDeclaresAndTheCatalogDoesNotDrawIsReportedNamingIt(t *testing.T) {
+	declared := parts{"ui-dialog": {"panel"}, "ui-tooltip": {"bubble"}}
+	drawn := parts{"ui-dialog": {"panel"}}
+
+	want := []string{`the contract declares <ui-tooltip>, and the catalog draws no state of it`}
+	if diff := cmp.Diff(want, absentFromTheCatalog(declared, drawn)); diff != "" {
+		t.Errorf("the primitives the catalog lacks differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestTheCatalogDrawsTheDialogInMoreThanOneState(t *testing.T) {
+	drawn := 0
+	var visit func(node *html.Node)
+	visit = func(node *html.Node) {
+		if node.Type == html.ElementNode && node.Data == "ui-dialog" {
+			drawn++
+		}
+		for child := node.FirstChild; child != nil; child = child.NextSibling {
+			visit(child)
+		}
+	}
+	visit(theCatalog(t))
+
+	if drawn < 2 {
+		t.Errorf("the catalog draws %d dialogs, and the dialog has more than one state to draw", drawn)
+	}
+}

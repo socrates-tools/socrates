@@ -226,6 +226,7 @@ func (s *Server) routes() http.Handler {
 	routed := http.NewServeMux()
 	routed.HandleFunc("GET "+IdentityRoute, s.identify)
 	routed.HandleFunc("GET "+assetPrefix, s.asset)
+	s.mountTheCatalog(routed)
 	routed.HandleFunc("POST "+SessionPrefix+"{$}", s.controlled(s.opening))
 	routed.HandleFunc("POST /stop", s.controlled(s.stop))
 	routed.HandleFunc("POST "+RetireRoute, s.controlled(s.retire))

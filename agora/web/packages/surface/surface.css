@@ -1,5 +1,5 @@
 @import '@agora/ui/tokens/tokens.css';
-@import '@agora/ui/dialog/dialog.css';
+@import '@agora/ui/primitives.css';
 
 [hidden] {
   display: none !important;

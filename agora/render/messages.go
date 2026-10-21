@@ -26,3 +26,11 @@ const (
 	audienceNamed       = "Decides: %s"
 	spokenWithItsHint   = "%s. %s"
 )
+
+const (
+	catalogTitle = "Catalog"
+
+	dialogWithEverything    = "a heading, a body and actions"
+	dialogWithAHeadingAlone = "a heading alone"
+	catalogDialogHeading    = "A dialog"
+)

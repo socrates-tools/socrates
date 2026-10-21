@@ -12,14 +12,15 @@ This file is agora's layout and invariants.
 - `agora/command` - the command tree: `serve`, `poll` (which prints the last collected answer again with `--last`), `end`, `stop`, and nothing else.
 - `agora/config` - the one optional configuration file agora reads, which holds the `surface` block and nothing of review's.
 - `agora/document` - what a caller writes for the surface to render, what it copies rather than accepts, and the languages the page can highlight.
-- `agora/render` - a document to one HTML page, the marks a severity and an audience are drawn as, a patch to the rows of a split diff, and the partials that write each primitive's markup, one `ui-<name>.gohtml` under `partials/` for each.
+- `agora/render` - a document to one HTML page, the marks a severity and an audience are drawn as, a patch to the rows of a split diff, and the partials that write each primitive's markup, one `ui-<name>.gohtml` under `partials/` for each, and the catalog, whose states for every primitive are stated once in `catalog.go`.
 - `agora/assets` - the built client bundle and fonts, embedded, and the stamp of their source.
   A file under the `agoradev` build tag serves the bundle from disk instead, for `make dev`.
 - `agora/surface` - the loopback server and its guards, the one address bound where nothing states one, the sessions it holds, what it writes about itself and about each page, the copy of each illustration and the route that serves it, the exchange, and the bounds on waiting.
 - `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
   It is a pnpm workspace of two packages.
   `packages/ui` is `@agora/ui`, the library: its `tokens/` holds `tokens.css`, `fonts.css`, the fonts and the mark, and the bundle serves `tokens.css` at `/assets/tokens.css` with every custom property it holds, because illustrations load it by that path.
-  Its `contract.ts` declares each primitive's element and the parts it holds, and its `dialog/` holds the first primitive.
+  Its `contract.ts` declares each primitive's element and the parts it holds, its `dialog/` holds the first primitive, its `primitives.css` imports every primitive's stylesheet, its `index.ts` exports every element, and its `catalog/` styles the catalog.
+  Adding a primitive is a partial, an entry in `contract.ts`, a folder in `packages/ui` imported from `primitives.css` and `index.ts`, and its states in `catalogued` in `agora/render/catalog.go`.
   The library imports nothing from the surface, and a stylesheet outside `packages/ui/tokens/` that writes a colour or names a font family fails the suite.
   `packages/surface` holds the page's script as strict TypeScript, one module for each of sending and the receipt, the confirmation, the live revision, code blocks, the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
 
@@ -92,6 +93,9 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - Every primitive is a custom element drawn without a shadow root, whose behaviour is attached when it enters the page and released when it leaves, so a revision that replaces the surface leaves nothing of a dialog listening, per ADR 81.
   A domain piece carries its own class on the primitive's element and on its own dialog, so the confirmation is `<ui-dialog class="confirmation">` around a `<dialog class="confirmation">`.
   `data-part` marks only a primitive's parts, and `data-interaction` is what says which of answering, sending and viewing a control belongs to.
+- The catalog has no document behind it and is drawn by the real partials with every primitive in every state it has, and a primitive the contract declares that the catalog does not draw fails the suite naming it.
+  Only the `agoradev` build routes `/catalog`, so a released binary answers it with not found, and the browser suite proves each primitive's behaviour against it.
+  It loads `ui.js` and `ui.css`, which bundle the library alone, so no surface script runs on it.
 - `make assets` writes `contract.json` from the library's `contract.ts`, and a Go test in `agora/render` fails on an element or a part a partial writes that the committed contract does not declare and on a declared one no partial writes, naming the element and the part, so changing a partial's markup needs no Node, per ADR 80.
 - The client holds no JavaScript but its build script, and `make assets` type-checks it under `strict` before bundling anything, so a type error stops the build naming the file and line and writes no bundle, per ADR 79.
   `make lint` does not run the type checker, so `make verify` needs no Node.

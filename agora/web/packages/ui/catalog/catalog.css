@@ -1,0 +1,61 @@
+body.catalog {
+  margin: 0;
+  background: var(--bg-ground);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--size-body);
+}
+
+.catalog-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.catalog-title {
+  margin: 0 0 24px;
+  font-family: var(--font-display);
+  font-size: var(--size-title);
+}
+
+.catalog-primitive {
+  margin-bottom: 32px;
+}
+
+.catalog-primitive-name {
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: var(--size-body);
+}
+
+.catalog-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: var(--card-pad);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-dialog);
+  background: var(--surface-card);
+}
+
+.catalog-state-name {
+  flex: 1 1 16rem;
+  margin: 0;
+  font-size: var(--size-body);
+  font-weight: 600;
+}
+
+.catalog-opener,
+.catalog-action {
+  padding: 8px 16px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-dialog);
+  background: var(--surface-card);
+  color: var(--fg-1);
+  font: inherit;
+  cursor: pointer;
+}

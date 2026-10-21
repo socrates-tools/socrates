@@ -13,17 +13,6 @@ const primitivePrefix = "ui-"
 //go:embed partials/*.gohtml
 var partialSources embed.FS
 
-type dialogView struct {
-	Class       string
-	Interaction string
-	Body        string
-	Actions     string
-}
-
-var drawnWith = map[string]any{
-	"ui-dialog": dialogView{Class: "dialog"},
-}
-
 var page = parsedPage()
 
 func parsedPage() *template.Template {
@@ -37,25 +26,37 @@ func parsedPage() *template.Template {
 			return template.HTML(written.String()), nil
 		},
 	}).Parse(pageSource))
-	return template.Must(root.ParseFS(partialSources, "partials/*.gohtml"))
+	template.Must(root.ParseFS(partialSources, "partials/*.gohtml"))
+	template.Must(root.New("catalog").Parse(catalogSource))
+	return root
+}
+
+func partialDrawn(name string, data any) (template.HTML, error) {
+	var written bytes.Buffer
+	if err := page.ExecuteTemplate(&written, name, data); err != nil {
+		return "", fmt.Errorf(drawingAPartial, name, err)
+	}
+	return template.HTML(written.String()), nil
 }
 
 func Primitives() (map[string]string, error) {
-	drawn := map[string]string{}
+	written := map[string]string{}
 	for _, held := range page.Templates() {
 		name := held.Name()
 		if !strings.HasPrefix(name, primitivePrefix) || strings.Contains(name, ".") {
 			continue
 		}
-		data, known := drawnWith[name]
-		if !known {
+		states, known := catalogued[name]
+		if !known || len(states) == 0 {
 			return nil, fmt.Errorf(partialDrawnWithNothing, name)
 		}
-		var written bytes.Buffer
-		if err := held.Execute(&written, data); err != nil {
-			return nil, fmt.Errorf(drawingAPartial, name, err)
+		for _, each := range states {
+			markup, err := partialDrawn(name, each.View)
+			if err != nil {
+				return nil, err
+			}
+			written[name] += string(markup)
 		}
-		drawn[name] = written.String()
 	}
-	return drawn, nil
+	return written, nil
 }
