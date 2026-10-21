@@ -1,5 +1,5 @@
 import type { UiProgressBar } from '@agora/ui'
-import { cards, clear, decisionNamed, find, findAll, nameOf } from './page'
+import { cards, clear, closestTo, decisionNamed, find, findAll, nameOf } from './page'
 
 export interface HeldDecision {
   id: string
@@ -107,18 +107,23 @@ export function countAnswered(): void {
   summarise()
 }
 
-export function bindTheAnswering(): void {
-  findAll<HTMLInputElement>('.decline').forEach((control) => {
-    control.addEventListener('change', () => {
-      const card = control.closest<HTMLElement>('.decision')
-      const field = card ? find<WordsField>('.words-field', card) : null
-      if (field) {
-        field.focus()
-      }
-    })
-  })
-  cards().forEach((card) => {
-    card.addEventListener('change', countAnswered)
-    card.addEventListener('input', countAnswered)
-  })
+function moveToTheWordsOfTheCardDeclined(event: Event): void {
+  const declined = closestTo(event, '.decline')
+  const card = declined ? declined.closest<HTMLElement>('.decision') : null
+  const field = card ? find<WordsField>('.words-field', card) : null
+  if (field) {
+    field.focus()
+  }
+}
+
+function countWhatACardChanged(event: Event): void {
+  if (closestTo(event, '.decision')) {
+    countAnswered()
+  }
+}
+
+export function followTheAnswering(): void {
+  document.addEventListener('change', moveToTheWordsOfTheCardDeclined)
+  document.addEventListener('change', countWhatACardChanged)
+  document.addEventListener('input', countWhatACardChanged)
 }

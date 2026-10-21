@@ -199,7 +199,7 @@ pre,
   gap: 2px;
 }
 
-.index-group > ui-overline {
+.index-heading {
   display: block;
   padding: 0 10px 8px;
 }

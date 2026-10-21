@@ -20,6 +20,12 @@ agora knows nothing about what a caller's document is about, beyond the three au
 - **exchange**: the delivery of a document and the collection of what a person answered. It holds at most one uncollected answer, and a later one replaces it. The last answer collected is kept in the session's directory, and `agora poll --last` prints it again.
 - **answer**: what one submit carries: every decision the person answered, anything they wrote, and whether it ends the exchange.
 - **confirmation**: the dialog a press raises where any decision is blank, naming each one and taking the person to it. The only thing on the page standing between a press and a send.
+- **composer**: the one place a person sends from: the field for anything to say to whoever asked, the two presses, and the receipt. Not the answers themselves, which stay on their decisions.
+- **receipt**: what the composer shows once a press has sent, naming every decision that went and the message beside them. Not a record: it is drawn from the page and kept nowhere.
+- **summary**: the reply panel's account, from 1280px, of what will go: one row for each decision and what it holds now.
+- **content**: the column the document's title, preamble and counts open, followed by what was settled and the decisions.
+- **topbar**: the strip across the top of the page holding the brand, the document's title and where the exchange stands.
+- **empty page**: what a document with no decision is drawn as: a card saying nothing is waiting to be answered.
 
 ## The client
 

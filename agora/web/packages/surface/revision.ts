@@ -1,9 +1,8 @@
-import { bind } from './binding'
 import { closeConfirmation } from './confirmation'
 import { exchange, exchangeIsOver } from './exchange'
-import { releaseEverythingBehind } from './expanding'
 import { base, find, say, surface, token } from './page'
-import { closeTheExchange, offerToAmend, takeUpWhetherItIsOver } from './sending'
+import { closeTheExchange, offerToAmend } from './sending'
+import { settleTheSurface } from './settling'
 import { hideTheTip } from './tooltip'
 
 async function take(revision: number): Promise<void> {
@@ -21,7 +20,6 @@ async function take(revision: number): Promise<void> {
   }
 
   closeConfirmation()
-  releaseEverythingBehind()
   standing.replaceWith(replacing)
   document.body.dataset.revision = String(revision)
   document.body.dataset.over = read.body.dataset.over
@@ -29,8 +27,7 @@ async function take(revision: number): Promise<void> {
   exchange.awaitingCollection = false
 
   hideTheTip()
-  bind()
-  takeUpWhetherItIsOver()
+  settleTheSurface()
   say(
     exchange.closed ? exchangeIsOver : 'A reply arrived, and this page is showing it.',
     exchange.closed ? 'over' : 'quiet',

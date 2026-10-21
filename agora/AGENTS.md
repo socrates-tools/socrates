@@ -23,7 +23,8 @@ This file is agora's layout and invariants.
   Adding a primitive is a partial, an entry in `contract.ts`, a folder in `packages/ui` imported from `primitives.css` and `index.ts`, and its states in `catalogued` in `agora/render/catalog.go`.
   The code block highlights, numbers and hangs the lines of its code, the diff block holds a patch's tables and their own scroll, and the library is where highlight.js is a dependency.
   The library imports nothing from the surface, and a stylesheet outside `packages/ui/tokens/` that writes a colour or names a font family fails the suite.
-  `packages/surface` holds the page's script as strict TypeScript, one module for each of sending and the receipt, the confirmation, the live revision, the calls that show and hide the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
+  `packages/surface` holds the page's script as strict TypeScript and the stylesheet of the pieces the glossary names, built from the library's primitives and nothing else: one module for each of sending and the receipt, the confirmation, the live revision, the calls that show and hide the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
+  Each follows the page through a listener on the document attached once when the page starts, so a revision fetches the page and replaces the surface and binds nothing.
 
 ## Invariants
 
@@ -91,13 +92,15 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - The end of an exchange stops the page offering to answer and not the page listening, so a caller who writes again reaches the page the person is already looking at, and only the test about reloading reloads before it asserts.
   A closed exchange says so under the title and draws no field nothing will read, per ADR 53.
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.
+- A released binary serves its assets from its embedded bundle and from nowhere else, and only the `agoradev` build serves them from the bundle on disk, so a change to the client is seen with a reload in `make dev` and nothing on a person's machine can change what the page they answer looks like or does.
 - Every primitive is a custom element drawn without a shadow root, whose behaviour is attached when it enters the page and released when it leaves, so a revision that replaces the surface leaves nothing of a dialog listening, per ADR 81.
   The tooltip is one of them: it shows on hover and on focus of anything carrying `data-title`, hides when the cursor or the focus leaves and on scroll, and follows a focused anchor when the page scrolls, as methods and listeners of `ui-tooltip` itself.
   A mark is a piece of the surface drawn on `ui-badge`, the index is built on `ui-progress-bar`, `ui-status-dot` and `ui-overline`, a decision, the composer and the empty page are drawn on `ui-card`, and the page itself is drawn in `ui-app-shell`, which owns the topbar, the navigation, the content and the panel's place, the scrolling of the navigation and of the content from 960px, and the navigation's marking of the section in view.
   A domain piece carries its own class on the primitive's element and on its own dialog, so the confirmation is `<ui-dialog class="confirmation">` around a `<dialog class="confirmation">`.
   Where the browser suite and the script reach a control by its class, the class sits on the control inside the primitive and not on the primitive's element, so `.send` is the `<button>` inside a `<ui-button>` and `.words-field` is the `<textarea>` inside a `<ui-field>`.
   The copy control offers what it holds in `data-text`, or asks the listeners above it with a `copyrequested` event whose `detail.text` they set, and the expand control announces `expanded` and `collapsed` to its owner, which lays out what it expands.
-  A stylesheet of the surface names no `button`, `input`, `textarea` or class a primitive draws its own parts with, and the suite fails where it does.
+  A stylesheet of the surface styles only the pieces the glossary names, each owning the class families `convention.PiecesOfTheSurface` states for it, and the suite fails naming the rule where one names a `button`, an `input`, a `textarea`, a `dialog`, a `ui-` element or a class no piece owns.
+  The client holds no code that binds listeners to a surface or releases them across a revision, and the suite fails where the page holds a listener of an earlier surface after several revisions in a row.
   `data-part` marks only a primitive's parts, and `data-interaction` is what says which of answering, sending and viewing a control belongs to.
 - The catalog has no document behind it and is drawn by the real partials with every primitive in every state it has, and a primitive the contract declares that the catalog does not draw fails the suite naming it.
   Only the `agoradev` build routes `/catalog`, so a released binary answers it with not found, and the browser suite proves each primitive's behaviour against it.

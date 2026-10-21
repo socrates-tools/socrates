@@ -1,22 +1,21 @@
 import { UiExpand } from '@agora/ui'
-import { closestTo, find } from './page'
+import { closestTo, find, findAll, surface } from './page'
 import { hideTheTip } from './tooltip'
-
-let madeInert: HTMLElement[] = []
 
 function expandedStage(): HTMLElement | null {
   return find('.drawing-stage[data-expanded]')
 }
 
 function holdEverythingBehind(stage: HTMLElement): void {
+  const holder = surface()
   let ancestor: HTMLElement | null = stage
-  while (ancestor && ancestor !== document.documentElement) {
+  while (ancestor && ancestor !== holder) {
     const parent: HTMLElement | null = ancestor.parentElement
     if (parent) {
       for (const sibling of Array.from(parent.children)) {
         if (sibling instanceof HTMLElement && sibling !== ancestor && !sibling.inert) {
           sibling.inert = true
-          madeInert.push(sibling)
+          sibling.dataset.heldBehind = ''
         }
       }
     }
@@ -24,11 +23,11 @@ function holdEverythingBehind(stage: HTMLElement): void {
   }
 }
 
-export function releaseEverythingBehind(): void {
-  for (const held of madeInert) {
+function letGoOfWhatWasHeldBehind(): void {
+  for (const held of findAll('[data-held-behind]')) {
     held.inert = false
+    delete held.dataset.heldBehind
   }
-  madeInert = []
 }
 
 function stageOf(control: Element): HTMLElement | null {
@@ -47,7 +46,7 @@ function expand(stage: HTMLElement): void {
 function collapse(stage: HTMLElement): void {
   delete stage.dataset.expanded
   stage.style.height = ''
-  releaseEverythingBehind()
+  letGoOfWhatWasHeldBehind()
 }
 
 function collapseTheExpanded(): void {

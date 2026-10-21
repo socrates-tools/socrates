@@ -1,7 +1,7 @@
 import { type HeldDecision, blankCards, decisionsHeld, describe } from './answers'
 import { askBeforeSending, closeConfirmation } from './confirmation'
 import { exchange, exchangeIsOver } from './exchange'
-import { base, clear, find, findAll, say, stand, token } from './page'
+import { base, clear, closestTo, find, findAll, say, stand, token } from './page'
 
 interface Sent {
   decisions: HeldDecision[]
@@ -142,23 +142,25 @@ export function sendAnyway(): void {
   }
 }
 
-export function bindTheForm(): void {
-  const form = find<HTMLFormElement>('form.exchange')
-  if (form) {
-    form.addEventListener('submit', (event) => {
-      event.preventDefault()
-      const press = event.submitter || find('.send')
-      const ends = press ? press.dataset.ends === 'yes' : false
-      const blank = blankCards()
-      if (blank.length > 0) {
-        askBeforeSending(blank, press, ends)
-        return
-      }
-      void send(ends)
-    })
-  }
-  const amendButton = find('.amend')
-  if (amendButton) {
-    amendButton.addEventListener('click', amend)
-  }
+export function followTheForm(): void {
+  document.addEventListener('submit', (event) => {
+    const form = event.target
+    if (!(form instanceof HTMLFormElement) || !form.matches('form.exchange')) {
+      return
+    }
+    event.preventDefault()
+    const press = event.submitter instanceof HTMLElement ? event.submitter : find('.send')
+    const ends = press ? press.dataset.ends === 'yes' : false
+    const blank = blankCards()
+    if (blank.length > 0) {
+      askBeforeSending(blank, press, ends)
+      return
+    }
+    void send(ends)
+  })
+  document.addEventListener('click', (event) => {
+    if (closestTo(event, '.amend')) {
+      amend()
+    }
+  })
 }

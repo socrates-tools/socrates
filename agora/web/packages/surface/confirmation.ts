@@ -1,5 +1,5 @@
 import { UiDialog } from '@agora/ui'
-import { cards, clear, find, firstControlOf, nameOf } from './page'
+import { cards, clear, closestTo, decisionNamed, find, firstControlOf, nameOf } from './page'
 
 export interface Raising {
   press: HTMLElement | null
@@ -45,7 +45,6 @@ function nameInTheConfirmation(card: HTMLElement, held: HTMLElement): Node | nul
   }
   named.dataset.decision = card.dataset.decision
   named.textContent = nameOf(card)
-  named.addEventListener('click', () => goTo(card))
   return item
 }
 
@@ -72,18 +71,26 @@ export function askBeforeSending(blank: HTMLElement[], press: HTMLElement | null
   held.open()
 }
 
-export function bindTheConfirmation(sendAnyway: () => void): void {
-  const asking = confirmation()
-  if (!asking) {
-    return
-  }
-  asking.addEventListener('dismissed', goBackAndAnswer)
-  const anyway = find('.send-anyway', asking)
-  if (anyway) {
-    anyway.addEventListener('click', sendAnyway)
-  }
-  const back = find('.go-back', asking)
-  if (back) {
-    back.addEventListener('click', goBackAndAnswer)
-  }
+export function followTheConfirmation(sendAnyway: () => void): void {
+  document.addEventListener('dismissed', (event) => {
+    if (closestTo(event, 'ui-dialog.confirmation')) {
+      goBackAndAnswer()
+    }
+  })
+  document.addEventListener('click', (event) => {
+    if (!closestTo(event, 'ui-dialog.confirmation')) {
+      return
+    }
+    if (closestTo(event, '.send-anyway')) {
+      sendAnyway()
+    } else if (closestTo(event, '.go-back')) {
+      goBackAndAnswer()
+    } else {
+      const named = closestTo(event, '.confirmation-decision')
+      const card = named ? find(`.decision${decisionNamed(named.dataset.decision ?? '')}`) : null
+      if (card) {
+        goTo(card)
+      }
+    }
+  })
 }

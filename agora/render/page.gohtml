@@ -116,7 +116,7 @@
 {{end}}
 </div>
 <div class="index-group">
-{{if .Decisions}}{{if eq (len .Index) (len .Decisions)}}{{template "ui-overline" overlineCounted "" "Still open" (len .Index)}}{{else}}{{template "ui-overline" overlineCounted "" "What was seen" (len .Index)}}{{end}}{{end}}
+{{if .Decisions}}{{if eq (len .Index) (len .Decisions)}}{{template "ui-overline" overlineCounted "index-heading" "Still open" (len .Index)}}{{else}}{{template "ui-overline" overlineCounted "index-heading" "What was seen" (len .Index)}}{{end}}{{end}}
 <ol class="entries">
 {{range .Index}}
 <li class="entry">
@@ -127,7 +127,7 @@
 </div>
 {{if .Settled}}
 <div class="index-group">
-{{template "ui-overline" overlineCounted "" "Settled earlier" (len .Settled)}}
+{{template "ui-overline" overlineCounted "index-heading" "Settled earlier" (len .Settled)}}
 <a class="settled-link" href="#settled">
 <span class="settled-check">{{template "check"}}</span>
 <span class="settled-link-count">{{len .Settled}} settled earlier</span>
