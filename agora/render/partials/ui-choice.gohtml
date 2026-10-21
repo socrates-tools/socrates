@@ -1,4 +1,4 @@
-{{define "ui-choice"}}<ui-choice data-variant="{{.Variant}}"><label{{with .Class}} class="{{.}}"{{end}} data-part="frame"{{if .Recommended}} data-recommended="yes"{{end}}><input{{with .ControlClass}} class="{{.}}"{{end}} data-part="control" type="{{.Type}}" name="{{.Name}}"{{with .Value}} value="{{.}}"{{end}}{{with .Interaction}} data-interaction="{{.}}"{{end}}{{with .Decision}} data-decision="{{.}}"{{end}}{{if .Checked}} checked{{end}}{{if .Disabled}} disabled{{end}}>
-<span class="{{.Family}}-label" data-part="label">{{.Label}}</span>
-{{with .Tag}}<span class="{{$.Family}}-mark" data-part="tag">{{.}}</span>{{end}}
-{{with .Meaning}}<span class="{{$.Family}}-meaning" data-part="meaning">{{.}}</span>{{end}}</label></ui-choice>{{end}}
+{{define "ui-choice"}}<ui-choice{{with .Class}} class="{{.}}"{{end}} variant="{{.Variant}}"{{with .Value}} value="{{.}}"{{end}}{{with .Interaction}} data-interaction="{{.}}"{{end}}{{with .Decision}} data-decision="{{.}}"{{end}}{{if .Recommended}} data-recommended="yes"{{end}}{{if .Checked}} checked{{end}}{{if .Disabled}} disabled{{end}}><span slot="label" class="{{.Family}}-label">{{.Label}}</span>
+{{with .Tag}}<span slot="tag" class="{{$.Family}}-mark">{{.}}</span>
+{{end}}{{with .Meaning}}<div slot="meaning" class="{{$.Family}}-meaning">{{.}}</div>
+{{end}}</ui-choice>{{end}}

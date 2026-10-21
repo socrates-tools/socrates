@@ -422,7 +422,7 @@ func TestSendAnywayDeliversWhatTheControlsHold(t *testing.T) {
 }
 
 const whatTheControlsHold = `(() => ({
-  chosen: Array.from(document.querySelectorAll('.choice:checked')).map((held) => held.dataset.decision + ':' + held.value),
+  chosen: Array.from(document.querySelectorAll('.choice[checked]')).map((held) => held.dataset.decision + ':' + held.value),
   message: document.querySelector('.message-field').value,
 }))()`
 
@@ -555,7 +555,7 @@ const whereTheCursorLanded = `(() => {
   const box = card ? card.getBoundingClientRect() : null;
   return {
     decision: card ? card.dataset.decision : '',
-    control: held.className,
+    control: held.classList.contains('choice') ? 'choice' : held.className,
     inView: !!box && box.top < window.innerHeight && box.bottom > 0,
     hash: location.hash,
   };

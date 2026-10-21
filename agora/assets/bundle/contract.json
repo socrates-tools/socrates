@@ -8,6 +8,27 @@
       "slots": [
         "label"
       ]
+    },
+    "ui-choice": {
+      "attributes": [
+        "checked",
+        "disabled",
+        "value",
+        "variant"
+      ],
+      "slots": [
+        "label",
+        "meaning",
+        "tag"
+      ]
+    },
+    "ui-choice-group": {
+      "attributes": [
+        "multiple"
+      ],
+      "slots": [
+        ""
+      ]
     }
   },
   "parts": {
@@ -24,13 +45,6 @@
       "frame",
       "caption",
       "control"
-    ],
-    "ui-choice": [
-      "frame",
-      "control",
-      "label",
-      "meaning",
-      "tag"
     ],
     "ui-copy": [
       "control",

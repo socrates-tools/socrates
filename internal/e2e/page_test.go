@@ -105,7 +105,7 @@ func TestAnAnswerLeftInAControlIsSentWithoutAnyFurtherPress(t *testing.T) {
 	page.evaluate(chose("c-2", 0), nil)
 
 	var ticked int
-	page.evaluate(`document.querySelectorAll('.choice:checked').length`, &ticked)
+	page.evaluate(`document.querySelectorAll('.choice[checked]').length`, &ticked)
 	if ticked != 3 {
 		t.Errorf("selecting, deselecting and reselecting left %d options ticked, want 3", ticked)
 	}
@@ -182,7 +182,7 @@ func TestADecisionWithNothingSelectedAndNothingTypedIsOmittedFromWhatTheCallerCo
 	page.evaluate(chose("c-2", 0), nil)
 
 	var ticked int
-	page.evaluate(`document.querySelectorAll('.choice:checked').length`, &ticked)
+	page.evaluate(`document.querySelectorAll('.choice[checked]').length`, &ticked)
 	if ticked != 0 {
 		t.Fatalf("ticking and unticking a box left %d options ticked, want none", ticked)
 	}
@@ -445,7 +445,7 @@ func TestANewDocumentReplacesEverySelectionEveryTypedWordAndTheMessageFieldAndNo
 	page.waitFor(`document.querySelector('.heading h1').textContent === 'an unrelated question reusing the identifier'`)
 
 	var ticked int
-	page.evaluate(`document.querySelectorAll('.choice:checked').length`, &ticked)
+	page.evaluate(`document.querySelectorAll('.choice[checked]').length`, &ticked)
 	if ticked != 0 {
 		t.Errorf("a new document that reuses the identifier %q arrived with %d options selected, and the earlier answer was about a different question", "c-1", ticked)
 	}
@@ -690,7 +690,7 @@ func TestTheRecommendationArrivesChosenAndADecisionMarkedNothingDoesNot(t *testi
 	held, page := read(t, twoDecisionDocument)
 
 	var ticked []string
-	page.evaluate(`Array.from(document.querySelectorAll('.choice:checked')).map((held) => held.closest('.decision').dataset.decision + ':' + held.value)`, &ticked)
+	page.evaluate(`Array.from(document.querySelectorAll('.choice[checked]')).map((held) => held.closest('.decision').dataset.decision + ':' + held.value)`, &ticked)
 	if diff := cmp.Diff([]string{"c-2:2"}, ticked); diff != "" {
 		t.Errorf("what arrives chosen before anybody touches the page differs (-want +got):\n%s", diff)
 	}
@@ -754,7 +754,7 @@ func TestARecommendationArrivesChosenWhateverItsSeverityOrAudience(t *testing.T)
 	_, page := read(t, variedSeverityDocument)
 
 	var ticked []string
-	page.evaluate(`Array.from(document.querySelectorAll('.choice:checked')).map((held) => held.closest('.decision').dataset.decision)`, &ticked)
+	page.evaluate(`Array.from(document.querySelectorAll('.choice[checked]')).map((held) => held.closest('.decision').dataset.decision)`, &ticked)
 
 	want := []string{"d-1", "d-2", "d-3"}
 	if diff := cmp.Diff(want, ticked); diff != "" {
@@ -800,7 +800,7 @@ func TestChoosingNoneOfTheseClearsTheSelectionAndMovesToTheField(t *testing.T) {
 	page.evaluate(declined("c-1"), nil)
 
 	var ticked int
-	page.evaluate(`document.querySelectorAll('.decision[data-decision="c-1"] .choice:checked').length`, &ticked)
+	page.evaluate(`document.querySelectorAll('.decision[data-decision="c-1"] .choice[checked]').length`, &ticked)
 	if ticked != 0 {
 		t.Errorf("choosing none of the options on c-1 left %d options ticked, want none", ticked)
 	}
@@ -967,7 +967,7 @@ func TestAPageOfCardsThatAskNothingOffersNoControls(t *testing.T) {
 	}
 
 	var offered []string
-	page.evaluate(`Array.from(document.querySelectorAll('.decision .choice, .decision .options, .decision legend')).map((held) => held.tagName + '.' + String(held.className))`, &offered)
+	page.evaluate(`Array.from(document.querySelectorAll('.decision .choice, .decision .options, .decision .options-legend')).map((held) => held.tagName + '.' + String(held.className))`, &offered)
 	if len(offered) != 0 {
 		t.Errorf("a page whose every card asks nothing offers %v, and there is nothing on any of them to choose among", offered)
 	}
