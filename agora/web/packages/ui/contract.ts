@@ -4,11 +4,6 @@ export const contract = {
   'ui-choice': ['frame', 'control', 'label', 'meaning', 'tag'],
   'ui-copy': ['control', 'icon', 'done', 'status'],
   'ui-expand': ['control'],
-  'ui-brand': ['mark', 'wordmark'],
-  'ui-progress-bar': ['track'],
-  'ui-status-dot': [],
-  'ui-tooltip': ['title', 'hint'],
-  'ui-overline': ['count'],
   'ui-code-block': ['code'],
   'ui-diff-block': ['hunk', 'heading', 'row', 'number', 'line', 'marker', 'code'],
 } as const

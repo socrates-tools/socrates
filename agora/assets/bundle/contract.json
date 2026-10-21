@@ -18,6 +18,13 @@
         "label"
       ]
     },
+    "ui-brand": {
+      "attributes": [],
+      "slots": [
+        "",
+        "mark"
+      ]
+    },
     "ui-card": {
       "attributes": [],
       "slots": [
@@ -33,6 +40,32 @@
         "body",
         "heading"
       ]
+    },
+    "ui-overline": {
+      "attributes": [
+        "count"
+      ],
+      "slots": [
+        ""
+      ]
+    },
+    "ui-progress-bar": {
+      "attributes": [
+        "label",
+        "max",
+        "value"
+      ],
+      "slots": []
+    },
+    "ui-status-dot": {
+      "attributes": [
+        "tone"
+      ],
+      "slots": []
+    },
+    "ui-tooltip": {
+      "attributes": [],
+      "slots": []
     }
   },
   "parts": {
@@ -59,21 +92,6 @@
     ],
     "ui-expand": [
       "control"
-    ],
-    "ui-brand": [
-      "mark",
-      "wordmark"
-    ],
-    "ui-progress-bar": [
-      "track"
-    ],
-    "ui-status-dot": [],
-    "ui-tooltip": [
-      "title",
-      "hint"
-    ],
-    "ui-overline": [
-      "count"
     ],
     "ui-code-block": [
       "code"

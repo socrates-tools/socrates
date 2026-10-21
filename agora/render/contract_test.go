@@ -510,6 +510,104 @@ func TestEveryControlOfARenderedPageIsHeldByAPrimitive(t *testing.T) {
 	}
 }
 
+var indicatorsTheBrandAndTheTooltip = map[string]element{
+	"ui-status-dot":   {Attributes: []string{"tone"}},
+	"ui-overline":     {Attributes: []string{"count"}, Slots: []string{defaultSlot}},
+	"ui-progress-bar": {Attributes: []string{"label", "max", "value"}},
+	"ui-brand":        {Slots: []string{defaultSlot, "mark"}},
+	"ui-tooltip":      {},
+}
+
+func TestTheContractDeclaresEachIndicatorTheBrandAndTheTooltipAsAnElementOfAttributesAndSlots(t *testing.T) {
+	declared := declaredByTheContract(t)
+
+	for name, want := range indicatorsTheBrandAndTheTooltip {
+		t.Run(name, func(t *testing.T) {
+			if diff := cmp.Diff(want, declared.Elements[name], cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("the contract declares <%s> differently (-want +got):\n%s", name, diff)
+			}
+			if _, stillParts := declared.Parts[name]; stillParts {
+				t.Errorf("the contract still declares parts for <%s>: %v", name, declared.Parts[name])
+			}
+		})
+	}
+}
+
+func TestARenderedPageWritesTheIndicatorsTheBrandAndTheTooltipOnlyWithTheAttributesAndSlotsTheyDeclare(t *testing.T) {
+	// scenario: A rendered page writes its status dots, overlines, progress bar, brand and tooltip with only declared attributes and slotted content
+	read := oneDecision(document.One)
+	written := writingsOf(rendered(t, read))
+
+	for name := range indicatorsTheBrandAndTheTooltip {
+		if _, reached := written[name]; !reached {
+			t.Errorf("the rendered page writes %v, and it draws <%s>", written, name)
+		}
+	}
+	for _, found := range undeclared(declaredByTheContract(t), written) {
+		t.Error(found)
+	}
+}
+
+func TestEveryIndicatorTheBrandAndTheTooltipWrittenWithSomethingItDoesNotDeclareIsReported(t *testing.T) {
+	declared := contract{Elements: indicatorsTheBrandAndTheTooltip}
+	for _, mutation := range []struct {
+		scenario string
+		written  writing
+		element  string
+		want     string
+	}{
+		{"a status dot given a colour", writing{attributes: []string{"tone", "colour"}}, "ui-status-dot", `the markup writes the attribute "colour" on <ui-status-dot>, and the element does not declare it`},
+		{"an overline given a total", writing{attributes: []string{"count", "total"}, slots: []string{defaultSlot}}, "ui-overline", `the markup writes the attribute "total" on <ui-overline>, and the element does not declare it`},
+		{"an overline given a slot it does not render", writing{attributes: []string{"count"}, slots: []string{defaultSlot, "suffix"}}, "ui-overline", `the markup writes the slot "suffix" of <ui-overline>, and the element does not render it`},
+		{"a progress bar given a percentage", writing{attributes: []string{"label", "max", "value", "percent"}}, "ui-progress-bar", `the markup writes the attribute "percent" on <ui-progress-bar>, and the element does not declare it`},
+		{"a progress bar given content", writing{attributes: []string{"label", "max", "value"}, slots: []string{defaultSlot}}, "ui-progress-bar", `the markup writes content into <ui-progress-bar> outside any named slot, and the element renders no default slot`},
+		{"a brand given a slot it does not render", writing{slots: []string{defaultSlot, "mark", "tagline"}}, "ui-brand", `the markup writes the slot "tagline" of <ui-brand>, and the element does not render it`},
+		{"a brand given an attribute", writing{attributes: []string{"mark"}, slots: []string{defaultSlot, "mark"}}, "ui-brand", `the markup writes the attribute "mark" on <ui-brand>, and the element does not declare it`},
+		{"a tooltip given a title", writing{attributes: []string{"heading"}}, "ui-tooltip", `the markup writes the attribute "heading" on <ui-tooltip>, and the element does not declare it`},
+		{"a tooltip given its parts", writing{parts: []string{"title"}}, "ui-tooltip", `the markup writes the part "title" of <ui-tooltip>, and the element draws its own parts`},
+	} {
+		t.Run(mutation.scenario, func(t *testing.T) {
+			written := writings{}
+			for name, held := range indicatorsTheBrandAndTheTooltip {
+				written[name] = writing{attributes: held.Attributes, slots: held.Slots}
+			}
+			written[mutation.element] = mutation.written
+
+			if diff := cmp.Diff([]string{mutation.want}, disagreements(declared, written)); diff != "" {
+				t.Errorf("the disagreements differ (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestEveryAttributeAndSlotAnIndicatorTheBrandOrTheTooltipDeclaresAndNoPartialWritesIsReported(t *testing.T) {
+	declared := contract{Elements: indicatorsTheBrandAndTheTooltip}
+	for _, mutation := range []struct {
+		scenario string
+		element  string
+		written  writing
+		want     string
+	}{
+		{"a status dot whose tone nobody writes", "ui-status-dot", writing{}, `the contract declares the attribute "tone" of <ui-status-dot>, and no partial writes it`},
+		{"an overline whose count nobody writes", "ui-overline", writing{slots: []string{defaultSlot}}, `the contract declares the attribute "count" of <ui-overline>, and no partial writes it`},
+		{"an overline whose words nobody slots", "ui-overline", writing{attributes: []string{"count"}}, `the contract declares the slot "" of <ui-overline>, and no partial writes it`},
+		{"a progress bar whose label nobody writes", "ui-progress-bar", writing{attributes: []string{"max", "value"}}, `the contract declares the attribute "label" of <ui-progress-bar>, and no partial writes it`},
+		{"a brand whose mark nobody slots", "ui-brand", writing{slots: []string{defaultSlot}}, `the contract declares the slot "mark" of <ui-brand>, and no partial writes it`},
+	} {
+		t.Run(mutation.scenario, func(t *testing.T) {
+			written := writings{}
+			for name, held := range indicatorsTheBrandAndTheTooltip {
+				written[name] = writing{attributes: held.Attributes, slots: held.Slots}
+			}
+			written[mutation.element] = mutation.written
+
+			if diff := cmp.Diff([]string{mutation.want}, disagreements(declared, written)); diff != "" {
+				t.Errorf("the disagreements differ (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
 func aCardAndADialog() contract {
 	return contract{Elements: map[string]element{
 		"ui-card":   {Slots: []string{defaultSlot, "body", "footer"}},

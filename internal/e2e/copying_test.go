@@ -153,7 +153,7 @@ func TestACopyControlIsReachedAndPressedByKeyboardAndIsNamedToAScreenReader(t *t
 
 	page.clipboardHolds("something else entirely")
 	page.evaluate(`document.querySelector('`+copyControls+`').focus()`, nil)
-	page.waitFor(`!document.querySelector('.tooltip').hidden && document.querySelector('.tooltip-title').textContent !== ''`)
+	page.waitFor(`!document.querySelector('.tooltip').hidden && document.querySelector('.tooltip').heading !== ''`)
 	page.press(kb.Enter)
 	page.waitFor(`navigator.clipboard.readText().then((held) => held !== "something else entirely")`)
 
@@ -176,7 +176,7 @@ func TestACopyControlConfirmsTheCopyWhereItWasPressed(t *testing.T) {
 		Others int    `json:"others"`
 	}
 	page.evaluate(`({
-  title: document.querySelector('.tooltip-title').textContent,
+  title: document.querySelector('.tooltip').heading,
   status: document.querySelector('.evidence.code .copy-status').textContent,
   others: document.querySelectorAll('.copy[data-copied]').length,
 })`, &confirmed)

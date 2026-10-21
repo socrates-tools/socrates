@@ -1,33 +1,24 @@
-import type { PartOf } from '../contract'
+import { html } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { ifDefined } from 'lit/directives/if-defined.js'
+import { UiElement } from '../element'
 
-export class UiProgressBar extends HTMLElement {
-  get value(): number {
-    return this.track().value
+@customElement('ui-progress-bar')
+export class UiProgressBar extends UiElement {
+  @property({ type: Number }) accessor value = 0
+  @property({ type: Number }) accessor max = 1
+  @property() accessor label = ''
+
+  protected override hostClasses(): string {
+    return 'block w-full'
   }
 
-  set value(next: number) {
-    this.track().value = next
-  }
-
-  get max(): number {
-    return this.track().max
-  }
-
-  set max(next: number) {
-    this.track().max = next
-  }
-
-  partNamed(name: PartOf<'ui-progress-bar'>): HTMLElement {
-    const held = this.querySelector<HTMLElement>(`[data-part="${name}"]`)
-    if (!held) {
-      throw new Error(`ui-progress-bar holds no ${name}`)
-    }
-    return held
-  }
-
-  private track(): HTMLProgressElement {
-    return this.partNamed('track') as HTMLProgressElement
+  protected override render() {
+    return html`<progress
+      class="block h-1 w-full appearance-none overflow-hidden rounded-pill border-0 bg-surface-track text-accent progress-track:rounded-pill progress-track:bg-surface-track progress-fill:rounded-pill progress-fill:bg-accent progress-fill:transition-all progress-fill:duration-base progress-fill:ease-standard progress-moz-fill:rounded-pill progress-moz-fill:bg-accent"
+      max=${this.max}
+      value=${this.value}
+      aria-label=${ifDefined(this.label === '' ? undefined : this.label)}
+    ></progress>`
   }
 }
-
-customElements.define('ui-progress-bar', UiProgressBar)

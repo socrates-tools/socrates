@@ -1,1 +1,1 @@
-{{define "ui-brand"}}<ui-brand{{with .Class}} class="{{.}}"{{end}}><img{{with .MarkClass}} class="{{.}}"{{end}} data-part="mark" src="{{.Mark}}" width="28" height="28" alt=""><span{{with .WordmarkClass}} class="{{.}}"{{end}} data-part="wordmark">{{.Name}}</span></ui-brand>{{end}}
+{{define "ui-brand"}}<ui-brand{{with .Class}} class="{{.}}"{{end}}><img slot="mark"{{with .MarkClass}} class="{{.}}"{{end}} src="{{.Mark}}" width="28" height="28" alt=""><span{{with .WordmarkClass}} class="{{.}}"{{end}}>{{.Name}}</span></ui-brand>{{end}}
