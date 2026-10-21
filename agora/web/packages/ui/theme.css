@@ -122,6 +122,8 @@
   --shadow-dimmed-dialog: var(--shadow-dimmed-dialog);
   --blur-backdrop: var(--blur-backdrop);
   --breakpoint-narrow: 44rem;
+  --breakpoint-panel: 80rem;
+  --container-pair: 37.5rem;
   --shadow-press: var(--shadow-press);
   --shadow-focus-ring: var(--focus-ring);
   --shadow-ring-chosen: var(--ring-chosen);
@@ -140,6 +142,15 @@
   --width-sidebar: var(--sidebar-width);
   --width-panel: var(--panel-width);
   --max-width-main: var(--main-max);
+  --max-width-catalog: var(--catalog-max);
+  --spacing-heading: var(--heading-margin);
+  --max-width-lead: var(--measure-lead);
+  --max-width-meaning: var(--measure-meaning);
+  --spacing-landing-clearance: var(--landing-clearance);
+  --height-drawing-expanded: var(--drawing-expanded-height);
+  --width-drawing-expanded: var(--drawing-expanded-width);
+  --grid-template-columns-check: var(--check-size) minmax(0, 1fr);
+  --grid-template-columns-notice: calc(var(--spacing) * 2) minmax(0, 1fr);
 }
 
 @custom-variant progress-track (&::-webkit-progress-bar);
@@ -147,6 +158,28 @@
 @custom-variant progress-moz-fill (&::-moz-progress-bar);
 @custom-variant slotted (&::slotted(*));
 @custom-variant host-focused (:host(:focus-visible) &);
+@custom-variant current (&[aria-current='location']);
+@custom-variant status-open (&[data-status='open']);
+@custom-variant status-sent (&[data-status='sent']);
+@custom-variant tone-waiting (&[data-tone='waiting']);
+@custom-variant tone-error (&[data-tone='error']);
+@custom-variant answered-yes (&:where([data-answered='yes'], [data-answered='yes'] *));
+@custom-variant answered-none (&:where([data-answered='none'], [data-answered='none'] *));
+@custom-variant state-closed (&:where([data-state='closed'], [data-state='closed'] *));
+@custom-variant phase-not-open (&:where([data-phase]:not([data-phase='open']), [data-phase]:not([data-phase='open']) *));
+@custom-variant expanded (&:where([data-expanded], [data-expanded] *));
+@custom-variant in-panel (&:where([data-part='panel'] *));
+@custom-variant composer-unsent (&[data-phase='over']:has(output[hidden]));
+@custom-variant holding-unsent-composer (&:has(.composer[data-phase='over'] output[hidden]));
+@custom-variant beside-finished-composer (:where([data-part='panel']:has(.composer:not([data-phase='open']))) &);
+
+@utility content-empty {
+  content: '';
+}
+
+@utility h-drawing {
+  height: min(var(--drawing-height, 24rem), 100vh);
+}
 
 @layer base {
   :not(:defined) {

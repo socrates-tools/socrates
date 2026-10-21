@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="bg-bg-ground">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,35 +9,35 @@
 <link rel="icon" type="image/svg+xml" href="/assets/socrates-mark.svg">
 <link rel="stylesheet" href="/assets/surface.css">
 </head>
-<body class="catalog">
-{{define "catalog-dialog-body"}}<p>This dialog is drawn by the same partial the page draws a confirmation with.</p>{{end}}
-{{define "catalog-card-sections"}}<div slot="body"><p>This card holds a body.</p></div><div slot="footer"><p>And a footer under it.</p></div>{{end}}
-{{define "catalog-card-body"}}<div slot="body"><p>This card holds a body alone.</p></div>{{end}}
-{{define "catalog-card-plain"}}<p class="catalog-card-plain">This card holds no sections, and sits as the page lays it out.</p>{{end}}
-{{define "catalog-shell-topbar"}}<span class="catalog-shell-title">A shell</span>{{end}}
-{{define "catalog-shell-navigation"}}<ol class="catalog-shell-links">{{range .Sections}}<li><a class="catalog-shell-link" href="#section-{{.}}" data-section="section-{{.}}">Section {{.}}</a></li>{{end}}</ol>{{end}}
-{{define "catalog-shell-content"}}{{range .Sections}}<section class="catalog-shell-section" id="section-{{.}}"><h4>Section {{.}}</h4></section>{{end}}{{end}}
+<body class="catalog bg-bg-ground font-body text-body leading-body text-fg-1 antialiased">
+{{define "catalog-dialog-body"}}<p class="my-3.5">This dialog is drawn by the same partial the page draws a confirmation with.</p>{{end}}
+{{define "catalog-card-sections"}}<div slot="body"><p class="my-3.5">This card holds a body.</p></div><div slot="footer"><p class="my-3.5">And a footer under it.</p></div>{{end}}
+{{define "catalog-card-body"}}<div slot="body"><p class="my-3.5">This card holds a body alone.</p></div>{{end}}
+{{define "catalog-card-plain"}}<p class="catalog-card-plain p-6">This card holds no sections, and sits as the page lays it out.</p>{{end}}
+{{define "catalog-shell-topbar"}}<span class="catalog-shell-title font-bold">A shell</span>{{end}}
+{{define "catalog-shell-navigation"}}<ol class="catalog-shell-links">{{range .Sections}}<li><a class="catalog-shell-link block rounded-md px-3 py-2 text-fg-1 current:bg-accent-wash current:font-bold" href="#section-{{.}}" data-section="section-{{.}}">Section {{.}}</a></li>{{end}}</ol>{{end}}
+{{define "catalog-shell-content"}}{{range .Sections}}<section class="catalog-shell-section min-h-75 border-b border-rule" id="section-{{.}}"><h4 class="my-heading font-bold">Section {{.}}</h4></section>{{end}}{{end}}
 {{define "catalog-frame-document"}}<!doctype html>
-<html lang="en">
+<html lang="en" class="bg-bg-ground">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
 <link rel="stylesheet" href="/assets/surface.css">
 </head>
-<body>{{.}}<script src="/assets/surface.js"></script></body>
+<body class="bg-bg-ground font-body text-body leading-body text-fg-1 antialiased">{{.}}<script src="/assets/surface.js"></script></body>
 </html>{{end}}
-{{define "catalog-shell-panel"}}<p class="catalog-shell-panel-said">The reply panel's place.</p>{{end}}
-{{define "catalog-dialog-actions"}}<button class="catalog-action" type="button" data-closes="catalog-dialog">Close</button>{{end}}
-<main class="catalog-page">
-<h1 class="catalog-title">{{.Title}}</h1>
-{{range .Primitives}}<section class="catalog-primitive" data-primitive="{{.Name}}">
-<h2 class="catalog-primitive-name">{{.Name}}</h2>
-{{range .States}}<article class="catalog-state" data-state="{{.Key}}">
-<h3 class="catalog-state-name">{{.Name}}</h3>
-{{if .Opens}}<button class="catalog-opener" id="open-{{.Opens}}" type="button" data-opens="{{.Opens}}">Open</button>{{end}}
-{{with .Anchor}}<button class="catalog-anchor" id="{{.ID}}" type="button" data-tooltip="{{.Tooltip}}" data-title="{{.Title}}"{{with .Hint}} data-hint="{{.}}"{{end}}>{{.Label}}</button>{{end}}
-{{with .Frame}}<iframe class="catalog-frame catalog-frame-{{.Width}}" width="{{.Width}}" height="{{.Height}}" title="{{.Title}}" srcdoc="{{.Document}}"></iframe>{{else}}{{.Drawn}}{{end}}
+{{define "catalog-shell-panel"}}<p class="catalog-shell-panel-said p-6">The reply panel's place.</p>{{end}}
+{{define "catalog-dialog-actions"}}<button class="catalog-action cursor-pointer rounded-dialog border border-rule bg-surface-card px-4 py-2 text-fg-1" type="button" data-closes="catalog-dialog">Close</button>{{end}}
+<main class="catalog-page mx-auto max-w-catalog px-4 py-8">
+<h1 class="catalog-title mb-6 font-display text-title font-bold">{{.Title}}</h1>
+{{range .Primitives}}{{$primitive := .Name}}<section class="catalog-primitive mb-8" data-primitive="{{.Name}}">
+<h2 class="catalog-primitive-name mb-3 border-b border-rule pb-2 font-mono text-body font-bold">{{.Name}}</h2>
+{{range .States}}<article class="catalog-state mb-3 border border-rule bg-surface-card rounded-dialog{{if eq $primitive "ui-app-shell"}} block overflow-x-auto p-0{{else}} flex flex-wrap items-center gap-4 p-6{{end}}" data-state="{{.Key}}">
+<h3 class="catalog-state-name text-body font-semibold {{if eq $primitive "ui-app-shell"}}px-6 py-3{{else}}grow shrink basis-64{{end}}">{{.Name}}</h3>
+{{if .Opens}}<button class="catalog-opener cursor-pointer rounded-dialog border border-rule bg-surface-card px-4 py-2 text-fg-1" id="open-{{.Opens}}" type="button" data-opens="{{.Opens}}">Open</button>{{end}}
+{{with .Anchor}}<button class="catalog-anchor cursor-pointer rounded-dialog border border-rule bg-surface-card px-4 py-2 text-fg-1" id="{{.ID}}" type="button" data-tooltip="{{.Tooltip}}" data-title="{{.Title}}"{{with .Hint}} data-hint="{{.}}"{{end}}>{{.Label}}</button>{{end}}
+{{with .Frame}}<iframe class="catalog-frame catalog-frame-{{.Width}} block border-0 border-t border-rule bg-bg-ground" width="{{.Width}}" height="{{.Height}}" title="{{.Title}}" srcdoc="{{.Document}}"></iframe>{{else}}{{if eq $primitive "ui-card"}}<div class="min-w-0 grow shrink basis-80">{{.Drawn}}</div>{{else if or (eq $primitive "ui-code-block") (eq $primitive "ui-diff-block")}}<div class="min-w-0 grow shrink basis-full">{{.Drawn}}</div>{{else}}{{.Drawn}}{{end}}{{end}}
 </article>
 {{end}}</section>
 {{end}}</main>

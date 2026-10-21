@@ -274,6 +274,10 @@ func composerCard(v view) cardView {
 	}
 }
 
+func (v view) Tracked() bool {
+	return slices.ContainsFunc(v.Index, func(entry entryView) bool { return entry.Decided })
+}
+
 func (v view) AnsweredCount() int {
 	count := 0
 	for _, decision := range v.Decisions {

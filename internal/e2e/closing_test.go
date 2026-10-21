@@ -29,7 +29,7 @@ const whatTheConfirmationIsHeaded = `document.querySelector('.confirmation-headi
 
 const whatTheConfirmationNames = `Array.from(document.querySelectorAll('.confirmation-decision')).map((held) => held.dataset.decision)`
 
-const whereTheCursorRests = `document.activeElement.className`
+const whereTheCursorRests = `document.activeElement.classList[0]`
 
 func pressPastTheConfirmation(page *reader, press string) {
 	page.t.Helper()
@@ -555,7 +555,7 @@ const whereTheCursorLanded = `(() => {
   const box = card ? card.getBoundingClientRect() : null;
   return {
     decision: card ? card.dataset.decision : '',
-    control: held.classList.contains('choice') ? 'choice' : held.className,
+    control: held.classList.contains('choice') ? 'choice' : held.classList[0],
     inView: !!box && box.top < window.innerHeight && box.bottom > 0,
     hash: location.hash,
   };

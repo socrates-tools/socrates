@@ -62,23 +62,25 @@ function markAnswered(mark: HTMLElement | null, answered: boolean): void {
   }
 }
 
+const summaryRowClasses = 'summary-row grid grid-cols-check items-start gap-x-3 px-4 py-3 not-first:border-t not-first:border-rule-soft'
+const summarySaidClasses = 'summary-said text-small wrap-anywhere'
+
 function summarise(): void {
   const summary = find('.summary')
-  const check = find('.decision .attribution .answered .check')
-  if (!summary || !check) {
+  const template = find('.decision .attribution .answered')
+  if (!summary || !template) {
     return
   }
   clear(summary)
   cards().forEach((card) => {
+    const answered = answeredIn(card)
     const row = document.createElement('li')
-    row.className = 'summary-row'
-    const mark = document.createElement('span')
-    mark.className = 'answered'
-    mark.setAttribute('aria-hidden', 'true')
-    mark.appendChild(check.cloneNode(true))
-    markAnswered(mark, answeredIn(card))
+    row.className = summaryRowClasses
+    const mark = template.cloneNode(true) as HTMLElement
+    mark.classList.add('mt-px')
+    markAnswered(mark, answered)
     const said = document.createElement('span')
-    said.className = 'summary-said'
+    said.className = `${summarySaidClasses} ${answered ? 'text-fg-1' : 'text-fg-3'}`
     said.textContent = saying(card, chosenIn(card), wordsIn(card))
     row.append(mark, said)
     summary.appendChild(row)

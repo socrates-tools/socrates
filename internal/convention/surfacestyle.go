@@ -6,49 +6,16 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"slices"
 	"strings"
 )
 
 var SurfaceStyleDirectory = filepath.Join(ToolDirectory("agora"), "web", "packages", "surface")
 
-var AgoraGlossary = filepath.Join(ToolDirectory("agora"), GlossaryFile)
-
-var PiecesOfTheSurface = map[string][]string{
-	"document":       {"main-inner", "heading", "meta", "preamble", "crumb", "nothing"},
-	"source":         {"location"},
-	"decision":       {"decision", "decisions", "decisions-item", "attribution", "name", "question", "meaning", "answering", "answered", "words", "check", "still-open"},
-	"index":          {"index", "entries", "entry", "progress"},
-	"settled answer": {"settled", "when-open", "when-closed"},
-	"option":         {"options"},
-	"evidence":       {"evidence", "evidences", "diff", "illustrated"},
-	"illustration":   {"drawing"},
-	"confirmation":   {"confirmation"},
-	"composer":       {"composer", "bar", "send", "sends", "finish", "amend", "state", "message", "panel"},
-	"receipt":        {"receipt"},
-	"answer":         {"summary"},
-	"exchange":       {"status", "over-notice", "notice"},
-}
-
-var primitiveElements = map[string]bool{
-	"button":   true,
-	"input":    true,
-	"textarea": true,
-	"select":   true,
-	"dialog":   true,
-}
-
-var glossaryTerm = regexp.MustCompile(`(?m)^- \*\*([^*]+)\*\*:`)
-
 var attributeSelector = regexp.MustCompile(`\[[^\]]*\]`)
 
 var pseudoName = regexp.MustCompile(`::?[a-zA-Z-]+`)
 
-var classSelector = regexp.MustCompile(`\.(-?[_a-zA-Z][\w-]*)`)
-
-var idSelector = regexp.MustCompile(`#[\w-]+`)
-
-var elementSelector = regexp.MustCompile(`[a-zA-Z][\w-]*`)
+var namedInASelector = regexp.MustCompile(`[#.]?[a-zA-Z_-][\w-]*`)
 
 var atRulesHoldingRules = map[string]bool{"@media": true, "@supports": true, "@container": true, "@layer": true}
 
@@ -57,7 +24,7 @@ type selectorWritten struct {
 	line int
 }
 
-func PiecesStyledBySurface(root, directory string, pieces map[string][]string) ([]string, error) {
+func RulesAUtilityCouldSay(root, directory string) ([]string, error) {
 	var found []string
 
 	err := filepath.WalkDir(filepath.Join(root, directory), func(path string, entry fs.DirEntry, err error) error {
@@ -75,103 +42,22 @@ func PiecesStyledBySurface(root, directory string, pieces map[string][]string) (
 		if relErr != nil {
 			return relErr
 		}
-		found = append(found, stylesOfWhatNoPieceOwnsIn(relative, string(held), pieces)...)
+		for _, written := range selectorsWrittenIn(string(held)) {
+			if namesWhatAUtilityStyles(written.text) {
+				found = append(found, fmt.Sprintf("%s:%d styles %q, and a utility on it says that", filepath.ToSlash(relative), written.line, written.text))
+			}
+		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	named, err := glossaryTermsIn(filepath.Join(root, AgoraGlossary))
-	if err != nil {
-		return nil, err
-	}
-	for _, piece := range sortedKeys(pieces) {
-		if !slices.Contains(named, piece) {
-			found = append(found, fmt.Sprintf("%s does not name the piece %q", filepath.ToSlash(AgoraGlossary), piece))
-		}
-	}
-
 	return found, nil
 }
 
-func sortedKeys(held map[string][]string) []string {
-	keys := make([]string, 0, len(held))
-	for key := range held {
-		keys = append(keys, key)
-	}
-	slices.Sort(keys)
-	return keys
-}
-
-func glossaryTermsIn(path string) ([]string, error) {
-	held, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	var terms []string
-	for _, match := range glossaryTerm.FindAllStringSubmatch(string(held), -1) {
-		terms = append(terms, match[1])
-	}
-	return terms, nil
-}
-
-func stylesOfWhatNoPieceOwnsIn(named, held string, pieces map[string][]string) []string {
-	var found []string
-
-	for _, written := range selectorsWrittenIn(held) {
-		if offender := whatNoPieceOwns(written.text, pieces); offender != "" {
-			found = append(found, fmt.Sprintf("%s:%d styles %q, and %q belongs to no piece the glossary names", named, written.line, written.text, offender))
-		}
-	}
-
-	return found
-}
-
-func whatNoPieceOwns(selector string, pieces map[string][]string) string {
-	plain := idSelector.ReplaceAllString(pseudoName.ReplaceAllString(attributeSelector.ReplaceAllString(selector, ""), " "), " ")
-
-	type written struct {
-		at   int
-		what string
-	}
-	var offences []written
-
-	for _, class := range classSelector.FindAllStringSubmatchIndex(plain, -1) {
-		name := plain[class[2]:class[3]]
-		if !ownedByAPiece(name, pieces) {
-			offences = append(offences, written{at: class[0], what: "." + name})
-		}
-	}
-	withoutClasses := classSelector.ReplaceAllStringFunc(plain, func(class string) string { return strings.Repeat(" ", len(class)) })
-	for _, element := range elementSelector.FindAllStringIndex(withoutClasses, -1) {
-		name := withoutClasses[element[0]:element[1]]
-		if primitiveElements[name] || strings.HasPrefix(name, "ui-") {
-			offences = append(offences, written{at: element[0], what: name})
-		}
-	}
-
-	if len(offences) == 0 {
-		return ""
-	}
-	first := offences[0]
-	for _, offence := range offences[1:] {
-		if offence.at < first.at {
-			first = offence
-		}
-	}
-	return first.what
-}
-
-func ownedByAPiece(class string, pieces map[string][]string) bool {
-	for _, classes := range pieces {
-		for _, owned := range classes {
-			if class == owned || strings.HasPrefix(class, owned+"-") {
-				return true
-			}
-		}
-	}
-	return false
+func namesWhatAUtilityStyles(selector string) bool {
+	bare := pseudoName.ReplaceAllString(attributeSelector.ReplaceAllString(selector, ""), " ")
+	return namedInASelector.MatchString(bare)
 }
 
 func selectorsWrittenIn(held string) []selectorWritten {

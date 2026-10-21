@@ -130,7 +130,7 @@ func TestTheCatalogDrawsEveryControlInMoreThanOneState(t *testing.T) {
 	held := map[string]int{}
 	var visit func(node *html.Node)
 	visit = func(node *html.Node) {
-		if node.Type == html.ElementNode && node.Data == "article" && attribute(node, "class") == "catalog-state" {
+		if node.Type == html.ElementNode && node.Data == "article" && hasClass(node, "catalog-state") {
 			for child := node.FirstChild; child != nil; child = child.NextSibling {
 				if child.Type == html.ElementNode && strings.HasPrefix(child.Data, "ui-") {
 					held[child.Data]++

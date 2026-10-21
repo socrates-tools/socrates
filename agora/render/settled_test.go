@@ -36,8 +36,8 @@ func TestWhatWasSettledIsReadBeforeWhatIsStillOpen(t *testing.T) {
 	if err != nil {
 		t.Fatalf("rendering the page: %v", err)
 	}
-	settled := strings.Index(written, `class="settled"`)
-	decided := strings.Index(written, `class="decisions"`)
+	settled := strings.Index(written, `class="settled `)
+	decided := strings.Index(written, `class="decisions `)
 	if settled < 0 || decided < 0 || settled > decided {
 		t.Errorf("what was settled is at %d and the decisions at %d, and a person reads what is behind them first", settled, decided)
 	}

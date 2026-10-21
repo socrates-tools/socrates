@@ -11,6 +11,9 @@ const (
 	dictionaryNeedsPairs  = "a dictionary is written in pairs of a word and a value, and this one holds %d arguments"
 	dictionaryKeyNotAWord = "a dictionary names each value by a word, and this one names one by %v"
 
+	layoutNeedsPairs   = "a layout is written in pairs of a field and the utilities it takes, and this one holds %d arguments"
+	layoutNamesNoClass = "a layout puts utilities on a class its view holds, and %q is not one of %T"
+
 	illustrationTitle = "Illustration for %s"
 
 	recommendedTag = "Recommended"
