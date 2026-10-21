@@ -15,6 +15,10 @@
 {{define "copy"}}<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>{{end}}
 {{define "copied"}}<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>{{end}}
 {{define "mark"}}<span class="mark {{.Kind}}"{{if eq .Kind "severity"}} data-severity="{{.Value}}"{{else}} data-audience="{{.Value}}"{{end}} data-tone="{{.Tone}}" data-title="{{.Title}}" data-hint="{{.Hint}}" role="img" aria-label="{{.Spoken}}"{{if .Focusable}} tabindex="0"{{end}}>{{.Drawn}}{{if .Named}}<span class="mark-name">{{.Name}}</span>{{end}}</span>{{end}}
+{{define "confirmation-body"}}<p class="confirmation-meaning">A decision left blank goes as nothing. Whoever asked will see no answer to it.</p>
+<ul class="confirmation-decisions"></ul>{{end}}
+{{define "confirmation-actions"}}<button class="go-back" data-interaction="sending" type="button">Go back and answer</button>
+<button class="send-anyway" data-interaction="sending" type="button" autofocus>Send anyway</button>{{end}}
 {{define "entry"}}<span class="answered" data-answered="{{if .Decided}}{{if .Answered}}yes{{else}}no{{end}}{{else}}none{{end}}" aria-hidden="true">{{template "check"}}</span>
 <span class="entry-heading"><span class="entry-name">{{.Name}}</span>{{with .Severity}}{{template "mark" .}}{{end}}</span>
 {{if .Location}}<span class="location">{{.Location}}</span>{{end}}{{end}}
@@ -27,7 +31,7 @@
 </div>
 </header>
 
-{{if .Decisions}}<form class="exchange shell" data-part="sending">{{else}}<div class="shell">{{end}}
+{{if .Decisions}}<form class="exchange shell" data-interaction="sending">{{else}}<div class="shell">{{end}}
 {{if .Index}}
 <nav class="index" aria-label="What was seen">
 <div class="progress">
@@ -145,7 +149,7 @@
 </div>
 {{else}}
 <div class="evidence code">
-<div class="evidence-heading"><span class="evidence-label">{{with .Caption}}<span class="evidence-caption">{{.}}</span> {{end}}{{if .Language}}{{.Language}}{{else if not .Caption}}code{{end}}</span>{{with .Copy}}<button class="copy" data-part="viewing" type="button" aria-label="{{.Label}}" data-title="{{.Label}}" data-hint="{{.Hint}}" data-copied-title="{{.Copied}}" data-failed-title="{{.Failed}}"><span class="copy-icon">{{template "copy"}}</span><span class="copy-done">{{template "copied"}}</span></button><span class="copy-status" role="status"></span>{{end}}</div>
+<div class="evidence-heading"><span class="evidence-label">{{with .Caption}}<span class="evidence-caption">{{.}}</span> {{end}}{{if .Language}}{{.Language}}{{else if not .Caption}}code{{end}}</span>{{with .Copy}}<button class="copy" data-interaction="viewing" type="button" aria-label="{{.Label}}" data-title="{{.Label}}" data-hint="{{.Hint}}" data-copied-title="{{.Copied}}" data-failed-title="{{.Failed}}"><span class="copy-icon">{{template "copy"}}</span><span class="copy-done">{{template "copied"}}</span></button><span class="copy-status" role="status"></span>{{end}}</div>
 <pre><code class="language-{{.Language}}">{{.Code}}</code></pre>
 </div>
 {{end}}
@@ -153,11 +157,11 @@
 
 {{with .Drawing}}
 <div class="evidence illustrated">
-<div class="evidence-heading"><button class="expand" data-part="viewing" type="button" aria-label="Expand illustration" aria-expanded="false" data-title="Expand illustration" data-hint="Lays the drawing over the whole window. Escape closes it.">{{template "expand"}}</button></div>
+<div class="evidence-heading"><button class="expand" data-interaction="viewing" type="button" aria-label="Expand illustration" aria-expanded="false" data-title="Expand illustration" data-hint="Lays the drawing over the whole window. Escape closes it.">{{template "expand"}}</button></div>
 <div class="drawing-stage">
 <div class="drawing-backdrop"></div>
 <iframe class="drawing" sandbox="allow-scripts" src="{{.Source}}" title="{{.Title}}"></iframe>
-<button class="drawing-close" data-part="viewing" type="button">Close</button>
+<button class="drawing-close" data-interaction="viewing" type="button">Close</button>
 </div>
 </div>
 {{end}}
@@ -173,7 +177,7 @@
 <div class="options-list">
 {{range .Options}}
 <label class="option"{{if .Recommended}} data-recommended="yes"{{end}}>
-<input class="choice" data-part="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}"{{if .Recommended}} checked{{end}}{{if $.Over}} disabled{{end}}>
+<input class="choice" data-interaction="answering" type="{{if $decision.Multiple}}checkbox{{else}}radio{{end}}" name="choice-{{$decision.ID}}" value="{{.Position}}" data-decision="{{$decision.ID}}"{{if .Recommended}} checked{{end}}{{if $.Over}} disabled{{end}}>
 <span class="option-label">{{.Label}}</span>
 {{if .Recommended}}<span class="option-mark">Recommended</span>{{end}}
 {{if .Meaning}}<span class="option-meaning">{{.Meaning}}</span>{{end}}
@@ -181,7 +185,7 @@
 {{end}}
 {{if not .Multiple}}
 <label class="none">
-<input class="decline" data-part="answering" type="radio" name="choice-{{.ID}}" data-decision="{{.ID}}"{{if $.Over}} disabled{{end}}>
+<input class="decline" data-interaction="answering" type="radio" name="choice-{{.ID}}" data-decision="{{.ID}}"{{if $.Over}} disabled{{end}}>
 <span class="option-label">None of these</span>
 <span class="option-meaning">Write your own answer below, or leave this to whoever asked.</span>
 </label>
@@ -192,7 +196,7 @@
 
 <label class="words">
 <span class="words-label">In your own words</span>
-<textarea class="words-field" data-part="answering" name="words-{{.ID}}" data-decision="{{.ID}}" rows="2" placeholder="Answering here alone is a complete answer."{{if $.Over}} disabled{{end}}></textarea>
+<textarea class="words-field" data-interaction="answering" name="words-{{.ID}}" data-decision="{{.ID}}" rows="2" placeholder="Answering here alone is a complete answer."{{if $.Over}} disabled{{end}}></textarea>
 </label>
 </div>
 </li>
@@ -202,11 +206,11 @@
 <section class="composer" data-phase="{{if .Over}}over{{else}}open{{end}}">
 <label class="message">
 <span class="message-label">Anything to say to whoever asked</span>
-<textarea class="message-field" data-part="sending" name="message" rows="3"{{if .Over}} disabled{{end}}></textarea>
+<textarea class="message-field" data-interaction="sending" name="message" rows="3"{{if .Over}} disabled{{end}}></textarea>
 </label>
 
 <footer class="bar">
-<output class="receipt" data-part="sending" hidden aria-live="polite">
+<output class="receipt" data-interaction="sending" hidden aria-live="polite">
 <span class="notice-dot" aria-hidden="true"></span>
 <span class="notice-said">
 <span class="receipt-heading">Sent. Here is what went:</span>
@@ -215,11 +219,11 @@
 </span>
 </output>
 <div class="sends">
-<button class="send" data-part="sending" type="submit" data-ends="no"{{if .Over}} disabled{{end}}>Send and wait<span class="send-more"> for a reply</span></button>
-<button class="finish" data-part="sending" type="submit" data-ends="yes"{{if .Over}} disabled{{end}}>Send and finish</button>
+<button class="send" data-interaction="sending" type="submit" data-ends="no"{{if .Over}} disabled{{end}}>Send and wait<span class="send-more"> for a reply</span></button>
+<button class="finish" data-interaction="sending" type="submit" data-ends="yes"{{if .Over}} disabled{{end}}>Send and finish</button>
 </div>
 <p class="sends-meaning">Sending waits for a reply on this page. Finishing sends and closes the exchange.</p>
-<button class="amend" data-part="sending" type="button" hidden{{if .Over}} disabled{{end}}>Amend and send again</button>
+<button class="amend" data-interaction="sending" type="button" hidden{{if .Over}} disabled{{end}}>Amend and send again</button>
 <p class="state" role="status" aria-live="polite" data-tone="{{if .Over}}over{{else}}quiet{{end}}">{{if .Over}}The exchange is over. Nothing further will be sent from this page.{{end}}</p>
 </footer>
 </section>
@@ -239,15 +243,7 @@
 </aside>
 </form>
 
-<dialog class="confirmation" data-part="sending" aria-labelledby="confirmation-heading">
-<h2 class="confirmation-heading" id="confirmation-heading"></h2>
-<p class="confirmation-meaning">A decision left blank goes as nothing. Whoever asked will see no answer to it.</p>
-<ul class="confirmation-decisions"></ul>
-<div class="confirmation-presses">
-<button class="go-back" data-part="sending" type="button">Go back and answer</button>
-<button class="send-anyway" data-part="sending" type="button" autofocus>Send anyway</button>
-</div>
-</dialog>
+{{template "ui-dialog" .Confirmation}}
 {{else}}
 </div>
 {{end}}

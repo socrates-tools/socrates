@@ -755,3 +755,68 @@ func TestAClosedExchangeHidesWhatCanNoLongerBeAnsweredAndSaysSoUnderTheTitle(t *
 		t.Errorf("a page that finished shows %+v, and it keeps what went and drops every field", finished)
 	}
 }
+
+func TestTheConfirmationIsADialogPrimitiveCarryingTheConfirmationsClass(t *testing.T) {
+	t.Parallel()
+	_, page := read(t, twoDecisionDocument)
+
+	var drawn struct {
+		Defined bool `json:"defined"`
+		Held    bool `json:"held"`
+		Shadow  bool `json:"shadow"`
+	}
+	page.evaluate(`(() => {
+  const host = document.querySelector('ui-dialog.confirmation');
+  return {
+    defined: customElements.get('ui-dialog') !== undefined,
+    held: !!host && !!host.querySelector('dialog.confirmation'),
+    shadow: !!host && host.shadowRoot !== null,
+  };
+})()`, &drawn)
+
+	if !drawn.Defined || !drawn.Held {
+		t.Errorf("the confirmation is drawn as %+v, and it is a ui-dialog element carrying the class confirmation around its dialog", drawn)
+	}
+	if drawn.Shadow {
+		t.Error("the confirmation's dialog is drawn in a shadow root, and a primitive is drawn without one")
+	}
+}
+
+func TestADialogThatLeftThePageAnswersNothingAfterARevision(t *testing.T) {
+	t.Parallel()
+	held, page := read(t, twoDecisionDocument)
+
+	page.evaluate(chose("c-1", 0), nil)
+	page.evaluate(chose("c-2", 2), nil)
+	page.click(".send")
+	page.waitFor(confirmationIsOpen)
+	page.evaluate(`(() => {
+  window.leftThePage = document.querySelector('ui-dialog.confirmation');
+  window.dismissals = 0;
+  window.leftThePage.addEventListener('dismissed', () => { window.dismissals += 1; });
+})()`, nil)
+
+	held.serveAgain(oneDecisionReply)
+	page.waitFor(reachedThePage("c-3"))
+
+	var answered struct {
+		Connected bool `json:"connected"`
+		Prevented bool `json:"prevented"`
+		Dismissed int  `json:"dismissed"`
+	}
+	page.evaluate(`(() => {
+  const old = window.leftThePage;
+  const panel = old.querySelector('[data-part="panel"]');
+  const escape = new Event('cancel', { cancelable: true });
+  panel.dispatchEvent(escape);
+  panel.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: -10, clientY: -10 }));
+  return { connected: old.isConnected, prevented: escape.defaultPrevented, dismissed: window.dismissals };
+})()`, &answered)
+
+	if answered.Connected {
+		t.Fatal("the dialog that was on the page before the revision is still on the page")
+	}
+	if answered.Prevented || answered.Dismissed != 0 {
+		t.Errorf("the dialog that left the page still answers: %+v, and no listener of it reacts to a key or a press once it has left", answered)
+	}
+}

@@ -1,0 +1,5 @@
+{{define "ui-dialog"}}<ui-dialog class="{{.Class}}"{{with .Interaction}} data-interaction="{{.}}"{{end}}><dialog class="{{.Class}}" data-part="panel" aria-labelledby="{{.Class}}-heading">
+<h2 class="{{.Class}}-heading" id="{{.Class}}-heading" data-part="heading"></h2>
+<div data-part="body">{{with .Body}}{{fill .}}{{end}}</div>
+<div data-part="actions">{{with .Actions}}{{fill .}}{{end}}</div>
+</dialog></ui-dialog>{{end}}

@@ -141,7 +141,7 @@ func TestACopyControlIsReachedAndPressedByKeyboardAndIsNamedToAScreenReader(t *t
 	page.evaluate(`(() => {
   const held = document.querySelector('`+copyControls+`');
   return { name: held.getAttribute('aria-label') || '', title: held.dataset.title || '', hint: held.dataset.hint || '',
-    type: held.type, tabIndex: held.tabIndex, disabled: held.disabled, part: held.dataset.part };
+    type: held.type, tabIndex: held.tabIndex, disabled: held.disabled, part: held.dataset.interaction };
 })()`, &control)
 
 	if control.Name == "" || control.Title == "" || control.Hint == "" {

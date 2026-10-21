@@ -1,3 +1,4 @@
+import { UiDialog } from '@agora/ui'
 import { cards, clear, find, firstControlOf, nameOf } from './page'
 
 export interface Raising {
@@ -7,17 +8,15 @@ export interface Raising {
 
 let raisedBy: Raising | null = null
 
-function confirmation(): HTMLDialogElement | null {
-  return find<HTMLDialogElement>('dialog.confirmation')
+function confirmation(): UiDialog | null {
+  const held = find('ui-dialog.confirmation')
+  return held instanceof UiDialog ? held : null
 }
 
 export function closeConfirmation(): Raising | null {
   const raised = raisedBy
   raisedBy = null
-  const held = confirmation()
-  if (held && held.open) {
-    held.close()
-  }
+  confirmation()?.close()
   return raised
 }
 
@@ -26,11 +25,6 @@ function goBackAndAnswer(): void {
   if (raised && raised.press) {
     raised.press.focus()
   }
-}
-
-function pressedOutside(held: HTMLElement, event: MouseEvent): boolean {
-  const box = held.getBoundingClientRect()
-  return event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom
 }
 
 function goTo(card: HTMLElement): void {
@@ -59,10 +53,7 @@ export function askBeforeSending(blank: HTMLElement[], press: HTMLElement | null
   }
   raisedBy = { press, ends }
 
-  const heading = find('.confirmation-heading', held)
-  if (heading) {
-    heading.textContent = `Send with ${blank.length} of ${cards().length} left blank?`
-  }
+  held.headed(`Send with ${blank.length} of ${cards().length} left blank?`)
 
   const list = find('.confirmation-decisions', held)
   if (list) {
@@ -74,7 +65,7 @@ export function askBeforeSending(blank: HTMLElement[], press: HTMLElement | null
     })
   }
 
-  held.showModal()
+  held.open()
 }
 
 export function bindTheConfirmation(sendAnyway: () => void): void {
@@ -82,15 +73,7 @@ export function bindTheConfirmation(sendAnyway: () => void): void {
   if (!asking) {
     return
   }
-  asking.addEventListener('cancel', (event) => {
-    event.preventDefault()
-    goBackAndAnswer()
-  })
-  asking.addEventListener('click', (event) => {
-    if (event.target === asking && pressedOutside(asking, event)) {
-      goBackAndAnswer()
-    }
-  })
+  asking.addEventListener('dismissed', goBackAndAnswer)
   const anyway = find('.send-anyway', asking)
   if (anyway) {
     anyway.addEventListener('click', sendAnyway)

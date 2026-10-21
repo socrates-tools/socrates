@@ -451,8 +451,8 @@ func TestASingleChoiceDecisionOffersTakingNoneOfThem(t *testing.T) {
 	if attribute(control, "type") != "radio" {
 		t.Errorf("the control for taking none of the options renders as %q, want a radio", attribute(control, "type"))
 	}
-	if attribute(control, "data-part") != answering {
-		t.Errorf("the control for taking none of the options carries data-part %q, want %q", attribute(control, "data-part"), answering)
+	if attribute(control, "data-interaction") != answering {
+		t.Errorf("the control for taking none of the options carries data-interaction %q, want %q", attribute(control, "data-interaction"), answering)
 	}
 	if hasClass(control, "choice") {
 		t.Error("the control for taking none of the options is counted as a choice")
@@ -635,8 +635,8 @@ func TestTheSurfaceOffersNoThirdInteraction(t *testing.T) {
 	}
 
 	var parts []string
-	for _, control := range elements(page, "input", "textarea", "button", "select", "form", "output", "dialog") {
-		part := attribute(control, "data-part")
+	for _, control := range elements(page, "input", "textarea", "button", "select", "form", "output", "ui-dialog") {
+		part := attribute(control, "data-interaction")
 		if part != answering && part != sending && part != viewing {
 			t.Errorf("the page offers a <%s class=%q> that is part of none of answering, sending or viewing", control.Data, attribute(control, "class"))
 			continue
@@ -1002,7 +1002,7 @@ func TestAPageWithNothingToAnswerOffersNeitherControl(t *testing.T) {
 	// scenario: A page with nothing to answer offers neither of the two
 	page := rendered(t, nothingToDecide())
 
-	for _, control := range elements(page, "input", "textarea", "button", "select", "form", "output", "dialog") {
+	for _, control := range elements(page, "input", "textarea", "button", "select", "form", "output", "dialog", "ui-dialog") {
 		t.Errorf("a page holding no decision offers a <%s class=%q>, and there is nothing on it to answer and nothing to send",
 			control.Data, attribute(control, "class"))
 	}

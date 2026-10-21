@@ -1,4 +1,5 @@
 @import '@agora/ui/tokens/tokens.css';
+@import '@agora/ui/dialog/dialog.css';
 
 [hidden] {
   display: none !important;
@@ -1557,32 +1558,6 @@ button:disabled {
   color: var(--fg-2);
 }
 
-.confirmation {
-  width: calc(100% - 32px);
-  max-width: 480px;
-  margin: auto;
-  padding: var(--card-pad);
-  border: 0;
-  border-radius: var(--radius-dialog);
-  background: var(--surface-card);
-  color: var(--fg-1);
-  box-shadow: var(--shadow-dialog), 0 0 0 100vmax var(--scrim);
-}
-
-.confirmation::backdrop {
-  background: transparent;
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-}
-
-.confirmation-heading {
-  margin: 0;
-  font-size: var(--size-title);
-  font-weight: 700;
-  line-height: var(--leading-title);
-  letter-spacing: var(--tracking-title);
-}
-
 .confirmation-meaning {
   margin: 12px 0 0;
   color: var(--fg-2);
@@ -1615,14 +1590,6 @@ button:disabled {
 
 .confirmation-decision:hover {
   color: var(--accent-hover);
-}
-
-.confirmation-presses {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
 }
 
 .hljs-keyword,
@@ -1816,8 +1783,7 @@ button:disabled {
   .seen,
   .answering,
   .composer,
-  .nothing,
-  .confirmation {
+  .nothing {
     padding: 16px;
   }
 
