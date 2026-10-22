@@ -7,7 +7,8 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync,
 import { createRequire } from 'node:module'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import ts from 'typescript'
+import * as ts from 'typescript/unstable/ast'
+import { API } from 'typescript/unstable/sync'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const bundle = join(here, '..', 'assets', 'bundle')
@@ -27,7 +28,7 @@ const targets = ['chrome120', 'firefox121', 'safari17']
 const hljs = createRequire(join(library, 'package.json'))('highlight.js/lib/common')
 
 function decoratorCalled(node, name) {
-  return (ts.getDecorators(node) ?? []).map((decorator) => decorator.expression).find((call) => ts.isCallExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === name)
+  return (node.modifiers ?? []).filter(ts.isDecorator).map((decorator) => decorator.expression).find((call) => ts.isCallExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === name)
 }
 
 function attributeOf(member) {
@@ -40,7 +41,7 @@ function attributeOf(member) {
   if (!stated) {
     return member.name.text.toLowerCase()
   }
-  if (ts.isStringLiteralLike(stated.initializer)) {
+  if (ts.isStringLiteralLikeNode(stated.initializer)) {
     return stated.initializer.text
   }
   return undefined
@@ -56,7 +57,7 @@ function slotsIn(node) {
         slots.push(found[1]?.match(/\sname="([^"]*)"/)?.[1] ?? '')
       }
     }
-    ts.forEachChild(child, visit)
+    child.forEachChild(visit)
   }
   visit(node)
   return slots
@@ -67,7 +68,7 @@ function elementsDeclaredBy(created) {
   for (const file of sources(created)) {
     for (const node of file.statements) {
       const named = ts.isClassDeclaration(node) ? decoratorCalled(node, 'customElement') : undefined
-      if (!named || !ts.isStringLiteralLike(named.arguments[0])) {
+      if (!named || !ts.isStringLiteralLikeNode(named.arguments[0])) {
         continue
       }
       const attributes = node.members.map(attributeOf).filter((attribute) => attribute !== undefined)
@@ -107,32 +108,54 @@ function named(file) {
 }
 
 function where(file, position) {
-  const { line, character } = ts.getLineAndCharacterOfPosition(file, position)
-  return `${named(file)}:${line + 1}:${character + 1}`
+  const lineStarts = ts.computeLineStarts(file.text)
+  const line = lineStarts.findLastIndex((lineStart) => lineStart <= position)
+  return `${named(file)}:${line + 1}:${position - lineStarts[line] + 1}`
 }
 
 function program() {
   const configFile = join(here, 'tsconfig.json')
-  const read = ts.readConfigFile(configFile, ts.sys.readFile)
-  const parsed = ts.parseJsonConfigFileContent(read.config, ts.sys, here, undefined, configFile)
-  return {
-    created: ts.createProgram({ rootNames: parsed.fileNames, options: parsed.options }),
-    configuration: [...(read.error ? [read.error] : []), ...parsed.errors],
-  }
+  const compiler = new API({ cwd: here })
+  return { compiler, created: compiler.updateSnapshot({ openProjects: [configFile] }).getProject(configFile).program }
 }
 
 function sources(created) {
-  return created.getSourceFiles().filter((file) => !file.isDeclarationFile && !created.isSourceFileFromExternalLibrary(file))
+  return created
+    .getSourceFileNames()
+    .map((name) => created.getSourceFile(name))
+    .filter((file) => !file.isDeclarationFile && !created.isSourceFileFromExternalLibrary(file))
 }
 
-function typeErrors(created, configuration) {
-  return [...configuration, ...ts.getPreEmitDiagnostics(created)].map((diagnostic) => {
-    const message = `error TS${diagnostic.code}: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')}`
-    if (!diagnostic.file || diagnostic.start === undefined) {
+function flattened(diagnostic, depth = 0) {
+  return [`${'  '.repeat(depth)}${diagnostic.text}`, ...(diagnostic.messageChain ?? []).map((next) => flattened(next, depth + 1))].join('\n')
+}
+
+function typeErrors(created) {
+  const diagnostics = [
+    ...created.getConfigFileParsingDiagnostics(),
+    ...created.getProgramDiagnostics(),
+    ...created.getSyntacticDiagnostics(),
+    ...created.getGlobalDiagnostics(),
+    ...created.getSemanticDiagnostics(),
+  ]
+  return diagnostics.map((diagnostic) => {
+    const message = `error TS${diagnostic.code}: ${flattened(diagnostic)}`
+    if (!diagnostic.fileName) {
       return message
     }
-    return `${where(diagnostic.file, diagnostic.start)} - ${message}`
+    return `${where({ fileName: diagnostic.fileName, text: readFileSync(diagnostic.fileName, 'utf8') }, diagnostic.pos)} - ${message}`
   })
+}
+
+function tokensIn(file) {
+  const found = []
+  for (let token = ts.getTokenAtPosition(file, 0); token; token = ts.findNextToken(token, file, file)) {
+    found.push(token)
+    if (token.kind === ts.SyntaxKind.EndOfFile) {
+      break
+    }
+  }
+  return found
 }
 
 function commentsIn(file) {
@@ -142,20 +165,11 @@ function commentsIn(file) {
       found.set(range.pos, range)
     }
   }
-  const visit = (node) => {
-    if (node.kind >= ts.SyntaxKind.FirstJSDocNode && node.kind <= ts.SyntaxKind.LastJSDocNode) {
-      return
-    }
-    const children = node.getChildren(file)
-    if (children.length > 0) {
-      children.forEach(visit)
-      return
-    }
-    const leading = ts.getLeadingCommentRanges(file.text, node.pos) ?? []
-    const trailing = ts.getTrailingCommentRanges(file.text, node.pos) ?? []
+  for (const token of tokensIn(file)) {
+    const leading = ts.getLeadingCommentRanges(file.text, token.pos) ?? []
+    const trailing = ts.getTrailingCommentRanges(file.text, token.pos) ?? []
     leading.concat(trailing).forEach(note)
   }
-  visit(file)
   return [...found.values()].map((range) => `${where(file, range.pos)} - a comment is not allowed in the client's TypeScript`)
 }
 
@@ -216,25 +230,24 @@ function reachesTheSurface(specifier, from) {
   return target === '' || (!target.startsWith('..') && !isAbsolute(target))
 }
 
-function importsOf(path) {
-  const text = readFileSync(path, 'utf8')
+function importsOf(path, created) {
   if (path.endsWith('.css')) {
-    return [...text.matchAll(/@import\s+(?:url\(\s*)?['"]([^'"]+)['"]/g)].map((found) => found[1])
+    return [...readFileSync(path, 'utf8').matchAll(/@import\s+(?:url\(\s*)?['"]([^'"]+)['"]/g)].map((found) => found[1])
   }
   if (path.endsWith('.ts')) {
-    return ts.preProcessFile(text, true, true).importedFiles.map((imported) => imported.fileName)
+    return created.getSourceFile(path).imports.map((imported) => imported.text)
   }
   return []
 }
 
-function surfaceImportsInTheLibrary() {
+function surfaceImportsInTheLibrary(created) {
   const manifest = JSON.parse(readFileSync(join(library, 'package.json'), 'utf8'))
   const declared = Object.keys({ ...manifest.dependencies, ...manifest.devDependencies, ...manifest.peerDependencies })
   const refusals = declared
     .filter((name) => name === '@agora/surface')
     .map(() => `${relative(here, join(library, 'package.json')).split(sep).join('/')} - the library depends on the surface, and the library imports nothing from the surface`)
   const imports = within(library).flatMap((path) =>
-    importsOf(path)
+    importsOf(path, created)
       .filter((specifier) => reachesTheSurface(specifier, path))
       .map((specifier) => `${relative(here, path).split(sep).join('/')} - imports ${specifier} from the surface, and the library imports nothing from the surface`),
   )
@@ -249,10 +262,10 @@ function shadowRootsReachedByTheSurface(created) {
       continue
     }
     const visit = (node) => {
-      if ((ts.isIdentifier(node) || ts.isStringLiteralLike(node)) && node.text === 'shadowRoot') {
+      if ((ts.isIdentifier(node) || ts.isStringLiteralLikeNode(node)) && node.text === 'shadowRoot') {
         refusals.push(`${where(file, node.getStart(file))} - names shadowRoot, and the surface reaches a primitive only through its own properties and events`)
       }
-      ts.forEachChild(node, visit)
+      node.forEachChild(visit)
     }
     visit(file)
   }
@@ -272,7 +285,7 @@ function primitivesByTag(created) {
     const folder = primitiveFolderOf(file.fileName)
     for (const node of folder ? file.statements : []) {
       const named = ts.isClassDeclaration(node) ? decoratorCalled(node, 'customElement') : undefined
-      if (named && ts.isStringLiteralLike(named.arguments[0])) {
+      if (named && ts.isStringLiteralLikeNode(named.arguments[0])) {
         folders[named.arguments[0].text] = folder
       }
     }
@@ -297,21 +310,21 @@ function primitivesReachingAnother(created) {
     const reachable = (folder) => folder === owner || (composedOf[owner] ?? []).includes(folder)
     const refuse = (node, folder) => refusals.push(`${where(file, node.getStart(file))} - ${reacher} reaches ${tagOf(folder, folders)}, and a primitive reaches no other primitive but the ones it is composed of`)
     const visit = (node) => {
-      if (ts.isImportDeclaration(node) && ts.isStringLiteralLike(node.moduleSpecifier) && node.moduleSpecifier.text.startsWith('.')) {
+      if (ts.isImportDeclaration(node) && ts.isStringLiteralLikeNode(node.moduleSpecifier) && node.moduleSpecifier.text.startsWith('.')) {
         const folder = primitiveFolderOf(resolve(dirname(file.fileName), node.moduleSpecifier.text))
         if (folder && !reachable(folder)) {
           refuse(node, folder)
         }
         return
       }
-      if (ts.isStringLiteralLike(node) || ts.isTemplateHead(node) || ts.isTemplateMiddle(node) || ts.isTemplateTail(node)) {
+      if (ts.isStringLiteralLikeNode(node) || ts.isTemplateHead(node) || ts.isTemplateMiddle(node) || ts.isTemplateTail(node)) {
         for (const [tag] of node.text.matchAll(/\bui-[a-z]+(?:-[a-z]+)*/g)) {
           if (folders[tag] && !reachable(folders[tag])) {
             refuse(node, folders[tag])
           }
         }
       }
-      ts.forEachChild(node, visit)
+      node.forEachChild(visit)
     }
     visit(file)
   }
@@ -343,8 +356,10 @@ if (process.argv.includes('--watch')) {
   await rebuildOnEverySave()
 }
 
-const { created, configuration } = program()
-const refused = [...typeErrors(created, configuration), ...sources(created).flatMap(commentsIn), ...surfaceImportsInTheLibrary(), ...shadowRootsReachedByTheSurface(created), ...primitivesReachingAnother(created)]
+const { compiler, created } = program()
+const refused = [...typeErrors(created), ...sources(created).flatMap(commentsIn), ...surfaceImportsInTheLibrary(created), ...shadowRootsReachedByTheSurface(created), ...primitivesReachingAnother(created)]
+const elements = elementsDeclaredBy(created)
+compiler.close()
 if (refused.length > 0) {
   process.stderr.write(`${refused.join('\n')}\n`)
   process.exit(1)
@@ -380,7 +395,7 @@ const { code: landingCode } = await transform(await compiledStylesheet(landingEn
 writeFileSync(landingStylesheet, landingCode)
 
 const answeredTo = [...new Set(hljs.listLanguages().flatMap((name) => [name, ...(hljs.getLanguage(name).aliases ?? [])]))].sort()
-writeFileSync(declared, JSON.stringify({ elements: elementsDeclaredBy(created) }, null, 2) + '\n')
+writeFileSync(declared, JSON.stringify({ elements }, null, 2) + '\n')
 writeFileSync(languages, JSON.stringify(answeredTo, null, 2) + '\n')
 writeFileSync(stamp, sum() + '\n')
 
