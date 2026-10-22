@@ -129,6 +129,32 @@ library_imports "a library module importing the surface by name" "naming.ts" "im
 export const named = exchangeIsOver"
 library_imports "a library stylesheet importing the surface" "tokens/reaching.css" "@import '../../surface/surface.css';"
 
+primitive_reaches() {
+  label=$1
+  file=$2
+  content=$3
+  fresh
+  printf '%s\n' "$content" >> "$scratch/agora/web/packages/ui/$file"
+  if output=$(build); then
+    fail "$label did not stop the build"
+  elif ! printf '%s' "$output" | grep -Eq "packages/ui/$file:[0-9]+"; then
+    fail "$label was refused without naming its file and line: $output"
+  elif [ -e "$scratch/agora/assets/bundle/surface.js" ]; then
+    fail "$label still wrote a bundle"
+  fi
+}
+
+primitive_reaches "a primitive importing another" "badge/badge.ts" "import { UiCard } from '../card/card'
+export const reached = UiCard"
+primitive_reaches "a primitive naming another's tag" "choice/choice.ts" "export const reached = 'ui-button[type=\"submit\"]'"
+primitive_reaches "a shared module naming a primitive's tag" "control.ts" "export const reached = 'ui-field'"
+
+fresh
+printf "export const composed = 'ui-choice'\n" >> "$scratch/agora/web/packages/ui/choice-group/choice-group.ts"
+if ! output=$(build); then
+  fail "a primitive naming the primitive it is composed of was refused: $output"
+fi
+
 until_it() {
   for _ in $(seq 1 100); do
     if eval "$1"; then
@@ -153,7 +179,8 @@ elif ! kill -0 "$watcher" 2>/dev/null; then
   fail "the watch stopped on a saved type error"
 fi
 printf "console.log('rebuilt after the fix')\n" >> "$scratch/agora/web/packages/surface/height.ts"
-sed -i '/export const wrong/d' "$scratch/agora/web/packages/surface/exchange.ts"
+fixed=$(grep -v 'export const wrong' "$scratch/agora/web/packages/surface/exchange.ts")
+printf '%s\n' "$fixed" > "$scratch/agora/web/packages/surface/exchange.ts"
 if ! until_it "grep -qs 'rebuilt after the fix' '$scratch/agora/assets/bundle/height.js'"; then
   fail "the watch did not rebuild the bundle once the type error was fixed: $(cat "$watching")"
 fi

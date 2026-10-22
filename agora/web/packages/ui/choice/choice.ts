@@ -1,7 +1,6 @@
 import { html, type PropertyValues } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { UiElement } from '../element'
-import { submitByDefault } from '../form'
 
 const frameClasses = 'flex items-start gap-x-3 rounded-md border px-4 py-3 transition-all duration-fast ease-standard'
 
@@ -27,6 +26,10 @@ const indicatorStates: Record<string, string> = {
 }
 
 const taggedClasses = 'inline-flex h-chip items-center rounded-pill bg-recommended-wash px-2 text-micro font-bold tracking-chip whitespace-nowrap text-recommended'
+
+function defaultButtonOf(form: HTMLFormElement): HTMLElement | undefined {
+  return Array.from(form.elements).find((element): element is HTMLElement => element instanceof HTMLElement && 'type' in element && element.type === 'submit')
+}
 
 @customElement('ui-choice')
 export class UiChoice extends UiElement {
@@ -107,7 +110,7 @@ export class UiChoice extends UiElement {
     } else if (event.key === 'Enter' && !this.disabled) {
       const form = this.closest('form')
       if (form) {
-        submitByDefault(form)
+        defaultButtonOf(form)?.click()
       }
     }
   }

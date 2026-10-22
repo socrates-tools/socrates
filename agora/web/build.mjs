@@ -259,6 +259,65 @@ function shadowRootsReachedByTheSurface(created) {
   return refusals
 }
 
+const composedOf = { 'choice-group': ['choice'] }
+
+function primitiveFolderOf(path) {
+  const inside = relative(library, path).split(sep)
+  return inside.length > 1 && inside[0] !== '..' && inside[0] !== 'tokens' ? inside[0] : undefined
+}
+
+function primitivesByTag(created) {
+  const folders = {}
+  for (const file of sources(created)) {
+    const folder = primitiveFolderOf(file.fileName)
+    for (const node of folder ? file.statements : []) {
+      const named = ts.isClassDeclaration(node) ? decoratorCalled(node, 'customElement') : undefined
+      if (named && ts.isStringLiteralLike(named.arguments[0])) {
+        folders[named.arguments[0].text] = folder
+      }
+    }
+  }
+  return folders
+}
+
+function tagOf(folder, folders) {
+  return Object.keys(folders).find((tag) => folders[tag] === folder) ?? folder
+}
+
+function primitivesReachingAnother(created) {
+  const folders = primitivesByTag(created)
+  const refusals = []
+  for (const file of sources(created)) {
+    const inside = relative(library, file.fileName)
+    if (inside.startsWith('..') || isAbsolute(inside) || inside === 'index.ts') {
+      continue
+    }
+    const owner = primitiveFolderOf(file.fileName)
+    const reacher = owner ? tagOf(owner, folders) : `the shared module ${inside.split(sep).join('/')}`
+    const reachable = (folder) => folder === owner || (composedOf[owner] ?? []).includes(folder)
+    const refuse = (node, folder) => refusals.push(`${where(file, node.getStart(file))} - ${reacher} reaches ${tagOf(folder, folders)}, and a primitive reaches no other primitive but the ones it is composed of`)
+    const visit = (node) => {
+      if (ts.isImportDeclaration(node) && ts.isStringLiteralLike(node.moduleSpecifier) && node.moduleSpecifier.text.startsWith('.')) {
+        const folder = primitiveFolderOf(resolve(dirname(file.fileName), node.moduleSpecifier.text))
+        if (folder && !reachable(folder)) {
+          refuse(node, folder)
+        }
+        return
+      }
+      if (ts.isStringLiteralLike(node) || ts.isTemplateHead(node) || ts.isTemplateMiddle(node) || ts.isTemplateTail(node)) {
+        for (const [tag] of node.text.matchAll(/\bui-[a-z]+(?:-[a-z]+)*/g)) {
+          if (folders[tag] && !reachable(folders[tag])) {
+            refuse(node, folders[tag])
+          }
+        }
+      }
+      ts.forEachChild(node, visit)
+    }
+    visit(file)
+  }
+  return refusals
+}
+
 async function compiledStylesheet(entry) {
   const compiler = await compile(readFileSync(entry, 'utf8'), { base: dirname(entry), onDependency: () => {} })
   return compiler.build(new Scanner({ sources: compiler.sources }).scan())
@@ -285,7 +344,7 @@ if (process.argv.includes('--watch')) {
 }
 
 const { created, configuration } = program()
-const refused = [...typeErrors(created, configuration), ...sources(created).flatMap(commentsIn), ...surfaceImportsInTheLibrary(), ...shadowRootsReachedByTheSurface(created)]
+const refused = [...typeErrors(created, configuration), ...sources(created).flatMap(commentsIn), ...surfaceImportsInTheLibrary(), ...shadowRootsReachedByTheSurface(created), ...primitivesReachingAnother(created)]
 if (refused.length > 0) {
   process.stderr.write(`${refused.join('\n')}\n`)
   process.exit(1)
