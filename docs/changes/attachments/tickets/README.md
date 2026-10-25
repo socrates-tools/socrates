@@ -17,7 +17,7 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 87](../../../../agora/docs/adr/0
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1.1: Every collected answer is kept whole in its session](1.1-every-collected-answer-kept-whole.md) | None | in progress |
+| [1.1: Every collected answer is kept whole in its session](1.1-every-collected-answer-kept-whole.md) | None | done |
 | [1.2: The file tray primitive](1.2-the-file-tray-primitive.md) | None | in progress |
 | [1.3: socrates review respond records attachments](1.3-review-respond-attach.md) | None | in progress |
 | [2: Attach by the button, send at the press, poll the paths](2-attach-and-poll-the-paths.md) | 1.1, 1.2 | pending |
