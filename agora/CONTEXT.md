@@ -17,7 +17,7 @@ agora knows nothing about what a caller's document is about, beyond the three au
 - **evidence**: the code a decision shows, as a list of blocks, each a piece of code in a language or a patch, with an optional caption. Drawn and highlighted by the page itself, unlike an illustration. Not code, and not a snippet.
 - **illustration**: the one HTML document a decision may carry, drawn in a frame of its own that reaches neither the page nor the network beyond the CDNs it names. Not a fragment, and not painted by the document.
 - **session**: what the surface mints so that a page and its routes are served under a path holding it.
-- **exchange**: the delivery of a document and the collection of what a person answered. It holds at most one uncollected answer, and a later one replaces it. The last answer collected is kept in the session's directory, and `agora poll --last` prints it again.
+- **exchange**: the delivery of a document and the collection of what a person answered. It holds at most one uncollected answer, and a later one replaces it. Every answer collected is kept whole in the session's directory until the surface collects the session, and `agora poll --last` prints the last one again.
 - **answer**: what one submit carries: every decision the person answered, anything they wrote, and whether it ends the exchange.
 - **attachment**: a file a person sends with an answer, beside one decision's words or beside the message. Always the person's and never the caller's, so not evidence and not an illustration. Not an upload.
 - **tray**: where a decision or the composer holds its attachments until a press sends them. Not a drop zone.

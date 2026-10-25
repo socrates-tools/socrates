@@ -569,7 +569,7 @@ func TestTheSurfaceRunsNothingAndWritesOnlyItsOwnState(t *testing.T) {
 		t.Fatal("an answer was sent and nothing was delivered")
 	}
 
-	kept := append(slices.Clone(before), filepath.Join("sessions", held.session, "answer.json"))
+	kept := append(slices.Clone(before), filepath.Join("sessions", held.session, "answers", "1", "answer.json"))
 	slices.Sort(kept)
 	if diff := cmp.Diff(kept, within(t, held.home)); diff != "" {
 		t.Errorf("an answer being collected wrote other than the answer its own session keeps (-want +after):\n%s", diff)
