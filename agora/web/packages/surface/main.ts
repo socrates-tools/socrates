@@ -8,6 +8,7 @@ import { followTheExpanding } from './expanding'
 import { followTheNavigation } from './navigation'
 import { surface } from './page'
 import { follow } from './revision'
+import { fillTheSampledTrays } from './sampling'
 import { followTheForm, sendAnyway } from './sending'
 import { settleTheSurface } from './settling'
 
@@ -23,4 +24,6 @@ if (surface()) {
   settleTheSurface()
   askTheDrawingsForTheirHeights()
   follow()
+} else {
+  fillTheSampledTrays()
 }

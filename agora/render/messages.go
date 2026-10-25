@@ -29,6 +29,11 @@ const (
 	copiedWord = "Copied"
 	notCopied  = "Could not copy"
 
+	fileTrayLabel       = "Attach files"
+	fileTrayHint        = "Drop files here to attach them."
+	fileTrayRemoveLabel = "Remove"
+	fileTrayRefusal     = "A tray holds %d files at most, so the rest were not attached."
+
 	severityErrorName   = "Error"
 	severityError       = "Severity: Error"
 	severityErrorHint   = "Likely wrong; the change should not land as it is."
@@ -156,6 +161,11 @@ const (
 
 	expandResting  = "an expand control at rest"
 	expandExpanded = "an expand control that is expanded"
+
+	fileTrayEmpty    = "a file tray holding nothing"
+	fileTrayHolding  = "a file tray holding an image and a text file"
+	fileTrayFull     = "a file tray holding as many files as it takes"
+	fileTrayRefusing = "a file tray refusing a file past its ceiling"
 
 	expandLabel = "Expand"
 	expandHint  = "Lays what it expands over the whole window. Escape closes it."

@@ -164,8 +164,8 @@ func TestTheCatalogPageStartsNoLiveStreamAndReachesOnlyItsOwnAssets(t *testing.T
 		if strings.HasSuffix(asked, "/live") {
 			t.Errorf("the catalog requested %q, and a page with no surface follows no exchange", asked)
 		}
-		if !strings.Contains(asked, "/assets/") && !strings.HasSuffix(asked, catalogRoute) {
-			t.Errorf("the catalog requested %q, and it asks for nothing but itself and the bundle", asked)
+		if !strings.Contains(asked, "/assets/") && !strings.HasSuffix(asked, catalogRoute) && !strings.HasPrefix(asked, "blob:") {
+			t.Errorf("the catalog requested %q, and it asks for nothing but itself, the bundle and the previews it draws from memory", asked)
 		}
 	}
 }

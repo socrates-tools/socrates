@@ -217,6 +217,11 @@ func catalogChoiceGroup(multiple bool, choices []choiceView) choiceGroupView {
 	return choiceGroupView{Class: "catalog-choice-group", Label: catalogChoiceGroupLabel, Multiple: multiple, Choices: choices}
 }
 
+func sampled(view fileTrayView, sample string) fileTrayView {
+	view.Sample = sample
+	return view
+}
+
 func stateDrawn(key, name string, view any) state {
 	return state{Key: key, Name: name, View: view}
 }
@@ -318,6 +323,12 @@ var catalogued = map[string][]state{
 	"ui-expand": {
 		stateDrawn("resting", expandResting, expandView{Label: expandLabel, Hint: expandHint}),
 		stateDrawn("expanded", expandExpanded, expandView{Label: expandLabel, Hint: expandHint, Expanded: true}),
+	},
+	"ui-file-tray": {
+		stateDrawn("empty", fileTrayEmpty, fileTrayOf("catalog-file-tray", defaultFileTrayCeiling)),
+		stateDrawn("holding-an-image-and-a-text-file", fileTrayHolding, sampled(fileTrayOf("catalog-file-tray", defaultFileTrayCeiling), "image-and-text")),
+		stateDrawn("full", fileTrayFull, sampled(fileTrayOf("catalog-file-tray", defaultFileTrayCeiling), "full")),
+		stateDrawn("refusing", fileTrayRefusing, sampled(fileTrayOf("catalog-file-tray", defaultFileTrayCeiling), "refusing")),
 	},
 	"ui-overline": {
 		overlineState(overlineWordsAlone, overlineOf("", catalogOverlineWords)),

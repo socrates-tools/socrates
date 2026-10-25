@@ -118,6 +118,17 @@
         "caption"
       ]
     },
+    "ui-file-tray": {
+      "attributes": [
+        "max",
+        "remove-label"
+      ],
+      "slots": [
+        "hint",
+        "label",
+        "refusal"
+      ]
+    },
     "ui-overline": {
       "attributes": [
         "count"

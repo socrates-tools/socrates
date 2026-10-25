@@ -253,10 +253,11 @@ func TestTheContractDeclaresTheControlsAsElementsOfAttributesAndSlots(t *testing
 	declared := declaredByTheContract(t)
 
 	want := map[string]element{
-		"ui-button": {Attributes: []string{"disabled", "raised", "type", "variant"}, Slots: []string{defaultSlot}},
-		"ui-field":  {Attributes: []string{"disabled", "name", "placeholder", "rows"}, Slots: []string{"caption"}},
-		"ui-copy":   {Attributes: []string{"copied-title", "failed-title", "hint", "label", "text"}},
-		"ui-expand": {Attributes: []string{"expanded", "hint", "label"}},
+		"ui-button":    {Attributes: []string{"disabled", "raised", "type", "variant"}, Slots: []string{defaultSlot}},
+		"ui-field":     {Attributes: []string{"disabled", "name", "placeholder", "rows"}, Slots: []string{"caption"}},
+		"ui-copy":      {Attributes: []string{"copied-title", "failed-title", "hint", "label", "text"}},
+		"ui-expand":    {Attributes: []string{"expanded", "hint", "label"}},
+		"ui-file-tray": {Attributes: []string{"max", "remove-label"}, Slots: []string{"hint", "label", "refusal"}},
 	}
 	for name, expected := range want {
 		got := declared.Elements[name]

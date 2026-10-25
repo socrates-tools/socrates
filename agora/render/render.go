@@ -14,7 +14,7 @@ import (
 const (
 	IllustrationRoute = "/illustrations/"
 
-	policy = "default-src 'none'; style-src 'self'; style-src-attr 'none'; script-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'"
+	policy = "default-src 'none'; style-src 'self'; style-src-attr 'none'; script-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'"
 )
 
 var mostSevereFirst = []string{"error", "warning", "info"}
