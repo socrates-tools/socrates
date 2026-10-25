@@ -94,3 +94,34 @@ func TestACollectedSessionLeavesNothingBehind(t *testing.T) {
 		t.Errorf("a collected session left %s behind: %v", within, err)
 	}
 }
+
+func TestACollectedSessionTakesEveryAnswerCollectedInItAway(t *testing.T) {
+	// scenario: The session's directory, every collected answer included, is removed when the surface collects the session
+	held := serving(t, twoDecisions(), 500*time.Millisecond)
+
+	for _, words := range []string{"the first words", "the second words"} {
+		held.send(t, surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}, Words: words}}})
+		if _, arrived := held.await(t, 5*time.Second); !arrived {
+			t.Fatal("an answer was sent and nothing was delivered")
+		}
+	}
+
+	within, err := surface.SessionPath(held.session)
+	if err != nil {
+		t.Fatalf("resolving where the surface wrote the session: %v", err)
+	}
+	for _, number := range []string{"1", "2"} {
+		if _, err := os.Stat(filepath.Join(within, "answers", number, "answer.json")); err != nil {
+			t.Fatalf("answer %s was collected and the session does not hold it: %v", number, err)
+		}
+	}
+
+	select {
+	case <-held.server.Stopping():
+	case <-time.After(10 * time.Second):
+		t.Fatal("no session was read for the idle period and the server is still running")
+	}
+	if _, err := os.Stat(within); !os.IsNotExist(err) {
+		t.Errorf("a collected session left %s behind: %v", within, err)
+	}
+}

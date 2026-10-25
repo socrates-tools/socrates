@@ -88,7 +88,8 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
   Anything else posted to the page, whether a value of another type, a number from a window that is not that frame, or a message from the page itself, changes nothing, so a drawing has no channel into an answer, per ADR 76.
 - Delivery happens once, waiting is bounded, collection is per session, and the server stops once it has held no session for the idle period.
 - An exchange holds at most one uncollected answer, and a later submit replaces it rather than queueing behind it, so what a caller collects is a person's last word.
-- A collected answer is written to its session's directory before it is handed back, and one the session could not keep stays uncollected, so `agora poll --last` prints again what the last poll printed, without waiting and without the surface, per ADR 73.
+- Every collected answer is kept whole in its session's directory as `answers/<n>/answer.json`, numbered in the order collected, before it is handed back, and one the session could not keep stays uncollected, so `agora poll --last` prints again the last answer collected, without waiting and without the surface, per ADR 88.
+- Nothing removes a collected answer but the session's directory going when the surface collects the session, so every path a poll printed stays readable until then, per ADR 88.
 - Collecting an answer is visible to the page, so the way back from a receipt is offered exactly while it would still reach the caller.
 - Nothing carries across a revision: not a selection, not a typed word, not the message, not the receipt and not an open confirmation, because a decision's identifier is unique only inside the document that names it.
 - A revision settling an identifier the exchange collected an answer for states the question, the labels and the words that were collected, exactly, or is refused before it is written or served, per ADR 59.
