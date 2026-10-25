@@ -745,6 +745,9 @@ func TestRespondingIsOneFindingAtATime(t *testing.T) {
 				if !strings.HasPrefix(field, "--") || position+1 >= len(fields) {
 					continue
 				}
+				if field == "--attach" {
+					continue
+				}
 				if fields[position+1] == "stringArray" || fields[position+1] == "stringSlice" {
 					t.Errorf("socrates review respond takes several values for %s: %s", field, line)
 				}

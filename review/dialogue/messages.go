@@ -10,8 +10,8 @@ const (
 	theFindingAsksForAPatch   = "finding %s asks for a patch rather than asking a person, and %q is not an answer to it: choose --%s or --%s, and give a reason with a rejection"
 	theChangeIsNotMineToPatch = "this run reviews a change nobody here can patch, and %q is not how finding %s is answered: choose %s, and give a reason with a drop or a rejection"
 	theChangeIsMine           = "%q answers a finding on a change that is somebody else's, and this run reviews your own, so finding %s is yours to answer: choose %s, or start the review with --not-my-change where the change is not yours to patch"
-	aForwardCarriesNoFile     = "a %s posts the finding to a pull request as its own recorded text, and a forge has no plain route for posting a file, so a file cannot go with one: record the file with a rejection, a drop or a decision instead, or leave it off"
-	tooManyAttachments        = "a response carries at most %d attached files, and this names %d: attach the ones the next reviewer needs"
+	aForwardCarriesNoFile     = "a %s posts the finding to a pull request as its own recorded text, and a forge has no plain route for posting a file, so a file cannot go with one: choose a rejection, a drop or a decision to record the file with, or leave it off"
+	tooManyAttachments        = "a response carries at most %d attached files, and this names %d: pass only the ones the next reviewer needs"
 	readingTheDocument        = "reading the responses: %w"
 	writingTheDocument        = "writing the responses: %w"
 )

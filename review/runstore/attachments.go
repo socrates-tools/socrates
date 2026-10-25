@@ -1,17 +1,18 @@
 package runstore
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"mime"
-	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/socrates-tools/socrates/internal/refusal"
 	"github.com/socrates-tools/socrates/review/dialogue"
@@ -21,6 +22,7 @@ const (
 	attachmentsDirectory = "attachments"
 	sniffedBytes         = 512
 	untypedFile          = "application/octet-stream"
+	plainText            = "text/plain"
 )
 
 var outsideAFileName = regexp.MustCompile(`[^A-Za-z0-9._-]`)
@@ -118,7 +120,10 @@ func typeOf(source string, head []byte) string {
 	if len(head) == 0 {
 		return untypedFile
 	}
-	return withoutParameters(http.DetectContentType(head))
+	if utf8.Valid(head) && !bytes.Contains(head, []byte{0}) {
+		return plainText
+	}
+	return untypedFile
 }
 
 func withoutParameters(kind string) string {

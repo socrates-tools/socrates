@@ -33,7 +33,7 @@ const (
 	SendsNothing     = "socrates review sends nothing"
 	SendsToTheVendor = "sends the change to"
 
-	AttachedFileGoesToTheVendor = "a file recorded with `--attach` is read by the reviewer CLI, which sends it to its vendor"
+	AttachedFileGoesToTheVendor = "recorded with `--attach` is read by the reviewer CLI, which sends it to its vendor"
 	NotAffiliated               = "not affiliated"
 
 	DrawingSendsNothing = "a drawing sends nothing"

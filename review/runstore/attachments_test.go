@@ -96,3 +96,17 @@ func TestAnAttachmentThatIsNotAFileIsRefusedAndNothingIsKept(t *testing.T) {
 		})
 	}
 }
+
+func TestAFileWithNoKnownExtensionIsTypedByItsContent(t *testing.T) {
+	round := roundFor(t)
+	words := writtenFile(t, "NOTES", "plain words")
+	bytesOfSomething := writtenFile(t, "capture", "\x00\x01\x02\xff\xfe")
+
+	attached, err := round.Attach([]string{words, bytesOfSomething})
+	if err != nil {
+		t.Fatalf("attaching: %v", err)
+	}
+	if attached[0].Type != "text/plain" || attached[1].Type != "application/octet-stream" {
+		t.Errorf("the types read %q and %q", attached[0].Type, attached[1].Type)
+	}
+}
