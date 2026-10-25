@@ -321,3 +321,27 @@ func TestSettingsThatFightTheConventionsAreReported(t *testing.T) {
 		}
 	}
 }
+
+func TestTheFrontDocumentSaysAFileRecordedWithAttachGoesToTheVendor(t *testing.T) {
+	// scenario: README.md says a file recorded with --attach is sent to the reviewer CLI's vendor
+	unstated, err := convention.AttachmentReachUnstated(source.Root(t))
+	if err != nil {
+		t.Fatalf("reading %s: %v", convention.FrontDocumentFile, err)
+	}
+	for _, said := range unstated {
+		t.Error(said)
+	}
+}
+
+func TestAFrontDocumentThatNeverSaysWhereAnAttachmentGoesIsReported(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, convention.FrontDocumentFile), "# socrates\n\n"+convention.SendsNothing+" anywhere. The reviewer CLI "+convention.SendsToTheVendor+" its vendor.\n")
+
+	unstated, err := convention.AttachmentReachUnstated(root)
+	if err != nil {
+		t.Fatalf("reading a fabricated document: %v", err)
+	}
+	if len(unstated) != 1 || !strings.Contains(unstated[0], convention.AttachedFileGoesToTheVendor) {
+		t.Errorf("a document silent about attachments reported %v", unstated)
+	}
+}
