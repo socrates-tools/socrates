@@ -120,6 +120,7 @@
     },
     "ui-file-tray": {
       "attributes": [
+        "disabled",
         "max",
         "remove-label"
       ],

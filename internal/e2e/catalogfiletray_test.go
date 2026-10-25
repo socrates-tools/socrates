@@ -21,6 +21,7 @@ const (
 	trayHoldingKey   = "holding-an-image-and-a-text-file"
 	trayFullKey      = "full"
 	trayRefusingKey  = "refusing"
+	trayDisabledKey  = "disabled"
 	trayCeiling      = 10
 	somePicture      = "before.png"
 	someTrace        = "trace.txt"
@@ -340,5 +341,36 @@ func TestDroppingFilesOnTheTrayAttachesThem(t *testing.T) {
 	}
 	if got := page.announcedByTray()["change"]; got != 1 {
 		t.Errorf("the tray announced change %d times for one drop, want 1", got)
+	}
+}
+
+func TestADisabledTrayTakesNoDropAndItsControlsCannotBePressed(t *testing.T) {
+	// scenario: A disabled tray takes no dropped file and leaves its attach and remove controls unpressable
+	t.Parallel()
+	page := catalogued(t)
+	tray := trayOf(trayDisabledKey)
+	page.listenToTray(tray)
+
+	var disabled, controlsDisabled bool
+	page.evaluate(`document.querySelector(`+jsonOf(t, tray)+`).disabled`, &disabled)
+	page.evaluate(`document.querySelector(`+jsonOf(t, tray)+`).drawnControlsDisabled`, &controlsDisabled)
+	if !disabled || !controlsDisabled {
+		t.Fatalf("the disabled state reads disabled %v with its controls disabled %v, want both", disabled, controlsDisabled)
+	}
+
+	before := page.trayDrawn(tray).Files
+	page.evaluate(`(() => {
+  const tray = document.querySelector(`+jsonOf(t, tray)+`);
+  const transfer = new DataTransfer();
+  transfer.items.add(`+aFileNamedByType+`);
+  tray.dispatchEvent(new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true, composed: true }));
+  return true;
+})()`, nil)
+
+	if diff := cmp.Diff(before, page.trayDrawn(tray).Files); diff != "" {
+		t.Errorf("a disabled tray took a dropped file (-before +after):\n%s", diff)
+	}
+	if got := page.announcedByTray()["change"]; got != 0 {
+		t.Errorf("a disabled tray announced change %d times for a drop", got)
 	}
 }

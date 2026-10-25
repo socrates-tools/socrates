@@ -25,6 +25,7 @@ const unknownBadge = '?'
 const cross = html`<svg class="block size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`
 
 const restingHostClasses = 'border-rule-control bg-surface-sunk'
+const disabledHostClasses = 'cursor-not-allowed opacity-55'
 const draggedOverHostClasses = 'border-accent bg-accent-wash'
 const attachClasses = 'inline-flex h-control flex-none cursor-pointer items-center rounded-pill border border-rule-control bg-surface-card px-4 text-small leading-none font-bold whitespace-nowrap text-fg-1 outline-none transition duration-fast ease-standard hover:border-accent hover:text-accent focus-visible:shadow-focus-ring'
 const chipClasses = 'inline-flex max-w-full items-center gap-2 rounded-box border border-rule-control bg-surface-card p-1 pr-1.5'
@@ -53,6 +54,7 @@ function isImage(file: File): boolean {
 export class UiFileTray extends UiControl {
   @property({ type: Number, reflect: true }) accessor max = 10
   @property({ attribute: 'remove-label' }) accessor removeLabel = ''
+  @property({ type: Boolean, reflect: true }) accessor disabled = false
   @state() private accessor held: File[] = []
   @state() private accessor refusing = false
   @state() private accessor draggedOver = false
@@ -62,6 +64,9 @@ export class UiFileTray extends UiControl {
 
   override connectedCallback(): void {
     super.connectedCallback()
+    if (this.held.length > 0) {
+      this.requestUpdate()
+    }
     this.addEventListener('dragenter', this.dragEntered)
     this.addEventListener('dragover', this.dragOver)
     this.addEventListener('dragleave', this.dragLeft)
@@ -152,17 +157,22 @@ export class UiFileTray extends UiControl {
     return centreOf(this.renderRoot.querySelector('button')!)
   }
 
+  get drawnControlsDisabled(): boolean {
+    return Array.from(this.renderRoot.querySelectorAll('button')).every((control) => control.disabled)
+  }
+
   get thumbnailsLoaded(): boolean {
     return Array.from(this.renderRoot.querySelectorAll('img')).every((thumbnail) => thumbnail.complete && thumbnail.naturalWidth > 0)
   }
 
   protected override hostClasses(): string {
     const look = this.draggedOver ? draggedOverHostClasses : restingHostClasses
-    return `flex flex-col gap-3 rounded-md border border-dashed p-3 transition duration-fast ease-standard ${look}`
+    const state = this.disabled ? disabledHostClasses : ''
+    return `flex flex-col gap-3 rounded-md border border-dashed p-3 transition duration-fast ease-standard ${look} ${state}`
   }
 
   protected override render() {
-    return html`<div class="flex flex-wrap items-center gap-3"><button type="button" class=${attachClasses} @click=${this.openPicker}><slot name="label"></slot></button><span class="min-w-0 flex-1 text-small text-fg-2"><slot name="hint"></slot></span><output class="flex-none text-small leading-none font-bold text-fg-2">${this.held.length} / ${this.max}</output></div>${this.drawnList()}${this.drawnRefusalBlock()}<input type="file" multiple hidden tabindex="-1" aria-hidden="true" @change=${this.picked} />`
+    return html`<div class="flex flex-wrap items-center gap-3"><button type="button" class=${attachClasses} ?disabled=${this.disabled} @click=${this.openPicker}><slot name="label"></slot></button><span class="min-w-0 flex-1 text-small text-fg-2"><slot name="hint"></slot></span><output class="flex-none text-small leading-none font-bold text-fg-2">${this.held.length} / ${this.max}</output></div>${this.drawnList()}${this.drawnRefusalBlock()}<input type="file" multiple hidden tabindex="-1" aria-hidden="true" @change=${this.picked} />`
   }
 
   private drawnList() {
@@ -174,7 +184,7 @@ export class UiFileTray extends UiControl {
 
   private drawnChip(file: File) {
     const preview = isImage(file) ? html`<img class=${thumbnailClasses} src=${this.previewOf(file)} alt="" />` : html`<span class=${badgeClasses} data-badge>${badgeOf(file)}</span>`
-    return html`<li class=${chipClasses}>${preview}<span class="min-w-0 truncate text-small">${file.name}</span><button type="button" class=${removeClasses} aria-label="${this.removeLabel} ${file.name}" @click=${() => this.removeFile(file)}>${cross}</button></li>`
+    return html`<li class=${chipClasses}>${preview}<span class="min-w-0 truncate text-small">${file.name}</span><button type="button" class=${removeClasses} ?disabled=${this.disabled} aria-label="${this.removeLabel} ${file.name}" @click=${() => this.removeFile(file)}>${cross}</button></li>`
   }
 
   private drawnRefusalBlock() {
@@ -225,7 +235,7 @@ export class UiFileTray extends UiControl {
   }
 
   private carriesFiles(event: DragEvent): boolean {
-    return event.dataTransfer?.types.includes('Files') ?? false
+    return !this.disabled && (event.dataTransfer?.types.includes('Files') ?? false)
   }
 
   private dragEntered = (event: DragEvent): void => {

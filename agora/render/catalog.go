@@ -222,6 +222,11 @@ func sampled(view fileTrayView, sample string) fileTrayView {
 	return view
 }
 
+func disabledTray(view fileTrayView) fileTrayView {
+	view.Disabled = true
+	return view
+}
+
 func stateDrawn(key, name string, view any) state {
 	return state{Key: key, Name: name, View: view}
 }
@@ -329,6 +334,7 @@ var catalogued = map[string][]state{
 		stateDrawn("holding-an-image-and-a-text-file", fileTrayHolding, sampled(fileTrayOf("catalog-file-tray", defaultFileTrayCeiling), "image-and-text")),
 		stateDrawn("full", fileTrayFull, sampled(fileTrayOf("catalog-file-tray", defaultFileTrayCeiling), "full")),
 		stateDrawn("refusing", fileTrayRefusing, sampled(fileTrayOf("catalog-file-tray", defaultFileTrayCeiling), "refusing")),
+		stateDrawn("disabled", fileTrayDisabled, disabledTray(sampled(fileTrayOf("catalog-file-tray", defaultFileTrayCeiling), "image-and-text"))),
 	},
 	"ui-overline": {
 		overlineState(overlineWordsAlone, overlineOf("", catalogOverlineWords)),

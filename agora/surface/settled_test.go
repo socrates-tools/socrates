@@ -16,7 +16,7 @@ const inThePersonsOwnWords = "the lock guards the read, so take it before the ca
 func answeredAndCollected(t *testing.T, held *standing, sent surface.Sent) {
 	t.Helper()
 
-	if _, err := held.exchange(t).Receive(sent); err != nil {
+	if _, err := held.exchange(t).Receive(sent, surface.Uploads{}); err != nil {
 		t.Fatalf("answering the page: %v", err)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -119,7 +119,7 @@ func TestOnlyWhatTheSessionCollectedBindsWhatIsSettled(t *testing.T) {
 
 	t.Run("An answer sent but never collected", func(t *testing.T) {
 		held := serving(t, twoDecisions(), 0)
-		if _, err := held.exchange(t).Receive(theCacheQuestionAnswered()); err != nil {
+		if _, err := held.exchange(t).Receive(theCacheQuestionAnswered(), surface.Uploads{}); err != nil {
 			t.Fatalf("answering the page: %v", err)
 		}
 

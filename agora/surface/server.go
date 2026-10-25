@@ -412,12 +412,12 @@ func whatIsUncollected(uncollected bool) string {
 }
 
 func (s *Server) answer(writer http.ResponseWriter, request *http.Request, one *held) {
-	var sent Sent
-	if !readSent(writer, request, &sent) {
+	sent, uploads, within := readForm(writer, request, request.PathValue("session"))
+	if !within {
 		return
 	}
 
-	if _, err := one.exchange.Receive(sent); err != nil {
+	if _, err := one.exchange.Receive(sent, uploads); err != nil {
 		http.Error(writer, err.Error(), http.StatusConflict)
 		return
 	}
@@ -439,8 +439,8 @@ func (s *Server) deliver(writer http.ResponseWriter, request *http.Request, one 
 	defer one.exchange.Reading(-1, time.Now())
 
 	session := request.PathValue("session")
-	answered, arrived, err := one.exchange.Await(request.Context(), within, func(taken Answered) error {
-		return WriteAnswer(session, taken)
+	answered, arrived, err := one.exchange.Await(request.Context(), within, func(taken Answered, staged string) (Answered, error) {
+		return WriteAnswer(session, taken, staged)
 	})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -515,19 +515,4 @@ func bodyWithin(writer http.ResponseWriter, request *http.Request) ([]byte, bool
 	}
 	http.Error(writer, err.Error(), http.StatusBadRequest)
 	return nil, false
-}
-
-func readSent(writer http.ResponseWriter, request *http.Request, into any) bool {
-	raw, within := bodyWithin(writer, request)
-	if !within {
-		return false
-	}
-
-	decoder := json.NewDecoder(strings.NewReader(string(raw)))
-	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(into); err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return false
-	}
-	return true
 }

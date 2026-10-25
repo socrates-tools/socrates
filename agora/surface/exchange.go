@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"slices"
 	"strings"
 	"sync"
@@ -16,26 +17,37 @@ import (
 type Sent struct {
 	Decisions []Choice `json:"decisions"`
 	Message   string   `json:"message"`
+	Attached  []string `json:"attached,omitempty"`
 	Ends      bool     `json:"ends"`
 }
 
 type Choice struct {
-	ID     string `json:"id"`
-	Chosen []int  `json:"chosen"`
-	Words  string `json:"words"`
+	ID       string   `json:"id"`
+	Chosen   []int    `json:"chosen"`
+	Words    string   `json:"words"`
+	Attached []string `json:"attached,omitempty"`
 }
 
 type Answered struct {
-	Decisions []Decided `json:"decisions"`
-	Message   string    `json:"message"`
-	Ended     bool      `json:"ended"`
+	Decisions   []Decided    `json:"decisions"`
+	Message     string       `json:"message"`
+	Attachments []Attachment `json:"attachments,omitempty"`
+	Ended       bool         `json:"ended"`
 }
 
 type Decided struct {
-	ID       string   `json:"id"`
-	Chosen   []string `json:"chosen"`
-	Commands []string `json:"commands"`
-	Words    string   `json:"words"`
+	ID          string       `json:"id"`
+	Chosen      []string     `json:"chosen"`
+	Commands    []string     `json:"commands"`
+	Words       string       `json:"words"`
+	Attachments []Attachment `json:"attachments,omitempty"`
+}
+
+type Attachment struct {
+	Name  string `json:"name"`
+	Type  string `json:"type"`
+	Bytes int64  `json:"bytes"`
+	Path  string `json:"path"`
 }
 
 type Exchange struct {
@@ -44,6 +56,7 @@ type Exchange struct {
 	copied      string
 	revision    int
 	uncollected *Answered
+	staged      string
 	answeredAt  int
 	collected   map[string]document.Settled
 	over        bool
@@ -125,6 +138,7 @@ func (e *Exchange) admitsLocked(read document.Document) error {
 }
 
 func (e *Exchange) reviseLocked(read document.Document) int {
+	e.forgetUncollectedLocked()
 	e.read = read
 	e.revision++
 	e.over = false
@@ -159,20 +173,29 @@ func (e *Exchange) End() {
 	e.notify()
 }
 
-func (e *Exchange) Receive(sent Sent) (Answered, error) {
+func (e *Exchange) forgetUncollectedLocked() {
+	if e.staged != "" {
+		_ = os.RemoveAll(e.staged)
+	}
+	e.uncollected = nil
+	e.staged = ""
+}
+
+func (e *Exchange) Receive(sent Sent, uploads Uploads) (Answered, error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	if e.over {
-		return Answered{}, errors.New(exchangeIsOver)
-	}
-
-	answered, err := resolve(e.read, sent)
+	answered, err := e.admit(sent, uploads)
 	if err != nil {
+		if uploads.Folder != "" {
+			_ = os.RemoveAll(uploads.Folder)
+		}
 		return Answered{}, err
 	}
 
+	e.forgetUncollectedLocked()
 	e.uncollected = &answered
+	e.staged = uploads.Folder
 	e.answeredAt = e.revision
 	if sent.Ends {
 		e.over = true
@@ -181,18 +204,35 @@ func (e *Exchange) Receive(sent Sent) (Answered, error) {
 	return answered, nil
 }
 
-func (e *Exchange) Await(ctx context.Context, within time.Duration, keep func(Answered) error) (Answered, bool, error) {
+func (e *Exchange) admit(sent Sent, uploads Uploads) (Answered, error) {
+	if e.over {
+		return Answered{}, errors.New(exchangeIsOver)
+	}
+	answered, err := resolve(e.read, sent, uploads)
+	if err != nil {
+		return Answered{}, err
+	}
+	if uploads.Folder != "" {
+		if err := lay(&answered, uploads.Folder); err != nil {
+			return Answered{}, err
+		}
+	}
+	return answered, nil
+}
+
+func (e *Exchange) Await(ctx context.Context, within time.Duration, keep func(taken Answered, staged string) (Answered, error)) (Answered, bool, error) {
 	deadline := time.After(within)
 
 	for {
 		e.mu.Lock()
 		if e.uncollectedLocked() {
-			taken := *e.uncollected
-			if err := keep(taken); err != nil {
+			taken, err := keep(*e.uncollected, e.staged)
+			if err != nil {
 				e.mu.Unlock()
 				return Answered{}, false, err
 			}
 			e.uncollected = nil
+			e.staged = ""
 			e.holdCollectedLocked(taken)
 			e.notify()
 			e.mu.Unlock()
@@ -255,8 +295,9 @@ func (e *Exchange) IdleSince(at time.Time, period time.Duration) bool {
 	return e.readers == 0 && at.Sub(e.seen) >= period
 }
 
-func resolve(read document.Document, sent Sent) (Answered, error) {
+func resolve(read document.Document, sent Sent, uploads Uploads) (Answered, error) {
 	answered := Answered{Message: sent.Message, Ended: sent.Ends}
+	claimed := map[string]bool{}
 
 	for _, choice := range sent.Decisions {
 		position := slices.IndexFunc(read.Decisions, func(held document.Decision) bool {
@@ -282,7 +323,21 @@ func resolve(read document.Document, sent Sent) (Answered, error) {
 				decided.Commands = append(decided.Commands, option.Command)
 			}
 		}
+		attachments, err := attachmentsNamed(choice.Attached, uploads, claimed)
+		if err != nil {
+			return Answered{}, err
+		}
+		decided.Attachments = attachments
 		answered.Decisions = append(answered.Decisions, decided)
+	}
+
+	attachments, err := attachmentsNamed(sent.Attached, uploads, claimed)
+	if err != nil {
+		return Answered{}, err
+	}
+	answered.Attachments = attachments
+	if err := refuseUnnamedParts(uploads, claimed); err != nil {
+		return Answered{}, err
 	}
 
 	return answered, nil

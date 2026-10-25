@@ -94,6 +94,7 @@ type fileTrayView struct {
 	Hint        string
 	Refusal     string
 	RemoveLabel string
+	Disabled    bool
 }
 
 type tooltipView struct {
@@ -128,6 +129,13 @@ func fileTrayOf(class string, max int) fileTrayView {
 		Refusal:     fmt.Sprintf(fileTrayRefusal, max),
 		RemoveLabel: fileTrayRemoveLabel,
 	}
+}
+
+func fileTrayFor(class, interaction string, disabled bool) fileTrayView {
+	view := fileTrayOf(class, defaultFileTrayCeiling)
+	view.Interaction = interaction
+	view.Disabled = disabled
+	return view
 }
 
 func filled(root *template.Template, name string, data any) (template.HTML, error) {

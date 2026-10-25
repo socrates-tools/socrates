@@ -257,7 +257,7 @@ func TestTheContractDeclaresTheControlsAsElementsOfAttributesAndSlots(t *testing
 		"ui-field":     {Attributes: []string{"disabled", "name", "placeholder", "rows"}, Slots: []string{"caption"}},
 		"ui-copy":      {Attributes: []string{"copied-title", "failed-title", "hint", "label", "text"}},
 		"ui-expand":    {Attributes: []string{"expanded", "hint", "label"}},
-		"ui-file-tray": {Attributes: []string{"max", "remove-label"}, Slots: []string{"hint", "label", "refusal"}},
+		"ui-file-tray": {Attributes: []string{"disabled", "max", "remove-label"}, Slots: []string{"hint", "label", "refusal"}},
 	}
 	for name, expected := range want {
 		got := declared.Elements[name]

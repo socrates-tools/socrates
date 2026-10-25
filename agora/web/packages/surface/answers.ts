@@ -1,10 +1,11 @@
-import type { UiChoice, UiField, UiProgressBar } from '@agora/ui'
+import type { UiChoice, UiField, UiFileTray, UiProgressBar } from '@agora/ui'
 import { cards, clear, closestTo, decisionNamed, find, findAll, nameOf } from './page'
 
 export interface HeldDecision {
   id: string
   chosen: number[]
   words: string
+  files: File[]
 }
 
 export function chosenIn(card: HTMLElement): number[] {
@@ -18,14 +19,19 @@ export function wordsIn(card: HTMLElement): string {
   return field ? field.value : ''
 }
 
+export function filesIn(holder: ParentNode): File[] {
+  const tray = find<UiFileTray>('.tray', holder)
+  return tray ? tray.files : []
+}
+
 export function answeredIn(card: HTMLElement): boolean {
   return chosenIn(card).length > 0 || wordsIn(card).trim() !== ''
 }
 
 export function decisionsHeld(): HeldDecision[] {
   return cards()
-    .map((card) => ({ id: card.dataset.decision ?? '', chosen: chosenIn(card), words: wordsIn(card) }))
-    .filter((answered) => answered.chosen.length > 0 || answered.words.trim() !== '')
+    .map((card) => ({ id: card.dataset.decision ?? '', chosen: chosenIn(card), words: wordsIn(card), files: filesIn(card) }))
+    .filter((held) => held.chosen.length > 0 || held.words.trim() !== '' || held.files.length > 0)
 }
 
 export function blankCards(): HTMLElement[] {

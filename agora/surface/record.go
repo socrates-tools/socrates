@@ -149,35 +149,54 @@ func ForgetPage(session string) error {
 	return nil
 }
 
-func WriteAnswer(session string, answered Answered) error {
+func WriteAnswer(session string, answered Answered, staged string) (Answered, error) {
 	answers, err := AnswersPath(session)
 	if err != nil {
-		return err
+		return Answered{}, err
 	}
 	if err := os.MkdirAll(answers, 0o700); err != nil {
-		return fmt.Errorf(writingTheAnswer, err)
-	}
-	written, err := json.MarshalIndent(answered, "", "  ")
-	if err != nil {
-		return fmt.Errorf(writingTheAnswer, err)
+		return Answered{}, fmt.Errorf(writingTheAnswer, err)
 	}
 
 	numbers, err := collectedNumbers(answers)
 	if err != nil {
-		return fmt.Errorf(writingTheAnswer, err)
+		return Answered{}, fmt.Errorf(writingTheAnswer, err)
 	}
 	folder, err := AnswerFolderPath(session, nextNumber(numbers))
 	if err != nil {
-		return err
+		return Answered{}, err
 	}
-	if err := os.Mkdir(folder, 0o700); err != nil {
-		return fmt.Errorf(writingTheAnswer, err)
+
+	kept := answered
+	if staged != "" {
+		kept = relocated(answered, staged, folder)
+	}
+	written, err := json.MarshalIndent(kept, "", "  ")
+	if err != nil {
+		return Answered{}, fmt.Errorf(writingTheAnswer, err)
+	}
+
+	if err := settle(staged, folder); err != nil {
+		return Answered{}, fmt.Errorf(writingTheAnswer, err)
 	}
 	if err := replace(filepath.Join(folder, answerFile), append(written, '\n'), writingTheAnswer); err != nil {
-		_ = os.RemoveAll(folder)
-		return err
+		unsettle(staged, folder)
+		return Answered{}, err
 	}
-	return nil
+	return kept, nil
+}
+
+func settle(staged, folder string) error {
+	if staged == "" {
+		return os.Mkdir(folder, 0o700)
+	}
+	return os.Rename(staged, folder)
+}
+
+func unsettle(staged, folder string) {
+	if staged == "" || os.Rename(folder, staged) != nil {
+		_ = os.RemoveAll(folder)
+	}
 }
 
 func ReadAnswer(session string) (Answered, bool, error) {

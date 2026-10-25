@@ -166,6 +166,7 @@ const (
 	fileTrayHolding  = "a file tray holding an image and a text file"
 	fileTrayFull     = "a file tray holding as many files as it takes"
 	fileTrayRefusing = "a file tray refusing a file past its ceiling"
+	fileTrayDisabled = "a file tray that cannot be changed"
 
 	expandLabel = "Expand"
 	expandHint  = "Lays what it expands over the whole window. Escape closes it."
