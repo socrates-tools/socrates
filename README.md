@@ -133,7 +133,7 @@ surface:
 socrates review sends nothing anywhere: no telemetry, no update check, no network connection.
 The reviewer CLI it runs sends the change to its vendor, exactly as it does when you use it yourself.
 A file recorded with `--attach` is read by the reviewer CLI, which sends it to its vendor.
-agora sends nothing beyond this machine.
+agora sends nothing, and a file attached on an agora page stays on this machine.
 Runs and pages are kept under `~/.socrates`, and nothing is written in your repository except the git objects for a review's snapshot.
 
 socrates is not affiliated with, endorsed by or sponsored by Anthropic or OpenAI.

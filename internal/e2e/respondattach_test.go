@@ -149,3 +149,22 @@ func TestAnAttachmentThatCannotBeRecordedIsRefused(t *testing.T) {
 	})
 
 }
+
+func TestAResponseThatCannotBeWrittenLeavesNoCopyBehind(t *testing.T) {
+	t.Parallel()
+	session := harness.Start(t)
+	name := parkedRun(t, session, dialogueScenario(patchableFindings, nothingFoundAgain))
+	picture := attachable(t, "shown.png", screenshotBytes)
+
+	if err := os.Mkdir(session.Round(name, 1).ResponsesPath(), 0o755); err != nil {
+		t.Fatalf("making the responses document unwritable: %v", err)
+	}
+	if _, _, code := session.Socrates("respond", name, "--finding", "f2", "--rejected", "--reason", "no retry loop here", "--attach", picture); code == 0 || code == 4 {
+		t.Fatalf("respond exited %d where the response could not be written", code)
+	}
+
+	copies, _ := filepath.Glob(filepath.Join(session.Round(name, 1).Directory, "attachments", "*", "*"))
+	if len(copies) != 0 {
+		t.Errorf("the failed response left %v behind", copies)
+	}
+}

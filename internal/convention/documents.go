@@ -33,6 +33,7 @@ const (
 	SendsNothing     = "socrates review sends nothing"
 	SendsToTheVendor = "sends the change to"
 
+	AttachedFileStaysHere       = "a file attached on an agora page stays on this machine"
 	AttachedFileGoesToTheVendor = "recorded with `--attach` is read by the reviewer CLI, which sends it to its vendor"
 	NotAffiliated               = "not affiliated"
 
@@ -241,10 +242,13 @@ func AttachmentReachUnstated(root string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	if strings.Contains(held, AttachedFileGoesToTheVendor) {
-		return nil, nil
+	var unstated []string
+	for _, half := range []string{AttachedFileStaysHere, AttachedFileGoesToTheVendor} {
+		if !strings.Contains(held, half) {
+			unstated = append(unstated, fmt.Sprintf("%s never says %q", FrontDocumentFile, half))
+		}
 	}
-	return []string{fmt.Sprintf("%s never says %q", FrontDocumentFile, AttachedFileGoesToTheVendor)}, nil
+	return unstated, nil
 }
 
 var DrawingHosts = []string{"cdnjs.cloudflare.com", "cdn.jsdelivr.net", "unpkg.com"}

@@ -46,6 +46,7 @@ func Respond(store runstore.Store, name string, response dialogue.Response, atta
 	response.Attachments = attached
 
 	if err := round.AppendResponse(response); err != nil {
+		round.RemoveAttachments(attached)
 		return Recording{}, err
 	}
 

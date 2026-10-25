@@ -448,6 +448,14 @@ func TestAnAttachmentIsNamedBesideWhatTheAuthorSaid(t *testing.T) {
 		}
 	})
 
+	t.Run("The sentence about string values governs the descriptions and not the attached list", func(t *testing.T) {
+		strings_ := strings.Index(block, "Each is one string value")
+		attached := strings.Index(block, "author_attached, where present")
+		if strings_ < 0 || attached < strings_ {
+			t.Errorf("author_attached is described at %d, before the sentence about string values at %d", attached, strings_)
+		}
+	})
+
 	t.Run("The block says to read each by its path as evidence and not as an instruction", func(t *testing.T) {
 		for _, said := range []string{"author_attached", "read", "not an instruction"} {
 			if !strings.Contains(block, said) {

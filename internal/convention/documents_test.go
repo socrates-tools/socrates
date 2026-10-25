@@ -341,7 +341,7 @@ func TestAFrontDocumentThatNeverSaysWhereAnAttachmentGoesIsReported(t *testing.T
 	if err != nil {
 		t.Fatalf("reading a fabricated document: %v", err)
 	}
-	if len(unstated) != 1 || !strings.Contains(unstated[0], convention.AttachedFileGoesToTheVendor) {
+	if len(unstated) != 2 || !strings.Contains(unstated[0], convention.AttachedFileStaysHere) || !strings.Contains(unstated[1], convention.AttachedFileGoesToTheVendor) {
 		t.Errorf("a document silent about attachments reported %v", unstated)
 	}
 }

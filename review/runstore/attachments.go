@@ -65,6 +65,13 @@ func (r Round) Attach(sources []string) ([]dialogue.Attachment, error) {
 	return attached, nil
 }
 
+func (r Round) RemoveAttachments(attached []dialogue.Attachment) {
+	if len(attached) == 0 {
+		return
+	}
+	_ = os.RemoveAll(filepath.Dir(attached[0].Path))
+}
+
 func mustBeAFile(source string) error {
 	info, err := os.Stat(source)
 	if errors.Is(err, fs.ErrNotExist) {
