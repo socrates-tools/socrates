@@ -282,11 +282,11 @@ func TestAnAnswerRefusedForItsDecisionKeepsNoFileItCarried(t *testing.T) {
 }
 
 func TestEveryCollectedAnswerKeepsItsFilesUnderItsOwnNumber(t *testing.T) {
-	// scenario: A path a poll printed stays readable after later rounds are collected
+	// scenario: A path a poll printed stays readable after later answers are collected
 	held := serving(t, twoDecisions(), 0)
 
 	first := collectedWith(t, held, answerCarryingPictureAndTrace(), pictureAndTrace())
-	again := map[string]carried{"file-1": {name: "round-two.png", kind: "image/png", held: []byte("round two")}}
+	again := map[string]carried{"file-1": {name: "second-answer.png", kind: "image/png", held: []byte("second answer")}}
 	second := collectedWith(t, held, surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{1}, Attached: []string{"file-1"}}}}, again)
 
 	for _, path := range []string{first.Decisions[0].Attachments[0].Path, first.Attachments[0].Path, second.Decisions[0].Attachments[0].Path} {
@@ -298,8 +298,8 @@ func TestEveryCollectedAnswerKeepsItsFilesUnderItsOwnNumber(t *testing.T) {
 		t.Errorf("the second collected answer's file is at %s, want it under answers/2", second.Decisions[0].Attachments[0].Path)
 	}
 	kept, _, err := surface.ReadAnswer(held.session)
-	if err != nil || kept.Decisions[0].Attachments[0].Name != "round-two.png" {
-		t.Errorf("the last collected answer reads %+v, %v, want the second round's", kept, err)
+	if err != nil || kept.Decisions[0].Attachments[0].Name != "second-answer.png" {
+		t.Errorf("the last collected answer reads %+v, %v, want the second answer's", kept, err)
 	}
 }
 
