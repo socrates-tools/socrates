@@ -29,7 +29,7 @@ func attachmentsNamed(names []string, uploads Uploads, claimed map[string]bool) 
 			return nil, fmt.Errorf(answerAttachesAPartTwice, name)
 		}
 		claimed[name] = true
-		attachments = append(attachments, Attachment{Name: staged.Name, Type: staged.Type, Bytes: staged.Bytes, Path: staged.Path})
+		attachments = append(attachments, Attachment(staged))
 	}
 	return attachments, nil
 }

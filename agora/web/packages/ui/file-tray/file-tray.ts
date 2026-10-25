@@ -64,9 +64,6 @@ export class UiFileTray extends UiControl {
 
   override connectedCallback(): void {
     super.connectedCallback()
-    if (this.held.length > 0) {
-      this.requestUpdate()
-    }
     this.addEventListener('dragenter', this.dragEntered)
     this.addEventListener('dragover', this.dragOver)
     this.addEventListener('dragleave', this.dragLeft)

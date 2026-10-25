@@ -68,14 +68,6 @@ func (r *reader) attachByTheButton(chosen *picker, tray string, paths ...string)
 	r.waitFor(fmt.Sprintf(`document.querySelector(%s).files.length === %d`, jsonOf(r.t, tray), before+len(paths)))
 }
 
-func (r *reader) filesHeldBy(tray string) []string {
-	r.t.Helper()
-
-	var names []string
-	r.evaluate(`document.querySelector(`+jsonOf(r.t, tray)+`).files.map((file) => file.name)`, &names)
-	return names
-}
-
 func (s *surfaced) polledAnswer() surface.Answered {
 	s.t.Helper()
 
