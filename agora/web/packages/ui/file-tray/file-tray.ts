@@ -174,7 +174,7 @@ export class UiFileTray extends UiControl {
 
   private drawnChip(file: File) {
     const preview = isImage(file) ? html`<img class=${thumbnailClasses} src=${this.previewOf(file)} alt="" />` : html`<span class=${badgeClasses} data-badge>${badgeOf(file)}</span>`
-    return html`<li class=${chipClasses}>${preview}<span class="min-w-0 truncate text-small">${file.name}</span><button type="button" class=${removeClasses} aria-label="${this.removeLabel} ${file.name}" @click=${() => this.drop(file)}>${cross}</button></li>`
+    return html`<li class=${chipClasses}>${preview}<span class="min-w-0 truncate text-small">${file.name}</span><button type="button" class=${removeClasses} aria-label="${this.removeLabel} ${file.name}" @click=${() => this.removeFile(file)}>${cross}</button></li>`
   }
 
   private drawnRefusalBlock() {
@@ -200,7 +200,7 @@ export class UiFileTray extends UiControl {
     this.#previews.clear()
   }
 
-  private drop(file: File): void {
+  private removeFile(file: File): void {
     const preview = this.#previews.get(file)
     if (preview !== undefined) {
       URL.revokeObjectURL(preview)
