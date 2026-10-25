@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
+	"strconv"
 
 	"github.com/socrates-tools/socrates/internal/refusal"
 )
@@ -148,30 +150,58 @@ func ForgetPage(session string) error {
 }
 
 func WriteAnswer(session string, answered Answered) error {
-	path, err := AnswerPath(session)
+	answers, err := AnswersPath(session)
 	if err != nil {
 		return err
+	}
+	if err := os.MkdirAll(answers, 0o700); err != nil {
+		return fmt.Errorf(writingTheAnswer, err)
 	}
 	written, err := json.MarshalIndent(answered, "", "  ")
 	if err != nil {
 		return fmt.Errorf(writingTheAnswer, err)
 	}
-	return replace(path, append(written, '\n'), writingTheAnswer)
+
+	numbers, err := collectedNumbers(answers)
+	if err != nil {
+		return fmt.Errorf(writingTheAnswer, err)
+	}
+	folder, err := AnswerFolderPath(session, nextNumber(numbers))
+	if err != nil {
+		return err
+	}
+	if err := os.Mkdir(folder, 0o700); err != nil {
+		return fmt.Errorf(writingTheAnswer, err)
+	}
+	if err := replace(filepath.Join(folder, answerFile), append(written, '\n'), writingTheAnswer); err != nil {
+		_ = os.RemoveAll(folder)
+		return err
+	}
+	return nil
 }
 
 func ReadAnswer(session string) (Answered, bool, error) {
 	if filepath.Base(session) != session || !filepath.IsLocal(session) {
 		return Answered{}, false, refusal.New(sessionIsNotAName, session)
 	}
-	path, err := AnswerPath(session)
+	answers, err := AnswersPath(session)
 	if err != nil {
 		return Answered{}, false, err
 	}
 
-	held, err := os.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
+	numbers, err := collectedNumbers(answers)
+	if err != nil {
+		return Answered{}, false, fmt.Errorf(readingTheKeptAnswer, err)
+	}
+	if len(numbers) == 0 {
 		return Answered{}, false, nil
 	}
+	folder, err := AnswerFolderPath(session, slices.Max(numbers))
+	if err != nil {
+		return Answered{}, false, err
+	}
+
+	held, err := os.ReadFile(filepath.Join(folder, answerFile))
 	if err != nil {
 		return Answered{}, false, fmt.Errorf(readingTheKeptAnswer, err)
 	}
@@ -181,6 +211,32 @@ func ReadAnswer(session string) (Answered, bool, error) {
 		return Answered{}, false, fmt.Errorf(readingTheKeptAnswer, err)
 	}
 	return answered, true, nil
+}
+
+func collectedNumbers(answers string) ([]int, error) {
+	entries, err := os.ReadDir(answers)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	var numbers []int
+	for _, entry := range entries {
+		number, err := strconv.Atoi(entry.Name())
+		if err == nil && entry.IsDir() && number > 0 {
+			numbers = append(numbers, number)
+		}
+	}
+	return numbers, nil
+}
+
+func nextNumber(numbers []int) int {
+	if len(numbers) == 0 {
+		return 1
+	}
+	return slices.Max(numbers) + 1
 }
 
 func replace(path string, written []byte, failure string) error {

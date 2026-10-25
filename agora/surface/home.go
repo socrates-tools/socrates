@@ -3,6 +3,7 @@ package surface
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/socrates-tools/socrates/internal/refusal"
 	"github.com/socrates-tools/socrates/internal/state"
@@ -19,6 +20,7 @@ const (
 	pageFile               = "session.json"
 	documentFile           = "document.json"
 	illustrationsDirectory = "illustrations"
+	answersDirectory       = "answers"
 	answerFile             = "answer.json"
 )
 
@@ -73,12 +75,20 @@ func DocumentPath(session string) (string, error) {
 	return filepath.Join(within, documentFile), nil
 }
 
-func AnswerPath(session string) (string, error) {
+func AnswersPath(session string) (string, error) {
 	within, err := SessionPath(session)
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(within, answerFile), nil
+	return filepath.Join(within, answersDirectory), nil
+}
+
+func AnswerFolderPath(session string, number int) (string, error) {
+	answers, err := AnswersPath(session)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(answers, strconv.Itoa(number)), nil
 }
 
 func IllustrationsPath(session, copy string) (string, error) {
