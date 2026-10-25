@@ -19,6 +19,8 @@ agora knows nothing about what a caller's document is about, beyond the three au
 - **session**: what the surface mints so that a page and its routes are served under a path holding it.
 - **exchange**: the delivery of a document and the collection of what a person answered. It holds at most one uncollected answer, and a later one replaces it. The last answer collected is kept in the session's directory, and `agora poll --last` prints it again.
 - **answer**: what one submit carries: every decision the person answered, anything they wrote, and whether it ends the exchange.
+- **attachment**: a file a person sends with an answer, beside one decision's words or beside the message. Always the person's and never the caller's, so not evidence and not an illustration. Not an upload.
+- **tray**: where a decision or the composer holds its attachments until a press sends them. Not a drop zone.
 - **confirmation**: the dialog a press raises where any decision is blank, naming each one and taking the person to it. The only thing on the page standing between a press and a send.
 - **composer**: the one place a person sends from: the field for anything to say to whoever asked, the two presses, and the receipt. Not the answers themselves, which stay on their decisions.
 - **receipt**: what the composer shows once a press has sent, naming every decision that went and the message beside them. Not a record: it is drawn from the page and kept nowhere.
