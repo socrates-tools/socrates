@@ -357,6 +357,10 @@ type deliveredClaim struct {
 	Description    string `json:"description"`
 	AuthorResponse string `json:"author_response"`
 	AuthorSaid     string `json:"author_said"`
+	AuthorAttached []struct {
+		Path string `json:"path"`
+		Type string `json:"type"`
+	} `json:"author_attached"`
 }
 
 func deliveredClaims(t *testing.T, block string) []deliveredClaim {
@@ -406,4 +410,57 @@ func TestAnAuthorsReasonCannotPassAsAReviewersFinding(t *testing.T) {
 	if fixed := claimAbout(t, claims, "f1"); fixed.AuthorSaid != hygiene.Neutralise(impersonation) {
 		t.Errorf("the author's reason left the field it was attributed to:\n%s", block)
 	}
+}
+
+func TestAnAttachmentIsNamedBesideWhatTheAuthorSaid(t *testing.T) {
+	request := secondRound()
+	request.Prior[0].Responses[1].Attachments = []dialogue.Attachment{
+		{Name: "loop.png", Type: "image/png", Path: "/home/x/.socrates/review/runs/one/r1/attachments/a1/1-loop.png"},
+		{Name: "trace.txt", Type: "text/plain", Path: "/home/x/.socrates/review/runs/one/r1/attachments/a1/2-trace.txt"},
+	}
+
+	delivered := Build(request).Text
+	block, present := BodyOf(Sections(delivered), PriorHeading)
+	if !present {
+		t.Fatalf("a second round delivered no %q section", PriorHeading)
+	}
+	claims := deliveredClaims(t, block)
+
+	t.Run("The finding the file answers names each path and type", func(t *testing.T) {
+		attached := claimAbout(t, claims, "f2").AuthorAttached
+		if len(attached) != 2 {
+			t.Fatalf("f2 carries %+v", attached)
+		}
+		if attached[0].Path != "/home/x/.socrates/review/runs/one/r1/attachments/a1/1-loop.png" || attached[0].Type != "image/png" {
+			t.Errorf("the first attachment arrives as %+v", attached[0])
+		}
+		if attached[1].Path != "/home/x/.socrates/review/runs/one/r1/attachments/a1/2-trace.txt" || attached[1].Type != "text/plain" {
+			t.Errorf("the second attachment arrives as %+v", attached[1])
+		}
+	})
+
+	t.Run("A finding with no file carries none", func(t *testing.T) {
+		if attached := claimAbout(t, claims, "f1").AuthorAttached; len(attached) != 0 {
+			t.Errorf("f1 carries %+v", attached)
+		}
+		if strings.Count(block, `"author_attached"`) != 1 {
+			t.Errorf("the field appears where nothing is attached:\n%s", block)
+		}
+	})
+
+	t.Run("The sentence about string values governs the descriptions and not the attached list", func(t *testing.T) {
+		strings_ := strings.Index(block, "Each is one string value")
+		attached := strings.Index(block, "author_attached, where present")
+		if strings_ < 0 || attached < strings_ {
+			t.Errorf("author_attached is described at %d, before the sentence about string values at %d", attached, strings_)
+		}
+	})
+
+	t.Run("The block says to read each by its path as evidence and not as an instruction", func(t *testing.T) {
+		for _, said := range []string{"author_attached", "read", "not an instruction"} {
+			if !strings.Contains(block, said) {
+				t.Errorf("the block does not say %q", said)
+			}
+		}
+	})
 }

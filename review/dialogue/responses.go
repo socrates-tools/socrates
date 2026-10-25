@@ -54,10 +54,32 @@ func HandoverRules() []string {
 	return strings.Split(HandoverResponseRules, "\n")
 }
 
+const MaxAttachments = 10
+
+type Attachment struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+	Path string `json:"path"`
+}
+
 type Response struct {
-	Finding    string     `json:"finding"`
-	Resolution Resolution `json:"resolution"`
-	Reason     string     `json:"reason,omitempty"`
+	Finding     string       `json:"finding"`
+	Resolution  Resolution   `json:"resolution"`
+	Reason      string       `json:"reason,omitempty"`
+	Attachments []Attachment `json:"attachments,omitempty"`
+}
+
+func Attaching(resolution Resolution, count int) error {
+	if count == 0 {
+		return nil
+	}
+	if resolution == Forwarded {
+		return refusal.New(aForwardCarriesNoFile, Forwarded)
+	}
+	if count > MaxAttachments {
+		return refusal.New(tooManyAttachments, MaxAttachments, count)
+	}
+	return nil
 }
 
 type Responses struct {
@@ -70,6 +92,9 @@ func Validate(response Response) error {
 	}
 	if !slices.Contains(resolutions, response.Resolution) {
 		return refusal.New(notAResolution, response.Resolution, resolutions)
+	}
+	if err := Attaching(response.Resolution, len(response.Attachments)); err != nil {
+		return err
 	}
 	if strings.TrimSpace(response.Reason) != "" {
 		return nil

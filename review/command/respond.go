@@ -23,6 +23,7 @@ func newRespondCommand(code *int) *cobra.Command {
 	var dropped bool
 	var reason string
 	var note string
+	var attach []string
 
 	command := &cobra.Command{
 		Use:   "respond [run]",
@@ -71,7 +72,7 @@ func newRespondCommand(code *int) *cobra.Command {
 				return err
 			}
 
-			recording, err := reviewer.Respond(store, name, response)
+			recording, err := reviewer.Respond(store, name, response, attach)
 			if err != nil {
 				return err
 			}
@@ -104,6 +105,7 @@ func newRespondCommand(code *int) *cobra.Command {
 	command.Flags().BoolVar(&dropped, "dropped", false, droppedUsage)
 	command.Flags().StringVar(&reason, "reason", "", reasonUsage)
 	command.Flags().StringVar(&note, "note", "", noteUsage)
+	command.Flags().StringArrayVar(&attach, "attach", nil, attachUsage)
 	return command
 }
 
