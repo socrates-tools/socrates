@@ -1,5 +1,6 @@
 import '@agora/ui'
 import { followTheAnswering } from './answers'
+import { followTheAttaching } from './attaching'
 import { followTheWidth } from './composer'
 import { followTheConfirmation } from './confirmation'
 import { followTheCopying } from './copying'
@@ -17,6 +18,7 @@ if (surface()) {
   followTheForm()
   followTheConfirmation(sendAnyway)
   followTheAnswering()
+  followTheAttaching()
   followTheNavigation()
   followTheExpanding()
   followTheCopying()
