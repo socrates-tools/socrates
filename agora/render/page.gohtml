@@ -163,7 +163,8 @@
 <span class="settled-said flex min-w-0 grow shrink basis-75 flex-col gap-1 text-fg-1">
 {{if .Chosen}}<span class="settled-chosen font-bold">{{.Chosen}}</span>{{end}}
 {{if .Words}}<span class="settled-words">“{{.Words}}”</span>{{end}}
-{{if and (not .Chosen) (not .Words)}}<span class="settled-left text-fg-3">Left to whoever asked</span>{{end}}
+{{if .Attached}}<ul class="settled-attachments flex flex-wrap gap-x-3 gap-y-1 text-small text-fg-2">{{range .Attached}}<li class="settled-attachment font-mono wrap-anywhere">{{.}}</li>{{end}}</ul>{{end}}
+{{if and (not .Chosen) (not .Words) (not .Attached)}}<span class="settled-left text-fg-3">Left to whoever asked</span>{{end}}
 </span>
 </div>
 </li>

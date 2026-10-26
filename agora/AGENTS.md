@@ -103,7 +103,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - An unnamed pasted image is named `pasted-<n>` in the order it arrived, numbered after the highest `pasted-<n>` any tray holds, and the ceiling and the in-place refusal apply to a drop and a paste as to the button.
 - Collecting an answer is visible to the page, so the way back from a receipt is offered exactly while it would still reach the caller.
 - Nothing carries across a revision: not a selection, not a typed word, not the message, not the receipt and not an open confirmation, because a decision's identifier is unique only inside the document that names it.
-- A revision settling an identifier the exchange collected an answer for states the question, the labels and the words that were collected, exactly, or is refused before it is written or served, per ADR 59.
+- A revision settling an identifier the exchange collected an answer for states the question, the labels, the words and the attachment names that were collected, exactly, or is refused before it is written or served, per ADR 59.
   Only a collected answer binds, the last one collected for an identifier is the one that does, and what the exchange remembers is never sent to the page.
 - A stream is told where the exchange stands when it connects rather than only when something next changes, so a client that missed a revision catches up rather than waiting on a change that has already happened.
 - The end of an exchange stops the page offering to answer and not the page listening, so a caller who writes again reaches the page the person is already looking at, and only the test about reloading reloads before it asserts.
@@ -160,5 +160,5 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 **The suite**
 
 - The page half is driven by a real browser against the real binary; asserting on served markup would test the renderer.
-- A revision settling an identifier the exchange collected an answer for states the question, the labels and the words that were collected, exactly, or is refused before it is written or served, per ADR 59.
+- A revision settling an identifier the exchange collected an answer for states the question, the labels, the words and the attachment names that were collected, exactly, or is refused before it is written or served, per ADR 59.
   Only a collected answer binds, the last one collected for an identifier is the one that does, and what the exchange remembers is never sent to the page.
