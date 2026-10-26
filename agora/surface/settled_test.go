@@ -2,6 +2,7 @@ package surface_test
 
 import (
 	"context"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -152,4 +153,91 @@ func TestOnlyWhatTheSessionCollectedBindsWhatIsSettled(t *testing.T) {
 			t.Errorf("a settled answer stated as the last answer was refused: %v", err)
 		}
 	})
+}
+
+func collectedWithPictureAndTrace(t *testing.T, held *standing) {
+	t.Helper()
+
+	collectedWith(t, held, surface.Sent{
+		Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}, Words: inThePersonsOwnWords, Attached: []string{"file-1", "file-2"}}},
+	}, pictureAndTrace())
+}
+
+func asCollectedWithPictureAndTrace() document.Settled {
+	entry := asCollected()
+	entry.Attached = []string{"before.png", "trace.txt"}
+	return entry
+}
+
+func TestASettledAnswerStatesTheAttachmentNamesExactlyAsCollected(t *testing.T) {
+	// scenario: A revision settling a collected answer with the attachment names exactly as collected is served
+	held := serving(t, twoDecisions(), 0)
+	collectedWithPictureAndTrace(t, held)
+
+	revised := settling(asCollectedWithPictureAndTrace())
+	if err := held.server.Revise(held.session, revised, written(t, revised), ""); err != nil {
+		t.Fatalf("a settled answer stating the attachment names exactly as collected was refused: %v", err)
+	}
+	if served, _ := held.exchange(t).Document(); len(served.Settled) != 1 || !slices.Equal(served.Settled[0].Attached, []string{"before.png", "trace.txt"}) {
+		t.Errorf("the page does not carry the attachment names it was served: %+v", served.Settled)
+	}
+}
+
+func TestASettledAnswerRestatingTheAttachmentsOtherwiseThanCollectedIsRefused(t *testing.T) {
+	// scenario: A revision dropping, adding or renaming an attachment name is refused naming the identifier
+	for _, restated := range []struct {
+		named  string
+		change func(*document.Settled)
+	}{
+		{named: "one name dropped", change: func(entry *document.Settled) { entry.Attached = []string{"before.png"} }},
+		{named: "every name dropped", change: func(entry *document.Settled) { entry.Attached = nil }},
+		{named: "one name added", change: func(entry *document.Settled) {
+			entry.Attached = append(entry.Attached, "after.png")
+		}},
+		{named: "one name renamed", change: func(entry *document.Settled) { entry.Attached[1] = "stack.txt" }},
+	} {
+		t.Run(restated.named, func(t *testing.T) {
+			held := serving(t, twoDecisions(), 0)
+			collectedWithPictureAndTrace(t, held)
+			before, revision := held.exchange(t).Document()
+
+			entry := asCollectedWithPictureAndTrace()
+			restated.change(&entry)
+			revised := settling(entry)
+
+			err := held.server.Revise(held.session, revised, written(t, revised), "")
+			if err == nil {
+				t.Fatal("a settled answer whose attachments are not what the session collected was served")
+			}
+			if !refusal.Is(err) {
+				t.Errorf("the refusal reads as a failure: %v", err)
+			}
+			for _, named := range []string{"c-1", "attached", "before.png", "trace.txt"} {
+				if !strings.Contains(err.Error(), named) {
+					t.Errorf("the refusal reads %q, without naming %q", err, named)
+				}
+			}
+			if after, now := held.exchange(t).Document(); now != revision || after.Title != before.Title {
+				t.Errorf("a refused revision moved the page from revision %d to %d", revision, now)
+			}
+		})
+	}
+}
+
+func TestASettledAnswerCollectedWithNoAttachmentsStatesNone(t *testing.T) {
+	// scenario: A revision settling an answer collected with no attachments and stating none is served as today
+	held := serving(t, twoDecisions(), 0)
+	answeredAndCollected(t, held, theCacheQuestionAnswered())
+
+	revised := settling(asCollected())
+	if err := held.server.Revise(held.session, revised, written(t, revised), ""); err != nil {
+		t.Fatalf("a settled answer collected without attachments and stating none was refused: %v", err)
+	}
+
+	invented := asCollected()
+	invented.Attached = []string{"before.png"}
+	adding := settling(invented)
+	if err := held.server.Revise(held.session, adding, written(t, adding), ""); err == nil {
+		t.Error("a settled answer stating an attachment the session never collected was served")
+	}
 }
