@@ -131,7 +131,7 @@ export class UiFileTray extends UiControl {
   }
 
   get drawnCounter(): string {
-    return (this.renderRoot.querySelector('output')?.textContent ?? '').trim()
+    return (this.renderRoot.querySelector('[data-counter]')?.textContent ?? '').trim()
   }
 
   get drawnRefusal(): string | null {
@@ -169,7 +169,7 @@ export class UiFileTray extends UiControl {
   }
 
   protected override render() {
-    return html`<div class="flex flex-wrap items-center gap-3"><button type="button" class=${attachClasses} ?disabled=${this.disabled} @click=${this.openPicker}><slot name="label"></slot></button><span class="min-w-0 flex-1 text-small text-fg-2"><slot name="hint"></slot></span><output class="flex-none text-small leading-none font-bold text-fg-2">${this.held.length} / ${this.max}</output></div>${this.drawnList()}${this.drawnRefusalBlock()}<input type="file" multiple hidden tabindex="-1" aria-hidden="true" @change=${this.picked} />`
+    return html`<div class="flex flex-wrap items-center gap-3"><button type="button" class=${attachClasses} ?disabled=${this.disabled} @click=${this.openPicker}><slot name="label"></slot></button><span class="min-w-0 flex-1 text-small text-fg-2"><slot name="hint"></slot></span><span class="flex-none text-small leading-none font-bold text-fg-2" data-counter>${this.held.length} / ${this.max}</span></div>${this.drawnList()}${this.drawnRefusalBlock()}<input type="file" multiple hidden tabindex="-1" aria-hidden="true" @change=${this.picked} />`
   }
 
   private drawnList() {
