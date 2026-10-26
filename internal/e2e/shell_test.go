@@ -308,3 +308,51 @@ func TestTheReplyPanelIsThreeHundredAndFourWideAndHoldsBothPressesOnOneRow(t *te
 		t.Errorf("the presses in the reply panel sit %+v, and both fit side by side inside it", read)
 	}
 }
+
+const howThePressSpacesItsWords = `(() => {
+  const press = document.querySelector('ui-button.send');
+  const walker = document.createTreeWalker(press, NodeFilter.SHOW_TEXT);
+  const pieces = [];
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    for (let at = 0; at < node.data.length; at++) {
+      const range = document.createRange();
+      range.setStart(node, at);
+      range.setEnd(node, at + 1);
+      const box = range.getBoundingClientRect();
+      pieces.push({ letter: node.data[at], left: box.left, right: box.right, drawn: box.width > 0 });
+    }
+  }
+  const drawn = pieces.filter((piece) => piece.drawn && piece.letter.trim() !== '');
+  const gaps = [];
+  for (let at = 1; at < pieces.length; at++) {
+    if (pieces[at].letter === ' ') {
+      const before = pieces.slice(0, at).filter((piece) => piece.letter.trim() !== '').at(-1);
+      const after = pieces.slice(at).find((piece) => piece.letter.trim() !== '');
+      if (before && after) {
+        gaps.push(after.left - before.right);
+      }
+    }
+  }
+  return { said: drawn.map((piece) => piece.letter).join(''), gaps };
+})()`
+
+type pressSpacing struct {
+	Said string    `json:"said"`
+	Gaps []float64 `json:"gaps"`
+}
+
+func TestBelowTwelveEightyTheSendPressSpacesForAReplyLikeEveryOtherWord(t *testing.T) {
+	t.Parallel()
+	page := openingAt(t, twoDecisionDocument, aWindowWideEnoughForTheShell, aShortWindow)
+
+	var read pressSpacing
+	page.evaluate(howThePressSpacesItsWords, &read)
+	if read.Said != "Sendandwaitforareply" || len(read.Gaps) != 5 {
+		t.Fatalf("in a window %dpx wide the send press draws %q with gaps %v, and it says Send and wait for a reply", aWindowWideEnoughForTheShell, read.Said, read.Gaps)
+	}
+	for at, gap := range read.Gaps[1:] {
+		if gap < read.Gaps[0]-0.5 || gap > read.Gaps[0]+0.5 {
+			t.Errorf("the send press leaves %vpx after word %d, and every word sits %vpx from the next as Send does from and", gap, at+2, read.Gaps[0])
+		}
+	}
+}

@@ -17,7 +17,7 @@
 <template class="confirmation-decision-item"><li>{{template "ui-button" (dict "Class" "confirmation-decision" "Variant" "link" "Type" "button" "Interaction" "sending")}}</li></template>{{end}}
 {{define "confirmation-actions"}}{{template "ui-button" (dict "Class" "go-back" "Variant" "quiet" "Type" "button" "Interaction" "sending" "Label" "Go back and answer")}}
 {{template "ui-button" (dict "Class" "send-anyway" "Variant" "primary" "Type" "button" "Interaction" "sending" "Label" "Send anyway" "Autofocus" true)}}{{end}}
-{{define "send-label"}}Send and wait<span class="send-more in-panel:hidden"> for a reply</span>{{end}}
+{{define "send-label"}}<span class="send-said">Send and wait<span class="send-more in-panel:hidden"> for a reply</span></span>{{end}}
 {{define "answered"}}<span class="answered inline-flex size-check flex-none items-center justify-center rounded-full border-check border-ring-unchosen bg-surface-card text-fg-on-accent transition-colors duration-fast ease-standard answered-yes:border-accent answered-yes:bg-accent answered-none:border-transparent answered-none:bg-transparent{{with .Extra}} {{.}}{{end}}" data-answered="{{.State}}" aria-hidden="true">{{template "check" "hidden size-2.5 answered-yes:block"}}</span>{{end}}
 {{define "entry-link-layout"}}scroll-mt-landing-clearance grid items-center gap-x-2.5 rounded-entry px-2.5 py-2 transition-colors duration-fast ease-standard{{end}}
 {{define "entry"}}{{$entry := .Entry}}{{$state := "none"}}{{if $entry.Decided}}{{if $entry.Answered}}{{$state = "yes"}}{{else}}{{$state = "no"}}{{end}}{{end}}{{$hidden := ""}}{{if not .Tracked}}{{$hidden = "hidden!"}}{{end}}{{template "answered" (dict "State" $state "Extra" $hidden)}}
