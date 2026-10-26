@@ -3,6 +3,7 @@
 - Status: accepted
 - Date: 2026-10-16
 - Part of: issue 76
+- Amended by: ADR 88, which keeps every collected answer whole, its `answer.json` beside its attachments, rather than only the last
 
 ## Decision
 

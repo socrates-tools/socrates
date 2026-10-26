@@ -110,12 +110,25 @@
     "ui-field": {
       "attributes": [
         "disabled",
+        "embedded",
         "name",
         "placeholder",
         "rows"
       ],
       "slots": [
         "caption"
+      ]
+    },
+    "ui-file-tray": {
+      "attributes": [
+        "attach-label",
+        "disabled",
+        "max",
+        "remove-label"
+      ],
+      "slots": [
+        "",
+        "refusal"
       ]
     },
     "ui-overline": {

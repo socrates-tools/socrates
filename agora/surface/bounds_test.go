@@ -11,7 +11,7 @@ import (
 	"github.com/socrates-tools/socrates/agora/surface"
 )
 
-func keptAnywhere(surface.Answered) error { return nil }
+func keptAnywhere(taken surface.Answered, _ string) (surface.Answered, error) { return taken, nil }
 
 func TestNobodyAnswers(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestAWaitThatIsAnsweredReturnsBeforeItsBound(t *testing.T) {
 
 		go func() {
 			time.Sleep(time.Hour)
-			if _, err := exchange.Receive(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}}); err != nil {
+			if _, err := exchange.Receive(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}}, surface.Uploads{}); err != nil {
 				t.Errorf("sending an answer: %v", err)
 			}
 		}()
@@ -99,7 +99,7 @@ func TestAnIdleSessionIsCollectedAndTheOnesBeingReadAreNot(t *testing.T) {
 		if !standing {
 			t.Fatal("the session being read was collected with the one nobody opened")
 		}
-		if _, err := still.Receive(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}}); err != nil {
+		if _, err := still.Receive(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}}, surface.Uploads{}); err != nil {
 			t.Errorf("the session being read no longer takes an answer: %v", err)
 		}
 	})

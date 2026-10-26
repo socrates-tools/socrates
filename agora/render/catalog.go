@@ -44,6 +44,7 @@ type fieldView struct {
 	Interaction string
 	Decision    string
 	Disabled    bool
+	Embedded    bool
 }
 
 type choiceView struct {
@@ -217,6 +218,24 @@ func catalogChoiceGroup(multiple bool, choices []choiceView) choiceGroupView {
 	return choiceGroupView{Class: "catalog-choice-group", Label: catalogChoiceGroupLabel, Multiple: multiple, Choices: choices}
 }
 
+func catalogTray() fileTrayView {
+	view := fileTrayOf("catalog-file-tray min-w-0 grow shrink basis-80", FilesPerTray)
+	view.Content = "catalog-tray-field"
+	view.Data = false
+	return view
+}
+
+func sampled(view fileTrayView, sample string) fileTrayView {
+	view.Sample = sample
+	return view
+}
+
+func disabledTray(view fileTrayView) fileTrayView {
+	view.Disabled = true
+	view.Data = true
+	return view
+}
+
 func stateDrawn(key, name string, view any) state {
 	return state{Key: key, Name: name, View: view}
 }
@@ -294,6 +313,7 @@ var catalogued = map[string][]state{
 		stateDrawn("empty", fieldEmpty, fieldView{Class: "catalog-field", Caption: catalogFieldCaption, Name: "catalog-empty", Rows: 2}),
 		stateDrawn("placeholder", fieldWithAPlaceholder, fieldView{Class: "catalog-field", Caption: catalogFieldCaption, Name: "catalog-placeholder", Rows: 2, Placeholder: catalogFieldPlaceholder}),
 		stateDrawn("disabled", fieldDisabled, fieldView{Class: "catalog-field", Caption: catalogFieldCaption, Name: "catalog-disabled", Rows: 2, Disabled: true}),
+		stateDrawn("embedded", fieldEmbedded, fieldView{Class: "catalog-field", Caption: catalogFieldCaption, Name: "catalog-embedded", Rows: 2, Placeholder: catalogFieldPlaceholder, Embedded: true}),
 	},
 	"ui-choice": {
 		stateDrawn("radio", choiceRadio, catalogChoice(choiceView{Value: "0"})),
@@ -318,6 +338,13 @@ var catalogued = map[string][]state{
 	"ui-expand": {
 		stateDrawn("resting", expandResting, expandView{Label: expandLabel, Hint: expandHint}),
 		stateDrawn("expanded", expandExpanded, expandView{Label: expandLabel, Hint: expandHint, Expanded: true}),
+	},
+	"ui-file-tray": {
+		stateDrawn("empty", fileTrayEmpty, catalogTray()),
+		stateDrawn("holding-an-image-and-a-text-file", fileTrayHolding, sampled(catalogTray(), "image-and-text")),
+		stateDrawn("full", fileTrayFull, sampled(catalogTray(), "full")),
+		stateDrawn("refusing", fileTrayRefusing, sampled(catalogTray(), "refusing")),
+		stateDrawn("disabled", fileTrayDisabled, disabledTray(sampled(catalogTray(), "image-and-text"))),
 	},
 	"ui-overline": {
 		overlineState(overlineWordsAlone, overlineOf("", catalogOverlineWords)),

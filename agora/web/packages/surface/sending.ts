@@ -1,18 +1,26 @@
 import { pressOf, type UiField } from '@agora/ui'
-import { type HeldDecision, blankCards, decisionsHeld, describe } from './answers'
+import { type HeldDecision, blankCards, decisionsHeld, describe, fileItems, filesIn, filesNamed } from './answers'
 import { askBeforeSending, closeConfirmation } from './confirmation'
 import { exchange, exchangeIsOver } from './exchange'
 import { base, clear, closestTo, find, findAll, say, stand, token } from './page'
 
 interface Sent {
-  decisions: HeldDecision[]
+  decisions: { id: string; chosen: number[]; words: string; attached: string[] }[]
   message: string
+  attached: string[]
   ends: boolean
+}
+
+interface Parts {
+  files: Map<string, File>
 }
 
 type Control = HTMLElement & { disabled: boolean }
 
-const readOnlyWhileSent = '.choice, .decline, .words-field, .message-field, .send, .finish'
+const receiptFileClasses = 'receipt-file wrap-anywhere'
+const receiptFilesClasses = 'receipt-files flex flex-col gap-0.5 pl-3'
+
+const readOnlyWhileSent = '.choice, .decline, .words-field, .message-field, .tray, .send, .finish'
 
 export function offerToAmend(offered: boolean): void {
   const amendButton = find('.amend')
@@ -21,7 +29,7 @@ export function offerToAmend(offered: boolean): void {
   }
 }
 
-function showReceipt(sent: Sent, ends: boolean): void {
+function showReceipt(sent: Sent, decisions: HeldDecision[], messageFiles: File[], ends: boolean): void {
   const held = find('.receipt')
   if (!held) {
     return
@@ -30,16 +38,25 @@ function showReceipt(sent: Sent, ends: boolean): void {
   const list = find('.receipt-decisions', held)
   if (list) {
     clear(list)
-    sent.decisions.forEach((decision) => {
+    decisions.forEach((decision) => {
       const item = document.createElement('li')
       item.textContent = describe(decision)
+      if (decision.files.length > 0) {
+        item.appendChild(filesNamed(decision.files, receiptFileClasses, receiptFilesClasses))
+      }
       list.appendChild(item)
     })
   }
 
   const message = find('.receipt-message', held)
   if (message) {
-    message.textContent = sent.message ? `Said to whoever asked: ${sent.message}` : ''
+    message.textContent = sent.message ? `Said to whoever asked: ${sent.message}` : messageFiles.length > 0 ? 'Sent to whoever asked:' : ''
+  }
+
+  const messageList = find('.receipt-message-files', held)
+  if (messageList) {
+    clear(messageList)
+    messageList.append(...fileItems(messageFiles, receiptFileClasses))
   }
 
   offerToAmend(!ends)
@@ -80,7 +97,7 @@ export function closeTheExchange(): void {
   findAll('.decision').forEach((card) => {
     card.dataset.state = 'closed'
   })
-  findAll<Control>('ui-button, ui-field, .choice, .decline').forEach((control) => {
+  findAll<Control>('ui-button, ui-field, ui-file-tray, .choice, .decline').forEach((control) => {
     control.disabled = true
   })
   offerToAmend(false)
@@ -99,31 +116,56 @@ export function takeUpWhetherItIsOver(): void {
   exchange.closed = false
 }
 
+function namedParts(parts: Parts, files: File[]): string[] {
+  return files.map((file) => {
+    const name = `file-${parts.files.size + 1}`
+    parts.files.set(name, file)
+    return name
+  })
+}
+
+function formOf(sent: Sent, parts: Parts): FormData {
+  const form = new FormData()
+  form.append('answer', JSON.stringify(sent))
+  parts.files.forEach((file, name) => form.append(name, file, file.name))
+  return form
+}
+
 async function send(ends: boolean): Promise<void> {
   if (exchange.closed) {
     return
   }
 
+  const parts: Parts = { files: new Map() }
+  const held = decisionsHeld()
   const message = find<UiField>('.message-field')
+  const composer = find('.composer')
+  const messageFiles = composer ? filesIn(composer) : []
   const sent: Sent = {
-    decisions: decisionsHeld(),
+    decisions: held.map((decision) => ({
+      id: decision.id,
+      chosen: decision.chosen,
+      words: decision.words,
+      attached: namedParts(parts, decision.files),
+    })),
     message: message ? message.value : '',
+    attached: namedParts(parts, messageFiles),
     ends,
   }
 
   say(ends ? 'Finishing.' : 'Sending.')
   const answered = await fetch(`${base()}/answer`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-agora-token': token() },
-    body: JSON.stringify(sent),
+    headers: { 'x-agora-token': token() },
+    body: formOf(sent, parts),
   })
 
   if (!answered.ok) {
-    say(`That was not accepted: ${answered.status}. Nothing was sent.`, 'error')
+    say(`Nothing was sent: ${(await answered.text()).trim() || `the surface answered ${answered.status}`}.`, 'error')
     return
   }
 
-  showReceipt(sent, ends)
+  showReceipt(sent, held, messageFiles, ends)
 
   if (ends) {
     closeTheExchange()

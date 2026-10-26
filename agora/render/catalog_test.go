@@ -123,7 +123,7 @@ func TestTheCatalogDrawsTheShellAtANarrowWidthAtNineSixtyAndAtTwelveEighty(t *te
 }
 
 func TestTheCatalogDrawsEveryControlInMoreThanOneState(t *testing.T) {
-	// scenario: The button, field, choice, choice group, copy and expand each have more than one state drawn
+	// scenario: The button, field, choice, choice group, copy, expand and file tray each have more than one state drawn
 	held := map[string]int{}
 	var visit func(node *html.Node)
 	visit = func(node *html.Node) {
@@ -140,7 +140,7 @@ func TestTheCatalogDrawsEveryControlInMoreThanOneState(t *testing.T) {
 	}
 	visit(theCatalog(t))
 
-	for _, element := range []string{"ui-button", "ui-field", "ui-choice", "ui-choice-group", "ui-copy", "ui-expand"} {
+	for _, element := range []string{"ui-button", "ui-field", "ui-choice", "ui-choice-group", "ui-copy", "ui-expand", "ui-file-tray"} {
 		if held[element] < 2 {
 			t.Errorf("the catalog draws %d states of <%s>, and it has more than one to draw", held[element], element)
 		}

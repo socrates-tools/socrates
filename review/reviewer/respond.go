@@ -19,13 +19,16 @@ type Recording struct {
 	Unanswered []string
 }
 
-func Respond(store runstore.Store, name string, response dialogue.Response) (Recording, error) {
+func Respond(store runstore.Store, name string, response dialogue.Response, attach []string) (Recording, error) {
 	run, round, document, err := parked(store, name)
 	if err != nil {
 		return Recording{}, err
 	}
 
 	if err := dialogue.Validate(response); err != nil {
+		return Recording{}, err
+	}
+	if err := dialogue.Attaching(response.Resolution, len(attach)); err != nil {
 		return Recording{}, err
 	}
 	reported, present := dialogue.Reported(document, response.Finding)
@@ -36,7 +39,14 @@ func Respond(store runstore.Store, name string, response dialogue.Response) (Rec
 		return Recording{}, err
 	}
 
+	attached, err := round.Attach(attach)
+	if err != nil {
+		return Recording{}, err
+	}
+	response.Attachments = attached
+
 	if err := round.AppendResponse(response); err != nil {
+		round.RemoveAttachments(attached)
 		return Recording{}, err
 	}
 

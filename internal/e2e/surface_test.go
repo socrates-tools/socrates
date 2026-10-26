@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"os/exec"
@@ -210,13 +211,21 @@ func (s *surfaced) answerOn(session string, sent surface.Sent) {
 	if err != nil {
 		s.t.Fatalf("writing what a person sent: %v", err)
 	}
+	var form bytes.Buffer
+	writer := multipart.NewWriter(&form)
+	if err := writer.WriteField("answer", string(written)); err != nil {
+		s.t.Fatalf("writing the answer part: %v", err)
+	}
+	if err := writer.Close(); err != nil {
+		s.t.Fatalf("closing what a person sent: %v", err)
+	}
 
-	request, err := http.NewRequest(http.MethodPost, "http://"+open.Address+surface.SessionPrefix+session+"/answer", bytes.NewReader(written))
+	request, err := http.NewRequest(http.MethodPost, "http://"+open.Address+surface.SessionPrefix+session+"/answer", &form)
 	if err != nil {
 		s.t.Fatalf("addressing the surface: %v", err)
 	}
 	request.Header.Set(surface.TokenHeader, open.Token)
-	request.Header.Set("content-type", "application/json")
+	request.Header.Set("content-type", writer.FormDataContentType())
 
 	answered, err := http.DefaultClient.Do(request)
 	if err != nil {

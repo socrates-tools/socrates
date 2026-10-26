@@ -12,7 +12,7 @@ func withWhatWasSettled() document.Document {
 	written := whole()
 	written.Settled = []document.Settled{
 		{ID: "q1", Name: "the surface", Location: "agora/surface", Question: "what is the page called", Chosen: []string{"the surface"}},
-		{ID: "q2", Question: "should a design carry a cap", Chosen: []string{"no cap", "no ceiling either"}, Words: "nothing here spawns a process for a cap to protect"},
+		{ID: "q2", Question: "should a design carry a cap", Chosen: []string{"no cap", "no ceiling either"}, Words: "nothing here spawns a process for a cap to protect", Attached: []string{"before.png", "trace.txt"}},
 		{ID: "q3", Question: "who writes the glossary entry"},
 	}
 	return written
@@ -67,6 +67,11 @@ func TestASettledAnswerThatCannotBeShownIsRefusedBeforeServing(t *testing.T) {
 			named:  "a settled answer choosing a blank label",
 			broken: func(d *document.Document) { d.Settled[1].Chosen[1] = "" },
 			names:  []string{"q2", "label"},
+		},
+		{
+			named:  "a settled answer naming a blank attachment",
+			broken: func(d *document.Document) { d.Settled[1].Attached[0] = " " },
+			names:  []string{"q2", "attachment"},
 		},
 	} {
 		t.Run(refused.named, func(t *testing.T) {

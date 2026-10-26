@@ -23,6 +23,22 @@ func TestTheSkillStatesRoundTwoOpensWithWhatWasSettled(t *testing.T) {
 	}
 }
 
+func TestTheSkillSaysASettledAnswerCopiesTheNamesOfItsAttachments(t *testing.T) {
+	// scenario: A settled answer had files attached
+	for _, host := range []skillkit.Host{skillkit.ClaudeCode, skillkit.Codex} {
+		settled := sectionOf(t, skill.Document(host), settledHeading)
+
+		for _, said := range []string{
+			"`attached`",
+			"the name of each file the poll printed for it",
+		} {
+			if !strings.Contains(settled, said) {
+				t.Errorf("the settled section on %v does not say %q, so a revision settling an answer with files is refused:\n%s", host, said, settled)
+			}
+		}
+	}
+}
+
 func TestTheSkillStatesASettledAnswerGoesInTheSettledListRatherThanAmongTheDecisions(t *testing.T) {
 	settled := sectionOf(t, skill.Document(skillkit.ClaudeCode), settledHeading)
 

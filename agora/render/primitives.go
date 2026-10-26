@@ -2,6 +2,7 @@ package render
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"strconv"
 )
@@ -84,6 +85,19 @@ type statusDotView struct {
 	Tone  string
 }
 
+type fileTrayView struct {
+	Class       string
+	Interaction string
+	Sample      string
+	Max         int
+	AttachLabel string
+	Refusal     string
+	RemoveLabel string
+	Content     string
+	Data        any
+	Disabled    bool
+}
+
 type tooltipView struct {
 	ID    string
 	Class string
@@ -103,6 +117,27 @@ func progressBarOf(class string, max, value int) progressBarView {
 
 func statusDotOf(class, tone string) statusDotView {
 	return statusDotView{Class: class, Tone: tone}
+}
+
+const FilesPerTray = 10
+
+func fileTrayOf(class string, max int) fileTrayView {
+	return fileTrayView{
+		Class:       class,
+		Max:         max,
+		AttachLabel: fileTrayAttachLabel,
+		Refusal:     fmt.Sprintf(fileTrayRefusal, max),
+		RemoveLabel: fileTrayRemoveLabel,
+	}
+}
+
+func fileTrayFor(class, interaction string, disabled bool, content string, data any) fileTrayView {
+	view := fileTrayOf(class, FilesPerTray)
+	view.Interaction = interaction
+	view.Disabled = disabled
+	view.Content = content
+	view.Data = data
+	return view
 }
 
 func filled(root *template.Template, name string, data any) (template.HTML, error) {

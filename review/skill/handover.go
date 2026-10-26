@@ -8,7 +8,7 @@ import (
 )
 
 func HandoverDocument(host skill.Host) string {
-	return assembled(skill.FrontMatter(host, HandoverName, handoverDescription), handoverPurpose, host.Guidance(handoverPage, true), handoverRules(), thePage(theAnswerAHandoverPageCarries), fmt.Sprintf(theHandoverLoop, host.Flag), handoverProhibitions)
+	return assembled(skill.FrontMatter(host, HandoverName, handoverDescription), handoverPurpose, host.Guidance(handoverPage, true), handoverRules(), thePage(theAnswerAHandoverPageCarries, ""), fmt.Sprintf(theHandoverLoop, host.Flag), handoverProhibitions)
 }
 
 func handoverRules() string {

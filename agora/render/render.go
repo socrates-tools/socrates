@@ -14,7 +14,7 @@ import (
 const (
 	IllustrationRoute = "/illustrations/"
 
-	policy = "default-src 'none'; style-src 'self'; style-src-attr 'none'; script-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'"
+	policy = "default-src 'none'; style-src 'self'; style-src-attr 'none'; script-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'"
 )
 
 var mostSevereFirst = []string{"error", "warning", "info"}
@@ -67,6 +67,7 @@ type settledView struct {
 	Question string
 	Chosen   string
 	Words    string
+	Attached []string
 }
 
 type decisionView struct {
@@ -225,6 +226,7 @@ func viewOf(read document.Document, frame Frame) view {
 			Question: answer.Question,
 			Chosen:   strings.Join(answer.Chosen, chosenJoined),
 			Words:    strings.TrimSpace(answer.Words),
+			Attached: answer.Attached,
 		})
 	}
 

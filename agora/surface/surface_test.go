@@ -5,10 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
+	"maps"
+	"mime/multipart"
 	"net"
 	"net/http"
+	"net/textproto"
 	"os"
 	"path/filepath"
 	"slices"
@@ -125,22 +129,84 @@ func (s *standing) under(route string) string {
 	return s.at(surface.SessionPrefix + s.session + route)
 }
 
+type carried struct {
+	name string
+	kind string
+	held []byte
+}
+
 func (s *standing) send(t *testing.T, sent surface.Sent) int {
 	t.Helper()
 	return s.sendingAs(t, s.session, s.token, sent)
 }
 
+func (s *standing) sendCarrying(t *testing.T, sent surface.Sent, parts map[string]carried) int {
+	t.Helper()
+	return s.sendingPartsAs(t, s.session, s.token, sent, parts)
+}
+
 func (s *standing) sendingAs(t *testing.T, session, token string, sent surface.Sent) int {
+	t.Helper()
+	return s.sendingPartsAs(t, session, token, sent, nil)
+}
+
+func (s *standing) sendingPartsAs(t *testing.T, session, token string, sent surface.Sent, parts map[string]carried) int {
+	t.Helper()
+
+	kind, body := form(t, sent, parts)
+	return s.postingAs(t, s.at(surface.SessionPrefix+session+"/answer"), token, kind, body)
+}
+
+func form(t *testing.T, sent surface.Sent, parts map[string]carried) (string, []byte) {
 	t.Helper()
 
 	sending, err := json.Marshal(sent)
 	if err != nil {
 		t.Fatalf("writing what a person sent: %v", err)
 	}
-	return s.posting(t, s.at(surface.SessionPrefix+session+"/answer"), token, sending)
+
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	if err := writer.WriteField("answer", string(sending)); err != nil {
+		t.Fatalf("writing the answer part: %v", err)
+	}
+	for _, part := range slices.Sorted(maps.Keys(parts)) {
+		held := parts[part]
+		made, err := writer.CreatePart(textproto.MIMEHeader{
+			"Content-Disposition": {fmt.Sprintf(`form-data; name=%q; filename=%q`, part, held.name)},
+			"Content-Type":        {held.kind},
+		})
+		if err != nil {
+			t.Fatalf("writing the part %s: %v", part, err)
+		}
+		if _, err := made.Write(held.held); err != nil {
+			t.Fatalf("writing the part %s: %v", part, err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatalf("closing what a person sent: %v", err)
+	}
+	return writer.FormDataContentType(), body.Bytes()
 }
 
 func (s *standing) posting(t *testing.T, address, token string, body []byte) int {
+	t.Helper()
+	return s.postingAs(t, address, token, "application/json", body)
+}
+
+func (s *standing) postingAs(t *testing.T, address, token, kind string, body []byte) int {
+	t.Helper()
+	code, _ := s.postingSaid(t, address, token, kind, body)
+	return code
+}
+
+func (s *standing) sendCarryingSaid(t *testing.T, sent surface.Sent, parts map[string]carried) (int, string) {
+	t.Helper()
+	kind, body := form(t, sent, parts)
+	return s.postingSaid(t, s.at(surface.SessionPrefix+s.session+"/answer"), s.token, kind, body)
+}
+
+func (s *standing) postingSaid(t *testing.T, address, token, kind string, body []byte) (int, string) {
 	t.Helper()
 
 	request, err := http.NewRequest(http.MethodPost, address, bytes.NewReader(body))
@@ -148,14 +214,15 @@ func (s *standing) posting(t *testing.T, address, token string, body []byte) int
 		t.Fatalf("addressing the surface: %v", err)
 	}
 	request.Header.Set(surface.TokenHeader, token)
-	request.Header.Set("content-type", "application/json")
+	request.Header.Set("content-type", kind)
 
 	answered, err := http.DefaultClient.Do(request)
 	if err != nil {
 		t.Fatalf("reaching the surface: %v", err)
 	}
 	defer func() { _ = answered.Body.Close() }()
-	return answered.StatusCode
+	said, _ := io.ReadAll(answered.Body)
+	return answered.StatusCode, string(said)
 }
 
 func (s *standing) fetch(t *testing.T, address string) (int, string) {
@@ -252,12 +319,9 @@ func TestARequestClaimingAnotherHostIsRejected(t *testing.T) {
 func TestAnAnswerWithoutTheTokenIsRejected(t *testing.T) {
 	held := serving(t, twoDecisions(), 0)
 
-	sending, err := json.Marshal(surface.Sent{Message: "let me in"})
-	if err != nil {
-		t.Fatalf("writing what a person sent: %v", err)
-	}
+	kind, sending := form(t, surface.Sent{Message: "let me in"}, nil)
 
-	answered, err := http.Post(held.under("/answer"), "application/json", bytes.NewReader(sending))
+	answered, err := http.Post(held.under("/answer"), kind, bytes.NewReader(sending))
 	if err != nil {
 		t.Fatalf("reaching the surface: %v", err)
 	}
@@ -450,12 +514,12 @@ func TestDeliveryHappensOnce(t *testing.T) {
 
 func TestAnAnswerTheSessionCouldNotKeepIsLeftUncollected(t *testing.T) {
 	exchange := surface.NewExchange(twoDecisions(), time.Now())
-	if _, err := exchange.Receive(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}, Message: "kept for later"}); err != nil {
+	if _, err := exchange.Receive(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}}}, Message: "kept for later"}, surface.Uploads{}); err != nil {
 		t.Fatalf("sending an answer: %v", err)
 	}
 
 	diskIsFull := errors.New("no space left on device")
-	_, arrived, err := exchange.Await(context.Background(), time.Second, func(surface.Answered) error { return diskIsFull })
+	_, arrived, err := exchange.Await(context.Background(), time.Second, func(surface.Answered, string) (surface.Answered, error) { return surface.Answered{}, diskIsFull })
 	if !errors.Is(err, diskIsFull) {
 		t.Errorf("collecting an answer the session could not keep reported %v, want %v", err, diskIsFull)
 	}
@@ -569,7 +633,7 @@ func TestTheSurfaceRunsNothingAndWritesOnlyItsOwnState(t *testing.T) {
 		t.Fatal("an answer was sent and nothing was delivered")
 	}
 
-	kept := append(slices.Clone(before), filepath.Join("sessions", held.session, "answer.json"))
+	kept := append(slices.Clone(before), filepath.Join("sessions", held.session, "answers", "1", "answer.json"))
 	slices.Sort(kept)
 	if diff := cmp.Diff(kept, within(t, held.home)); diff != "" {
 		t.Errorf("an answer being collected wrote other than the answer its own session keeps (-want +after):\n%s", diff)

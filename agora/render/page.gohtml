@@ -77,9 +77,17 @@
 </div>
 {{end}}
 
-{{template "ui-field" (dict "Class" "words-field state-closed:hidden!" "Caption" "In your own words" "Name" (printf "words-%s" .ID) "Rows" 2 "Placeholder" "Answering here alone is a complete answer." "Interaction" "answering" "Decision" .ID "Disabled" $.Over)}}
+<div class="flex flex-col gap-2 state-closed:hidden!">
+<p class="text-small font-bold" aria-hidden="true">In your own words</p>
+{{template "ui-file-tray" (fileTray "tray state-closed:hidden!" "answering" $.Over "decision-words" (dict "ID" .ID "Over" $.Over))}}
+</div>
 </div>{{end}}
-{{define "composer-content"}}{{template "ui-field" (dict "Class" "message-field phase-not-open:hidden!" "Caption" "Anything to say to whoever asked" "Name" "message" "Rows" 3 "Interaction" "sending" "Disabled" .Over)}}
+{{define "decision-words"}}{{template "ui-field" (dict "Class" "words-field state-closed:hidden!" "Caption" "In your own words" "Name" (printf "words-%s" .ID) "Rows" 2 "Placeholder" "Answering here alone is a complete answer." "Interaction" "answering" "Decision" .ID "Disabled" .Over "Embedded" true)}}{{end}}
+{{define "composer-words"}}{{template "ui-field" (dict "Class" "message-field phase-not-open:hidden!" "Caption" "Anything to say to whoever asked" "Name" "message" "Rows" 3 "Interaction" "sending" "Disabled" . "Embedded" true)}}{{end}}
+{{define "composer-content"}}<div class="flex flex-col gap-2 phase-not-open:hidden!">
+<p class="text-small font-bold" aria-hidden="true">Anything to say to whoever asked</p>
+{{template "ui-file-tray" (fileTray "tray phase-not-open:hidden!" "sending" .Over "composer-words" .Over)}}
+</div>
 
 <footer class="bar flex flex-wrap items-center gap-4 border-t border-rule-soft pt-4 phase-not-open:border-t-0 phase-not-open:pt-0 in-panel:flex-1 in-panel:flex-col in-panel:flex-nowrap in-panel:items-stretch in-panel:gap-3 in-panel:border-t-0 in-panel:pt-0">
 <output class="receipt grid basis-full grid-cols-notice gap-x-4 rounded-md bg-state-resolved-wash px-4 py-3 in-panel:basis-auto" data-interaction="sending" hidden aria-live="polite">
@@ -88,6 +96,7 @@
 <span class="receipt-heading font-bold text-fg-1">Sent. Here is what went:</span>
 <ul class="receipt-decisions flex flex-col gap-0.5 text-small wrap-anywhere text-fg-receipt"></ul>
 <span class="receipt-message mt-0.5 text-small wrap-anywhere text-fg-receipt empty:hidden"></span>
+<ul class="receipt-message-files flex flex-col gap-0.5 pl-3 text-small wrap-anywhere text-fg-receipt empty:hidden"></ul>
 </span>
 </output>
 <div class="sends flex flex-wrap gap-3 phase-not-open:hidden in-panel:flex-nowrap">
@@ -161,7 +170,8 @@
 <span class="settled-said flex min-w-0 grow shrink basis-75 flex-col gap-1 text-fg-1">
 {{if .Chosen}}<span class="settled-chosen font-bold">{{.Chosen}}</span>{{end}}
 {{if .Words}}<span class="settled-words">“{{.Words}}”</span>{{end}}
-{{if and (not .Chosen) (not .Words)}}<span class="settled-left text-fg-3">Left to whoever asked</span>{{end}}
+{{if .Attached}}<ul class="settled-attachments flex flex-wrap gap-x-3 gap-y-1 text-small text-fg-2">{{range .Attached}}<li class="settled-attachment font-mono wrap-anywhere">{{.}}</li>{{end}}</ul>{{end}}
+{{if and (not .Chosen) (not .Words) (not .Attached)}}<span class="settled-left text-fg-3">Left to whoever asked</span>{{end}}
 </span>
 </div>
 </li>

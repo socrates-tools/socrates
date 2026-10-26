@@ -29,6 +29,10 @@ const (
 	copiedWord = "Copied"
 	notCopied  = "Could not copy"
 
+	fileTrayAttachLabel = "Attach files"
+	fileTrayRemoveLabel = "Remove"
+	fileTrayRefusal     = "At most %d files can be attached here, so the rest were not attached."
+
 	severityErrorName   = "Error"
 	severityError       = "Severity: Error"
 	severityErrorHint   = "Likely wrong; the change should not land as it is."
@@ -125,6 +129,7 @@ const (
 	fieldEmpty            = "an empty field"
 	fieldWithAPlaceholder = "a field with a placeholder"
 	fieldDisabled         = "a field that cannot be typed into"
+	fieldEmbedded         = "a field drawn without a border, for a container that supplies one"
 
 	catalogFieldCaption     = "A field"
 	catalogFieldPlaceholder = "A placeholder"
@@ -156,6 +161,12 @@ const (
 
 	expandResting  = "an expand control at rest"
 	expandExpanded = "an expand control that is expanded"
+
+	fileTrayEmpty    = "a file tray holding nothing"
+	fileTrayHolding  = "a file tray holding an image and a text file"
+	fileTrayFull     = "a file tray holding as many files as it takes"
+	fileTrayRefusing = "a file tray refusing a file past its ceiling"
+	fileTrayDisabled = "a file tray that cannot be changed"
 
 	expandLabel = "Expand"
 	expandHint  = "Lays what it expands over the whole window. Escape closes it."

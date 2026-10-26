@@ -32,7 +32,10 @@ const (
 
 	SendsNothing     = "socrates review sends nothing"
 	SendsToTheVendor = "sends the change to"
-	NotAffiliated    = "not affiliated"
+
+	AttachedFileStaysHere       = "a file attached on an agora page stays on this machine"
+	AttachedFileGoesToTheVendor = "recorded with `--attach` is read by the reviewer CLI, which sends it to its vendor"
+	NotAffiliated               = "not affiliated"
 
 	DrawingSendsNothing = "a drawing sends nothing"
 
@@ -229,6 +232,20 @@ func ReachUnstated(root string) ([]string, error) {
 			unstated = append(unstated, fmt.Sprintf("%s says the reviewer CLI %s its vendor and never says %q", named, SendsToTheVendor, SendsNothing))
 		case !itself && !vendor:
 			unstated = append(unstated, fmt.Sprintf("%s states neither half of where what socrates review reads goes, and silence there is read as unknown", named))
+		}
+	}
+	return unstated, nil
+}
+
+func AttachmentReachUnstated(root string) ([]string, error) {
+	held, err := Document(root, FrontDocumentFile)
+	if err != nil {
+		return nil, err
+	}
+	var unstated []string
+	for _, half := range []string{AttachedFileStaysHere, AttachedFileGoesToTheVendor} {
+		if !strings.Contains(held, half) {
+			unstated = append(unstated, fmt.Sprintf("%s never says %q", FrontDocumentFile, half))
 		}
 	}
 	return unstated, nil

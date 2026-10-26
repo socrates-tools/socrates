@@ -242,6 +242,22 @@ func TestThePolicyAdmitsTheFrameAndEmbedsNothingACallerWrote(t *testing.T) {
 	}
 }
 
+func TestThePolicyAdmitsBlobOnlyForImages(t *testing.T) {
+	policy := policyOf(t, rendered(t, oneDecision(document.One)))
+
+	for _, directive := range strings.Split(policy, ";") {
+		directive = strings.TrimSpace(directive)
+		admitsBlob := strings.Contains(directive, "blob:")
+		isImageDirective := strings.HasPrefix(directive, "img-src ")
+		if admitsBlob && !isImageDirective {
+			t.Errorf("the policy admits blob: in %q, and only images are previewed from memory", directive)
+		}
+		if isImageDirective && !admitsBlob {
+			t.Errorf("the policy does not admit blob: for images in %q", directive)
+		}
+	}
+}
+
 func TestADocumentRendersWithoutTheCallerWritingMarkup(t *testing.T) {
 	read := oneDecision(document.One)
 	read.Decisions[0].Illustration = document.Illustration{}

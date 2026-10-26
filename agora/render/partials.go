@@ -39,6 +39,7 @@ func parsedPage() *template.Template {
 		"overlineCounted": overlineCounting,
 		"progressBar":     progressBarOf,
 		"statusDot":       statusDotOf,
+		"fileTray":        fileTrayFor,
 	}).Parse(pageSource))
 	template.Must(root.ParseFS(partialSources, "partials/*.gohtml"))
 	template.Must(root.New("catalog").Parse(catalogSource))

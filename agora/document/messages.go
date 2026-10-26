@@ -26,5 +26,6 @@ const (
 	repeatedSettledIdentifier        = "two settled answers carry the identifier %q, so a person reopening it would name two things"
 	settledAndStillOpen              = "%q is both settled and still open as a decision, and a question is one or the other: move it to the decisions or to what was settled"
 	settledStatesNothingFor          = "settled answer %q states no %q"
+	settledAttachmentStatesNothing   = "settled answer %q names a blank attachment at position %d, so the page would show an attachment that says nothing"
 	settledChoiceStatesNothing       = "settled answer %q chose a blank label at position %d, so the page would show a choice that says nothing"
 )

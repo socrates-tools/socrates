@@ -29,11 +29,11 @@ func Binaries() []string {
 }
 
 func Document(host skill.Host) string {
-	return assembled(skill.FrontMatter(host, Name, description), purpose, host.Guidance(reviewPage, true), rules(), thePage(theAnswerAPageCarries), fmt.Sprintf(theLoop, host.Flag), prohibitions)
+	return assembled(skill.FrontMatter(host, Name, description), purpose, host.Guidance(reviewPage, true), rules(), thePage(theAnswerAPageCarries, passingTheAttachments), fmt.Sprintf(theLoop, host.Flag), prohibitions)
 }
 
-func thePage(answer string) string {
-	return fmt.Sprintf(pageTemplate, answer)
+func thePage(answer, attachments string) string {
+	return fmt.Sprintf(pageTemplate, answer, attachments)
 }
 
 func assembled(parts ...string) string {

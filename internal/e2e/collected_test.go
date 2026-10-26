@@ -57,7 +57,7 @@ func TestACollectedAnswerIsWrittenToTheSessionBeforePollPrintsIt(t *testing.T) {
 		t.Fatalf("agora poll exited %d: %s", code, failures)
 	}
 
-	written, err := os.ReadFile(filepath.Join(held.surfaceHome(), "sessions", held.opened, "answer.json"))
+	written, err := os.ReadFile(filepath.Join(held.surfaceHome(), "sessions", held.opened, "answers", "1", "answer.json"))
 	if err != nil {
 		t.Fatalf("the session holds no answer once agora poll printed one: %v", err)
 	}
@@ -70,6 +70,86 @@ func TestACollectedAnswerIsWrittenToTheSessionBeforePollPrintsIt(t *testing.T) {
 	}
 	if diff := cmp.Diff(handed, kept); diff != "" {
 		t.Errorf("the session holds otherwise than agora poll printed (-printed +held):\n%s", diff)
+	}
+}
+
+func TestEveryAnswerCollectedInOneSessionStaysOnDiskInAFolderOfItsOwnInTheOrderCollected(t *testing.T) {
+	t.Parallel()
+	const inRoundOne = "the first round, in my own words"
+	const inRoundTwo = "the second round, in my own words"
+
+	held := standing(t)
+	held.serve(oneDecisionDocument)
+
+	for _, words := range []string{inRoundOne, inRoundTwo} {
+		held.answer(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}, Words: words}}})
+		if _, failures, code := held.poll(); code != exit.NothingAsked {
+			t.Fatalf("agora poll exited %d: %s", code, failures)
+		}
+	}
+
+	for number, words := range map[string]string{"1": inRoundOne, "2": inRoundTwo} {
+		written, err := os.ReadFile(filepath.Join(held.surfaceHome(), "sessions", held.opened, "answers", number, "answer.json"))
+		if err != nil {
+			t.Fatalf("the session holds no answer %s once two were collected: %v", number, err)
+		}
+		if !strings.Contains(string(written), words) {
+			t.Errorf("answers/%s/answer.json holds %s, want the words %q", number, written, words)
+		}
+	}
+}
+
+func TestPollLastPrintsTheSecondAnswerCollectedAndNotTheFirstWithNoSurfaceRunning(t *testing.T) {
+	t.Parallel()
+	const inRoundOne = "the first round, in my own words"
+	const inRoundTwo = "the second round, in my own words"
+
+	held := standing(t)
+	held.serve(oneDecisionDocument)
+	for _, words := range []string{inRoundOne, inRoundTwo} {
+		held.answer(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}, Words: words}}})
+		if _, failures, code := held.poll(); code != exit.NothingAsked {
+			t.Fatalf("agora poll exited %d: %s", code, failures)
+		}
+	}
+	if _, failures, code := held.run("stop"); code != exit.NothingAsked {
+		t.Fatalf("agora stop exited %d: %s", code, failures)
+	}
+
+	printed, failures, code := held.poll("--last")
+	if code != exit.NothingAsked {
+		t.Fatalf("agora poll --last with no surface standing exited %d: %s", code, failures)
+	}
+	if !strings.Contains(printed, inRoundTwo) || strings.Contains(printed, inRoundOne) {
+		t.Errorf("agora poll --last printed:\n%s\nwant the second answer alone", printed)
+	}
+}
+
+func TestAnAnswerTheSessionCouldNotKeepStaysUncollectedAndTheNextPollCollectsIt(t *testing.T) {
+	t.Parallel()
+	const inTheirOwnWords = "the disk was full when I said this"
+
+	held := standing(t)
+	held.serve(oneDecisionDocument)
+	held.answer(surface.Sent{Decisions: []surface.Choice{{ID: "c-1", Chosen: []int{0}, Words: inTheirOwnWords}}})
+
+	blocking := filepath.Join(held.surfaceHome(), "sessions", held.opened, "answers")
+	if err := os.WriteFile(blocking, []byte("a file where the folder of answers belongs"), 0o600); err != nil {
+		t.Fatalf("making the session unable to keep an answer: %v", err)
+	}
+	if printed, _, code := held.poll(); code == exit.NothingAsked {
+		t.Fatalf("agora poll succeeded though the session could not keep the answer: %s", printed)
+	}
+
+	if err := os.Remove(blocking); err != nil {
+		t.Fatalf("letting the session keep answers again: %v", err)
+	}
+	printed, failures, code := held.poll()
+	if code != exit.NothingAsked {
+		t.Fatalf("the next agora poll exited %d: %s", code, failures)
+	}
+	if !strings.Contains(printed, inTheirOwnWords) {
+		t.Errorf("the next agora poll did not collect the answer the session could not keep:\n%s", printed)
 	}
 }
 
