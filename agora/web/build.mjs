@@ -175,10 +175,24 @@ function commentsIn(file) {
 
 const settlingMilliseconds = 100
 
+let running
+
 function buildOnce() {
   return new Promise((done) => {
-    spawn(process.execPath, [fileURLToPath(import.meta.url)], { stdio: 'inherit' }).on('close', (code) => done(code === 0))
+    running = spawn(process.execPath, [fileURLToPath(import.meta.url)], { stdio: 'inherit' })
+    running.on('close', (code) => {
+      running = undefined
+      done(code === 0)
+    })
   })
+}
+
+function stopWatching() {
+  if (!running) {
+    process.exit(0)
+  }
+  running.on('close', () => process.exit(0))
+  running.kill('SIGTERM')
 }
 
 async function rebuildOnEverySave() {
@@ -209,13 +223,12 @@ async function rebuildOnEverySave() {
     settling = setTimeout(rebuild, settlingMilliseconds)
   }
 
+  process.once('SIGINT', stopWatching)
+  process.once('SIGTERM', stopWatching)
+
   const watched = [...stamped.map((name) => join(here, name)), ...classSourcesOutsideTheClient]
   watched.filter(existsSync).forEach((path) => watch(path, { recursive: true }, saved))
   await rebuild()
-
-  const interrupted = () => process.exit(0)
-  process.once('SIGINT', interrupted)
-  process.once('SIGTERM', interrupted)
   await new Promise(() => {})
 }
 

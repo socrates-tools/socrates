@@ -184,8 +184,19 @@ printf '%s\n' "$fixed" > "$scratch/agora/web/packages/surface/exchange.ts"
 if ! until_it "grep -qs 'rebuilt after the fix' '$scratch/agora/assets/bundle/height.js'"; then
   fail "the watch did not rebuild the bundle once the type error was fixed: $(cat "$watching")"
 fi
+printf "console.log('saved once more')\n" >> "$scratch/agora/web/packages/surface/height.ts"
+if ! until_it "pgrep -P '$watcher' >/dev/null"; then
+  fail "the watch did not start a build for a save"
+fi
+building=$(pgrep -P "$watcher" || true)
 kill "$watcher" 2>/dev/null || true
 wait "$watcher" 2>/dev/null || true
+for build in $building; do
+  if kill -0 "$build" 2>/dev/null; then
+    fail "a build the watch started outlived the watch"
+    kill "$build" 2>/dev/null || true
+  fi
+done
 
 if [ "$failures" -ne 0 ]; then
   exit 1
