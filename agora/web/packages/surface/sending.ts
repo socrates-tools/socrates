@@ -148,7 +148,7 @@ async function send(ends: boolean): Promise<void> {
   })
 
   if (!answered.ok) {
-    say(`That was not accepted: ${answered.status}. Nothing was sent.`, 'error')
+    say(`Nothing was sent: ${(await answered.text()).trim() || `the surface answered ${answered.status}`}.`, 'error')
     return
   }
 

@@ -335,7 +335,7 @@ func resolve(read document.Document, sent Sent, uploads Uploads) (Answered, erro
 				decided.Commands = append(decided.Commands, option.Command)
 			}
 		}
-		attachments, err := attachmentsNamed(choice.Attached, uploads, claimed)
+		attachments, err := attachmentsNamed(fmt.Sprintf(trayOfADecision, choice.ID), choice.Attached, uploads, claimed)
 		if err != nil {
 			return Answered{}, err
 		}
@@ -343,7 +343,7 @@ func resolve(read document.Document, sent Sent, uploads Uploads) (Answered, erro
 		answered.Decisions = append(answered.Decisions, decided)
 	}
 
-	attachments, err := attachmentsNamed(sent.Attached, uploads, claimed)
+	attachments, err := attachmentsNamed(trayOfTheMessage, sent.Attached, uploads, claimed)
 	if err != nil {
 		return Answered{}, err
 	}

@@ -118,7 +118,7 @@ func statusDotOf(class, tone string) statusDotView {
 	return statusDotView{Class: class, Tone: tone}
 }
 
-const defaultFileTrayCeiling = 10
+const FilesPerTray = 10
 
 func fileTrayOf(class string, max int) fileTrayView {
 	return fileTrayView{
@@ -132,7 +132,7 @@ func fileTrayOf(class string, max int) fileTrayView {
 }
 
 func fileTrayFor(class, interaction string, disabled bool) fileTrayView {
-	view := fileTrayOf(class, defaultFileTrayCeiling)
+	view := fileTrayOf(class, FilesPerTray)
 	view.Interaction = interaction
 	view.Disabled = disabled
 	return view
