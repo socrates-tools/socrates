@@ -464,3 +464,65 @@ func TestAnAttachmentIsNamedBesideWhatTheAuthorSaid(t *testing.T) {
 		}
 	})
 }
+
+func secondRoundSettled() Request {
+	request := secondRound()
+	request.Prior[0].Responses[2] = dialogue.Response{Finding: "f4", Resolution: dialogue.Settled, Reason: "The importer reads this parser, so the session kept it."}
+	return request
+}
+
+func TestARunWithNobodyToAskArrivesAsTheSessionsDecision(t *testing.T) {
+	delivered := Build(secondRoundSettled()).Text
+	block, present := BodyOf(Sections(delivered), PriorHeading)
+	if !present {
+		t.Fatalf("a second round delivered no %q section:\n%s", PriorHeading, delivered)
+	}
+
+	t.Run("A settled finding is the decision of the session that started the run, with its reason", func(t *testing.T) {
+		settlement := claimAbout(t, deliveredClaims(t, block), "f4")
+		if !strings.HasPrefix(settlement.AuthorResponse, "The session that started this run decided this finding") {
+			t.Errorf("a settled finding does not arrive as the session's decision: %q", settlement.AuthorResponse)
+		}
+		if settlement.AuthorSaid != "The importer reads this parser, so the session kept it." {
+			t.Errorf("the reason for what was settled did not arrive: %q", settlement.AuthorSaid)
+		}
+		if strings.Contains(settlement.AuthorResponse, "fixed") {
+			t.Errorf("a settlement arrives as a claimed fix: %q", settlement.AuthorResponse)
+		}
+	})
+
+	t.Run("A settled finding is never said to be answered by a person", func(t *testing.T) {
+		if strings.Contains(strings.ToLower(delivered), "a person answered") {
+			t.Errorf("the delivered prompt says a person answered a settled finding:\n%s", delivered)
+		}
+	})
+
+	t.Run("The reviewer is asked to judge the code against what was settled", func(t *testing.T) {
+		clause, _ := BodyOf(Sections(delivered), ProvenanceHeading)
+		for _, asked := range []string{
+			"is a claim that the session that started the run decided it",
+			"Judge whether the code now matches what was settled, and say so where the settlement leaves the finding unresolved.",
+		} {
+			if !strings.Contains(clause, asked) {
+				t.Errorf("the clause does not carry %q:\n%s", asked, clause)
+			}
+		}
+	})
+}
+
+func TestADecidedFindingStillArrivesAsAPersonsAnswerBesideASettledOne(t *testing.T) {
+	request := secondRoundSettled()
+	request.Prior[0].Findings = append(request.Prior[0].Findings, findings.Finding{ID: "f5", Severity: findings.Error, File: "internal/parse/parse.go", Line: 80, Description: "This flag does not look like something the product needs.", Action: findings.AskUser})
+	request.Prior[0].Responses = append(request.Prior[0].Responses, dialogue.Response{Finding: "f5", Resolution: dialogue.Decided, Reason: "Vic decided the flag stays."})
+
+	delivered := Build(request).Text
+	block, _ := BodyOf(Sections(delivered), PriorHeading)
+	claims := deliveredClaims(t, block)
+
+	if got := claimAbout(t, claims, "f5").AuthorResponse; !strings.HasPrefix(got, "A person answered this finding") {
+		t.Errorf("a decided finding does not arrive as a person's answer: %q", got)
+	}
+	if got := claimAbout(t, claims, "f4").AuthorResponse; strings.Contains(got, "person") {
+		t.Errorf("a settled finding arrives naming a person: %q", got)
+	}
+}
