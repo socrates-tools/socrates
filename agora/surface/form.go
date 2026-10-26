@@ -29,7 +29,7 @@ const (
 	unnamedAttachedFile = "file"
 )
 
-var errFileIsOverTheCeiling = errors.New("a file is over the ceiling")
+var errFileIsOverTheCeiling = errors.New(fileIsOverTheCeilingInternally)
 
 type Staged struct {
 	Name  string
