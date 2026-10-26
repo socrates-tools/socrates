@@ -11,10 +11,16 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/socrates-tools/socrates/agora/render"
 )
 
 const (
-	AnswerCeiling = 100 << 20
+	mebibyte = 1 << 20
+
+	FileCeiling   = 20 * mebibyte
+	AnswerCeiling = 100 * mebibyte
+	TrayCeiling   = render.FilesPerTray
 
 	answerPart          = "answer"
 	incomingPattern     = "incoming-*"
@@ -22,6 +28,8 @@ const (
 	unknownAttachedType = "application/octet-stream"
 	unnamedAttachedFile = "file"
 )
+
+var errFileIsOverTheCeiling = errors.New("a file is over the ceiling")
 
 type Staged struct {
 	Name  string
@@ -69,7 +77,11 @@ func (f *formReading) discard() {
 func (f *formReading) refuse(failure error, status int) bool {
 	var overTheCeiling *http.MaxBytesError
 	if errors.As(failure, &overTheCeiling) {
-		http.Error(f.writer, fmt.Sprintf(answerIsOverTheCeiling, AnswerCeiling), http.StatusRequestEntityTooLarge)
+		http.Error(f.writer, fmt.Sprintf(answerIsOverTheCeiling, AnswerCeiling/mebibyte), http.StatusRequestEntityTooLarge)
+		return false
+	}
+	if errors.Is(failure, errFileIsOverTheCeiling) {
+		http.Error(f.writer, fmt.Sprintf(fileIsOverTheCeiling, FileCeiling/mebibyte), http.StatusRequestEntityTooLarge)
 		return false
 	}
 	http.Error(f.writer, failure.Error(), status)
@@ -143,13 +155,16 @@ func (f *formReading) stage(name string, part *multipart.Part) bool {
 	if err != nil {
 		return f.refuse(fmt.Errorf(stagingTheAttachment, err), http.StatusInternalServerError)
 	}
-	written, copying := io.Copy(held, part)
+	written, copying := io.Copy(held, io.LimitReader(part, FileCeiling+1))
 	closing := held.Close()
 	if copying != nil {
 		return f.refuse(copying, http.StatusBadRequest)
 	}
 	if closing != nil {
 		return f.refuse(fmt.Errorf(stagingTheAttachment, closing), http.StatusInternalServerError)
+	}
+	if written > FileCeiling {
+		return f.refuse(errFileIsOverTheCeiling, http.StatusRequestEntityTooLarge)
 	}
 
 	f.uploads.Parts[name] = Staged{Name: statedName(part), Type: statedType(part), Bytes: written, Path: path}

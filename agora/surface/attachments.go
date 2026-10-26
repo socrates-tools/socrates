@@ -18,7 +18,10 @@ const (
 	storedNameTemplate = "%d-%s"
 )
 
-func attachmentsNamed(names []string, uploads Uploads, claimed map[string]bool) ([]Attachment, error) {
+func attachmentsNamed(owner string, names []string, uploads Uploads, claimed map[string]bool) ([]Attachment, error) {
+	if len(names) > TrayCeiling {
+		return nil, fmt.Errorf(trayIsOverTheCeiling, len(names), owner, TrayCeiling)
+	}
 	var attachments []Attachment
 	for _, name := range names {
 		staged, carried := uploads.Parts[name]

@@ -330,11 +330,11 @@ var catalogued = map[string][]state{
 		stateDrawn("expanded", expandExpanded, expandView{Label: expandLabel, Hint: expandHint, Expanded: true}),
 	},
 	"ui-file-tray": {
-		stateDrawn("empty", fileTrayEmpty, fileTrayOf("catalog-file-tray", defaultFileTrayCeiling)),
-		stateDrawn("holding-an-image-and-a-text-file", fileTrayHolding, sampled(fileTrayOf("catalog-file-tray", defaultFileTrayCeiling), "image-and-text")),
-		stateDrawn("full", fileTrayFull, sampled(fileTrayOf("catalog-file-tray", defaultFileTrayCeiling), "full")),
-		stateDrawn("refusing", fileTrayRefusing, sampled(fileTrayOf("catalog-file-tray", defaultFileTrayCeiling), "refusing")),
-		stateDrawn("disabled", fileTrayDisabled, disabledTray(sampled(fileTrayOf("catalog-file-tray", defaultFileTrayCeiling), "image-and-text"))),
+		stateDrawn("empty", fileTrayEmpty, fileTrayOf("catalog-file-tray", FilesPerTray)),
+		stateDrawn("holding-an-image-and-a-text-file", fileTrayHolding, sampled(fileTrayOf("catalog-file-tray", FilesPerTray), "image-and-text")),
+		stateDrawn("full", fileTrayFull, sampled(fileTrayOf("catalog-file-tray", FilesPerTray), "full")),
+		stateDrawn("refusing", fileTrayRefusing, sampled(fileTrayOf("catalog-file-tray", FilesPerTray), "refusing")),
+		stateDrawn("disabled", fileTrayDisabled, disabledTray(sampled(fileTrayOf("catalog-file-tray", FilesPerTray), "image-and-text"))),
 	},
 	"ui-overline": {
 		overlineState(overlineWordsAlone, overlineOf("", catalogOverlineWords)),

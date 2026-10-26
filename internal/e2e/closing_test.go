@@ -100,7 +100,7 @@ func answersWhatTheCallerAskedAgain(t *testing.T, held *surfaced, page *reader, 
 
 	var said string
 	page.evaluate(`document.querySelector('.state').textContent`, &said)
-	if strings.Contains(said, "not accepted") {
+	if strings.Contains(said, "Nothing was sent") {
 		t.Errorf("an answer sent from %s was refused: %q", how, said)
 	}
 }

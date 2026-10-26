@@ -196,6 +196,18 @@ func (s *standing) posting(t *testing.T, address, token string, body []byte) int
 
 func (s *standing) postingAs(t *testing.T, address, token, kind string, body []byte) int {
 	t.Helper()
+	code, _ := s.postingSaid(t, address, token, kind, body)
+	return code
+}
+
+func (s *standing) sendCarryingSaid(t *testing.T, sent surface.Sent, parts map[string]carried) (int, string) {
+	t.Helper()
+	kind, body := form(t, sent, parts)
+	return s.postingSaid(t, s.at(surface.SessionPrefix+s.session+"/answer"), s.token, kind, body)
+}
+
+func (s *standing) postingSaid(t *testing.T, address, token, kind string, body []byte) (int, string) {
+	t.Helper()
 
 	request, err := http.NewRequest(http.MethodPost, address, bytes.NewReader(body))
 	if err != nil {
@@ -209,7 +221,8 @@ func (s *standing) postingAs(t *testing.T, address, token, kind string, body []b
 		t.Fatalf("reaching the surface: %v", err)
 	}
 	defer func() { _ = answered.Body.Close() }()
-	return answered.StatusCode
+	said, _ := io.ReadAll(answered.Body)
+	return answered.StatusCode, string(said)
 }
 
 func (s *standing) fetch(t *testing.T, address string) (int, string) {
