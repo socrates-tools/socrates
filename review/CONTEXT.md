@@ -42,7 +42,9 @@ Use them rather than synonyms.
 ## The dialogue
 
 - **response**: what the author records against a finding. Appended, never rewritten.
-- **resolution**: which kind of response it is. `fixed` claims a patch, `rejected` claims the finding is false, `decided` records what a person decided, `forwarded` hands the finding to whoever wrote the change, `dropped` records it as true and not raised.
+- **resolution**: which kind of response it is. `fixed` claims a patch, `rejected` claims the finding is false, `decided` records what a person decided, `settled` records what the session that started the run decided where nobody was there to ask, `forwarded` hands the finding to whoever wrote the change, `dropped` records it as true and not raised.
+- **settled**: the resolution of a finding that asks a person, on a run with nobody to ask: the session that started the run decided it, and the reason says what it decided. A claim a fresh reviewer judges, as a decision is. Never means a person answered, which design's and agora's glossaries use the same word for.
+- **nobody to ask**: what a run records when it begins with no person present to answer a finding. Such a run takes `settled` and never `decided`, and every other run takes `decided` and never `settled`.
 - **disposition**: what a resolution of a finding does. A patch in the author's working tree, a comment in somebody else's repository, or nothing at all.
 - **reason**: why, required on a resolution that leaves no artifact behind. A rejection, a decision and a drop are claims a fresh reviewer or a later reader judges, never suppressions.
 - **handover round**: a round of a change nobody here can patch, so every finding of it is forwarded, dropped or rejected. It waits on a person, and no second round follows it. As a noun, handover is this round and nothing else: handing a round over as a page is a verb every round takes.

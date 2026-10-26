@@ -11,4 +11,5 @@ A ticket, a blocker, a wave, a main ticket, abandoned and needs a person are des
 - **implementer**: a subagent the overseer hands one ticket to. It writes the code for that ticket, and patches it when the overseer's review sends feedback back to it.
 - **frontier**: every ticket whose blockers are done. It is what the overseer may hand out.
 - **notes**: what one subagent writes about the code a change touches before the first hand-out, kept outside the repository under `~/.socrates/implement/notes/` and pointed at by every brief. Never committed.
+- **last read**: what the overseer does once the last ticket has landed and passed: she reads the whole change against the spec's user stories while socrates review reads it on both counts, and hands what either finds to one fresh implementer. Not a ticket's review, which reads one ticket's diff.
 - **default branch**: the branch a person starts a feature from in one repository, which socrates asks for once and remembers. Not git's or a forge's default branch, which may be a different one: in a repository whose forge shows `main`, a person who starts every feature from `dev` has `dev` as the default branch.

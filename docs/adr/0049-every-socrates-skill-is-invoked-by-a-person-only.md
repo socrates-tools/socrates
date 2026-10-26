@@ -4,6 +4,7 @@
 - Date: 2026-10-01
 - Part of: socrates-implement
 - Amended by: ADR 67, which gives each host its own switch, `disable-model-invocation` for Claude Code and `agents/openai.yaml` for Codex
+- Amended by: ADR 90, which has the overseer drive socrates review's commands over the whole change at the last read, reversing the second entry of Rejected below
 
 ## Decision
 
