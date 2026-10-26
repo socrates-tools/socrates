@@ -234,3 +234,26 @@ func TestPastingIntoAFullTrayRefusesInPlaceNamingTheCeiling(t *testing.T) {
 		t.Errorf("the refusal says %q, want it to name the ceiling %d", said, ceiling)
 	}
 }
+
+func TestAPasteReadsOnlyTheFilesThePasteEventCarriesAndNeverReadsTheClipboard(t *testing.T) {
+	// scenario: A paste reads only the files the paste event carries and never reads the clipboard itself
+	t.Parallel()
+	_, browser := read(t, twoDecisionDocument)
+	browser.evaluate(`(() => {
+  window.clipboardReads = 0;
+  const counting = () => { window.clipboardReads += 1; return Promise.resolve([]); };
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { read: counting, readText: counting } });
+  return true;
+})()`, nil)
+
+	browser.pasteInto(wordsOfADecision, "some words", clipboardFile{"shot.png", "image/png"})
+
+	var reads int
+	browser.evaluate(`window.clipboardReads`, &reads)
+	if reads != 0 {
+		t.Errorf("the page read the clipboard %d times during a paste", reads)
+	}
+	if diff := cmp.Diff([]string{"shot.png"}, browser.heldBy(trayOfDecision("c-1"))); diff != "" {
+		t.Errorf("the tray pasted into (-want +got):\n%s", diff)
+	}
+}
