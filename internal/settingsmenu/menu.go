@@ -85,6 +85,9 @@ func (m *menu) Init() tea.Cmd {
 }
 
 func (m *menu) View() tea.View {
+	if m.width == 0 {
+		return tea.NewView("")
+	}
 	return tea.NewView(strings.Join(m.lines(), newline) + newline)
 }
 
