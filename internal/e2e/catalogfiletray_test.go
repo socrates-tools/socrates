@@ -373,4 +373,19 @@ func TestADisabledTrayTakesNoDropAndItsControlsCannotBePressed(t *testing.T) {
 	if got := page.announcedByTray()["change"]; got != 0 {
 		t.Errorf("a disabled tray announced change %d times for a drop", got)
 	}
+
+	refused := page.addToTray(tray, "pasted-in.png")
+	if diff := cmp.Diff([]string{"pasted-in.png"}, refused); diff != "" {
+		t.Errorf("add on a disabled tray returned (-want +got):\n%s", diff)
+	}
+	drawn := page.trayDrawn(tray)
+	if diff := cmp.Diff(before, drawn.Files); diff != "" {
+		t.Errorf("add attached a file to a disabled tray (-before +after):\n%s", diff)
+	}
+	if drawn.Refusal != nil {
+		t.Errorf("a disabled tray drew the refusal %q for a file it never took", *drawn.Refusal)
+	}
+	if announced := page.announcedByTray(); announced["change"] != 0 || announced["refused"] != 0 {
+		t.Errorf("a disabled tray announced %v for an add", announced)
+	}
 }

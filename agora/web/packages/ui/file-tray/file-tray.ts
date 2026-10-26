@@ -84,6 +84,9 @@ export class UiFileTray extends UiControl {
   }
 
   add(files: Iterable<File>): File[] {
+    if (this.disabled) {
+      return Array.from(files)
+    }
     const accepted: File[] = []
     const refused: File[] = []
     for (const file of files) {
