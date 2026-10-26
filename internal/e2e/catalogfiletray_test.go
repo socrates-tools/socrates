@@ -582,3 +582,51 @@ func TestFocusingTheFieldInsideATrayRingsTheTraysBorder(t *testing.T) {
 	page.waitFor(`getComputedStyle(document.querySelector(` + jsonOf(t, tray) + `)).boxShadow !== 'none'`)
 	page.waitForTheTraysBorder(tray, true)
 }
+
+func TestTheFieldInsideATrayHasNoResizeGripAndGrowsWithItsTextFromItsRows(t *testing.T) {
+	// scenario: The field inside a tray draws no resize grip, grows with its text and never shrinks below its rows
+	t.Parallel()
+	page := catalogued(t)
+	tray := trayOf(trayEmptyKey)
+
+	var measured struct {
+		Resize      string
+		Resting     float64
+		Grown       float64
+		Shrunk      float64
+		LineHeight  float64
+		Rows        float64
+		VerticalPad float64
+	}
+	page.evaluate(`(async () => {
+  const field = document.querySelector(`+jsonOf(t, tray)+`).querySelector('ui-field');
+  const text = field.shadowRoot.querySelector('textarea');
+  const height = () => text.getBoundingClientRect().height;
+  const settle = () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+  const style = getComputedStyle(text);
+  const resting = height();
+  field.value = Array.from({ length: 9 }, (_, at) => 'line ' + at).join('\n');
+  await settle();
+  const grown = height();
+  field.value = '';
+  await settle();
+  return {
+    Resize: style.resize, Resting: resting, Grown: grown, Shrunk: height(),
+    LineHeight: parseFloat(style.lineHeight), Rows: text.rows,
+    VerticalPad: parseFloat(style.paddingTop) + parseFloat(style.paddingBottom),
+  };
+})()`, &measured, awaitingThePromise)
+
+	if measured.Resize != "none" {
+		t.Errorf("the field inside the tray has resize %q, want none so no grip is drawn", measured.Resize)
+	}
+	if measured.Resting < measured.Rows*measured.LineHeight+measured.VerticalPad-1 {
+		t.Errorf("the empty field is %vpx high, want at least its %v rows", measured.Resting, measured.Rows)
+	}
+	if measured.Grown < measured.Resting+4*measured.LineHeight {
+		t.Errorf("the field holding nine lines is %vpx high against %vpx empty, want it grown with its text", measured.Grown, measured.Resting)
+	}
+	if measured.Shrunk != measured.Resting {
+		t.Errorf("the cleared field is %vpx high, want %vpx again", measured.Shrunk, measured.Resting)
+	}
+}

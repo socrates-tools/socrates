@@ -68,6 +68,7 @@ The design this was drawn from is `docs/changes/attachments/design.html`, beside
   Attached files show as square tiles at the top of the box, above the text, and a small square plus button sits at the bottom left inside the border and opens the file picker directly.
   A tile shows an image's thumbnail filling it, or a type badge and the name for anything else, and a remove control appears on it on hover and on focus and stays reachable by keyboard.
   No hint and no counter are drawn: files dragged over the box or over its card highlight the box's own border, and a file past the ceiling is refused in place inside the box, naming the ceiling.
+  The field inside has no resize grip and grows with its text from its rows.
   A disabled or closed field draws no plus.
 - The tray is one new primitive, `ui-file-tray`, a Lit element in its own folder of `packages/ui` naming nothing of agora's domain.
   It draws the box with the one border around whatever it wraps, the attach button, the drop target, the tiles with their thumbnail or type badge and remove control and the in-place refusal.

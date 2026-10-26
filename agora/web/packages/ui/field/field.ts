@@ -1,5 +1,5 @@
 import { html } from 'lit'
-import { customElement, property } from 'lit/decorators.js'
+import { customElement, property, query } from 'lit/decorators.js'
 import { live } from 'lit/directives/live.js'
 import { UiControl } from '../control'
 
@@ -18,9 +18,11 @@ const boxed: Look = {
   disabled: 'cursor-not-allowed opacity-55',
 }
 
+const embeddedVerticalPaddingInSpacings = 4
+
 const embedded: Look = {
   caption: 'sr-only',
-  written: 'w-full resize-y bg-transparent px-3 py-2 text-body leading-field text-fg-1 placeholder:text-fg-placeholder focus:outline-none',
+  written: 'field-sizing-content w-full resize-none bg-transparent px-3 py-2 text-body leading-field text-fg-1 placeholder:text-fg-placeholder focus:outline-none',
   enabled: '',
   disabled: 'cursor-not-allowed',
 }
@@ -37,6 +39,7 @@ export class UiField extends UiControl {
   @property({ type: Boolean, reflect: true }) accessor disabled = false
   @property({ type: Boolean, reflect: true }) accessor embedded = false
   @property({ attribute: false }) accessor value = ''
+  @query('textarea') private accessor written!: HTMLTextAreaElement
 
   protected override hostClasses(): string {
     return 'block'
@@ -44,6 +47,7 @@ export class UiField extends UiControl {
 
   protected override updated(): void {
     this.#internals.setFormValue(this.value)
+    this.holdRowsAsTheLeastHeight()
   }
 
   formResetCallback(): void {
@@ -53,10 +57,18 @@ export class UiField extends UiControl {
   protected override render() {
     const look = this.embedded ? embedded : boxed
     const state = this.disabled ? look.disabled : look.enabled
-    return html`<label class="flex flex-col gap-2"><span class=${look.caption}><slot name="caption"></slot></span><textarea class="${look.written} ${state}" rows=${this.rows} placeholder=${this.placeholder} ?disabled=${this.disabled} .value=${live(this.value)} @input=${this.written}></textarea></label>`
+    return html`<label class="flex flex-col gap-2"><span class=${look.caption}><slot name="caption"></slot></span><textarea class="${look.written} ${state}" rows=${this.rows} placeholder=${this.placeholder} ?disabled=${this.disabled} .value=${live(this.value)} @input=${this.typed}></textarea></label>`
   }
 
-  private written(event: Event): void {
+  private holdRowsAsTheLeastHeight(): void {
+    if (!this.embedded) {
+      this.written.style.minHeight = ''
+      return
+    }
+    this.written.style.minHeight = `calc(${this.rows} * 1lh + ${embeddedVerticalPaddingInSpacings} * var(--spacing))`
+  }
+
+  private typed(event: Event): void {
     this.value = (event.target as HTMLTextAreaElement).value
   }
 }
