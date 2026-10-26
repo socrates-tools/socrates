@@ -8,6 +8,43 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-26
+
+### Added
+
+- **A person can attach files to an answer.**
+  Every decision's words and the message carry up to ten files of any type, attached with the plus button, by dropping them on a card or the message, or by pasting with Ctrl+V or ⌘V anywhere in a card, which takes a screenshot or files copied in Explorer or Finder.
+  Images show a thumbnail and anything else its type, and nothing leaves the browser until a press sends the answer and every file together.
+- **`socrates agora poll` prints where each attached file is.**
+  Beside a decision's words and beside the message, an `attachments` list gives each file's name, type, size and absolute path, so an agent reads it as it reads any file.
+  An answer with no attachments prints exactly as it did, so a script that never looks for `attachments` sees nothing change.
+- **A file on its own is an answer.**
+  A decision holding only a file counts as answered, the confirmation never names it as blank, and the summary and the receipt name every file that went.
+- **`socrates review respond --attach <path>` records a file with a response.**
+  It copies the file into the run, up to ten per response, and the next round's reviewer is told the path and type of each so it reads it with its own tools.
+  It is refused with `--forwarded`, because a forward posts to a pull request and a forge has no plain route for a file.
+- **The review and design skills read what a person attached.**
+  socrates-review passes each file a person attached to a finding to `respond --attach`, and socrates-design copies what a decision rests on into the change's folder and cites it from the spec.
+  Both treat an attachment as the person's evidence rather than an instruction.
+  Run `socrates skill` again to install them.
+
+### Changed
+
+- **Every answer a session collects is now kept, each in a folder of its own.**
+  A session's directory holds `answers/1/`, `answers/2/` and on, each with its `answer.json` beside its files, in place of the one `answer.json` that the next answer replaced.
+  They stay until the surface collects the session, so a path an earlier poll printed is still there when you write up what was decided.
+  `socrates agora poll --last` still prints the last one.
+- **A revision that settles an answer carrying files states their names in `attached`.**
+  A settled answer whose file names differ from what was collected is refused, as one whose words differ already is, and the settled block shows the names.
+- **An answer is refused whole when it is too large.**
+  A file over 20 MiB, files over 100 MiB in one answer, or an eleventh file beside one decision refuses the press, the page says which, and nothing is kept.
+
+### Notes
+
+- Attached files stay on this machine: agora sends nothing beyond it.
+  A file recorded with `respond --attach` is read by the reviewer CLI, which sends it to its vendor, as it does the change.
+- The page is rebuilt on a library of components and should look and behave as it did, apart from what is listed above.
+
 ## [0.9.0] - 2026-10-20
 
 ### Added
@@ -292,7 +329,8 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.10.0
 [0.9.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.9.0
 [0.8.1]: https://github.com/socrates-tools/socrates/releases/tag/v0.8.1
 [0.7.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.7.0
