@@ -1,6 +1,8 @@
 import type { UiChoice, UiField, UiFileTray, UiProgressBar } from '@agora/ui'
 import { cards, clear, closestTo, decisionNamed, find, findAll, nameOf } from './page'
 
+const messageName = 'Message'
+
 export interface HeldDecision {
   id: string
   chosen: number[]
@@ -25,7 +27,7 @@ export function filesIn(holder: ParentNode): File[] {
 }
 
 export function answeredIn(card: HTMLElement): boolean {
-  return chosenIn(card).length > 0 || wordsIn(card).trim() !== ''
+  return chosenIn(card).length > 0 || wordsIn(card).trim() !== '' || filesIn(card).length > 0
 }
 
 export function decisionsHeld(): HeldDecision[] {
@@ -44,11 +46,30 @@ function labelAt(card: HTMLElement | null, position: number): string {
   return label ? (label.textContent ?? '').trim() : String(position)
 }
 
-function saying(card: HTMLElement, positions: number[], words: string): string {
+function saying(card: HTMLElement, positions: number[], words: string, files: File[]): string {
   const chosen = positions.map((position) => labelAt(card, position))
   const said = words.trim()
   const answer = said ? chosen.concat(said) : chosen
-  return `${nameOf(card)}: ${answer.length > 0 ? answer.join(', ') : 'nothing'}`
+  if (answer.length > 0) {
+    return `${nameOf(card)}: ${answer.join(', ')}`
+  }
+  return files.length > 0 ? nameOf(card) : `${nameOf(card)}: nothing`
+}
+
+export function fileItems(files: File[], itemClass: string): HTMLElement[] {
+  return files.map((file) => {
+    const item = document.createElement('li')
+    item.className = itemClass
+    item.textContent = file.name
+    return item
+  })
+}
+
+export function filesNamed(files: File[], itemClass: string, listClass: string): HTMLElement {
+  const list = document.createElement('ul')
+  list.className = listClass
+  list.append(...fileItems(files, itemClass))
+  return list
 }
 
 export function describe(decision: HeldDecision): string {
@@ -57,7 +78,7 @@ export function describe(decision: HeldDecision): string {
     const held: (number | string)[] = [...decision.chosen, decision.words.trim()]
     return `${decision.id}: ${held.filter(Boolean).join(', ')}`
   }
-  return saying(card, decision.chosen, decision.words)
+  return saying(card, decision.chosen, decision.words, decision.files)
 }
 
 function markAnswered(mark: HTMLElement | null, answered: boolean): void {
@@ -67,7 +88,29 @@ function markAnswered(mark: HTMLElement | null, answered: boolean): void {
 }
 
 const summaryRowClasses = 'summary-row grid grid-cols-check items-start gap-x-3 px-4 py-3 not-first:border-t not-first:border-rule-soft'
+const summaryBodyClasses = 'summary-body flex min-w-0 flex-col gap-1'
 const summarySaidClasses = 'summary-said text-small wrap-anywhere'
+const summaryFilesClasses = 'summary-files flex flex-col gap-0.5 text-small text-fg-2'
+const summaryFileClasses = 'summary-file wrap-anywhere'
+
+function summaryRow(template: HTMLElement, answered: boolean, said: string, files: File[], extraClass = ''): HTMLElement {
+  const row = document.createElement('li')
+  row.className = `${summaryRowClasses} ${extraClass}`.trim()
+  const mark = template.cloneNode(true) as HTMLElement
+  mark.classList.add('mt-px')
+  markAnswered(mark, answered)
+  const body = document.createElement('div')
+  body.className = summaryBodyClasses
+  const saying = document.createElement('span')
+  saying.className = `${summarySaidClasses} ${answered ? 'text-fg-1' : 'text-fg-3'}`
+  saying.textContent = said
+  body.appendChild(saying)
+  if (files.length > 0) {
+    body.appendChild(filesNamed(files, summaryFileClasses, summaryFilesClasses))
+  }
+  row.append(mark, body)
+  return row
+}
 
 function summarise(): void {
   const summary = find('.summary')
@@ -77,18 +120,14 @@ function summarise(): void {
   }
   clear(summary)
   cards().forEach((card) => {
-    const answered = answeredIn(card)
-    const row = document.createElement('li')
-    row.className = summaryRowClasses
-    const mark = template.cloneNode(true) as HTMLElement
-    mark.classList.add('mt-px')
-    markAnswered(mark, answered)
-    const said = document.createElement('span')
-    said.className = `${summarySaidClasses} ${answered ? 'text-fg-1' : 'text-fg-3'}`
-    said.textContent = saying(card, chosenIn(card), wordsIn(card))
-    row.append(mark, said)
-    summary.appendChild(row)
+    const files = filesIn(card)
+    summary.appendChild(summaryRow(template, answeredIn(card), saying(card, chosenIn(card), wordsIn(card), files), files))
   })
+  const composer = find('.composer')
+  const messageFiles = composer ? filesIn(composer) : []
+  if (messageFiles.length > 0) {
+    summary.appendChild(summaryRow(template, true, messageName, messageFiles, 'summary-message'))
+  }
 }
 
 export function countAnswered(): void {
@@ -122,7 +161,7 @@ function moveToTheWordsOfTheCardDeclined(event: Event): void {
 }
 
 function countWhatACardChanged(event: Event): void {
-  if (closestTo(event, '.decision')) {
+  if (closestTo(event, '.decision, .composer .tray')) {
     countAnswered()
   }
 }

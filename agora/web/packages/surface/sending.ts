@@ -1,5 +1,5 @@
 import { pressOf, type UiField } from '@agora/ui'
-import { type HeldDecision, blankCards, decisionsHeld, describe, filesIn } from './answers'
+import { type HeldDecision, blankCards, decisionsHeld, describe, fileItems, filesIn, filesNamed } from './answers'
 import { askBeforeSending, closeConfirmation } from './confirmation'
 import { exchange, exchangeIsOver } from './exchange'
 import { base, clear, closestTo, find, findAll, say, stand, token } from './page'
@@ -17,6 +17,9 @@ interface Parts {
 
 type Control = HTMLElement & { disabled: boolean }
 
+const receiptFileClasses = 'receipt-file wrap-anywhere'
+const receiptFilesClasses = 'receipt-files flex flex-col gap-0.5 pl-3'
+
 const readOnlyWhileSent = '.choice, .decline, .words-field, .message-field, .tray, .send, .finish'
 
 export function offerToAmend(offered: boolean): void {
@@ -26,7 +29,7 @@ export function offerToAmend(offered: boolean): void {
   }
 }
 
-function showReceipt(sent: Sent, decisions: HeldDecision[], ends: boolean): void {
+function showReceipt(sent: Sent, decisions: HeldDecision[], messageFiles: File[], ends: boolean): void {
   const held = find('.receipt')
   if (!held) {
     return
@@ -38,13 +41,22 @@ function showReceipt(sent: Sent, decisions: HeldDecision[], ends: boolean): void
     decisions.forEach((decision) => {
       const item = document.createElement('li')
       item.textContent = describe(decision)
+      if (decision.files.length > 0) {
+        item.appendChild(filesNamed(decision.files, receiptFileClasses, receiptFilesClasses))
+      }
       list.appendChild(item)
     })
   }
 
   const message = find('.receipt-message', held)
   if (message) {
-    message.textContent = sent.message ? `Said to whoever asked: ${sent.message}` : ''
+    message.textContent = sent.message ? `Said to whoever asked: ${sent.message}` : messageFiles.length > 0 ? 'Sent to whoever asked:' : ''
+  }
+
+  const messageList = find('.receipt-message-files', held)
+  if (messageList) {
+    clear(messageList)
+    messageList.append(...fileItems(messageFiles, receiptFileClasses))
   }
 
   offerToAmend(!ends)
@@ -128,6 +140,7 @@ async function send(ends: boolean): Promise<void> {
   const held = decisionsHeld()
   const message = find<UiField>('.message-field')
   const composer = find('.composer')
+  const messageFiles = composer ? filesIn(composer) : []
   const sent: Sent = {
     decisions: held.map((decision) => ({
       id: decision.id,
@@ -136,7 +149,7 @@ async function send(ends: boolean): Promise<void> {
       attached: namedParts(parts, decision.files),
     })),
     message: message ? message.value : '',
-    attached: composer ? namedParts(parts, filesIn(composer)) : [],
+    attached: namedParts(parts, messageFiles),
     ends,
   }
 
@@ -152,7 +165,7 @@ async function send(ends: boolean): Promise<void> {
     return
   }
 
-  showReceipt(sent, held, ends)
+  showReceipt(sent, held, messageFiles, ends)
 
   if (ends) {
     closeTheExchange()

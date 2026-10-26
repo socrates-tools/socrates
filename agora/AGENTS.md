@@ -102,6 +102,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - A paste anywhere in a decision or the composer hands the tray of that holder every file the paste event carries and reads nothing from the clipboard itself, so no permission prompt appears.
 - Text pastes as it does today: the page never cancels a paste, so a clipboard of text attaches nothing and a clipboard of files and text attaches the files and pastes the text.
 - An unnamed pasted image is named `pasted-<n>` in the order it arrived, numbered after the highest `pasted-<n>` any tray holds, and the ceiling and the in-place refusal apply to a drop and a paste as to the button.
+- A decision holding only files is answered: the index ticks and counts it, the confirmation never names it as blank, and the summary and the receipt name each file under its decision and under the message.
 - Collecting an answer is visible to the page, so the way back from a receipt is offered exactly while it would still reach the caller.
 - Nothing carries across a revision: not a selection, not a typed word, not the message, not the receipt and not an open confirmation, because a decision's identifier is unique only inside the document that names it.
 - A revision settling an identifier the exchange collected an answer for states the question, the labels, the words and the attachment names that were collected, exactly, or is refused before it is written or served, per ADR 59.
