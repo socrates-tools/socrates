@@ -425,3 +425,25 @@ func TestTheLastReadGoesThroughTheSpecsUserStoriesOneByOne(t *testing.T) {
 		"every story the change does not deliver",
 	)
 }
+
+func TestTheOverseerNamesBehaviourTheTicketDidNotAskForAboveAllASiblingTicketsWork(t *testing.T) {
+	saysEach(t, reviewHeading, "an implementer could build ahead into a sibling ticket under way in another worktree",
+		"Name too what the diff does that the ticket does not ask for",
+		"above all what another ticket delivers",
+	)
+}
+
+func TestTheHandBackMapsEachStoryToItsTicketAndNamesEveryOneWayDoor(t *testing.T) {
+	saysEach(t, lastReadHeading, "the person could be asked to publish a change without knowing what it delivers or what cannot be walked back",
+		"each user story with the ticket that delivered it",
+		"every one-way door the change walks through",
+		"say so where there is none",
+	)
+}
+
+func TestTheHandBackNamesFeedbackThatRecurredAsACheckWorthWriting(t *testing.T) {
+	saysEach(t, lastReadHeading, "a mistake fed back to implementer after implementer could be forgotten when the run ends",
+		"feedback you sent for the same mistake to more than one implementer",
+		"a check the repository could run instead",
+	)
+}

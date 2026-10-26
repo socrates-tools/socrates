@@ -244,3 +244,11 @@ func TestEveryAcceptanceCriterionIsFalseWhereTheTicketStarts(t *testing.T) {
 		"restates the title",
 	)
 }
+
+func TestATicketNamesWhatItLeavesToTheTicketsBesideIt(t *testing.T) {
+	ticketsSaysEach(t, aTicketHeading, "an implementer could build ahead into a neighbouring ticket under way in another worktree",
+		"## Left to other tickets",
+		"- 2.2-<task>.md: <what that ticket delivers that this one does not>",
+		"A ticket no other ticket could be mistaken for leaves out Left to other tickets",
+	)
+}

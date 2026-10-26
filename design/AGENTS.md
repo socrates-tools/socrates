@@ -38,6 +38,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - It writes no severity, no `None of these` option and no command on any option, and names no `socrates review` invocation: how a ticket is implemented is the implementing session's own.
 - It cuts from a spec under `docs/changes/<slug>/` and nothing else, refuses a tickets folder that already exists by name, and leaves what it writes uncommitted.
 - A ticket names its blockers and its wave is derived from them, per ADR 44, and status is kept in the main ticket and nowhere else.
+- A ticket names under Left to other tickets each ticket whose work it could be mistaken for doing, and leaves the section out where there is none.
 - A change that fits one fresh context is one ticket, and a blocker is named only where its ticket cannot start without it.
 - Every ticket names the spec's user stories it delivers, the page names any story no card delivers, and a ticket that needs a person says what for.
 - Every acceptance criterion names what would show it false and is false where its ticket starts.

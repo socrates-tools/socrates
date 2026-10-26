@@ -50,13 +50,12 @@ Prefactoring comes first: where the code can be made easier to change, that is a
 A wide refactor is the exception to slicing vertically: one mechanical change whose reach breaks every call site at once, so no slice of it lands green.
 Sequence it as expand and contract instead: expand by adding the new form beside the old, migrate the call sites in batches each blocked by the expand, and contract by removing the old form in a ticket blocked by every batch.
 
-A ticket carries no file path and no code snippet, because both go stale before the ticket is built.
+A ticket carries no file path and no code snippet.
 The exception is a snippet a prototype produced that states a decision more precisely than prose can, such as a state machine or the shape of a type, trimmed to the decision and marked as coming from the prototype.
 
 ## Blockers and waves
 
 Every ticket names the tickets that block it: the ones that must be done before it can start, and no others.
-That list is the whole dependency graph.
 Name a blocker only where the ticket cannot start without its work.
 
 A ticket's wave is derived from its blockers rather than chosen: one more than the highest wave among its blockers, and 1 for a ticket with none.
@@ -103,7 +102,7 @@ Once they are written, say in the terminal every path you wrote.
 ## The main ticket
 
 `README.md` in the tickets folder is the main ticket: the first file whoever implements the change opens, and outside the numbering, so no number has to mean two things.
-It points at the spec and each ADR it names, and repeats no decision and argues for none, because the spec and the ADRs already say what was decided and why.
+It points at the spec and each ADR it names, and repeats no decision and argues for none.
 
 It holds, in this order:
 
@@ -151,14 +150,20 @@ Each task ticket is a file of its own, and holds:
 
     <what building it needs that coding cannot do: a credential, an account, a permission or a manual step>
 
+    ## Left to other tickets
+
+    - 2.2-<task>.md: <what that ticket delivers that this one does not>
+
     ## Blocked by
 
     - 1-prefactor.md
 
 A ticket that needs nothing coding cannot do leaves out Needs a person.
+Left to other tickets names each ticket whose work this one could be mistaken for doing, and what that ticket delivers.
+A ticket no other ticket could be mistaken for leaves out Left to other tickets.
 A ticket with no blockers says None under Blocked by, and can start at once.
 A ticket carries no status: its status is the main ticket's.
-Its acceptance criteria are behaviour to check and nothing more: a ticket names no test and no scenario, because a test's name is code and belongs to whoever builds it, and a repository that wants its tests named for scenarios says so in its own instructions.
+Its acceptance criteria are behaviour to check and nothing more: a ticket names no test and no scenario.
 Each criterion names what somebody would observe were it false, and is false at the commit the ticket starts from: one already true there, one only another ticket's work can meet, or one that restates the title grades nothing.
 
 ## Leaving them to be committed
