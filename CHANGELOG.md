@@ -8,7 +8,9 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
-## [0.10.0] - 2026-10-26
+## [0.10.1] - 2026-10-26
+
+0.10.0 was tagged but never published, so this is the first release since 0.9.0.
 
 ### Added
 
@@ -38,6 +40,14 @@ While the major version is `0`, a minor release may change the surface half in w
   A settled answer whose file names differ from what was collected is refused, as one whose words differ already is, and the settled block shows the names.
 - **An answer is refused whole when it is too large.**
   A file over 20 MiB, files over 100 MiB in one answer, or an eleventh file beside one decision refuses the press, the page says which, and nothing is kept.
+- **A severity mark is filled and an audience mark is outlined.**
+  The hue of a filled mark says how serious a finding is, and an outlined one says who decides, so the two no longer read as two severities side by side.
+  *Your call* is outlined in Aegean, and the index draws it beside an entry's severity so what waits on you stands out when you scan the list.
+
+### Fixed
+
+- **The settings menu no longer flashes a long line clipped at the terminal's edge.**
+  `socrates review configure` draws nothing until it knows the terminal's width, so a path in a reason is always wrapped.
 
 ### Notes
 
@@ -329,8 +339,8 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.10.0...HEAD
-[0.10.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.10.0
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/socrates-tools/socrates/releases/tag/v0.10.1
 [0.9.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.9.0
 [0.8.1]: https://github.com/socrates-tools/socrates/releases/tag/v0.8.1
 [0.7.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.7.0
