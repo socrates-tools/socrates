@@ -110,7 +110,20 @@ func TestARunWithNobodyToAskIsSettledByTheSessionThatBeganIt(t *testing.T) {
 				t.Fatalf("socrates review continue --wait after the settlement exited %d: %s\n%s", code, failures, printed)
 			}
 			if invocations := session.Simulator.Invocations(); len(invocations) != 2 {
-				t.Errorf("the reviewer was invoked %d times, want a second round after the settlement", len(invocations))
+				t.Fatalf("the reviewer was invoked %d times, want a second round after the settlement", len(invocations))
+			}
+		})
+
+		t.Run("The second round is told the session decided it and is never told a person did", func(t *testing.T) {
+			judging := session.Simulator.Invocations()[1].Prompt
+			if !strings.Contains(judging, `"author_response": "The session that started this run decided this finding`) || !strings.Contains(judging, `"author_said": "`+settled+`"`) {
+				t.Errorf("the round that judges the settlement was not told the session made it, with its reason:\n%s", judging)
+			}
+			if strings.Contains(strings.ToLower(judging), "a person answered") {
+				t.Errorf("the round that judges the settlement was told a person answered:\n%s", judging)
+			}
+			if !strings.Contains(judging, "Judge whether the code now matches what was settled") {
+				t.Errorf("the round that judges the settlement was not asked to judge the code against what was settled:\n%s", judging)
 			}
 		})
 	})
