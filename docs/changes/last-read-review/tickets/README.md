@@ -17,6 +17,6 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 90](../../../../implement/docs/a
 
 | Ticket | Blocked by | Status |
 | --- | --- | --- |
-| [1: A run with nobody to ask takes a settled answer](1-settled-on-a-run-with-nobody-to-ask.md) | None | in progress |
-| [2.1: The second round reads a settled answer as the session's decision](2.1-second-round-reads-settled-as-the-sessions-decision.md) | 1 | pending |
-| [2.2: The last read reviews the whole change](2.2-last-read-reviews-the-whole-change.md) | 1 | pending |
+| [1: A run with nobody to ask takes a settled answer](1-settled-on-a-run-with-nobody-to-ask.md) | None | done |
+| [2.1: The second round reads a settled answer as the session's decision](2.1-second-round-reads-settled-as-the-sessions-decision.md) | 1 | in progress |
+| [2.2: The last read reviews the whole change](2.2-last-read-reviews-the-whole-change.md) | 1 | in progress |
