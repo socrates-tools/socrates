@@ -1,18 +1,28 @@
 import { html, nothing } from 'lit'
 import { customElement, property, query, state } from 'lit/decorators.js'
-import { UiControl } from '../control'
+import { UiElement } from '../element'
 
 export interface Point {
   x: number
   y: number
 }
 
-export interface DrawnChip {
+export interface DrawnTile {
   name: string
   type: string
   thumbnail: string | null
   badge: string | null
-  removeAt: Point
+  removeAt: Point | null
+  removeShown: boolean
+  width: number
+  height: number
+  thumbnailWidth: number | null
+  thumbnailHeight: number | null
+}
+
+export interface DrawnAttach {
+  name: string
+  title: string
 }
 
 export interface RefusedFiles {
@@ -23,15 +33,23 @@ const badgeLength = 4
 const unknownBadge = '?'
 
 const cross = html`<svg class="block size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`
+const plus = html`<svg class="block size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14"/><path d="M5 12h14"/></svg>`
 
-const restingHostClasses = 'border-rule-control bg-surface-sunk'
-const disabledHostClasses = 'cursor-not-allowed opacity-55'
+const hostBaseClasses = 'flex flex-col rounded-md border transition duration-fast ease-standard'
+const restingHostClasses = 'bg-surface-card border-rule-control hover:border-rule-hover'
+const focusedHostClasses = 'bg-surface-card border-accent shadow-focus-ring'
 const draggedOverHostClasses = 'border-accent bg-accent-wash'
-const attachClasses = 'inline-flex h-control flex-none cursor-pointer items-center rounded-pill border border-rule-control bg-surface-card px-4 text-small leading-none font-bold whitespace-nowrap text-fg-1 outline-none transition duration-fast ease-standard hover:border-accent hover:text-accent focus-visible:shadow-focus-ring'
-const chipClasses = 'inline-flex max-w-full items-center gap-2 rounded-box border border-rule-control bg-surface-card p-1 pr-1.5'
-const thumbnailClasses = 'block size-8 flex-none rounded-box object-cover'
-const badgeClasses = 'inline-flex size-8 flex-none items-center justify-center rounded-box bg-surface-muted text-micro leading-none font-bold text-fg-2'
-const removeClasses = 'inline-flex size-6 flex-none cursor-pointer items-center justify-center rounded-box text-fg-2 outline-none transition duration-fast ease-standard hover:bg-surface-muted hover:text-fg-1 focus-visible:shadow-focus-ring'
+const disabledHostClasses = 'bg-surface-card border-rule-control cursor-not-allowed opacity-55'
+const tilesClasses = 'm-0 flex list-none flex-wrap gap-2 px-3 pt-3 pb-1'
+const barClasses = 'flex items-center gap-3 px-3 pb-3'
+const attachClasses = 'inline-flex size-8 flex-none cursor-pointer items-center justify-center rounded-box bg-surface-muted text-fg-2 outline-none transition duration-fast ease-standard hover:bg-surface-hover hover:text-fg-1 focus-visible:shadow-focus-ring'
+const refusalClasses = 'm-0 min-w-0 flex-1 text-small font-bold text-state-warning'
+const tileClasses = 'group relative size-20 flex-none overflow-hidden rounded-md border border-rule-control bg-surface-sunk'
+const thumbnailClasses = 'block size-full object-cover'
+const namedTileClasses = 'flex size-full flex-col items-start justify-between gap-1 p-2'
+const badgeClasses = 'rounded-box bg-surface-muted px-1.5 py-1 text-micro leading-none font-bold text-fg-2'
+const tileNameClasses = 'line-clamp-2 w-full text-micro leading-tight wrap-anywhere text-fg-2'
+const removeClasses = 'absolute top-1 right-1 inline-flex size-6 cursor-pointer items-center justify-center rounded-pill bg-surface-tip text-fg-on-tip opacity-0 outline-none transition duration-fast ease-standard group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:shadow-focus-ring'
 
 function centreOf(element: Element): Point {
   const box = element.getBoundingClientRect()
@@ -51,19 +69,23 @@ function isImage(file: File): boolean {
 }
 
 @customElement('ui-file-tray')
-export class UiFileTray extends UiControl {
+export class UiFileTray extends UiElement {
   @property({ type: Number, reflect: true }) accessor max = 10
+  @property({ attribute: 'attach-label' }) accessor attachLabel = ''
   @property({ attribute: 'remove-label' }) accessor removeLabel = ''
   @property({ type: Boolean, reflect: true }) accessor disabled = false
+  @property({ attribute: false }) accessor draggedOver = false
   @state() private accessor held: File[] = []
   @state() private accessor refusing = false
-  @state() private accessor draggedOver = false
+  @state() private accessor focusRinged = false
   @query('input') private accessor picker!: HTMLInputElement
 
   #previews = new Map<File, string>()
 
   override connectedCallback(): void {
     super.connectedCallback()
+    this.addEventListener('focusin', this.ringWhenFocusVisible)
+    this.addEventListener('focusout', this.ringNoMore)
     this.addEventListener('dragenter', this.dragEntered)
     this.addEventListener('dragover', this.dragOver)
     this.addEventListener('dragleave', this.dragLeft)
@@ -72,6 +94,8 @@ export class UiFileTray extends UiControl {
 
   override disconnectedCallback(): void {
     super.disconnectedCallback()
+    this.removeEventListener('focusin', this.ringWhenFocusVisible)
+    this.removeEventListener('focusout', this.ringNoMore)
     this.removeEventListener('dragenter', this.dragEntered)
     this.removeEventListener('dragover', this.dragOver)
     this.removeEventListener('dragleave', this.dragLeft)
@@ -118,23 +142,34 @@ export class UiFileTray extends UiControl {
     }
   }
 
-  get drawnChips(): DrawnChip[] {
-    return Array.from(this.renderRoot.querySelectorAll('li'), (chip, at) => {
+  get drawnTiles(): DrawnTile[] {
+    return Array.from(this.renderRoot.querySelectorAll('li'), (tile, at) => {
       const file = this.held[at]
-      const thumbnail = chip.querySelector('img')
-      const badge = chip.querySelector('[data-badge]')
+      const thumbnail = tile.querySelector('img')
+      const badge = tile.querySelector('[data-badge]')
+      const remove = tile.querySelector('button')
       return {
         name: file.name,
         type: file.type,
         thumbnail: thumbnail ? thumbnail.src : null,
         badge: badge ? (badge.textContent ?? '').trim() : null,
-        removeAt: centreOf(chip.querySelector('button')!),
+        removeAt: remove ? centreOf(remove) : null,
+        removeShown: remove ? Number(getComputedStyle(remove).opacity) > 0 : false,
+        width: tile.getBoundingClientRect().width,
+        height: tile.getBoundingClientRect().height,
+        thumbnailWidth: thumbnail ? thumbnail.getBoundingClientRect().width : null,
+        thumbnailHeight: thumbnail ? thumbnail.getBoundingClientRect().height : null,
       }
     })
   }
 
-  get drawnCounter(): string {
-    return (this.renderRoot.querySelector('[data-counter]')?.textContent ?? '').trim()
+  get drawnAttach(): DrawnAttach | null {
+    const attach = this.renderRoot.querySelector<HTMLButtonElement>('[data-attach]')
+    return attach ? { name: attach.getAttribute('aria-label') ?? '', title: attach.title } : null
+  }
+
+  get drawnText(): string {
+    return (this.renderRoot.textContent ?? '').trim()
   }
 
   get drawnRefusal(): string | null {
@@ -154,11 +189,7 @@ export class UiFileTray extends UiControl {
   }
 
   get attachAt(): Point {
-    return centreOf(this.renderRoot.querySelector('button')!)
-  }
-
-  get drawnControlsDisabled(): boolean {
-    return Array.from(this.renderRoot.querySelectorAll('button')).every((control) => control.disabled)
+    return centreOf(this.renderRoot.querySelector('[data-attach]')!)
   }
 
   get thumbnailsLoaded(): boolean {
@@ -166,32 +197,56 @@ export class UiFileTray extends UiControl {
   }
 
   protected override hostClasses(): string {
-    const look = this.draggedOver ? draggedOverHostClasses : restingHostClasses
-    const state = this.disabled ? disabledHostClasses : ''
-    return `flex flex-col gap-3 rounded-md border border-dashed p-3 transition duration-fast ease-standard ${look} ${state}`
+    return `${hostBaseClasses} ${this.look}`
+  }
+
+  private get look(): string {
+    if (this.disabled) {
+      return disabledHostClasses
+    }
+    if (this.draggedOver) {
+      return draggedOverHostClasses
+    }
+    return this.focusRinged ? focusedHostClasses : restingHostClasses
   }
 
   protected override render() {
-    return html`<div class="flex flex-wrap items-center gap-3"><button type="button" class=${attachClasses} ?disabled=${this.disabled} @click=${this.openPicker}><slot name="label"></slot></button><span class="min-w-0 flex-1 text-small text-fg-2"><slot name="hint"></slot></span><span class="flex-none text-small leading-none font-bold text-fg-2" data-counter>${this.held.length} / ${this.max}</span></div>${this.drawnList()}${this.drawnRefusalBlock()}<input type="file" multiple hidden tabindex="-1" aria-hidden="true" @change=${this.picked} />`
+    return html`${this.drawnTileList()}<slot></slot>${this.drawnBar()}<input type="file" multiple hidden tabindex="-1" aria-hidden="true" @change=${this.picked} />`
   }
 
-  private drawnList() {
+  private drawnTileList() {
     if (this.held.length === 0) {
       return nothing
     }
-    return html`<ul class="m-0 flex list-none flex-wrap gap-2 p-0">${this.held.map((file) => this.drawnChip(file))}</ul>`
+    return html`<ul class=${tilesClasses} @click=${this.focusWhatIsSlotted}>${this.held.map((file) => this.drawnTile(file))}</ul>`
   }
 
-  private drawnChip(file: File) {
-    const preview = isImage(file) ? html`<img class=${thumbnailClasses} src=${this.previewOf(file)} alt="" />` : html`<span class=${badgeClasses} data-badge>${badgeOf(file)}</span>`
-    return html`<li class=${chipClasses}>${preview}<span class="min-w-0 truncate text-small">${file.name}</span><button type="button" class=${removeClasses} ?disabled=${this.disabled} aria-label="${this.removeLabel} ${file.name}" @click=${() => this.removeFile(file)}>${cross}</button></li>`
+  private drawnTile(file: File) {
+    const content = isImage(file)
+      ? html`<img class=${thumbnailClasses} src=${this.previewOf(file)} alt=${file.name} />`
+      : html`<span class=${namedTileClasses}><span class=${badgeClasses} data-badge>${badgeOf(file)}</span><span class=${tileNameClasses}>${file.name}</span></span>`
+    return html`<li class=${tileClasses} title=${file.name}>${content}${this.drawnRemove(file)}</li>`
+  }
+
+  private drawnRemove(file: File) {
+    if (this.disabled) {
+      return nothing
+    }
+    return html`<button type="button" class=${removeClasses} aria-label="${this.removeLabel} ${file.name}" @click=${() => this.removeFile(file)}>${cross}</button>`
+  }
+
+  private drawnBar() {
+    if (this.disabled) {
+      return nothing
+    }
+    return html`<div class=${barClasses} @click=${this.focusWhatIsSlotted}><button type="button" class=${attachClasses} data-attach aria-label=${this.attachLabel} title=${this.attachLabel} @click=${this.openPicker}>${plus}</button>${this.drawnRefusalBlock()}</div>`
   }
 
   private drawnRefusalBlock() {
     if (!this.refusing) {
       return nothing
     }
-    return html`<p role="alert" class="m-0 rounded-box bg-state-warning-wash px-3 py-2 text-small font-bold text-state-warning"><slot name="refusal"></slot></p>`
+    return html`<p role="alert" class=${refusalClasses}><slot name="refusal"></slot></p>`
   }
 
   private previewOf(file: File): string {
@@ -223,6 +278,21 @@ export class UiFileTray extends UiControl {
 
   private announce(name: string): void {
     this.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true }))
+  }
+
+  private ringWhenFocusVisible = (event: FocusEvent): void => {
+    const focused = event.composedPath()[0]
+    this.focusRinged = focused instanceof Element && focused.matches(':focus-visible')
+  }
+
+  private ringNoMore = (): void => {
+    this.focusRinged = false
+  }
+
+  private focusWhatIsSlotted = (event: Event): void => {
+    if (event.target === event.currentTarget) {
+      this.querySelector<HTMLElement>(':scope > :not([slot])')?.focus()
+    }
   }
 
   private openPicker = (): void => {

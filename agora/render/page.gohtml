@@ -77,11 +77,17 @@
 </div>
 {{end}}
 
-{{template "ui-field" (dict "Class" "words-field state-closed:hidden!" "Caption" "In your own words" "Name" (printf "words-%s" .ID) "Rows" 2 "Placeholder" "Answering here alone is a complete answer." "Interaction" "answering" "Decision" .ID "Disabled" $.Over)}}
-{{template "ui-file-tray" (fileTray "tray state-closed:hidden!" "answering" $.Over)}}
+<div class="flex flex-col gap-2 state-closed:hidden!">
+<p class="text-small font-bold" aria-hidden="true">In your own words</p>
+{{template "ui-file-tray" (fileTray "tray state-closed:hidden!" "answering" $.Over "decision-words" (dict "ID" .ID "Over" $.Over))}}
+</div>
 </div>{{end}}
-{{define "composer-content"}}{{template "ui-field" (dict "Class" "message-field phase-not-open:hidden!" "Caption" "Anything to say to whoever asked" "Name" "message" "Rows" 3 "Interaction" "sending" "Disabled" .Over)}}
-{{template "ui-file-tray" (fileTray "tray phase-not-open:hidden!" "sending" .Over)}}
+{{define "decision-words"}}{{template "ui-field" (dict "Class" "words-field state-closed:hidden!" "Caption" "In your own words" "Name" (printf "words-%s" .ID) "Rows" 2 "Placeholder" "Answering here alone is a complete answer." "Interaction" "answering" "Decision" .ID "Disabled" .Over "Embedded" true)}}{{end}}
+{{define "composer-words"}}{{template "ui-field" (dict "Class" "message-field phase-not-open:hidden!" "Caption" "Anything to say to whoever asked" "Name" "message" "Rows" 3 "Interaction" "sending" "Disabled" . "Embedded" true)}}{{end}}
+{{define "composer-content"}}<div class="flex flex-col gap-2 phase-not-open:hidden!">
+<p class="text-small font-bold" aria-hidden="true">Anything to say to whoever asked</p>
+{{template "ui-file-tray" (fileTray "tray phase-not-open:hidden!" "sending" .Over "composer-words" .Over)}}
+</div>
 
 <footer class="bar flex flex-wrap items-center gap-4 border-t border-rule-soft pt-4 phase-not-open:border-t-0 phase-not-open:pt-0 in-panel:flex-1 in-panel:flex-col in-panel:flex-nowrap in-panel:items-stretch in-panel:gap-3 in-panel:border-t-0 in-panel:pt-0">
 <output class="receipt grid basis-full grid-cols-notice gap-x-4 rounded-md bg-state-resolved-wash px-4 py-3 in-panel:basis-auto" data-interaction="sending" hidden aria-live="polite">

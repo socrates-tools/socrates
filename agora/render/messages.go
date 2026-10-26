@@ -29,10 +29,9 @@ const (
 	copiedWord = "Copied"
 	notCopied  = "Could not copy"
 
-	fileTrayLabel       = "Attach files"
-	fileTrayHint        = "Drop files here to attach them."
+	fileTrayAttachLabel = "Attach files"
 	fileTrayRemoveLabel = "Remove"
-	fileTrayRefusal     = "A tray holds %d files at most, so the rest were not attached."
+	fileTrayRefusal     = "At most %d files can be attached here, so the rest were not attached."
 
 	severityErrorName   = "Error"
 	severityError       = "Severity: Error"
@@ -130,6 +129,7 @@ const (
 	fieldEmpty            = "an empty field"
 	fieldWithAPlaceholder = "a field with a placeholder"
 	fieldDisabled         = "a field that cannot be typed into"
+	fieldEmbedded         = "a field drawn without a border, for a container that supplies one"
 
 	catalogFieldCaption     = "A field"
 	catalogFieldPlaceholder = "A placeholder"

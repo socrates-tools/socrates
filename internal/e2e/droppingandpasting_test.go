@@ -257,3 +257,29 @@ func TestAPasteReadsOnlyTheFilesThePasteEventCarriesAndNeverReadsTheClipboard(t 
 		t.Errorf("the tray pasted into (-want +got):\n%s", diff)
 	}
 }
+
+func TestFilesDraggedOverACardHighlightThatCardsTrayAndNoOtherUntilTheyLeaveOrDrop(t *testing.T) {
+	// scenario: Files dragged over a card highlight that card's tray and no other until they leave or drop
+	t.Parallel()
+	_, browser := read(t, twoDecisionDocument)
+	first, second := trayOfDecision("c-1"), trayOfDecision("c-2")
+
+	browser.dragFilesOver(`.decision[data-decision="c-1"] .choice`, "dragover")
+	browser.waitFor(`document.querySelector(` + jsonOf(t, first) + `).draggedOver`)
+	browser.waitForTheTraysBorder(first, true)
+	var otherHighlighted bool
+	browser.evaluate(`document.querySelector(`+jsonOf(t, second)+`).draggedOver`, &otherHighlighted)
+	if otherHighlighted {
+		t.Error("a tray of another card is highlighted by files over the first")
+	}
+
+	browser.dragFilesOver(`.decision[data-decision="c-1"] .choice`, "dragleave")
+	browser.waitFor(`!document.querySelector(` + jsonOf(t, first) + `).draggedOver`)
+
+	browser.dragFilesOver(`.decision[data-decision="c-1"] .choice`, "dragover")
+	browser.dragFilesOver(`.decision[data-decision="c-1"] .choice`, "drop")
+	browser.waitFor(`!document.querySelector(` + jsonOf(t, first) + `).draggedOver`)
+	if diff := cmp.Diff([]string{"n.png"}, browser.heldBy(first)); diff != "" {
+		t.Errorf("the tray of the card dropped on (-want +got):\n%s", diff)
+	}
+}

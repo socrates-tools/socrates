@@ -90,10 +90,11 @@ type fileTrayView struct {
 	Interaction string
 	Sample      string
 	Max         int
-	Label       string
-	Hint        string
+	AttachLabel string
 	Refusal     string
 	RemoveLabel string
+	Content     string
+	Data        any
 	Disabled    bool
 }
 
@@ -124,17 +125,18 @@ func fileTrayOf(class string, max int) fileTrayView {
 	return fileTrayView{
 		Class:       class,
 		Max:         max,
-		Label:       fileTrayLabel,
-		Hint:        fileTrayHint,
+		AttachLabel: fileTrayAttachLabel,
 		Refusal:     fmt.Sprintf(fileTrayRefusal, max),
 		RemoveLabel: fileTrayRemoveLabel,
 	}
 }
 
-func fileTrayFor(class, interaction string, disabled bool) fileTrayView {
+func fileTrayFor(class, interaction string, disabled bool, content string, data any) fileTrayView {
 	view := fileTrayOf(class, FilesPerTray)
 	view.Interaction = interaction
 	view.Disabled = disabled
+	view.Content = content
+	view.Data = data
 	return view
 }
 

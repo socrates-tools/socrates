@@ -33,6 +33,9 @@ function fill(tray: UiFileTray, sample: string | undefined): void {
 
 export function fillTheSampledTrays(): void {
   for (const tray of findAll<UiFileTray>('ui-file-tray[data-sample]')) {
+    const disabled = tray.disabled
+    tray.disabled = false
     fill(tray, tray.dataset.sample)
+    tray.disabled = disabled
   }
 }

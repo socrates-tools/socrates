@@ -64,12 +64,17 @@ The design this was drawn from is `docs/changes/attachments/design.html`, beside
 ### What a person sees
 
 - Every free-text field carries a tray no document field can remove: each decision's words and the composer's message, at most ten files each, of any type.
+  The tray is not a section of its own: it is the one bordered box the field sits in, as in Claude's own composer.
+  Attached files show as square tiles at the top of the box, above the text, and a small square plus button sits at the bottom left inside the border and opens the file picker directly.
+  A tile shows an image's thumbnail filling it, or a type badge and the name for anything else, and a remove control appears on it on hover and on focus and stays reachable by keyboard.
+  No hint and no counter are drawn: files dragged over the box or over its card highlight the box's own border, and a file past the ceiling is refused in place inside the box, naming the ceiling.
+  A disabled or closed field draws no plus.
 - The tray is one new primitive, `ui-file-tray`, a Lit element in its own folder of `packages/ui` naming nothing of agora's domain.
-  It holds the attach button, the drop target, the chips with their thumbnail or type badge and remove control, the counter and the in-place refusal.
+  It draws the box with the one border around whatever it wraps, the attach button, the drop target, the tiles with their thumbnail or type badge and remove control and the in-place refusal.
   It is reached through `files`, `add(files)`, which returns the files it refused, and `clear()`, and announces `change` and `refused`.
-  It slots its label, its hint and its refusal, which Go writes from `agora/render/messages.go`, and it declares its attributes, such as `max`, through reactive properties so `contract.json` holds it.
+  It wraps the field in its default slot, which draws no border of its own through `ui-field`'s `embedded` attribute, slots its refusal, and takes the attach button's name and tooltip from its `attach-label` attribute and the remove controls' name from `remove-label`, all of which Go writes from `agora/render/messages.go`, and it declares its attributes, such as `max`, through reactive properties so `contract.json` holds it.
   Its states are drawn in the catalog through `catalogued` in `agora/render/catalog.go`.
-- The tray is the domain piece `<ui-file-tray class="tray">`, written under `.words-field` in each decision and under the message in the composer.
+- The tray is the domain piece `<ui-file-tray class="tray">`, written around `.words-field` in each decision and around the message in the composer, with the field's caption drawn above it.
 - Paste is a listener the surface script holds on each card and on the composer, which hands every file `clipboardData.files` holds to that tray's `add`, and leaves text to paste as it does today.
   The page never reads the clipboard itself, so no permission prompt appears.
   A pasted image with no name of its own is named `pasted-1.png`, `pasted-2.png` in the order it arrived, and the ceiling and the in-place refusal apply to a paste as to a drop.

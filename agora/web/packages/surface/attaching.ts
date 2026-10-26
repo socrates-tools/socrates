@@ -12,6 +12,11 @@ function trayOf(event: Event): UiFileTray | null {
   return holder ? find<UiFileTray>('.tray', holder) : null
 }
 
+function takingFiles(event: DragEvent): UiFileTray | null {
+  const tray = trayOf(event)
+  return tray && !tray.disabled && carriesFiles(event.dataTransfer) ? tray : null
+}
+
 function carriesFiles(transfer: DataTransfer | null): boolean {
   return transfer?.types.includes('Files') ?? false
 }
@@ -47,9 +52,23 @@ export function followTheAttaching(): void {
     if (carriesFiles(event.dataTransfer) && trayOf(event)) {
       event.preventDefault()
     }
+    const tray = takingFiles(event)
+    if (tray) {
+      tray.draggedOver = true
+    }
+  })
+  document.addEventListener('dragleave', (event) => {
+    const tray = trayOf(event)
+    const holder = closestTo(event, holders)
+    if (tray && !(event.relatedTarget instanceof Node && holder?.contains(event.relatedTarget))) {
+      tray.draggedOver = false
+    }
   })
   document.addEventListener('drop', (event) => {
     const tray = trayOf(event)
+    if (tray) {
+      tray.draggedOver = false
+    }
     if (!tray || !carriesFiles(event.dataTransfer)) {
       return
     }

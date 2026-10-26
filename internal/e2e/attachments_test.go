@@ -287,6 +287,11 @@ func TestAClosedExchangeDrawsNoTray(t *testing.T) {
 	if diff := cmp.Diff([]bool{true, true, true}, drawnWhileOpen); diff != "" {
 		t.Fatalf("an open exchange draws its trays (-want +got):\n%s", diff)
 	}
+	var attachControlsWhileOpen []bool
+	browser.evaluate(drawnAttachControls, &attachControlsWhileOpen)
+	if diff := cmp.Diff([]bool{true, true, true}, attachControlsWhileOpen); diff != "" {
+		t.Fatalf("an open exchange draws a plus on each tray (-want +got):\n%s", diff)
+	}
 
 	browser.evaluate(chose("c-1", 0), nil)
 	browser.click(".finish")
@@ -298,6 +303,12 @@ func TestAClosedExchangeDrawsNoTray(t *testing.T) {
 		t.Errorf("a page whose exchange was finished draws trays (-want +got):\n%s", diff)
 	}
 
+	var attachControlsAfterFinishing []bool
+	browser.evaluate(drawnAttachControls, &attachControlsAfterFinishing)
+	if diff := cmp.Diff([]bool{false, false, false}, attachControlsAfterFinishing); diff != "" {
+		t.Errorf("a page whose exchange was finished draws a plus (-want +got):\n%s", diff)
+	}
+
 	held.end(held.opened)
 	address := held.record().Address
 	reopened := opening(t, "http://"+address+surface.SessionPrefix+held.opened)
@@ -307,6 +318,8 @@ func TestAClosedExchangeDrawsNoTray(t *testing.T) {
 		t.Errorf("a page loaded after its exchange was over draws trays (-want +got):\n%s", diff)
 	}
 }
+
+const drawnAttachControls = `Array.from(document.querySelectorAll('.tray')).map((tray) => tray.drawnAttach !== null)`
 
 const drawnTrays = `Array.from(document.querySelectorAll('.tray')).map((tray) => tray.getBoundingClientRect().width > 0 && getComputedStyle(tray).display !== 'none')`
 

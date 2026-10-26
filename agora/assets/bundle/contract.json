@@ -110,6 +110,7 @@
     "ui-field": {
       "attributes": [
         "disabled",
+        "embedded",
         "name",
         "placeholder",
         "rows"
@@ -120,13 +121,13 @@
     },
     "ui-file-tray": {
       "attributes": [
+        "attach-label",
         "disabled",
         "max",
         "remove-label"
       ],
       "slots": [
-        "hint",
-        "label",
+        "",
         "refusal"
       ]
     },
