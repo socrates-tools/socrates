@@ -44,6 +44,7 @@ type Beginning struct {
 	Directory       string
 	Base            string
 	NotMyChange     bool
+	NobodyToAsk     bool
 	Intent          string
 	Store           runstore.Store
 	Binary          string
@@ -103,6 +104,9 @@ func OuterRun() string {
 }
 
 func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
+	if beginning.NobodyToAsk && beginning.NotMyChange {
+		return nil, refusal.New(nobodyToAskBesideNotMyChange)
+	}
 	if !platform.ReviewIsSupported() {
 		return nil, refusal.New(nothingHereReapsAGroup, platform.TheOneRunning(), platform.Stated())
 	}
@@ -139,6 +143,7 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 		Snapshot:        taken.Commit,
 		Intent:          beginning.Intent,
 		NotMyChange:     beginning.NotMyChange,
+		NobodyToAsk:     beginning.NobodyToAsk,
 		ReviewGuide:     reached,
 		GuidanceCeiling: guide.Ceiling,
 		ReviewerCLI:     reviewerCLI,
@@ -148,14 +153,18 @@ func Begin(ctx context.Context, beginning Beginning) (*runstore.Run, error) {
 	}
 
 	directory := beginning.Store.Path(run.Name)
+	started := map[string]any{
+		"repository": run.Repository,
+		"base":       run.Base,
+		"snapshot":   run.Snapshot,
+	}
+	if run.NobodyToAsk {
+		started["nobody_to_ask"] = true
+	}
 	if err := beginning.record(run, runlog.Event{
 		Kind:    EventRunStarted,
 		Subject: run.Name,
-		Fields: map[string]any{
-			"repository": run.Repository,
-			"base":       run.Base,
-			"snapshot":   run.Snapshot,
-		},
+		Fields:  started,
 	}); err != nil {
 		return nil, err
 	}

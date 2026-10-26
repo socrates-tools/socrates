@@ -17,12 +17,12 @@ func TestEveryFindingOnAChangeThatIsNotMineIsForwardedDroppedOrRejected(t *testi
 	for _, one := range everyKind() {
 		reported := finding("f1", one.severity, one.action)
 
-		if diff := cmp.Diff(want, dialogue.Accepts(reported, dialogue.NotMine)); diff != "" {
+		if diff := cmp.Diff(want, dialogue.Accepts(reported, dialogue.NotMine, dialogue.SomebodyToAsk)); diff != "" {
 			t.Errorf("a %s/%s finding on a change that is not mine accepts (-want +got):\n%s", one.severity, one.action, diff)
 		}
 		for _, offered := range want {
 			answer := dialogue.Response{Finding: "f1", Resolution: offered, Reason: "what I saw"}
-			if err := dialogue.Answering(reported, answer, dialogue.NotMine); err != nil {
+			if err := dialogue.Answering(reported, answer, dialogue.NotMine, dialogue.SomebodyToAsk); err != nil {
 				t.Errorf("%q against a %s/%s finding on a change that is not mine was refused: %v", offered, one.severity, one.action, err)
 			}
 		}
@@ -33,7 +33,7 @@ func TestAResolutionThatAssumesIWillPatchIsRefusedOnAChangeThatIsNotMine(t *test
 	reported := finding("f1", findings.Error, findings.AutoFix)
 
 	for _, offered := range []dialogue.Resolution{dialogue.Fixed, dialogue.Decided} {
-		err := dialogue.Answering(reported, dialogue.Response{Finding: "f1", Resolution: offered, Reason: "it is done"}, dialogue.NotMine)
+		err := dialogue.Answering(reported, dialogue.Response{Finding: "f1", Resolution: offered, Reason: "it is done"}, dialogue.NotMine, dialogue.SomebodyToAsk)
 		if err == nil {
 			t.Fatalf("%q was accepted against a change that is not mine to patch", offered)
 		}
@@ -50,18 +50,18 @@ func TestForwardingAndDroppingAreRefusedOnMyOwnChange(t *testing.T) {
 		reported := finding("f1", one.severity, one.action)
 
 		for _, offered := range []dialogue.Resolution{dialogue.Forwarded, dialogue.Dropped} {
-			if slices.Contains(dialogue.Accepts(reported, dialogue.Mine), offered) {
+			if slices.Contains(dialogue.Accepts(reported, dialogue.Mine, dialogue.SomebodyToAsk), offered) {
 				t.Errorf("a %s/%s finding on my own change accepts %q, and there is nobody to hand it to", one.severity, one.action, offered)
 			}
 
-			err := dialogue.Answering(reported, dialogue.Response{Finding: "f1", Resolution: offered, Reason: "not worth raising"}, dialogue.Mine)
+			err := dialogue.Answering(reported, dialogue.Response{Finding: "f1", Resolution: offered, Reason: "not worth raising"}, dialogue.Mine, dialogue.SomebodyToAsk)
 			if err == nil {
 				t.Fatalf("%q was accepted against a %s/%s finding on my own change", offered, one.severity, one.action)
 			}
 			if !strings.Contains(err.Error(), "--not-my-change") {
 				t.Errorf("the refusal of %q does not name the flag that says the change is somebody else's: %v", offered, err)
 			}
-			for _, applies := range dialogue.Accepts(reported, dialogue.Mine) {
+			for _, applies := range dialogue.Accepts(reported, dialogue.Mine, dialogue.SomebodyToAsk) {
 				if !strings.Contains(err.Error(), "--"+string(applies)) {
 					t.Errorf("the refusal of %q against a %s/%s finding does not name --%s, which is how it is answered here: %v", offered, one.severity, one.action, applies, err)
 				}
@@ -76,7 +76,7 @@ func TestForwardingAndDroppingAreRefusedOnMyOwnChange(t *testing.T) {
 }
 
 func TestAResolutionThatLeavesNoArtifactCarriesAReason(t *testing.T) {
-	needsAReason := []dialogue.Resolution{dialogue.Rejected, dialogue.Decided, dialogue.Dropped}
+	needsAReason := []dialogue.Resolution{dialogue.Rejected, dialogue.Decided, dialogue.Settled, dialogue.Dropped}
 
 	for _, resolution := range dialogue.Resolutions() {
 		wanted := slices.Contains(needsAReason, resolution)
@@ -130,7 +130,7 @@ func TestEveryRoundOfAChangeThatIsNotMineWaitsOnAPerson(t *testing.T) {
 				t.Fatalf("round %d of %v on a change that is not mine is %q, and forwarding is what addresses every one of them", asked, describe(held), reached)
 			}
 
-			got := dialogue.AwaitsAPerson(classified, reached)
+			got := dialogue.AwaitsAPerson(classified, reached, dialogue.SomebodyToAsk)
 			want := reached != runstate.Clean
 			if got != want {
 				t.Fatalf("round %d of %v on a change that is not mine led to %q and waits on a person: %t, want %t", asked, describe(held), reached, got, want)
@@ -150,7 +150,7 @@ func TestARoundOfAChangeThatIsNotMineWaitsOnEveryFindingThatHoldsIt(t *testing.T
 			t.Fatalf("%v on a change that is not mine waits on (-want +got):\n%s", describe(held), diff)
 		}
 		for _, unanswered := range waiting {
-			asked := (dialogue.Responses{}).AwaitingAPerson(document(held...), dialogue.NotMine)
+			asked := (dialogue.Responses{}).AskingAPerson(document(held...), dialogue.NotMine)
 			if !slices.Contains(asked, unanswered) {
 				t.Fatalf("%s of %v is unanswered and reads as nobody's to answer, and the whole round is a person's", unanswered, describe(held))
 			}
@@ -184,7 +184,7 @@ func TestTheHandoverRulesAreStatedOnce(t *testing.T) {
 			t.Errorf("the rules do not name %q, which is one of the three answers: %s", named, stated)
 		}
 	}
-	for _, absent := range []dialogue.Resolution{dialogue.Fixed, dialogue.Decided} {
+	for _, absent := range []dialogue.Resolution{dialogue.Fixed, dialogue.Decided, dialogue.Settled} {
 		if strings.Contains(stated, "--"+string(absent)) {
 			t.Errorf("the rules name --%s, and nothing here can be patched: %s", absent, stated)
 		}

@@ -47,7 +47,10 @@ func Continue(ctx context.Context, continuation Continuation) (Continued, error)
 		if run.NotMyChange {
 			return Continued{}, refusal.New(stillUnansweredForSomebodyElse, len(waiting), strings.Join(waiting, ", "))
 		}
-		if asked := recorded.AwaitingAPerson(document, run.Authorship()); len(asked) > 0 {
+		if asked := recorded.AskingAPerson(document, run.Authorship()); len(asked) > 0 {
+			if run.NobodyToAsk {
+				return Continued{}, refusal.New(stillUnansweredWithNobodyToAsk, len(waiting), strings.Join(waiting, ", "), len(asked), strings.Join(asked, ", "))
+			}
 			return Continued{}, refusal.New(stillUnansweredByAPerson, len(waiting), strings.Join(waiting, ", "), len(asked), strings.Join(asked, ", "))
 		}
 		return Continued{}, refusal.New(stillUnanswered, len(waiting), strings.Join(waiting, ", "))

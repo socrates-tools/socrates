@@ -35,7 +35,11 @@ func sentence(event runlog.Event) string {
 
 	switch event.Kind {
 	case runStartedKind:
-		return fmt.Sprintf(runStartedSentence, stated(held, repositoryField), short(stated(held, snapshotField)), short(stated(held, baseField)))
+		started := fmt.Sprintf(runStartedSentence, stated(held, repositoryField), short(stated(held, snapshotField)), short(stated(held, baseField)))
+		if flagged(held, nobodyToAskField) {
+			return started + runStartedWithNobodyToAsk
+		}
+		return started
 	case runEndedKind:
 		if reason := stated(held, reasonField); reason != "" {
 			return fmt.Sprintf(runEndedSentence, stated(held, stateField), reason)
@@ -44,7 +48,11 @@ func sentence(event runlog.Event) string {
 	case roundStartedKind:
 		return fmt.Sprintf(roundStartedSentence, counted(held, roundField), short(stated(held, snapshotField)), short(stated(held, baseField)))
 	case roundParkedKind:
-		if asked := counted(held, aPersonField); asked > 0 {
+		asked := counted(held, aPersonField)
+		if asked > 0 && flagged(held, nobodyToAskField) {
+			return fmt.Sprintf(roundParkedForTheSession, counted(held, roundField), counted(held, patchableField), asked)
+		}
+		if asked > 0 {
 			return fmt.Sprintf(roundParkedOnAPerson, counted(held, roundField), counted(held, patchableField), asked)
 		}
 		return fmt.Sprintf(roundParkedSentence, counted(held, roundField), counted(held, patchableField))
@@ -90,6 +98,11 @@ func stated(fields map[string]any, key string) string {
 		return ""
 	}
 	return text
+}
+
+func flagged(fields map[string]any, key string) bool {
+	set, isFlag := fields[key].(bool)
+	return isFlag && set
 }
 
 func counted(fields map[string]any, key string) int64 {

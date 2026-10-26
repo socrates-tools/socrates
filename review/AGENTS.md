@@ -90,6 +90,10 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - Where the run records that nobody here can patch the change, every finding of a round is a person's, and `dialogue.Classified` is the one place that is decided. A finding that holds the change while asking for nothing is forwarded rather than ending the run, so `dialogue.After`, `dialogue.AwaitsAPerson` and `dialogue.Answerable` gain no clause and keep their rules.
 - Such a finding is forwarded, dropped or rejected whatever its own action, every round of such a run waits on a person, and `continue` ends the run `escalated` with the findings handed over rather than starting a round.
 - A drop's reason is recorded on the run and printed to nobody.
+- A run records once, at `begin`, whether anybody is there to ask, and every later command reads it from the run: `socrates review begin --nobody-to-ask` is refused beside `--not-my-change` before a snapshot is taken or a reviewer is spawned.
+- `dialogue.Accepts` offers `settled` for a finding that asks a person only where nobody is there to ask, and `decided` only where somebody is, so `decided` always means a person answered and `settled` always means nobody did.
+- A settlement is a claim a fresh reviewer judges, never a suppression, and carries a reason.
+- A round parked on findings that ask a person does not wait on a person where nobody is there to ask, and the socrates-review skills never begin such a run.
 - A recorded response is appended, never rewritten.
 - The round cap is two, nothing configures it, and a configuration file naming one is refused.
 

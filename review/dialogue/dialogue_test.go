@@ -175,19 +175,19 @@ func TestWhatARoundLeadsTo(t *testing.T) {
 func TestWhichRoundsWaitOnAPerson(t *testing.T) {
 	t.Run("An escalated round waits on a person", func(t *testing.T) {
 		beyondAnswering := classify(finding("f1", findings.Error, findings.NoOp))
-		if !dialogue.AwaitsAPerson(beyondAnswering, dialogue.After(beyondAnswering, 1)) {
+		if !dialogue.AwaitsAPerson(beyondAnswering, dialogue.After(beyondAnswering, 1), dialogue.SomebodyToAsk) {
 			t.Error("a round escalating for a finding that holds the change while asking for nothing waits on nobody, and nobody else can act on it")
 		}
 
 		atTheCap := classify(finding("f1", findings.Error, findings.AutoFix))
-		if !dialogue.AwaitsAPerson(atTheCap, dialogue.After(atTheCap, dialogue.Cap)) {
+		if !dialogue.AwaitsAPerson(atTheCap, dialogue.After(atTheCap, dialogue.Cap), dialogue.SomebodyToAsk) {
 			t.Error("a round escalating at the cap waits on nobody, and no round remains in which anything else could act on it")
 		}
 	})
 
 	t.Run("A parked round holding a question waits on a person", func(t *testing.T) {
 		alone := classify(finding("f1", findings.Error, findings.AskUser))
-		if !dialogue.AwaitsAPerson(alone, dialogue.After(alone, 1)) {
+		if !dialogue.AwaitsAPerson(alone, dialogue.After(alone, 1), dialogue.SomebodyToAsk) {
 			t.Error("a parked round holding one question about intent waits on nobody, and only a person closes it")
 		}
 
@@ -196,14 +196,14 @@ func TestWhichRoundsWaitOnAPerson(t *testing.T) {
 			finding("f2", findings.Error, findings.AutoFix),
 			finding("f3", findings.Warning, findings.AutoFix),
 		)
-		if !dialogue.AwaitsAPerson(alongside, dialogue.After(alongside, 1)) {
+		if !dialogue.AwaitsAPerson(alongside, dialogue.After(alongside, 1), dialogue.SomebodyToAsk) {
 			t.Error("a parked round holding a question beside mechanical defects waits on nobody, and the question is still the person's")
 		}
 	})
 
 	t.Run("A parked round the author answers alone waits on nobody", func(t *testing.T) {
 		classified := classify(finding("f1", findings.Error, findings.AutoFix), finding("f2", findings.Warning, findings.AutoFix))
-		if dialogue.AwaitsAPerson(classified, dialogue.After(classified, 1)) {
+		if dialogue.AwaitsAPerson(classified, dialogue.After(classified, 1), dialogue.SomebodyToAsk) {
 			t.Error("a parked round whose findings the author patches waits on a person, so the session stops for an answer nobody was asked for")
 		}
 	})
@@ -216,7 +216,7 @@ func TestWhichRoundsWaitOnAPerson(t *testing.T) {
 			classify(finding("f1", findings.Info, findings.AutoFix)),
 		} {
 			for _, round := range []int{1, dialogue.Cap} {
-				if dialogue.AwaitsAPerson(classified, dialogue.After(classified, round)) {
+				if dialogue.AwaitsAPerson(classified, dialogue.After(classified, round), dialogue.SomebodyToAsk) {
 					t.Errorf("round %d blocks nothing and waits on a person, and nothing is being asked of anybody", round)
 				}
 			}
@@ -231,7 +231,7 @@ func TestWhichRoundsWaitOnAPerson(t *testing.T) {
 			classified := classify(held...)
 
 			for _, state := range runstate.States() {
-				got := dialogue.AwaitsAPerson(classified, state)
+				got := dialogue.AwaitsAPerson(classified, state, dialogue.SomebodyToAsk)
 
 				want := false
 				switch state {
@@ -251,7 +251,7 @@ func TestWhichRoundsWaitOnAPerson(t *testing.T) {
 			for round := range dialogue.Cap + 2 {
 				asked := round + 1
 				reached := dialogue.After(classified, asked)
-				got := dialogue.AwaitsAPerson(classified, reached)
+				got := dialogue.AwaitsAPerson(classified, reached, dialogue.SomebodyToAsk)
 
 				want := false
 				switch {

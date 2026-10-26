@@ -28,6 +28,7 @@ type Status struct {
 	Findings        *Counts        `json:"findings,omitempty"`
 	Unanswered      *int           `json:"unanswered,omitempty"`
 	AwaitingAPerson *int           `json:"awaiting_a_person,omitempty"`
+	NobodyToAsk     bool           `json:"nobody_to_ask,omitempty"`
 }
 
 type Finding struct {
@@ -49,6 +50,7 @@ type Findings struct {
 	RiskLevel     findings.Risk  `json:"risk_level,omitempty"`
 	RiskRationale string         `json:"risk_rationale,omitempty"`
 	AwaitsAPerson bool           `json:"awaits_a_person,omitempty"`
+	NobodyToAsk   bool           `json:"nobody_to_ask,omitempty"`
 	Reason        string         `json:"reason,omitempty"`
 	Guidance      []string       `json:"guidance,omitempty"`
 }
@@ -60,7 +62,7 @@ func StatusOf(store runstore.Store, name string) (Status, error) {
 	}
 
 	run := read.run
-	status := Status{Run: run.Name, State: run.State, Round: read.number, Base: run.Base, Reviewer: run.Vendor(), Tier: run.Tier(), Reason: reasonOf(run)}
+	status := Status{Run: run.Name, State: run.State, Round: read.number, Base: run.Base, Reviewer: run.Vendor(), Tier: run.Tier(), Reason: reasonOf(run), NobodyToAsk: run.NobodyToAsk}
 	if read.reviewed {
 		classified := dialogue.Classified(read.document, run.Authorship())
 		status.Findings = &Counts{
@@ -72,9 +74,11 @@ func StatusOf(store runstore.Store, name string) (Status, error) {
 	}
 	if run.State == runstate.AwaitingResponse {
 		waiting := len(read.responses.Unanswered(read.document, run.Authorship()))
-		asked := len(read.responses.AwaitingAPerson(read.document, run.Authorship()))
 		status.Unanswered = &waiting
-		status.AwaitingAPerson = &asked
+		if !run.NobodyToAsk {
+			asked := len(read.responses.AskingAPerson(read.document, run.Authorship()))
+			status.AwaitingAPerson = &asked
+		}
 	}
 	return status, nil
 }
@@ -86,7 +90,7 @@ func FindingsOf(store runstore.Store, name string) (Findings, error) {
 	}
 
 	run, document := read.run, read.document
-	reported := Findings{Run: run.Name, State: run.State, Reviewed: read.reviewed, Findings: []Finding{}, Reason: reasonOf(run)}
+	reported := Findings{Run: run.Name, State: run.State, Reviewed: read.reviewed, Findings: []Finding{}, Reason: reasonOf(run), NobodyToAsk: run.NobodyToAsk}
 	if run.State == runstate.AwaitingResponse {
 		reported.Guidance = RulesFor(run.Authorship())
 	}
@@ -99,7 +103,7 @@ func FindingsOf(store runstore.Store, name string) (Findings, error) {
 		return Findings{}, err
 	}
 
-	reported.AwaitsAPerson = dialogue.AwaitsAPerson(dialogue.Classified(document, run.Authorship()), run.State)
+	reported.AwaitsAPerson = dialogue.AwaitsAPerson(dialogue.Classified(document, run.Authorship()), run.State, run.Presence())
 	for _, finding := range document.Findings {
 		reporting := Finding{
 			ID:          finding.ID,
@@ -183,6 +187,9 @@ func (s Status) Lines() []string {
 		fmt.Sprintf(baseLine, s.Base),
 		fmt.Sprintf(reviewerLine, s.Reviewer, s.Tier),
 	}
+	if s.NobodyToAsk {
+		lines = append(lines, nobodyToAskLine)
+	}
 	if s.Reason != "" {
 		lines = append(lines, fmt.Sprintf(verdictLine, s.Reason))
 	}
@@ -194,7 +201,11 @@ func (s Status) Lines() []string {
 		return lines
 	}
 
-	lines = append(lines, awaitingLine, fmt.Sprintf(unansweredLine, *s.Unanswered))
+	waitingOn := awaitingLine
+	if s.NobodyToAsk {
+		waitingOn = awaitingTheSessionLine
+	}
+	lines = append(lines, waitingOn, fmt.Sprintf(unansweredLine, *s.Unanswered))
 	if s.AwaitingAPerson != nil {
 		lines = append(lines, fmt.Sprintf(awaitingAPersonLine, *s.AwaitingAPerson))
 	}

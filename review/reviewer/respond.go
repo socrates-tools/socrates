@@ -35,7 +35,7 @@ func Respond(store runstore.Store, name string, response dialogue.Response, atta
 	if !present {
 		return Recording{}, refusal.New(noSuchFinding, round.Number, run.Name, response.Finding)
 	}
-	if err := dialogue.Answering(reported, response, run.Authorship()); err != nil {
+	if err := dialogue.Answering(reported, response, run.Authorship(), run.Presence()); err != nil {
 		return Recording{}, err
 	}
 

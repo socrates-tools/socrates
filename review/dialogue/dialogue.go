@@ -26,12 +26,12 @@ func Classified(document findings.Document, authorship Authorship) findings.Clas
 	return findings.Classify(document)
 }
 
-func AwaitsAPerson(classified findings.Classification, state runstate.State) bool {
+func AwaitsAPerson(classified findings.Classification, state runstate.State, presence Presence) bool {
 	switch state {
 	case runstate.Escalated:
 		return true
 	case runstate.AwaitingResponse:
-		return len(AnsweredByAPerson(classified)) > 0
+		return presence == SomebodyToAsk && len(AnsweredByAPerson(classified)) > 0
 	default:
 		return false
 	}

@@ -16,6 +16,7 @@ const (
 	Fixed     Resolution = "fixed"
 	Rejected  Resolution = "rejected"
 	Decided   Resolution = "decided"
+	Settled   Resolution = "settled"
 	Forwarded Resolution = "forwarded"
 	Dropped   Resolution = "dropped"
 )
@@ -27,7 +28,14 @@ const (
 	NotMine Authorship = true
 )
 
-var resolutions = []Resolution{Fixed, Rejected, Decided, Forwarded, Dropped}
+type Presence bool
+
+const (
+	SomebodyToAsk Presence = false
+	NobodyToAsk   Presence = true
+)
+
+var resolutions = []Resolution{Fixed, Rejected, Decided, Settled, Forwarded, Dropped}
 
 var leaveAnArtifact = []Resolution{Fixed, Forwarded}
 
@@ -107,31 +115,46 @@ func Validate(response Response) error {
 		return refusal.New(aRejectionIsAClaim)
 	case Dropped:
 		return refusal.New(aDropIsAClaim)
+	case Settled:
+		return refusal.New(aSettlementIsAClaim)
 	}
 	return refusal.New(aDecisionIsAClaim)
 }
 
-func Accepts(finding findings.Finding, authorship Authorship) []Resolution {
+func Accepts(finding findings.Finding, authorship Authorship, presence Presence) []Resolution {
 	if authorship == NotMine {
 		return []Resolution{Forwarded, Dropped, Rejected}
 	}
 	if finding.EffectiveAction() == findings.AskUser {
-		return []Resolution{Decided}
+		return []Resolution{answerToAPerson(presence)}
 	}
 	return []Resolution{Fixed, Rejected}
 }
 
-func Answering(finding findings.Finding, response Response, authorship Authorship) error {
-	if slices.Contains(Accepts(finding, authorship), response.Resolution) {
+func answerToAPerson(presence Presence) Resolution {
+	if presence == NobodyToAsk {
+		return Settled
+	}
+	return Decided
+}
+
+func Answering(finding findings.Finding, response Response, authorship Authorship, presence Presence) error {
+	if slices.Contains(Accepts(finding, authorship, presence), response.Resolution) {
 		return nil
 	}
 	if authorship == NotMine {
-		return refusal.New(theChangeIsNotMineToPatch, response.Resolution, finding.ID, Flags(Accepts(finding, NotMine)))
+		return refusal.New(theChangeIsNotMineToPatch, response.Resolution, finding.ID, Flags(Accepts(finding, NotMine, presence)))
 	}
 	if response.Resolution == Forwarded || response.Resolution == Dropped {
-		return refusal.New(theChangeIsMine, response.Resolution, finding.ID, Flags(Accepts(finding, Mine)))
+		return refusal.New(theChangeIsMine, response.Resolution, finding.ID, Flags(Accepts(finding, Mine, presence)))
 	}
 	if finding.EffectiveAction() == findings.AskUser {
+		if presence == NobodyToAsk {
+			return refusal.New(theRunHasNobodyToAsk, finding.ID, response.Resolution, Settled)
+		}
+		if response.Resolution == Settled {
+			return refusal.New(theRunHasSomebodyToAsk, finding.ID, Decided)
+		}
 		return refusal.New(theFindingAsksAPerson, finding.ID, response.Resolution, Decided)
 	}
 	return refusal.New(theFindingAsksForAPatch, finding.ID, response.Resolution, Fixed, Rejected)
@@ -181,7 +204,7 @@ func (r Responses) Unanswered(document findings.Document, authorship Authorship)
 	return waiting
 }
 
-func (r Responses) AwaitingAPerson(document findings.Document, authorship Authorship) []string {
+func (r Responses) AskingAPerson(document findings.Document, authorship Authorship) []string {
 	needing := AnsweredByAPerson(Classified(document, authorship))
 
 	var waiting []string

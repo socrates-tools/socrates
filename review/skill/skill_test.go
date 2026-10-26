@@ -277,3 +277,23 @@ func TestTheResponseRulesWriteTheirInvocationsAsCode(t *testing.T) {
 		}
 	}
 }
+
+func TestTheSkillSaysSettledBelongsToARunWithNobodyToAskAndNeverBeginsOne(t *testing.T) {
+	for _, host := range skillkit.Hosts() {
+		t.Run(host.Flag, func(t *testing.T) {
+			document := skill.Document(host)
+
+			if !strings.Contains(document, "`settled` belongs only to a run begun with `--nobody-to-ask`, which you never begin.") {
+				t.Errorf("the skill does not say settled belongs only to a run begun with --nobody-to-ask, which it never begins:\n%s", document)
+			}
+			for _, line := range strings.Split(document, "\n") {
+				if strings.Contains(line, "begin") && strings.Contains(line, "--nobody-to-ask") && !strings.Contains(line, "which you never begin") {
+					t.Errorf("the skill tells its session to begin a run with nobody to ask: %s", line)
+				}
+				if strings.Contains(line, "respond") && strings.Contains(line, "--settled") {
+					t.Errorf("the skill tells its session to record a settlement: %s", line)
+				}
+			}
+		})
+	}
+}

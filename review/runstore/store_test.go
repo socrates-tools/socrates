@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/socrates-tools/socrates/review/agent"
+	"github.com/socrates-tools/socrates/review/dialogue"
 	"github.com/socrates-tools/socrates/review/runstate"
 )
 
@@ -224,5 +225,24 @@ func TestCreateRecordsTheReviewerCLIItWasGivenAndItsTier(t *testing.T) {
 	codex, _ := agent.Named("codex")
 	if loaded.ReviewerCLI != "codex" || loaded.Tier() != string(codex.Tier) {
 		t.Errorf("the run reads as %q on the %q tier, want codex on %q", loaded.ReviewerCLI, loaded.Tier(), codex.Tier)
+	}
+}
+
+func TestCreateRecordsWhetherAnybodyIsThereToAsk(t *testing.T) {
+	store := New(t.TempDir())
+
+	for _, present := range []dialogue.Presence{dialogue.SomebodyToAsk, dialogue.NobodyToAsk} {
+		run, err := store.Create(Start{StartedAt: time.Now(), RepositoryRoot: t.TempDir(), NobodyToAsk: bool(present)})
+		if err != nil {
+			t.Fatalf("creating the run: %v", err)
+		}
+
+		loaded, err := store.Load(run.Name)
+		if err != nil {
+			t.Fatalf("reading the run: %v", err)
+		}
+		if loaded.Presence() != present {
+			t.Errorf("a run begun with presence %v reads as %v", present, loaded.Presence())
+		}
 	}
 }

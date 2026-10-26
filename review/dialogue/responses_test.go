@@ -65,7 +65,7 @@ func TestAResponseIsAFixARejectionOrADecision(t *testing.T) {
 
 		question := finding("f1", findings.Error, findings.AskUser)
 		response := dialogue.Response{Finding: "f1", Resolution: dialogue.Decided, Reason: reason}
-		if err := dialogue.Answering(question, response, dialogue.Mine); err != nil {
+		if err := dialogue.Answering(question, response, dialogue.Mine, dialogue.SomebodyToAsk); err != nil {
 			t.Fatalf("a decision against a finding that asks a person was refused: %v", err)
 		}
 
@@ -110,7 +110,7 @@ func TestAResponseIsAFixARejectionOrADecision(t *testing.T) {
 			{Finding: "f1", Resolution: dialogue.Fixed, Reason: "I took the endpoint out"},
 			{Finding: "f1", Resolution: dialogue.Rejected, Reason: "the endpoint is needed"},
 		} {
-			err := dialogue.Answering(question, offered, dialogue.Mine)
+			err := dialogue.Answering(question, offered, dialogue.Mine, dialogue.SomebodyToAsk)
 			if err == nil {
 				t.Fatalf("%q was accepted against a finding that asks a person", offered.Resolution)
 			}
@@ -124,7 +124,7 @@ func TestAResponseIsAFixARejectionOrADecision(t *testing.T) {
 		decided := dialogue.Response{Finding: "f1", Resolution: dialogue.Decided, Reason: "Vic said to leave it"}
 
 		for _, asking := range []findings.Action{findings.AutoFix, findings.NoOp} {
-			err := dialogue.Answering(finding("f1", findings.Error, asking), decided, dialogue.Mine)
+			err := dialogue.Answering(finding("f1", findings.Error, asking), decided, dialogue.Mine, dialogue.SomebodyToAsk)
 			if err == nil {
 				t.Fatalf("a decision was accepted against a finding actioned %q", asking)
 			}

@@ -15,7 +15,7 @@ const (
 )
 
 var (
-	Ceilings         = skill.Ceilings{skill.ClaudeCode: 15708, skill.Codex: 16257}
+	Ceilings         = skill.Ceilings{skill.ClaudeCode: 15759, skill.Codex: 16307}
 	HandoverCeilings = skill.Ceilings{skill.ClaudeCode: 17000, skill.Codex: 17549}
 )
 

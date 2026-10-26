@@ -23,6 +23,7 @@ func newBeginCommand(code *int) *cobra.Command {
 	var intent string
 	var base string
 	var notMyChange bool
+	var nobodyToAsk bool
 	var wait bool
 	var host string
 
@@ -57,6 +58,7 @@ func newBeginCommand(code *int) *cobra.Command {
 				Directory:       directory,
 				Base:            base,
 				NotMyChange:     notMyChange,
+				NobodyToAsk:     nobodyToAsk,
 				Intent:          intent,
 				Store:           store,
 				Binary:          binary,
@@ -93,6 +95,7 @@ func newBeginCommand(code *int) *cobra.Command {
 	command.Flags().StringVar(&intent, "intent", "", intentUsage)
 	command.Flags().StringVar(&base, "base", "", baseUsage)
 	command.Flags().BoolVar(&notMyChange, "not-my-change", false, notMyChangeUsage)
+	command.Flags().BoolVar(&nobodyToAsk, "nobody-to-ask", false, nobodyToAskUsage)
 	command.Flags().StringVar(&host, skillkit.HostFlag, "", hostUsage)
 	command.Flags().BoolVar(&wait, "wait", false, waitUsage)
 	return command

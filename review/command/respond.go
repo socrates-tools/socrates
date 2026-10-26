@@ -19,6 +19,7 @@ func newRespondCommand(code *int) *cobra.Command {
 	var fixed bool
 	var rejected bool
 	var decided bool
+	var settled bool
 	var forwarded bool
 	var dropped bool
 	var reason string
@@ -38,6 +39,7 @@ func newRespondCommand(code *int) *cobra.Command {
 				dialogue.Fixed:     fixed,
 				dialogue.Rejected:  rejected,
 				dialogue.Decided:   decided,
+				dialogue.Settled:   settled,
 				dialogue.Forwarded: forwarded,
 				dialogue.Dropped:   dropped,
 			})
@@ -101,6 +103,7 @@ func newRespondCommand(code *int) *cobra.Command {
 	command.Flags().BoolVar(&fixed, "fixed", false, fixedUsage)
 	command.Flags().BoolVar(&rejected, "rejected", false, rejectedUsage)
 	command.Flags().BoolVar(&decided, "decided", false, decidedUsage)
+	command.Flags().BoolVar(&settled, "settled", false, settledUsage)
 	command.Flags().BoolVar(&forwarded, "forwarded", false, forwardedUsage)
 	command.Flags().BoolVar(&dropped, "dropped", false, droppedUsage)
 	command.Flags().StringVar(&reason, "reason", "", reasonUsage)

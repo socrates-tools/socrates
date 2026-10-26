@@ -1,18 +1,19 @@
 package reviewer
 
 const (
-	aReviewInsideAReview     = "this process is already the reviewer for run %s, and a review inside a review spawns without end: run socrates review begin from your own session instead"
-	noSuchReviewerCLI        = "%q is not a reviewer CLI socrates review knows, and socrates review drives %s: name one of those in reviewer_cli, or leave the field out to run the one socrates review ships with"
-	anUnsupportedReviewerCLI = "socrates review does not drive %s, because socrates review found no %s: socrates review drives %s, so name one of those in reviewer_cli, or leave the field out to run the one socrates review ships with"
-	noSuchHost               = "%q is not a host socrates review begins from, and it begins from %s: name one of those in --host, or leave the flag out"
-	nothingHereReapsAGroup   = "socrates review reaps everything a reviewer starts by process group, and this socrates review on %s cannot, so a review here could leave the reviewer's workers holding the snapshot after the run ends: socrates review supports %s, so run the review there, and on Windows run it under WSL, which is a supported Linux"
-	nothingLeftToReview      = "the working tree holds nothing the base commit does not any more, so nothing of the change is left for a reviewer to read and no reviewer read this round"
-	nothingToReview          = "the working tree holds nothing the base commit %s does not, so a review of it would read nothing and report nothing rather than find nothing: commit or write something first, or name the branch this work targets with socrates review begin --base"
-	checkingOutTheSnapshot   = "checking out the snapshot: %w"
-	clearingTheLastRound     = "clearing what the last round left where this round's worktree goes: %w"
-	storedAndUnreadable      = "the answer was appended to %s and the document could not be read back afterwards (%w), so the answer is recorded and what is still unanswered is not: read the last lines of that file and remove any partial one"
-	openingTheSupervisorLog  = "opening the supervisor's own log: %w"
-	startingTheReviewer      = "starting the reviewer: %w"
+	nobodyToAskBesideNotMyChange = "a change nobody here can patch waits on a person by definition, so --nobody-to-ask and --not-my-change cannot both hold: pass only one of them"
+	aReviewInsideAReview         = "this process is already the reviewer for run %s, and a review inside a review spawns without end: run socrates review begin from your own session instead"
+	noSuchReviewerCLI            = "%q is not a reviewer CLI socrates review knows, and socrates review drives %s: name one of those in reviewer_cli, or leave the field out to run the one socrates review ships with"
+	anUnsupportedReviewerCLI     = "socrates review does not drive %s, because socrates review found no %s: socrates review drives %s, so name one of those in reviewer_cli, or leave the field out to run the one socrates review ships with"
+	noSuchHost                   = "%q is not a host socrates review begins from, and it begins from %s: name one of those in --host, or leave the flag out"
+	nothingHereReapsAGroup       = "socrates review reaps everything a reviewer starts by process group, and this socrates review on %s cannot, so a review here could leave the reviewer's workers holding the snapshot after the run ends: socrates review supports %s, so run the review there, and on Windows run it under WSL, which is a supported Linux"
+	nothingLeftToReview          = "the working tree holds nothing the base commit does not any more, so nothing of the change is left for a reviewer to read and no reviewer read this round"
+	nothingToReview              = "the working tree holds nothing the base commit %s does not, so a review of it would read nothing and report nothing rather than find nothing: commit or write something first, or name the branch this work targets with socrates review begin --base"
+	checkingOutTheSnapshot       = "checking out the snapshot: %w"
+	clearingTheLastRound         = "clearing what the last round left where this round's worktree goes: %w"
+	storedAndUnreadable          = "the answer was appended to %s and the document could not be read back afterwards (%w), so the answer is recorded and what is still unanswered is not: read the last lines of that file and remove any partial one"
+	openingTheSupervisorLog      = "opening the supervisor's own log: %w"
+	startingTheReviewer          = "starting the reviewer: %w"
 
 	alreadyEnded              = "run %s already ended as %s"
 	openingTheStream          = "opening %s: %w"
@@ -38,5 +39,6 @@ const (
 	noSuchFinding                  = "round %d of run %s reported no finding named %s: name one of the identifiers socrates review findings prints"
 	stillUnanswered                = "%d findings of this round have no response yet, and silence is neither a fix nor a rejection: run socrates review respond for %s first"
 	stillUnansweredForSomebodyElse = "%d findings of this round have no response yet (%s), and this run reviews a change nobody here can patch, so every one of them is a person's to decide: run socrates review respond --forwarded, --dropped or --rejected for each of them"
+	stillUnansweredWithNobodyToAsk = "%d findings of this round have no response yet (%s), and %d of them ask a person rather than asking for a patch (%s), and this run has nobody to ask: run socrates review respond --settled with a reason saying what you decided for each of them"
 	stillUnansweredByAPerson       = "%d findings of this round have no response yet (%s), and %d of them ask a person rather than asking for a patch (%s): ask them, and record what they decided with socrates review respond --decided and a reason"
 )

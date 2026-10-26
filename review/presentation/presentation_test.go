@@ -136,6 +136,34 @@ func TestAParkedRoundRendersWhatItWaitsOn(t *testing.T) {
 	})
 }
 
+func TestAParkedRoundWithNobodyToAskDoesNotWaitOnAPerson(t *testing.T) {
+	lines := presentation.Lines([]runlog.Event{{At: at, Kind: reviewer.EventRoundParked, Subject: "a-run", Fields: map[string]any{
+		"round": float64(1), "patchable": float64(1), "needing_a_person": float64(2), "nobody_to_ask": true,
+	}}})
+
+	if len(lines) != 1 {
+		t.Fatalf("a parked round rendered as %d lines: %v", len(lines), lines)
+	}
+	for _, needed := range []string{"1 findings can be patched", "2 are yours to settle"} {
+		if !strings.Contains(lines[0], needed) {
+			t.Errorf("a round parked on a run with nobody to ask does not say %q: %q", needed, lines[0])
+		}
+	}
+	if strings.Contains(lines[0], "need a person") {
+		t.Errorf("a round parked on a run with nobody to ask says a person is needed: %q", lines[0])
+	}
+}
+
+func TestARunStartedWithNobodyToAskSaysSo(t *testing.T) {
+	lines := presentation.Lines([]runlog.Event{{At: at, Kind: reviewer.EventRunStarted, Subject: "a-run", Fields: map[string]any{
+		"repository": "/home/a/project", "base": "a9a3207995f002632584efb33312c14123de4560", "snapshot": "4445282d62930b67e699165cda6a212f8c2e47ab", "nobody_to_ask": true,
+	}}})
+
+	if len(lines) != 1 || !strings.Contains(lines[0], "nobody to ask") {
+		t.Errorf("a run started with nobody to ask is rendered as %v, without saying so", lines)
+	}
+}
+
 func TestAnUnknownEventKindIsStillShown(t *testing.T) {
 	lines := presentation.Lines([]runlog.Event{
 		{At: at, Kind: "reviewer-thought-about-it", Subject: "r1", Fields: map[string]any{

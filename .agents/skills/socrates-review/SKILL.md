@@ -24,6 +24,7 @@ Invoke no skill: every socrates skill is a person's to start.
 - For each finding, either apply a fix and record it with `socrates review respond --fixed`, or record a rejection with `socrates review respond --rejected` and a concrete reason.
 - A rejection is a claim you are making to the next reviewer, which judges it. It is not a decision, and it does not make the finding go away.
 - A finding that asks a person is the person's to answer and not yours: take it to them, and record what they decided with `socrates review respond --decided` and a reason.
+- `settled` belongs only to a run begun with `--nobody-to-ask`, which you never begin.
 - Do not resolve a finding by weakening or deleting behaviour you added on purpose. Where the finding is right about a symptom and wrong about the cause, say so and fix the cause.
 
 ## Serving the page

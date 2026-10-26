@@ -191,6 +191,9 @@ func (s Supervision) park(run *runstore.Run, round int, classified findings.Clas
 		"patchable":        len(dialogue.AnsweredByAPatch(classified)),
 		"needing_a_person": len(dialogue.AnsweredByAPerson(classified)),
 	}
+	if run.NobodyToAsk {
+		fields["nobody_to_ask"] = true
+	}
 	if teardown != nil {
 		fields["worktree"] = teardown.Error()
 	}

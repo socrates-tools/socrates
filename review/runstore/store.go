@@ -41,6 +41,7 @@ type Run struct {
 	Worktree        string           `json:"worktree,omitempty"`
 	Intent          string           `json:"intent,omitempty"`
 	NotMyChange     bool             `json:"not_my_change,omitempty"`
+	NobodyToAsk     bool             `json:"nobody_to_ask,omitempty"`
 	ReviewGuide     guidance.Outcome `json:"review_guide"`
 	GuidanceCeiling int64            `json:"guidance_ceiling,omitempty"`
 	Diff            prompt.Delivery  `json:"diff,omitempty"`
@@ -63,6 +64,10 @@ func (r Run) Vendor() string {
 
 func (r Run) Authorship() dialogue.Authorship {
 	return dialogue.Authorship(r.NotMyChange)
+}
+
+func (r Run) Presence() dialogue.Presence {
+	return dialogue.Presence(r.NobodyToAsk)
 }
 
 func (r Run) Tier() string {
@@ -130,6 +135,7 @@ type Start struct {
 	Snapshot        string
 	Intent          string
 	NotMyChange     bool
+	NobodyToAsk     bool
 	ReviewGuide     guidance.Outcome
 	GuidanceCeiling int64
 	ReviewerCLI     string
@@ -246,6 +252,7 @@ func (s Store) Create(start Start) (*Run, error) {
 		Snapshot:        start.Snapshot,
 		Intent:          start.Intent,
 		NotMyChange:     start.NotMyChange,
+		NobodyToAsk:     start.NobodyToAsk,
 		ReviewGuide:     start.ReviewGuide,
 		GuidanceCeiling: start.GuidanceCeiling,
 		ReviewerCLI:     start.ReviewerCLI,

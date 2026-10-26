@@ -28,6 +28,7 @@ type reportedRound struct {
 	Run           string            `json:"run"`
 	State         string            `json:"state"`
 	AwaitsAPerson bool              `json:"awaits_a_person"`
+	NobodyToAsk   bool              `json:"nobody_to_ask"`
 	Findings      []reportedFinding `json:"findings"`
 }
 
