@@ -147,6 +147,7 @@ func openingFor(t *testing.T, address, ready, painted string, options ...chromed
 		chromedp.DisableGPU,
 		chromedp.Flag("disable-dev-shm-usage", true),
 		chromedp.Flag("hide-scrollbars", false),
+		chromedp.Flag("disable-lcd-text", true),
 		chromedp.Flag("use-mock-keychain", true),
 		chromedp.Flag("password-store", "basic"),
 	}, options...)
