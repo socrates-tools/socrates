@@ -15,20 +15,21 @@ This file is agora's layout and invariants.
 - `agora/render` - a document to one HTML page, the marks a severity and an audience are drawn as, a patch to the rows of a split diff, and the partials that write each primitive's markup, one `ui-<name>.gohtml` under `partials/` for each, and the catalog, whose states for every primitive are stated once in `catalog.go`.
 - `agora/assets` - the built client bundle and fonts, embedded, and the stamp of their source.
   A file under the `agoradev` build tag serves the bundle from disk instead, for `make dev`.
-- `agora/surface` - the loopback server and its guards, the one address bound where nothing states one, the sessions it holds, what it writes about itself and about each page, the copy of each illustration and the route that serves it, the exchange, and the bounds on waiting.
+- `agora/surface` - the loopback server and its guards, the one address bound where nothing states one, the sessions it holds, what it writes about itself and about each page, the copy of each illustration and the route that serves it, the exchange, the reading of an answer's form, the staging of each attached file and its laying out in a folder of the answer, every collected answer kept under `answers/<n>/` of its session, and the bounds on waiting.
 - `agora/web/` - the client source, the design system and the fonts, built by `make assets`.
   It is a pnpm workspace of two packages.
   `packages/ui` is `@agora/ui`, the library: its `tokens/` holds `tokens.css`, `fonts.css`, the fonts and the mark, and the bundle serves `tokens.css` at `/assets/tokens.css` with every custom property it holds, because illustrations load it by that path.
   Its `theme.css` is the one Tailwind entry: it clears Tailwind's own theme, names the tokens as utilities, declares the named variants and screens the markup writes, and states with its `@source` lines every path a class is read from, which are the client's TypeScript, the partials and the landing page.
   `make assets` compiles it once, bundles the result into `surface.css` for the document, and hands it to `stylesheet.ts`, which builds the one constructable sheet every primitive adopts as its `static styles` through `UiElement` in `element.ts`.
   A primitive is one TypeScript file in its own folder, exported from `index.ts`: a `@customElement` class extending `UiElement` that paints its host by returning the utilities it wants from `hostClasses()` and draws its parts into its shadow root, with a module of its own where it needs one, such as the code block's highlighting or the diff block's patch.
+  `ui-file-tray` is the primitive that holds the files a person attaches to a decision or to the message.
   No stylesheet styles a primitive, and the library holds none but `theme.css` and what `tokens/` holds.
   Adding a primitive is a Lit element in its own folder exported from `index.ts`, a partial writing the element with the attributes it declares and what it slots, and its states in `catalogued` in `agora/render/catalog.go`, and nothing else.
   The library imports nothing from the surface, it is where highlight.js and Lit are dependencies, and a stylesheet outside `packages/ui/tokens/` that writes a colour or names a font family fails the suite.
   A class written with an arbitrary value, `p-[13px]` or `bg-[#fff]` or `bg-(--x)`, in any file `theme.css`'s `@source` lines name fails the suite naming the file and the line, and the check reads those lines rather than a list of its own, per ADR 84.
   `packages/surface` holds the page's script as strict TypeScript and the surface's stylesheet, which holds only the rules no utility can say.
   The pieces the glossary names are written in `page.gohtml`, `catalog.gohtml` and the partials, composed of the library's primitives and laid out by utilities, each keeping the one class that names it for the script and the suite, per ADR 85.
-  The script is one module for each of sending and the receipt, the confirmation, the live revision, the calls that show and hide the tooltip and the navigation, beside the answers, the composer, the expanding drawing, copying and the drawings' heights.
+  The script is one module for each of sending and the receipt, the confirmation, the live revision, the calls that show and hide the tooltip and the navigation, beside the answers, the composer, the attaching of what a drop or a paste carries to a tray, the expanding drawing, copying and the drawings' heights.
   Each follows the page through a listener on the document attached once when the page starts, so a revision fetches the page and replaces the surface and binds nothing.
 
 ## Invariants
