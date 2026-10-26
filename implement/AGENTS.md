@@ -3,7 +3,7 @@
 `socrates implement` builds a change's tickets through implementers, per ADR 48.
 `socrates implement skill` installs `socrates-implement`, which turns the session that a person invokes it in into the overseer, and the `socrates-implementer` agent definition the overseer spawns.
 It reads one configuration file of its own, `~/.socrates/implement/config.yaml`, `socrates implement config` reports every setting in it, and `socrates implement configure` changes one from a menu.
-It knows nothing about review, agora or design.
+It knows nothing about review's skills, agora or design, and names review's commands only at the last read.
 
 This file is implement's layout and invariants.
 `/AGENTS.md` holds the suite's, `CONTEXT.md` here holds implement's vocabulary, and `docs/adr/` here holds implement's decisions.
@@ -24,8 +24,8 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 
 - `socrates-implement` is rendered by `implement/skill` once per host, installed by `socrates implement skill` under each host's skills directory or under `--to` with `--host`, is person-only by each host's own switch through `internal/skill`, and is held to a ceiling of its own.
 - The committed copies at `.claude/skills/socrates-implement/SKILL.md` and `.agents/skills/socrates-implement/SKILL.md` must match what the package renders, and `make skill` writes them.
-- Every invocation it names exists in the binary with the flags it names, and it names only `socrates implement` ones.
-- It names no `socrates review` invocation and no other skill, and tells the overseer to invoke no skill, per ADR 49.
+- Every invocation it names exists in the binary with the flags it names, and it names `socrates implement` ones and, at the last read, `socrates review` ones, which it attributes to review's own binary.
+- It names no skill, `/socrates-review` and `$socrates-review` included, and tells the overseer to invoke no skill, per ADR 49 as amended by ADR 90.
 - The overseer writes no code, edits only the main ticket's status table, and settles every coding question by her own judgement.
 - She reads the main ticket, the spec and the ADRs, and the settings from `socrates implement config`, at the start of every run.
 - A default branch that is not remembered is proposed from the branches named `main`, `master`, `dev` or `develop`, never one under a prefix such as `feature/` or `hotfix/`, asked in the terminal and saved with `socrates implement default-branch`, per ADR 51.
@@ -38,8 +38,12 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - Landing is a fast-forward followed by the repository's own verification, a failure goes to the implementer whose ticket landed last, and where the only commits an implementer's branch lacks are the overseer's own status commits she merges them into its branch herself, while any other new commit goes back to the implementer to merge.
 - In progress is committed before a hand-out and done once a ticket has landed and passed, and a resumed overseer continues each in-progress ticket from its own branch with a fresh implementer.
 - What the person says mid-run is relayed at once to every implementer it concerns, and the person is reached in the terminal only about what coding cannot fix.
-- The whole change is read against the spec from the default branch's fork point, story by story, every worktree is removed, and nothing is pushed.
-- The hand-back lists each user story with the ticket that delivered it, every one-way door the change walks through or that there is none, and feedback sent for the same mistake to more than one implementer as a check the repository could run.
+- The last read begins `socrates review` over the whole change on the change's branch, in the person's own checkout, with `--base` naming the default branch, `--nobody-to-ask`, `--intent` pointing at the spec and `--host`, running in the background, per ADR 90.
+- The whole change is read against the spec from the default branch's fork point, story by story, while the reviewer reads.
+- Each finding that asks a person is answered with `--settled` by the overseer's own judgement, never `--decided`, each she judges false is rejected, and a response to every finding is recorded before `socrates review continue`.
+- Every fix and every story the change falls short of goes to one fresh implementer together, landed and verified as a ticket is before the second round, and a first round that ended clean has no second round while its story shortfalls still go to that implementer.
+- A review that ends escalated or failed starts no third run and is handed back anyway, every worktree is removed, and nothing is pushed.
+- The hand-back says how the review ended, lists every finding still open or the failure the reviewer gave, lists each settled finding with its reason, lists each user story with the ticket that delivered it, every one-way door the change walks through or that there is none, and feedback sent for the same mistake to more than one implementer as a check the repository could run.
 - Every promise above holds in each host's rendering, and what differs is stated in the Codex rendering's `On Codex` section and in the three sentences that say how an implementer or the verification runs: Claude Code runs them in the background, as the `socrates-implementer` agent, and Codex starts an implementer with `spawn_agent` naming `agent_type` `socrates-implementer` and has a subagent run the verification.
 - The Codex overseer sends feedback with `send_input`, collects reports with `wait_agent` between answering the person, closes each implementer with `close_agent` once its ticket has landed, and tells the person to run `socrates implement skill` where `socrates-implementer` is not a role it can spawn.
 - The Codex overseer checks at the start of every run that it can write the directory beside the file `socrates implement config` prints on its first line, and where it cannot starts nothing and names `writable_roots` under `[sandbox_workspace_write]` and `--add-dir`, per ADR 68.

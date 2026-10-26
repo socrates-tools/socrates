@@ -691,3 +691,11 @@ func TestEveryCodexRenderingThatServesAPageTellsTheSessionToInvokeNoSkill(t *tes
 		}
 	}
 }
+
+func TestImplementAttributesReviewsCommandsToReviewsOwnBinary(t *testing.T) {
+	t.Parallel()
+
+	if got := implementskill.Namespaces["review"]; got != skill.Name {
+		t.Errorf("implement attributes socrates review commands to %q, and review's own binary is %q, which the merged namespaces would overwrite", got, skill.Name)
+	}
+}

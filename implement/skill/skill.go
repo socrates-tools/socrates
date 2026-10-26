@@ -21,11 +21,11 @@ const (
 )
 
 var (
-	OverseerCeilings = skillkit.Ceilings{skillkit.ClaudeCode: 10600, skillkit.Codex: 11307}
+	OverseerCeilings = skillkit.Ceilings{skillkit.ClaudeCode: 11914, skillkit.Codex: 12618}
 	AgentCeilings    = skillkit.Ceilings{skillkit.ClaudeCode: 1700, skillkit.Codex: 1750}
 )
 
-var Namespaces = map[string]string{"implement": Name}
+var Namespaces = map[string]string{"implement": Name, "review": "socrates-review"}
 
 func Binaries() []string {
 	return []string{Name}
@@ -37,19 +37,19 @@ func Document(host skillkit.Host) string {
 		fmt.Sprintf(startingSection, wording.noun, wording.verb), theDefaultBranchSection, theChangesBranchSection, theFrontierSection,
 		fmt.Sprintf(worktreesSection, wording.startsTheImplementer), theReviewSection,
 		fmt.Sprintf(landingSection, wording.runsTheVerification), theStatusSection, theResumingSection,
-		fmt.Sprintf(personSection, wording.implementersRun), theLastReadSection, installingElsewhere(host)}
+		fmt.Sprintf(personSection, wording.implementersRun), fmt.Sprintf(theLastReadSection, host.Flag, wording.runsTheReview), installingElsewhere(host)}
 	return skillkit.Assembled(parts...)
 }
 
 type hostWording struct {
-	noun, verb, startsTheImplementer, runsTheVerification, implementersRun string
+	noun, verb, startsTheImplementer, runsTheVerification, implementersRun, runsTheReview string
 }
 
 func wordingFor(host skillkit.Host) hostWording {
 	if host == skillkit.Codex {
-		return hostWording{codexNoun, codexVerb, codexStartsTheImplementer, codexRunsTheVerification, codexImplementersRun}
+		return hostWording{codexNoun, codexVerb, codexStartsTheImplementer, codexRunsTheVerification, codexImplementersRun, codexRunsTheReview}
 	}
-	return hostWording{claudeCodeNoun, claudeCodeVerb, claudeCodeStartsTheImplementer, claudeCodeRunsTheVerification, claudeCodeImplementersRun}
+	return hostWording{claudeCodeNoun, claudeCodeVerb, claudeCodeStartsTheImplementer, claudeCodeRunsTheVerification, claudeCodeImplementersRun, claudeCodeRunsTheReview}
 }
 
 func hostSection(host skillkit.Host) string {

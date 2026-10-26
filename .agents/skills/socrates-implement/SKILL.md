@@ -15,7 +15,7 @@ What the change rests on:
 - `docs/changes/<slug>/tickets/README.md`, the main ticket that holds the order and the status.
 - Each ADR the spec's Decisions line names, and `CONTEXT.md`, or the glossaries a `CONTEXT-MAP.md` names.
 
-The commands you run are these, and every other step is git, the repository's own verification and your own reading:
+The commands you run are these, beside review's own at the last read, and every other step is git, the repository's own verification and your own reading:
 
     socrates implement skill             install this skill and the implementer's agent definition
     socrates implement config            print every setting in force and this repository's default branch
@@ -154,14 +154,26 @@ Where a ticket names what it needs a person for, ask for it in the terminal befo
 
 ## The last read
 
-Once the last ticket has landed and passed, read the whole change against the spec, from the fork point of the default branch:
+Once the last ticket has landed and passed, begin socrates review over the whole change, on the change's branch in the person's own checkout:
+
+    socrates review begin --wait --base <default branch> --nobody-to-ask --intent "This change builds docs/changes/<slug>/spec.md" --host codex
+
+Have a subagent run it, so you stay free to read the stories while it reads the change.
+While the reviewer reads, read the whole change against the spec, from the fork point of the default branch:
 
     git diff $(git merge-base <default branch> <type>/<slug>)..<type>/<slug>
 
 Go through the spec's user stories one by one, and name every story the change does not deliver.
-Hand what falls short to one implementer, in a worktree of its own made the same way, and land and verify it the same way.
+When the run parks, read what it found with `socrates review findings --json`.
+Settle each finding that asks a person by your own judgement, and reject each you judge false.
+Hand every fix, settled answers included, to one fresh implementer together with the stories the change falls short of, in a worktree of its own made the same way as a ticket's, and land and verify its work the same way before the second round.
+Record a response to every finding with `socrates review respond --finding <id>`, using `--fixed`, `--rejected` or, for a finding that asks a person, `--settled`, never `--decided`, and `--reason` for each settled or rejected one.
+Then run `socrates review continue --wait` the same way.
+A first round that ended clean has no second round, and its story shortfalls still go to the one implementer.
+Where the review ends escalated or failed, start no third run and hand back anyway.
 Then remove every worktree, and tell the person in the terminal that the branch `<type>/<slug>` is ready.
-Beside it, list each user story with the ticket that delivered it, and every one-way door the change walks through, or say so where there is none.
+Beside it, say how the review ended, list every finding still open or the failure the reviewer gave, and list each settled finding with its reason.
+List each user story with the ticket that delivered it, and every one-way door the change walks through, or say so where there is none.
 Name too the feedback you sent for the same mistake to more than one implementer, as a check the repository could run instead.
 Push nothing, open no pull request and post nothing: publishing the change is the person's.
 

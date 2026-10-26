@@ -69,23 +69,37 @@ func TestInstallingTheOverseerSkillWritesItUnderItsOwnName(t *testing.T) {
 	}
 }
 
-func TestTheOverseerSkillNamesInvocationsOfImplementOnly(t *testing.T) {
+func TestTheOverseerSkillNamesInvocationsOfImplementAndAtTheLastReadOfReview(t *testing.T) {
 	named := skillkit.Named(skill.All(), skill.Namespaces)
 	if len(named) == 0 {
 		t.Fatal("the skill names no invocation at all, so this check reads nothing")
 	}
 
-	commands := map[string]bool{}
+	commands := map[string]map[string]bool{}
 	for _, invocation := range named {
-		if invocation.Binary != skill.Name {
+		if invocation.Binary != skill.Name && invocation.Binary != reviewBinary {
 			t.Errorf("the skill names an invocation attributed to %s", invocation.Binary)
 		}
-		commands[invocation.Command] = true
+		if commands[invocation.Binary] == nil {
+			commands[invocation.Binary] = map[string]bool{}
+		}
+		commands[invocation.Binary][invocation.Command] = true
 	}
 	for _, command := range []string{"config", "default-branch", "skill"} {
-		if !commands[command] {
+		if !commands[skill.Name][command] {
 			t.Errorf("the skill never names socrates implement %s", command)
 		}
+	}
+	for _, command := range []string{"begin", "findings", "respond", "continue"} {
+		if !commands[reviewBinary][command] {
+			t.Errorf("the skill never names socrates review %s", command)
+		}
+	}
+}
+
+func TestTheOverseerSkillAttributesReviewsCommandsToReviewsOwnBinary(t *testing.T) {
+	if got := skill.Namespaces["review"]; got != reviewBinary {
+		t.Errorf("implement attributes socrates review commands to %q, and a name other than %q overwrites review's own entry when the suite merges both", got, reviewBinary)
 	}
 }
 
@@ -134,6 +148,8 @@ const (
 	resumingHeading     = "## Resuming"
 	personHeading       = "## The person"
 	lastReadHeading     = "## The last read"
+
+	reviewBinary = "socrates-review"
 )
 
 func TestTheOverseerWritesNoCode(t *testing.T) {
@@ -329,7 +345,7 @@ func TestTheWholeChangeIsReadAgainstTheSpecFromTheDefaultBranchsForkPointAndNoth
 	saysEach(t, lastReadHeading, "tickets that each passed could add up to something the spec did not ask for, or the change could be published unasked",
 		"read the whole change against the spec",
 		"git merge-base <default branch> <type>/<slug>",
-		"Hand what falls short to one implementer",
+		"to one fresh implementer",
 		"remove every worktree",
 		"the branch `<type>/<slug>` is ready",
 		"Push nothing",
@@ -354,17 +370,32 @@ func TestTheSectionsComeInTheOrderOfTheLoop(t *testing.T) {
 	}
 }
 
-func TestTheOverseerSkillNamesNoSocratesReviewInvocation(t *testing.T) {
-	for _, one := range skill.All() {
-		if found := regexp.MustCompile(`(?i)socrates\s+review`).FindString(one.Rendered()); found != "" {
-			t.Errorf("the skill for %s names %q, and how a ticket is reviewed is the overseer's own", one.Host.Name, found)
+func TestTheOverseerSkillNamesReviewsCommandsAtTheLastReadAndNowhereElse(t *testing.T) {
+	for _, host := range skillkit.Hosts() {
+		document := skill.Document(host)
+		lastRead := sectionOf(t, host, lastReadHeading)
+
+		if !regexp.MustCompile(`(?i)socrates\s+review`).MatchString(lastRead) {
+			t.Errorf("the last read for %s names no socrates review command", host.Name)
+		}
+		outside := strings.Replace(document, lastRead, "", 1)
+		if found := regexp.MustCompile(`(?i)socrates\s+review`).FindString(outside); found != "" {
+			t.Errorf("the skill for %s names %q outside the last read, and how a ticket is reviewed is the overseer's own", host.Name, found)
 		}
 	}
 }
 
-func TestTheOverseerSkillNamesNoNamespaceButImplement(t *testing.T) {
+func TestTheOverseerSkillNamesNoReviewSkillToInvoke(t *testing.T) {
+	for _, one := range skill.All() {
+		if found := regexp.MustCompile(`socrates-review`).FindString(one.Rendered()); found != "" {
+			t.Errorf("the skill for %s names %q, and the overseer drives review's commands rather than its skill", one.Host.Name, found)
+		}
+	}
+}
+
+func TestTheOverseerSkillNamesNoNamespaceButImplementAndReview(t *testing.T) {
 	for _, tool := range convention.Tools {
-		if tool.Namespace == "implement" {
+		if tool.Namespace == "implement" || tool.Namespace == "review" {
 			continue
 		}
 		for _, one := range skill.All() {
@@ -445,5 +476,78 @@ func TestTheHandBackNamesFeedbackThatRecurredAsACheckWorthWriting(t *testing.T) 
 	saysEach(t, lastReadHeading, "a mistake fed back to implementer after implementer could be forgotten when the run ends",
 		"feedback you sent for the same mistake to more than one implementer",
 		"a check the repository could run instead",
+	)
+}
+
+func TestTheLastReadBeginsSocratesReviewOverTheWholeChangeWithNobodyToAsk(t *testing.T) {
+	for _, host := range skillkit.Hosts() {
+		saysEachOn(t, host, lastReadHeading, "the whole change could reach the person unreviewed, or the review could stop to ask somebody who is not there",
+			"socrates review begin --wait --base <default branch> --nobody-to-ask --intent \"This change builds docs/changes/<slug>/spec.md\" --host "+host.Flag,
+			"on the change's branch in the person's own checkout",
+		)
+	}
+}
+
+func TestTheReviewRunsInTheBackgroundOnEachHostSoTheOverseerStaysFree(t *testing.T) {
+	saysEachOn(t, skillkit.ClaudeCode, lastReadHeading, "a review that takes minutes could leave the person unanswered",
+		"Run it in the background",
+	)
+	saysEachOn(t, skillkit.Codex, lastReadHeading, "a review that takes minutes could leave the person unanswered",
+		"Have a subagent run it",
+	)
+}
+
+func TestTheStoriesAreWalkedWhileTheReviewerReadsAndFindingsAreReadAsJSON(t *testing.T) {
+	saysEach(t, lastReadHeading, "the story read could wait on the review, or the findings could be read from prose",
+		"While the reviewer reads",
+		"socrates review findings --json",
+	)
+}
+
+func TestAFindingThatAsksAPersonIsSettledByTheOverseersOwnJudgementAndAFalseOneIsRejected(t *testing.T) {
+	saysEach(t, lastReadHeading, "the overseer could stop to ask a person who is not there, or record a decision no person made",
+		"Settle each finding that asks a person by your own judgement",
+		"reject each you judge false",
+		"`--settled`, never `--decided`",
+	)
+}
+
+func TestEveryReviewFixAndEveryStoryShortfallGoesToOneFreshImplementerLandedAndVerifiedBeforeTheSecondRound(t *testing.T) {
+	saysEach(t, lastReadHeading, "fixes could be built twice, or reviewed again before they landed",
+		"every fix, settled answers included",
+		"to one fresh implementer together with the stories the change falls short of",
+		"in a worktree of its own made the same way as a ticket's",
+		"land and verify its work the same way",
+		"before the second round",
+	)
+}
+
+func TestAResponseIsRecordedToEveryFindingBeforeTheSecondRoundRuns(t *testing.T) {
+	saysEach(t, lastReadHeading, "the second round could be asked to judge answers that were never given",
+		"Record a response to every finding with `socrates review respond --finding <id>`",
+		"`--fixed`",
+		"`--rejected`",
+		"`socrates review continue --wait`",
+	)
+}
+
+func TestACleanFirstRoundHasNoSecondRoundAndItsStoryShortfallsStillGoToTheImplementer(t *testing.T) {
+	saysEach(t, lastReadHeading, "a clean review could be run again for nothing, or the stories it never read could be dropped",
+		"A first round that ended clean has no second round",
+		"its story shortfalls still go to the one implementer",
+	)
+}
+
+func TestAnEscalatedOrFailedReviewStartsNoThirdRunAndIsHandedBackAnyway(t *testing.T) {
+	saysEach(t, lastReadHeading, "the overseer could loop on a review that cannot pass, or stop before the person is told",
+		"Where the review ends escalated or failed, start no third run and hand back anyway",
+	)
+}
+
+func TestTheHandBackSaysHowTheReviewEndedWhatIsStillOpenAndEachSettledFindingWithItsReason(t *testing.T) {
+	saysEach(t, lastReadHeading, "the person could publish a change without knowing what the review left open or what the overseer decided for them",
+		"say how the review ended",
+		"every finding still open or the failure the reviewer gave",
+		"each settled finding with its reason",
 	)
 }
