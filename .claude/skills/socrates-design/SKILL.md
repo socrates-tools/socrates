@@ -49,7 +49,7 @@ State no severity anywhere, on a decision or on a source entry: the surface rend
 One option of a decision may carry `"recommended": true`, and at most one is ever marked.
 A document marking two is refused before anything is served.
 The marked option is the answer the session would take, and it arrives chosen when the page renders.
-A decision you mark nothing on arrives with nothing chosen: marking nothing says you have no view, and choosing one for the person would be the page answering on their behalf.
+A decision you mark nothing on arrives with nothing chosen: marking nothing says you have no view.
 
 A single-choice decision already renders a further control below its options, labelled *None of these*, which clears the selection and moves the cursor into the words field below it.
 Write the real options and nothing else, and never write that option yourself.
@@ -164,7 +164,8 @@ Further Notes carries anything that fits none of the six above it, including, wh
 ## Writing the decisions
 
 A decision earns an ADR of its own when all three of these hold together: it is hard to reverse, it is surprising without context, and it is the result of a real trade-off.
-Not one or two of the three, all three, joined by and rather than or: with or almost every decision would qualify and the rule would stop meaning anything.
+Not one or two of the three, all three, joined by and rather than or.
+A decision that fails even one of the three stays inside the spec's Implementation Decisions and gets no file of its own.
 All three often hold for a scope decision, for a deliberate deviation the next engineer would otherwise fix, and for a constraint the code does not show.
 Each still has to pass all three.
 
