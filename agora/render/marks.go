@@ -51,6 +51,18 @@ func audienceMark(value string) *markView {
 	return marked(markView{Kind: "audience", Value: value, Tone: stated.tone, Icon: stated.icon, Name: stated.title, Title: stated.title, Hint: stated.hint})
 }
 
+func indexedAudienceMark(value string) *markView {
+	if !audiencesSocratesReviewWrites[value].askedOfMe {
+		return nil
+	}
+	return quietly(audienceMark(value))
+}
+
+var variantOfKind = map[string]string{
+	"severity": "filled",
+	"audience": "outlined",
+}
+
 func marked(shown markView) *markView {
 	shown.Focusable = true
 	shown.Named = true
@@ -75,6 +87,7 @@ func (m markView) Badge() badgeView {
 	shown := badgeView{
 		Class:     "mark " + m.Kind,
 		Tone:      m.Tone,
+		Variant:   variantOfKind[m.Kind],
 		Dataset:   map[string]string{m.Kind: m.Value},
 		Title:     m.Title,
 		Hint:      m.Hint,

@@ -170,7 +170,11 @@ func diffBlockOf(language, patch string) diffBlockView {
 }
 
 func markedBadge(tone string) badgeView {
-	return badgeView{Tone: tone, Icon: "info", Label: catalogBadgeLabel}
+	return badgeView{Tone: tone, Variant: "filled", Icon: "info", Label: catalogBadgeLabel}
+}
+
+func outlinedBadge(tone string) badgeView {
+	return badgeView{Tone: tone, Variant: "outlined", Icon: "user", Label: catalogBadgeLabel}
 }
 
 func dialogState(key, name string, view dialogView) state {
@@ -251,6 +255,9 @@ var catalogued = map[string][]state{
 		badgeState(badgeAccent, markedBadge("accent")),
 		badgeState(badgeWarning, markedBadge("warning")),
 		badgeState(badgeError, markedBadge("error")),
+		badgeState(badgeOutlined, outlinedBadge("neutral")),
+		badgeState(badgeOutlinedAccent, outlinedBadge("accent")),
+		badgeState(badgeOutlinedIconAlone, badgeView{Tone: "accent", Variant: "outlined", Icon: "user"}),
 		badgeState(badgeIconAlone, badgeView{
 			Tone:      "neutral",
 			Icon:      "info",

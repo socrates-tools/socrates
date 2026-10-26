@@ -55,6 +55,7 @@ type entryView struct {
 	ID       string
 	Name     string
 	Severity *markView
+	Audience *markView
 	Location string
 	Decided  bool
 	Answered bool
@@ -200,17 +201,19 @@ func viewOf(read document.Document, frame Frame) view {
 			ID:       entry.ID,
 			Name:     nameOr(entry.Name, entry.ID),
 			Severity: quietly(severityMark(entry.Severity)),
+			Audience: indexedAudienceMark(entry.Audience),
 			Location: entry.Location,
 			Decided:  decided,
 			Answered: held,
 		})
 	}
 	if len(read.Source) == 0 {
-		for _, decision := range shown.Decisions {
+		for at, decision := range shown.Decisions {
 			shown.Index = append(shown.Index, entryView{
 				ID:       decision.ID,
 				Name:     decision.Name,
 				Severity: quietly(decision.Severity),
+				Audience: indexedAudienceMark(read.Decisions[at].Audience),
 				Location: decision.Location,
 				Decided:  true,
 				Answered: decision.Answered,

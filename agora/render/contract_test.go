@@ -243,7 +243,7 @@ func TestARenderedPageWritesTheBadgeOnlyWithTheAttributesAndTheSlotItDeclares(t 
 func TestTheContractDeclaresTheBadgeAsAnElementOfAttributesAndSlots(t *testing.T) {
 	declared := declaredByTheContract(t)
 
-	want := element{Attributes: []string{"icon", "tone"}, Slots: []string{"label"}}
+	want := element{Attributes: []string{"icon", "tone", "variant"}, Slots: []string{"label"}}
 	if diff := cmp.Diff(want, declared.Elements["ui-badge"]); diff != "" {
 		t.Errorf("the contract declares the badge differently (-want +got):\n%s", diff)
 	}

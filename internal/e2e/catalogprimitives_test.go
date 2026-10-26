@@ -13,12 +13,14 @@ import (
 )
 
 const (
-	badgeNeutralKey   = "a-neutral-tone-with-a-label"
-	badgeAccentKey    = "an-accent-tone-with-a-label"
-	badgeWarningKey   = "a-warning-tone-with-a-label"
-	badgeErrorKey     = "an-error-tone-with-a-label"
-	badgeIconAloneKey = "an-icon-alone"
-	badgeExplainedKey = "a-label-that-says-what-it-means-on-hover-on-focus-and-to-a-screen-reader"
+	badgeNeutralKey           = "a-neutral-tone-with-a-label"
+	badgeAccentKey            = "an-accent-tone-with-a-label"
+	badgeWarningKey           = "a-warning-tone-with-a-label"
+	badgeErrorKey             = "an-error-tone-with-a-label"
+	badgeIconAloneKey         = "an-icon-alone"
+	badgeOutlinedAccentKey    = "an-outlined-accent-tone-with-a-label"
+	badgeOutlinedIconAloneKey = "an-outlined-accent-tone-with-an-icon-alone"
+	badgeExplainedKey         = "a-label-that-says-what-it-means-on-hover-on-focus-and-to-a-screen-reader"
 
 	overlineWordsAloneKey = "words-alone"
 	overlineCountedKey    = "words-and-a-count"
@@ -182,6 +184,33 @@ func TestTheCatalogPaintsEachBadgeToneInItsOwnWashAndInk(t *testing.T) {
 			}
 			if got := page.attributeOf(badge, "tone"); got != tone.name {
 				t.Errorf("the badge states its tone as %q, want %q", got, tone.name)
+			}
+		})
+	}
+}
+
+func TestAnOutlinedBadgeDrawnAsAnIconAloneIsRingedFaintlySoItReadsNoLargerThanAFilledOne(t *testing.T) {
+	// scenario: An outlined badge with a label is ringed in its tone's ink, and one drawn as an icon alone is ringed in the accent ring, so it does not read larger than a filled badge beside it
+	t.Parallel()
+	page := catalogued(t)
+
+	for _, outlined := range []struct{ key, ring, name string }{
+		{badgeOutlinedAccentKey, "--accent", "with a label"},
+		{badgeOutlinedIconAloneKey, "--accent-ring", "as an icon alone"},
+	} {
+		t.Run(outlined.name, func(t *testing.T) {
+			badge := badgeOf(outlined.key)
+
+			painted := page.paintedOf(badge, "border-top-color", "background-color", "color")
+
+			if want := page.pageColourOf(outlined.ring); painted["border-top-color"] != want {
+				t.Errorf("the outlined badge %s is ringed %s, want %s", outlined.name, painted["border-top-color"], want)
+			}
+			if want := page.pageColourOf("--surface-card"); painted["background-color"] != want {
+				t.Errorf("the outlined badge %s is painted %s, want the card's %s", outlined.name, painted["background-color"], want)
+			}
+			if want := page.pageColourOf("--accent"); painted["color"] != want {
+				t.Errorf("the outlined badge %s draws its icon in %s, want %s", outlined.name, painted["color"], want)
 			}
 		})
 	}

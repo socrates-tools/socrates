@@ -208,3 +208,81 @@ func TestEvidenceIsDrawnBlockAfterBlockInTheOrderWrittenEachUnderItsOwnHeading(t
 		t.Errorf("the headings of the blocks differ from the order and captions written (-want +got):\n%s", diff)
 	}
 }
+
+func TestASeverityIsDrawnFilledAndAnAudienceOutlinedSoHowSeriousAndWhoDecidesReadApart(t *testing.T) {
+	for _, stated := range []struct {
+		severity string
+		audience string
+	}{
+		{"error", "needs a person"},
+		{"warning", "can be patched"},
+		{"info", "informational"},
+		{"cosmetic", "the author patches"},
+	} {
+		t.Run(stated.severity+" for "+stated.audience, func(t *testing.T) {
+			read := oneDecision(document.One)
+			read.Decisions[0].Severity = stated.severity
+			read.Decisions[0].Audience = stated.audience
+
+			card := cardsIn(rendered(t, read))[0]
+			if drawn := attribute(markIn(card, "severity"), "variant"); drawn != "filled" {
+				t.Errorf("the %s mark is drawn %q, want filled", stated.severity, drawn)
+			}
+			if drawn := attribute(markIn(card, "audience"), "variant"); drawn != "outlined" {
+				t.Errorf("the %q mark is drawn %q, want outlined", stated.audience, drawn)
+			}
+		})
+	}
+}
+
+func TestAnIndexEntryWhoseDecisionIsYourCallCarriesThatMarkAndNoOtherAudience(t *testing.T) {
+	for _, stated := range []struct {
+		audience string
+		marked   bool
+	}{
+		{"needs a person", true},
+		{"can be patched", false},
+		{"informational", false},
+		{"the author patches", false},
+	} {
+		t.Run(stated.audience, func(t *testing.T) {
+			read := oneDecision(document.One)
+			read.Decisions[0].Audience = stated.audience
+
+			entries := entriesIn(rendered(t, read))
+			if len(entries) == 0 {
+				t.Fatal("the page indexes nothing")
+			}
+			drawn := markIn(entries[0], "audience")
+			if !stated.marked {
+				if drawn != nil {
+					t.Errorf("the index marks %q, and only a decision that is the person's own call is marked there", stated.audience)
+				}
+				return
+			}
+			if drawn == nil {
+				t.Fatalf("the index does not mark %q, and a person scans the index for what is theirs to decide", stated.audience)
+			}
+			if said := strings.TrimSpace(text(drawn)); said != "" {
+				t.Errorf("the audience mark in the index says %q, and the index has room only for the icon", said)
+			}
+			if attribute(drawn, "variant") != "outlined" {
+				t.Errorf("the audience mark in the index is drawn %q, want outlined as on the card", attribute(drawn, "variant"))
+			}
+		})
+	}
+}
+
+func TestAnIndexEntryReadFromTheSourceMarksYourCallToo(t *testing.T) {
+	read := oneDecision(document.One)
+	read.Decisions[0].Audience = "needs a person"
+	read.Source = []document.Entry{{ID: "c-1", Severity: "error", Audience: "needs a person"}}
+
+	entries := entriesIn(rendered(t, read))
+	if len(entries) == 0 {
+		t.Fatal("the page indexes nothing")
+	}
+	if markIn(entries[0], "audience") == nil {
+		t.Error("an entry the source lists as needing a person carries no Your call mark in the index")
+	}
+}

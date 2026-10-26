@@ -1,6 +1,6 @@
 # 70. The recommendation is sea and your call is Aegean
 
-- Status: accepted
+- Status: accepted, its Your call mark drawn outlined by ADR 89
 - Date: 2026-10-15
 - Amends: ADR 53
 - Part of: the-aegean-page

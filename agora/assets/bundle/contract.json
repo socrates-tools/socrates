@@ -12,7 +12,8 @@
     "ui-badge": {
       "attributes": [
         "icon",
-        "tone"
+        "tone",
+        "variant"
       ],
       "slots": [
         "label"

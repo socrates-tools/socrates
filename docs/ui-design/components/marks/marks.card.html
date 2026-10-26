@@ -16,7 +16,7 @@ function Demo() {
   return (<div className="stack">
     <div className="row"><StatusPill status="open" /><StatusPill status="sent" /><StatusPill status="over" /><StatusPill status="nothing" /></div>
     <div className="row"><Mark value="error" /><Mark value="warning" /><Mark value="info" /><Mark value="needs a person" /><Mark value="can be patched" /><Mark value="informational" /></div>
-    <div className="row"><Mark value="error" compact /><Mark value="warning" compact /><Check state="no" /><Check state="yes" /><Check state="yes" tone="resolved" /><Tag tone="recommended">Recommended</Tag><Tag tone="resolved">Settled</Tag></div>
+    <div className="row"><Mark value="error" compact /><Mark value="warning" compact /><Mark value="needs a person" compact /><Check state="no" /><Check state="yes" /><Check state="yes" tone="resolved" /><Tag tone="recommended">Recommended</Tag><Tag tone="resolved">Settled</Tag></div>
   </div>);
 }
 ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);

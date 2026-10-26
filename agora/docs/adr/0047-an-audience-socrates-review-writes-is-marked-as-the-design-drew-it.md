@@ -1,6 +1,6 @@
 # 47. An audience socrates review writes is marked as the design drew it
 
-- Status: accepted, its gold tone and its marks on a card amended by ADR 53
+- Status: accepted, its gold tone and its marks on a card amended by ADR 53, its audience marks drawn outlined by ADR 89
 - Date: 2026-09-30
 - Part of: the-kylix-page
 

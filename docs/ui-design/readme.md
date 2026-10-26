@@ -48,7 +48,7 @@ Where this folder and the shipped page disagree, the shipped page is right: `ago
 
 - **Palette:** Greek coast.
   **Aegean** `#1259A8` is the one accent: what you choose, what you press, links, focus.
-  **Sea** `#0B6E79` on `#E2F0F1` marks *Recommended*, and *Your call* is Aegean ink on the Aegean wash `#E8F0FA`, so neither reads as an error, per ADR 70.
+  **Sea** `#0B6E79` on `#E2F0F1` marks *Recommended*, and *Your call* is Aegean ink outlined in Aegean on the card, so neither reads as an error, per ADR 70.
   **Clay** `#A3471F` (`--clay-600`) colours only the calls in code (`--token-call`); the brand mark carries its own clay.
   **Limestone** neutrals (`#F6F2EA` page, `#FFFFFF` cards, `#FBF9F5` sunk bands) carry the ground.
   **Ink** navy `#14283C` is all body text.
@@ -91,6 +91,23 @@ Where this folder and the shipped page disagree, the shipped page is right: `ago
   The primary button has a soft Aegean glow.
 - **Closed states hide, not disable.**
   When the exchange is over, the text fields and the composer are removed, and a single neutral notice under the preamble says so.
+
+## What a colour means
+
+Each hue says one thing in the page's chrome, and code inside evidence is highlighted on its own terms.
+
+- **Aegean:** what you do. Buttons, the chosen option, the answered check, progress, focus, links, the *Open* status, and *Your call*, which is the one decision that waits on you.
+- **Sea:** *Recommended*, what whoever asked would pick.
+- **Olive:** settled, and lines a diff adds.
+- **Cinnabar:** *Error*, a failed send, and lines a diff removes.
+- **Ochre:** *Warning*.
+- **Limestone and ink:** everything that asks nothing of you, including *Info*, *Author can patch* and *For information*.
+
+A mark's shape says which question it answers, per ADR 89.
+A **filled** mark, ink on its own wash, is a severity: how serious.
+An **outlined** mark, ink inside a 1px border on the card, is an audience: who decides.
+The index rail draws the severity of each entry and, for a decision that is the person's own, the *Your call* mark beside it.
+There, drawn as an icon alone, the outlined mark is ringed in the faint `accent-ring`, so it reads at the same size as the filled washes beside it.
 
 ## Iconography
 

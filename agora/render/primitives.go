@@ -32,6 +32,7 @@ type shellSlots struct {
 type badgeView struct {
 	Class     string
 	Tone      string
+	Variant   string
 	Dataset   map[string]string
 	Title     string
 	Hint      string
