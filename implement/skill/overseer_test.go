@@ -538,9 +538,9 @@ func TestACleanFirstRoundHasNoSecondRoundAndItsStoryShortfallsStillGoToTheImplem
 	)
 }
 
-func TestAnEscalatedOrFailedReviewStartsNoThirdRunAndIsHandedBackAnyway(t *testing.T) {
-	saysEach(t, lastReadHeading, "the overseer could loop on a review that cannot pass, or stop before the person is told",
-		"Where the review ends escalated or failed, start no third run and hand back anyway",
+func TestAReviewThatCannotBeginOrEndsEscalatedOrFailedStartsNoFurtherRunAndIsHandedBackAnyway(t *testing.T) {
+	saysEach(t, lastReadHeading, "the overseer could loop on a review that cannot pass, try to repair a reviewer CLI that is not installed, or stop before the person is told",
+		"Where the review cannot begin or ends escalated or failed, start no further run and hand back anyway, with the refusal or the failure it gave",
 	)
 }
 

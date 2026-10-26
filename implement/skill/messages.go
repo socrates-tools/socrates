@@ -169,7 +169,7 @@ Hand every fix, settled answers included, to one fresh implementer together with
 Record a response to every finding with |socrates review respond --finding <id>|, using |--fixed|, |--rejected| or, for a finding that asks a person, |--settled|, never |--decided|, and |--reason| for each settled or rejected one.
 Then run |socrates review continue --wait| the same way.
 A first round that ended clean has no second round, and its story shortfalls still go to the one implementer.
-Where the review ends escalated or failed, start no third run and hand back anyway.
+Where the review cannot begin or ends escalated or failed, start no further run and hand back anyway, with the refusal or the failure it gave.
 Then remove every worktree, and tell the person in the terminal that the branch |<type>/<slug>| is ready.
 Beside it, say how the review ended, list every finding still open or the failure the reviewer gave, and list each settled finding with its reason.
 List each user story with the ticket that delivered it, and every one-way door the change walks through, or say so where there is none.

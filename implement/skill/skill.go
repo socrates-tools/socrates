@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	OverseerCeilings = skillkit.Ceilings{skillkit.ClaudeCode: 11914, skillkit.Codex: 12618}
+	OverseerCeilings = skillkit.Ceilings{skillkit.ClaudeCode: 11973, skillkit.Codex: 12677}
 	AgentCeilings    = skillkit.Ceilings{skillkit.ClaudeCode: 1700, skillkit.Codex: 1750}
 )
 
