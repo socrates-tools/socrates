@@ -38,6 +38,7 @@ func TestNoChannelIsImpliedForTheAuthorsAccount(t *testing.T) {
 		"--not-my-change": "that nobody here can patch the change, which changes what a finding can be answered with and says nothing about the change itself",
 		"--forwarded":     "that a finding goes to whoever wrote the change, as the text socrates recorded and not as anything the session wrote",
 		"--dropped":       "that a finding is true and is not being raised, with a reason that stays on this machine",
+		"--attach":        "a file the person attached to their answer, which reaches the next reviewer as their evidence and carries nothing of the session's account of the change",
 		"--finding":       "which finding an answer is about",
 		"--fixed":         "that a finding was patched",
 		"--rejected":      "that a finding is wrong",

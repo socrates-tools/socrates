@@ -25,4 +25,4 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 87](../../../../agora/docs/adr/0
 | [3.2: An answer is stored whole or refused whole](3.2-answer-ceilings.md) | 2 | done |
 | [3.3: Files alone are an answer, and what goes names them](3.3-files-alone-are-an-answer.md) | 2 | in progress |
 | [3.4: A settled answer names its files](3.4-settled-answers-name-their-files.md) | 2 | done |
-| [3.5: The review and design skills read attachments](3.5-skills-read-attachments.md) | 2, 1.3 | in progress |
+| [3.5: The review and design skills read attachments](3.5-skills-read-attachments.md) | 2, 1.3 | done |

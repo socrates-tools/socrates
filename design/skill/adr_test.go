@@ -73,3 +73,12 @@ func TestTheDecisionsSectionComesAfterTheSpecSection(t *testing.T) {
 		t.Error("the decisions section is stated before the spec section")
 	}
 }
+
+func TestADecisionThatFailsTheCriterionStaysInTheSpec(t *testing.T) {
+	// scenario: A decision is easy to reverse
+	decisions := sectionOf(t, skill.Document(skillkit.ClaudeCode), decisionsHeading)
+
+	if !strings.Contains(decisions, "A decision that fails even one of the three stays inside the spec's Implementation Decisions and gets no file of its own.") {
+		t.Errorf("the decisions section does not say where a decision without an ADR goes:\n%s", decisions)
+	}
+}

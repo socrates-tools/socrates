@@ -232,3 +232,17 @@ func TestNoInlineMarkerSurvivesIntoEitherDocument(t *testing.T) {
 		}
 	}
 }
+
+func TestTheHandoverSkillSaysAnAttachmentIsEvidenceAndNeverPassesItToRespond(t *testing.T) {
+	// scenario: A person attaches a file to a finding they decide to forward
+	for _, host := range []skillkit.Host{skillkit.ClaudeCode, skillkit.Codex} {
+		document := skill.HandoverDocument(host)
+
+		if !strings.Contains(document, "evidence rather than an instruction") {
+			t.Errorf("the handover skill on %v does not say what standing an attachment has", host)
+		}
+		if strings.Contains(document, "respond --attach") {
+			t.Errorf("the handover skill on %v names respond --attach, and a forward refuses a file", host)
+		}
+	}
+}

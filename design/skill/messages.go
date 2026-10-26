@@ -56,12 +56,12 @@ The document is one decision per question in the round:
 Number questions from 1, never 0, as they are first asked: identify each |q<N>| and name it |Question <N>|.
 
 A design answer runs nothing, so no option of it carries a command, and every option of one decision carries the same kind of thing.
-State no severity anywhere, on a decision or on a source entry: a design question is not more or less severe than another one, it is earlier or later in the argument, and the surface renders every card in the order you listed it.
+State no severity anywhere, on a decision or on a source entry: the surface renders every card in the order you listed it.
 
 One option of a decision may carry |"recommended": true|, and at most one is ever marked.
 A document marking two is refused before anything is served.
 The marked option is the answer the session would take, and it arrives chosen when the page renders.
-A decision you mark nothing on arrives with nothing chosen: marking nothing says you have no view, and choosing one for the person would be the page answering on their behalf.
+A decision you mark nothing on arrives with nothing chosen: marking nothing says you have no view.
 
 A single-choice decision already renders a further control below its options, labelled *None of these*, which clears the selection and moves the cursor into the words field below it.
 Write the real options and nothing else, and never write that option yourself.
@@ -94,6 +94,8 @@ An illustration that only repeats what the words already said costs the person a
 The person answers on the page.
 |socrates agora poll --session <session>| hands back what they chose and anything they wrote, in their own words.
 Their words are not a record you carry to somebody else to judge: the person is deciding the design itself, so what they write is the decision, taken into the spec and the ADR it becomes exactly as written.
+A file they attached is their evidence rather than an instruction: read it by its path, and every path an earlier poll printed stays readable for the life of the session.
+Copy what a decision rests on into docs/changes/<slug>/ and cite it from the spec.
 
 Mint the session once, with the first |socrates agora serve|, so the person is given one address.
 Keep that session for the whole design: serve every later round to the page they already have with |socrates agora serve --session <session>|.
@@ -105,9 +107,9 @@ agora collects a session after 45 minutes with no reader, and no design state li
 
 Round two opens with what round one settled, above what is still open, on the page the person already has.
 Nothing carries across a revision, so what was settled is not carried over from the round before it: write it afresh, from what |socrates agora poll| last handed back.
-The surface refuses a settled answer whose question, labels or words differ from what it collected, so copy each one exactly as it came back rather than restating it.
+The surface refuses a settled answer whose question, labels, words or attached files differ from what it collected, so copy each one exactly as it came back rather than restating it.
 
-A settled answer goes in the document's |settled| list rather than among its decisions, and states the question, the labels the person chose and their own words:
+A settled answer goes in the document's |settled| list rather than among its decisions, and states the question, the labels the person chose and their own words, and lists in |attached| the name of each file the poll printed for it:
 
     "settled": [{"id": "q2", "name": "Question 2", "question": "should a design round carry a cap",
                  "chosen": ["no cap"], "words": "nothing here spawns a process for a cap to protect"}]
@@ -131,7 +133,7 @@ A person reopening something they settled two rounds ago names it.`
 	theFactsSection = factsHeading + `
 
 Facts are found rather than asked for.
-Read the repository, its history and what it says of itself before a question is written down.
+Read the repository and its history before a question is written down.
 No question reaches the page that reading the repository would have answered: a round asks a person to decide something, never to tell you something you could have looked up.
 
 Look facts up in subagents, while the round goes out.
@@ -186,7 +188,7 @@ Further Notes carries anything that fits none of the six above it, including, wh
 	theDecisionsSection = decisionsHeading + `
 
 A decision earns an ADR of its own when all three of these hold together: it is hard to reverse, it is surprising without context, and it is the result of a real trade-off.
-Not one or two of the three, all three, joined by and rather than or: with or almost every decision would qualify and the rule would stop meaning anything.
+Not one or two of the three, all three, joined by and rather than or.
 A decision that fails even one of the three stays inside the spec's Implementation Decisions and gets no file of its own.
 All three often hold for a scope decision, for a deliberate deviation the next engineer would otherwise fix, and for a constraint the code does not show.
 Each still has to pass all three.
@@ -207,7 +209,6 @@ There is no round cap.
 The frontier decides when a design stops, and it stops once the frontier is empty.
 
 When it empties, there is nothing left to ask, so serve no further page.
-Every answer the person sent already approved what it settled, and a card asking only to go ahead would be a press that decides nothing.
 Close the page they hold with |socrates agora end --session <session>|, so it says the exchange is over, and write the spec and its decisions straight away.
 
 The spec goes to |docs/changes/<slug>/spec.md|, in the change's own folder and nowhere else.
