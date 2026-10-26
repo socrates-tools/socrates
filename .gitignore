@@ -1,6 +1,7 @@
 bin/
 .serena/
 .lavish/
+.impeccable/
 review/fidelity/testdata/failures/
 agora/web/**/node_modules/
 dist/
