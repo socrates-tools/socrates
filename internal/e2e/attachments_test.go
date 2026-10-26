@@ -347,3 +347,71 @@ func TestAStatedNameHoldingAPathSeparatorOrDotsIsStoredInsideTheAnswersFolder(t 
 		}
 	}
 }
+
+func TestASettledAnswerStatingTheCollectedAttachmentNamesIsServedAndTheFoldedBlockNamesThem(t *testing.T) {
+	// scenario: A revision settling a collected answer with attached exactly as collected is served, and the folded settled block shows the names
+	t.Parallel()
+	held, browser := read(t, twoDecisionDocument)
+	pictureAt, traceAt := aPictureAndATraceOnDisk(t)
+	chosen := browser.pickingFiles()
+
+	browser.evaluate(chose("c-1", 0), nil)
+	browser.attachByTheButton(chosen, trayOfDecision("c-1"), pictureAt, traceAt)
+	browser.click(".send")
+	browser.waitFor(`!document.querySelector('.receipt').hidden`)
+
+	var collected []string
+	for _, decision := range held.polledAnswer().Decisions {
+		if decision.ID == "c-1" {
+			for _, attachment := range decision.Attachments {
+				collected = append(collected, attachment.Name)
+			}
+		}
+	}
+	if diff := cmp.Diff([]string{somePicture, someTrace}, collected); diff != "" {
+		t.Fatalf("the poll named other files than the ones attached (-want +got):\n%s", diff)
+	}
+
+	revision, err := json.Marshal(map[string]any{
+		"title": "one thing left",
+		"settled": []map[string]any{{
+			"id":       "c-1",
+			"question": "should the cache be read before the lock is taken",
+			"chosen":   []string{"take the lock first"},
+			"attached": collected,
+		}},
+		"decisions": []map[string]any{{
+			"id":       "c-3",
+			"question": "should the write path log",
+			"mode":     "single-choice",
+			"options":  []map[string]string{{"label": "log", "meaning": "one line"}, {"label": "stay quiet", "meaning": "nothing"}},
+		}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	held.serveAgain(string(revision))
+	browser.waitFor(`!!document.querySelector('.settled-answer[data-settled="c-1"]')`)
+
+	var block struct {
+		Names []string `json:"names"`
+		Open  bool     `json:"open"`
+	}
+	browser.evaluate(`({
+    names: Array.from(document.querySelectorAll('.settled-answer[data-settled="c-1"] .settled-attachment')).map((held) => held.textContent.trim()),
+    open: document.querySelector('.settled').open,
+  })`, &block)
+	if diff := cmp.Diff([]string{somePicture, someTrace}, block.Names); diff != "" {
+		t.Errorf("the settled block names other files than the ones collected (-want +got):\n%s", diff)
+	}
+	if block.Open {
+		t.Error("the settled block arrives unfolded while a question is still open")
+	}
+
+	browser.click(".settled-summary")
+	var shown bool
+	browser.evaluate(`document.querySelector('.settled-attachment').checkVisibility()`, &shown)
+	if !shown {
+		t.Error("unfolding the settled block does not show the attachment names")
+	}
+}

@@ -3,7 +3,6 @@
 - Status: accepted
 - Date: 2026-10-14
 - Part of: the exchange carries what a person said
-- Amended by: ADR 87, whose attachments are held beside the question, the labels and the words: a settled answer states the names of the files collected for its identifier, in the order collected, or is refused
 
 ## Decision
 
