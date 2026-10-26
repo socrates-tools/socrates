@@ -13,7 +13,7 @@ func withWhatWasSettled() document.Document {
 	read := oneDecision(document.One)
 	read.Settled = []document.Settled{
 		{ID: "q1", Name: "the surface", Location: "agora/surface", Question: "what is the page called", Chosen: []string{"the surface", "the page"}},
-		{ID: "q2", Question: "should a design carry a cap", Words: "nothing here spawns a process for a cap to protect"},
+		{ID: "q2", Question: "should a design carry a cap", Words: "nothing here spawns a process for a cap to protect", Attached: []string{"before.png", "trace.txt"}},
 		{ID: "q3", Question: "who writes the glossary entry"},
 	}
 	return read
@@ -49,7 +49,7 @@ func TestWhatWasSettledIsReadBeforeWhatIsStillOpen(t *testing.T) {
 	}
 	for position, expected := range [][]string{
 		{"the surface", "agora/surface", "what is the page called", "the surface · the page"},
-		{"q2", "should a design carry a cap", "“nothing here spawns a process for a cap to protect”"},
+		{"q2", "should a design carry a cap", "“nothing here spawns a process for a cap to protect”", "before.png", "trace.txt"},
 		{"q3", "who writes the glossary entry", "Left to whoever asked"},
 	} {
 		for _, wanted := range expected {
@@ -60,6 +60,27 @@ func TestWhatWasSettledIsReadBeforeWhatIsStillOpen(t *testing.T) {
 	}
 	if strings.Contains(text(answers[0]), "Left to whoever asked") || strings.Contains(text(answers[1]), "Left to whoever asked") {
 		t.Error("a settled answer that chose something or said something is shown as left to whoever asked")
+	}
+}
+
+func TestASettledAnswerNamesItsAttachmentsAndOneWithNoneShowsNoList(t *testing.T) {
+	// scenario: The folded settled block shows the attachment names of an answer that carries them
+	answers := settledIn(rendered(t, withWhatWasSettled()))
+
+	named := elements(answers[1], "li")
+	var shown []string
+	for _, held := range named {
+		if hasClass(held, "settled-attachment") {
+			shown = append(shown, text(held))
+		}
+	}
+	if len(shown) != 2 || shown[0] != "before.png" || shown[1] != "trace.txt" {
+		t.Errorf("the settled answer carrying two attachments lists %q, want before.png and trace.txt", shown)
+	}
+	for _, bare := range []int{0, 2} {
+		if strings.Contains(text(answers[bare]), ".png") || len(elements(answers[bare], "ul")) != 0 {
+			t.Errorf("settled answer %d carries no attachment and shows a list:\n%s", bare+1, text(answers[bare]))
+		}
 	}
 }
 

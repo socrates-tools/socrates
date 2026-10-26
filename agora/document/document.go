@@ -37,6 +37,7 @@ type Settled struct {
 	Question string   `json:"question"`
 	Chosen   []string `json:"chosen"`
 	Words    string   `json:"words"`
+	Attached []string `json:"attached,omitempty"`
 }
 
 type Entry struct {
@@ -231,6 +232,11 @@ func validateWhatWasSettled(settled []Settled, open map[string]bool) error {
 		for chosen, label := range answered.Chosen {
 			if strings.TrimSpace(label) == "" {
 				return fmt.Errorf(settledChoiceStatesNothing, answered.ID, chosen+1)
+			}
+		}
+		for attached, name := range answered.Attached {
+			if strings.TrimSpace(name) == "" {
+				return fmt.Errorf(settledAttachmentStatesNothing, answered.ID, attached+1)
 			}
 		}
 	}

@@ -67,6 +67,7 @@ type settledView struct {
 	Question string
 	Chosen   string
 	Words    string
+	Attached []string
 }
 
 type decisionView struct {
@@ -225,6 +226,7 @@ func viewOf(read document.Document, frame Frame) view {
 			Question: answer.Question,
 			Chosen:   strings.Join(answer.Chosen, chosenJoined),
 			Words:    strings.TrimSpace(answer.Words),
+			Attached: answer.Attached,
 		})
 	}
 

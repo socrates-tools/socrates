@@ -133,6 +133,9 @@ func (e *Exchange) admitsLocked(read document.Document) error {
 		if stated.Words != answered.Words {
 			return refusal.New(settledOtherwiseThanCollected, stated.ID, "words", answered.Words)
 		}
+		if !slices.Equal(stated.Attached, answered.Attached) {
+			return refusal.New(settledOtherwiseThanCollected, stated.ID, "attached", strings.Join(answered.Attached, ", "))
+		}
 	}
 	return nil
 }
@@ -264,8 +267,17 @@ func (e *Exchange) holdCollectedLocked(taken Answered) {
 			Question: e.read.Decisions[position].Question,
 			Chosen:   decided.Chosen,
 			Words:    decided.Words,
+			Attached: namesOf(decided.Attachments),
 		}
 	}
+}
+
+func namesOf(attachments []Attachment) []string {
+	var names []string
+	for _, attachment := range attachments {
+		names = append(names, attachment.Name)
+	}
+	return names
 }
 
 func (e *Exchange) Changed() <-chan struct{} {
