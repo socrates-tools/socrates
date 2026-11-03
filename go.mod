@@ -8,7 +8,7 @@ require (
 	charm.land/bubbletea/v2 v2.1.0
 	github.com/BurntSushi/toml v1.6.0
 	github.com/charmbracelet/x/ansi v0.11.9
-	github.com/chromedp/cdproto v0.158.2
+	github.com/chromedp/cdproto v0.158.4
 	github.com/chromedp/chromedp v0.21.0
 	github.com/creack/pty v1.1.24
 	github.com/google/go-cmp v0.7.0
