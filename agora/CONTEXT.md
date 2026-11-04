@@ -18,6 +18,7 @@ agora knows nothing about what a caller's document is about, beyond the three au
 - **illustration**: the one HTML document a decision may carry, drawn in a frame of its own that reaches neither the page nor the network beyond the CDNs it names. Not a fragment, and not painted by the document.
 - **session**: what the surface mints so that a page and its routes are served under a path holding it.
 - **exchange**: the delivery of a document and the collection of what a person answered. It holds at most one uncollected answer, and a later one replaces it. Every answer collected is kept whole in the session's directory until the surface collects the session, and `agora poll --last` prints the last one again.
+- **stream**: what a page holds open to its session to hear where the exchange stands, whatever carries it. It counts as a reader of the session for as long as it is open. Not a socket, not a connection and not an event source.
 - **answer**: what one submit carries: every decision the person answered, anything they wrote, and whether it ends the exchange.
 - **attachment**: a file a person sends with an answer, beside one decision's words or beside the message. Always the person's and never the caller's, so not evidence and not an illustration. Not an upload.
 - **tray**: the one bordered box a decision's words or the composer's message sit in, holding the attachments beside them until a press sends them. Not a separate section and not a drop zone.
