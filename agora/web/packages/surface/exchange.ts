@@ -1,5 +1,16 @@
 export const exchangeIsOver = 'The exchange is over. Nothing further will be sent from this page.'
 
+export const statusLostTheSurface = 'Lost the surface'
+
+export const lostTheSurface = 'Lost the surface, and trying again. Nothing sent now will arrive until it is back.'
+
+export const theSessionIsGone =
+  'The session is gone: the surface no longer holds it. Nothing further will be sent from this page, so ask whoever opened it to serve again.'
+
+export const reconnectFirstMilliseconds = 1_000
+
+export const reconnectLongestMilliseconds = 30_000
+
 export const sendTimeoutMilliseconds = 60_000
 
 export const nothingWasSentForSilence =
