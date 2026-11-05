@@ -160,6 +160,7 @@
 @custom-variant current (&[aria-current='location']);
 @custom-variant status-open (&[data-status='open']);
 @custom-variant status-sent (&[data-status='sent']);
+@custom-variant status-lost (&[data-status='lost']);
 @custom-variant tone-waiting (&[data-tone='waiting']);
 @custom-variant tone-error (&[data-tone='error']);
 @custom-variant answered-yes (&:where([data-answered='yes'], [data-answered='yes'] *));

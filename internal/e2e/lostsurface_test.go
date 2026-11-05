@@ -100,6 +100,11 @@ func TestAfterStopAnOpenPageSaysItLostTheSurfaceAndIsTryingAgain(t *testing.T) {
 	if status := page.statusSays(); status != lostSaying {
 		t.Errorf("the status says %q after the surface stopped, want %q", status, lostSaying)
 	}
+	var marked string
+	page.evaluate(`document.querySelector('.status').dataset.status`, &marked)
+	if marked != "lost" {
+		t.Errorf("the status is marked %q after the surface stopped, want lost, which the pill draws apart from the others", marked)
+	}
 }
 
 func TestAPageWhoseSurfaceComesBackWithItsSessionStillHeldReconnectsAndShowsWhatItMissed(t *testing.T) {
