@@ -30,7 +30,7 @@ This file is agora's layout and invariants.
   A class written with an arbitrary value, `p-[13px]` or `bg-[#fff]` or `bg-(--x)`, in any file `theme.css`'s `@source` lines name fails the suite naming the file and the line, and the check reads those lines rather than a list of its own, per ADR 84.
   `packages/surface` holds the page's script as strict TypeScript and the surface's stylesheet, which holds only the rules no utility can say.
   The pieces the glossary names are written in `page.gohtml`, `catalog.gohtml` and the partials, composed of the library's primitives and laid out by utilities, each keeping the one class that names it for the script and the suite, per ADR 85.
-  The script is one module for each of sending and the receipt, the confirmation, the live revision, the calls that show and hide the tooltip and the navigation, beside the answers, the composer, the attaching of what a drop or a paste carries to a tray, the expanding drawing, copying and the drawings' heights.
+  The script is one module for each of sending and the receipt, the confirmation, the live revision held on a WebSocket, the calls that show and hide the tooltip and the navigation, beside the answers, the composer, the attaching of what a drop or a paste carries to a tray, the expanding drawing, copying and the drawings' heights.
   Each follows the page through a listener on the document attached once when the page starts, so a revision fetches the page and replaces the surface and binds nothing.
 
 ## Invariants
@@ -112,6 +112,12 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - A revision settling an identifier the exchange collected an answer for states the question, the labels, the words and the attachment names that were collected, exactly, or is refused before it is written or served, per ADR 59.
   Only a collected answer binds, the last one collected for an identifier is the one that does, and what the exchange remembers is never sent to the page.
 - A stream is told where the exchange stands when it connects rather than only when something next changes, so a client that missed a revision catches up rather than waiting on a change that has already happened.
+- A stream is one WebSocket on `/sessions/<id>/live` and the surface serves no event stream, so the browser's six connections to one address never hold a send back however many pages are open, per ADR 92.
+  It says `revision`, `closed` and `uncollected` as one text frame each, an event name and its data, and stopping the surface closes every stream it holds.
+  Anything a page sends on a stream is ignored and is never a reason to close it.
+- A stream counts as a reader of its session for exactly as long as its socket is open, whichever way it closes, so a session with a page's stream open is not collected for idleness and one whose last stream closed is.
+- A stream is opened only for an upgrade whose `Origin` names the host and port the request was sent to, or the origin `surface.reached_at` names, and for a session the surface holds, which is answered not found before the upgrade when it does not.
+  It carries no token, per ADR 93, and the host check that turns away a host the surface did not bind runs before the origin check.
 - The end of an exchange stops the page offering to answer and not the page listening, so a caller who writes again reaches the page the person is already looking at, and only the test about reloading reloads before it asserts.
   A closed exchange says so under the title and draws no field nothing will read, per ADR 53.
 - Every asset is embedded, no diagram engine is, and the committed bundle is generated from `web/`.

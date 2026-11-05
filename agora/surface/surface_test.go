@@ -82,13 +82,19 @@ type standing struct {
 func serving(t *testing.T, read document.Document, idle time.Duration) *standing {
 	t.Helper()
 
+	return servingWith(t, read, idle)
+}
+
+func servingWith(t *testing.T, read document.Document, idle time.Duration, options ...surface.Option) *standing {
+	t.Helper()
+
 	t.Setenv(state.HomeVariable, t.TempDir())
 	home, err := surface.Home()
 	if err != nil {
 		t.Fatalf("resolving where the surface writes: %v", err)
 	}
 
-	server, err := surface.Serve(aPortTheOperatingSystemChooses, idle)
+	server, err := surface.Serve(aPortTheOperatingSystemChooses, idle, options...)
 	if err != nil {
 		t.Fatalf("serving: %v", err)
 	}

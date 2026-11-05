@@ -160,10 +160,10 @@ func TestTheCatalogPageStartsNoLiveStreamAndReachesOnlyItsOwnAssets(t *testing.T
 	var openers []string
 	page.evaluate(dialogOpeners, &openers)
 
+	if streams := page.streams.all(); len(streams) != 0 {
+		t.Errorf("the catalog opened the streams %v, and a page with no surface follows no exchange", streams)
+	}
 	for _, asked := range page.requests.all() {
-		if strings.HasSuffix(asked, "/live") {
-			t.Errorf("the catalog requested %q, and a page with no surface follows no exchange", asked)
-		}
 		if !strings.Contains(asked, "/assets/") && !strings.HasSuffix(asked, catalogRoute) && !strings.HasPrefix(asked, "blob:") {
 			t.Errorf("the catalog requested %q, and it asks for nothing but itself, the bundle and the previews it draws from memory", asked)
 		}

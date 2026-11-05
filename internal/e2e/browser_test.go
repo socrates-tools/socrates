@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -98,6 +100,8 @@ type reader struct {
 	context  context.Context
 	requests *recorded
 	refused  *recorded
+	streams  *recorded
+	opened   *recorded
 	ready    string
 	painted  string
 }
@@ -161,9 +165,44 @@ func openingFor(t *testing.T, address, ready, painted string, options ...chromed
 	bounded, cancel := context.WithTimeout(driving, browserDeadline)
 	t.Cleanup(cancel)
 
-	requests, refused := &recorded{}, &recorded{}
-	requested := chromedp.Events(bounded, network.RequestWillBeSent)
-	logged := chromedp.Events(bounded, log.EntryAdded)
+	held := watching(t, bounded, ready, painted)
+	held.do(
+		sending(network.Enable, network.EnableParams{}),
+		sending(log.Enable, cdp.Empty{}),
+		chromedp.Navigate(address),
+		chromedp.WaitReady(chromedp.CSS("body")),
+		chromedp.WaitReady(chromedp.CSS(ready)),
+	)
+	held.settled()
+	return held
+}
+
+func openingAlongside(t *testing.T, first *reader, address string) *reader {
+	t.Helper()
+
+	tab, releaseTab := chromedp.NewContext(first.context)
+	t.Cleanup(releaseTab)
+
+	held := watching(t, tab, first.ready, first.painted)
+	held.do(
+		sending(network.Enable, network.EnableParams{}),
+		sending(log.Enable, cdp.Empty{}),
+		chromedp.Navigate(address),
+		chromedp.WaitReady(chromedp.CSS("body")),
+		chromedp.WaitReady(chromedp.CSS(first.ready)),
+	)
+	held.settled()
+	return held
+}
+
+func watching(t *testing.T, tab context.Context, ready, painted string) *reader {
+	t.Helper()
+
+	requests, refused, streams, opened := &recorded{}, &recorded{}, &recorded{}, &recorded{}
+	requested := chromedp.Events(tab, network.RequestWillBeSent)
+	logged := chromedp.Events(tab, log.EntryAdded)
+	streamed := chromedp.Events(tab, network.WebSocketCreated)
+	upgraded := chromedp.Events(tab, network.WebSocketHandshakeResponseReceived)
 	go func() {
 		for held, err := range requested {
 			if err != nil {
@@ -182,17 +221,36 @@ func openingFor(t *testing.T, address, ready, painted string, options ...chromed
 			}
 		}
 	}()
+	go func() {
+		for held, err := range streamed {
+			if err != nil {
+				return
+			}
+			streams.note(held.URL)
+		}
+	}()
+	go func() {
+		for held, err := range upgraded {
+			if err != nil {
+				return
+			}
+			opened.note(strconv.Itoa(int(held.Response.Status)))
+		}
+	}()
 
-	held := &reader{t: t, context: bounded, requests: requests, refused: refused, ready: ready, painted: painted}
-	held.do(
-		sending(network.Enable, network.EnableParams{}),
-		sending(log.Enable, cdp.Empty{}),
-		chromedp.Navigate(address),
-		chromedp.WaitReady(chromedp.CSS("body")),
-		chromedp.WaitReady(chromedp.CSS(ready)),
-	)
-	held.settled()
-	return held
+	return &reader{t: t, context: tab, requests: requests, refused: refused, streams: streams, opened: opened, ready: ready, painted: painted}
+}
+
+func (r *reader) waitForTheStream() {
+	r.t.Helper()
+
+	for !slices.Contains(r.opened.all(), strconv.Itoa(http.StatusSwitchingProtocols)) {
+		select {
+		case <-r.context.Done():
+			r.t.Fatalf("the page never opened its stream: it asked for %v", r.streams.all())
+		case <-time.After(20 * time.Millisecond):
+		}
+	}
 }
 
 func sending[P, R any](command cdp.Command[P, R], params P) chromedp.Action[chromedp.Void] {

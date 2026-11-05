@@ -68,7 +68,7 @@ func newServeCommand() *cobra.Command {
 			}
 
 			if inTheForeground() {
-				return hold(address)
+				return hold(address, configured.ReachedAt)
 			}
 
 			if from == "" {
@@ -155,8 +155,8 @@ type written struct {
 	base string
 }
 
-func hold(address string) error {
-	server, err := surface.Serve(address, surface.IdlePeriod)
+func hold(address, reachedAt string) error {
+	server, err := surface.Serve(address, surface.IdlePeriod, surface.ReachedAt(reachedAt))
 	if err != nil {
 		return err
 	}

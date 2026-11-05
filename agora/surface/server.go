@@ -8,11 +8,13 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/coder/websocket"
 	"github.com/socrates-tools/socrates/agora/assets"
 	"github.com/socrates-tools/socrates/agora/document"
 	"github.com/socrates-tools/socrates/agora/render"
@@ -24,6 +26,9 @@ const (
 
 	IdlePeriod   = 45 * time.Minute
 	PollDeadline = 6 * time.Hour
+
+	PingInterval = 30 * time.Second
+	PongWait     = 10 * time.Second
 
 	SessionPrefix = "/sessions/"
 	RetireRoute   = "/retire"
@@ -48,6 +53,9 @@ type Server struct {
 	address  string
 	identity Identity
 	idle     time.Duration
+	origins  []string
+	ping     time.Duration
+	pong     time.Duration
 	stopping chan struct{}
 	stopped  chan struct{}
 	drained  chan struct{}
@@ -56,7 +64,34 @@ type Server struct {
 	sessions *Sessions
 }
 
-func Serve(address string, idle time.Duration) (*Server, error) {
+type Option func(*Server)
+
+func ReachedAt(address string) Option {
+	return func(s *Server) {
+		if origin, named := originPatternOf(address); named {
+			s.origins = append(s.origins, origin)
+		}
+	}
+}
+
+func Pinging(interval, wait time.Duration) Option {
+	return func(s *Server) {
+		s.ping = interval
+		s.pong = wait
+	}
+}
+
+func originPatternOf(address string) (string, bool) {
+	read, err := url.Parse(address)
+	if err != nil || read.Scheme == "" || read.Host == "" {
+		return "", false
+	}
+	return globEscaper.Replace(read.Scheme + "://" + read.Host), true
+}
+
+var globEscaper = strings.NewReplacer(`\`, `\\`, `*`, `\*`, `?`, `\?`, `[`, `\[`)
+
+func Serve(address string, idle time.Duration, options ...Option) (*Server, error) {
 	if err := CheckLoopback(address); err != nil {
 		return nil, err
 	}
@@ -82,10 +117,15 @@ func Serve(address string, idle time.Duration) (*Server, error) {
 		address:  listener.Addr().String(),
 		identity: identity,
 		idle:     idle,
+		ping:     PingInterval,
+		pong:     PongWait,
 		stopping: make(chan struct{}),
 		stopped:  make(chan struct{}),
 		drained:  make(chan struct{}),
 		sessions: NewSessions(time.Now()),
+	}
+	for _, option := range options {
+		option(server)
 	}
 	server.serving = &http.Server{Handler: server.routes(), ReadHeaderTimeout: 10 * time.Second}
 
@@ -355,41 +395,52 @@ func (s *Server) live(writer http.ResponseWriter, request *http.Request) {
 		s.missing(writer, request)
 		return
 	}
-	flusher, streaming := writer.(http.Flusher)
-	if !streaming {
-		http.Error(writer, cannotStream, http.StatusInternalServerError)
+
+	conn, err := websocket.Accept(writer, request, &websocket.AcceptOptions{OriginPatterns: s.origins})
+	if err != nil {
 		return
 	}
+	defer func() { _ = conn.CloseNow() }()
 
 	one.exchange.Reading(1, time.Now())
-	defer one.exchange.Reading(-1, time.Now())
+	defer func() { one.exchange.Reading(-1, time.Now()) }()
 
-	writer.Header().Set("content-type", "text/event-stream")
-	writer.Header().Set("cache-control", "no-store")
-	writer.WriteHeader(http.StatusOK)
+	open, ended := context.WithCancel(context.Background())
+	defer ended()
+
+	go func() {
+		defer ended()
+		for {
+			if _, _, err := conn.Read(open); err != nil {
+				return
+			}
+		}
+	}()
+	go s.pinging(open, ended, conn)
 
 	waiting := one.exchange.Changed()
-	flusher.Flush()
-
 	saidChange := ""
 	saidUncollected := ""
 	for {
 		revision, over, uncollected := one.exchange.Standing()
 		if change := whereItStands(revision, over); change != saidChange {
-			_, _ = io.WriteString(writer, change)
-			flusher.Flush()
+			if !s.say(open, conn, change) {
+				return
+			}
 			saidChange = change
 		}
 		if collection := whatIsUncollected(uncollected); collection != saidUncollected {
-			_, _ = io.WriteString(writer, collection)
-			flusher.Flush()
+			if !s.say(open, conn, collection) {
+				return
+			}
 			saidUncollected = collection
 		}
 
 		select {
-		case <-request.Context().Done():
+		case <-open.Done():
 			return
 		case <-s.stopping:
+			_ = conn.Close(websocket.StatusGoingAway, "")
 			return
 		case <-waiting:
 		}
@@ -397,18 +448,45 @@ func (s *Server) live(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func (s *Server) say(open context.Context, conn *websocket.Conn, words string) bool {
+	writing, cancel := context.WithTimeout(open, s.pong)
+	defer cancel()
+	return conn.Write(writing, websocket.MessageText, []byte(words)) == nil
+}
+
+func (s *Server) pinging(open context.Context, stop context.CancelFunc, conn *websocket.Conn) {
+	ticker := time.NewTicker(s.ping)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-open.Done():
+			return
+		case <-ticker.C:
+		}
+
+		answering, cancel := context.WithTimeout(open, s.pong)
+		err := conn.Ping(answering)
+		cancel()
+		if err != nil {
+			stop()
+			return
+		}
+	}
+}
+
 func whereItStands(revision int, over bool) string {
 	if over {
-		return "event: closed\ndata: yes\n\n"
+		return "closed yes"
 	}
-	return "event: revision\ndata: " + strconv.Itoa(revision) + "\n\n"
+	return "revision " + strconv.Itoa(revision)
 }
 
 func whatIsUncollected(uncollected bool) string {
 	if uncollected {
-		return "event: uncollected\ndata: yes\n\n"
+		return "uncollected yes"
 	}
-	return "event: uncollected\ndata: no\n\n"
+	return "uncollected no"
 }
 
 func (s *Server) answer(writer http.ResponseWriter, request *http.Request, one *held) {
