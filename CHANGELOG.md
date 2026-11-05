@@ -8,6 +8,40 @@ While the major version is `0`, a minor release may change the surface half in w
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-05
+
+### Fixed
+
+- **Sending from an agora page no longer hangs when six or more pages are open.**
+  Chrome and Edge allow six open connections to one address, and every open page used to hold one, so with six open a press of *Send and wait* sat on "Sending." forever.
+  Each page now keeps its live connection as a WebSocket, which does not count against that limit, so a send goes through however many pages are open.
+- **A send that cannot get through now says so.**
+  Both send buttons are disabled while a send is on its way, so a second press sends nothing twice.
+  A send with no reply within a minute is given up, and a send the browser cannot deliver is caught, and either way the page says nothing was sent and enables the buttons again with everything you chose, wrote and attached still there.
+- **A page that loses its connection says so and reconnects.**
+  The badge turns to *Disconnected* and the page keeps trying, waiting about a second at first and up to about thirty.
+  When the connection comes back it shows any update it missed, and when socrates no longer holds the page, as after a restart, it says the page has expired and stops offering to send.
+- **A page nobody is reading any more stops keeping its session alive.**
+  socrates checks each open page every thirty seconds and drops one that has gone silent, such as a tab on a laptop that went to sleep behind a forward, so the session is still cleaned up once nobody is reading it.
+- **The send button's words are evenly spaced on screens narrower than 1280px.**
+
+### Added
+
+- **`socrates review begin --nobody-to-ask` runs a review with no person present.**
+  A finding that asks a person is answered with the new resolution `settled`, which records that the session decided and never claims a person did.
+  Only a run begun with `--nobody-to-ask` takes `settled`, such a run never takes `decided`, and the flag is refused together with `--not-my-change`.
+- **socrates-implement puts socrates review in front of the whole change once every ticket has landed.**
+  What the review asks to have fixed goes to one implementer with any user story the change falls short of, and the hand-back says how the review ended and lists each finding the overseer settled while you were away.
+  A review that cannot begin or does not end clean still hands the branch back, with the reason.
+- **socrates-implement and socrates-tickets say more at review and hand-back.**
+  A ticket names what neighbouring tickets deliver instead, the overseer names work a diff does that its ticket did not ask for, and the hand-back lists which ticket delivered each user story, every hard-to-reverse step the change takes, and feedback given more than once that the repository could check instead.
+  Run `socrates skill` again to install them.
+
+### Changed
+
+- **An agora page's live route is a WebSocket and no longer an event stream.**
+  `/sessions/<id>/live` answers only a WebSocket upgrade from the page's own address, or from the address `surface.reached_at` names, so anything that read it as an event stream has to follow.
+
 ## [0.10.1] - 2026-10-26
 
 0.10.0 was tagged but never published, so this is the first release since 0.9.0.
@@ -339,7 +373,8 @@ The first release anybody other than its author can install.
 - socrates reviews.
   It does not commit, push, open a pull request, or run your project's tests, so `clean` means an independent reviewer found nothing blocking rather than that your suite is green.
 
-[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.10.1...HEAD
+[Unreleased]: https://github.com/socrates-tools/socrates/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.11.0
 [0.10.1]: https://github.com/socrates-tools/socrates/releases/tag/v0.10.1
 [0.9.0]: https://github.com/socrates-tools/socrates/releases/tag/v0.9.0
 [0.8.1]: https://github.com/socrates-tools/socrates/releases/tag/v0.8.1
