@@ -105,7 +105,7 @@ function amend(): void {
   say('')
 }
 
-export function closeTheExchange(): void {
+export function closeTheExchange(why: string = exchangeIsOver): void {
   exchange.closed = true
   closeConfirmation()
   findAll('.decision').forEach((card) => {
@@ -119,6 +119,10 @@ export function closeTheExchange(): void {
   const notice = find('.over-notice')
   if (notice) {
     notice.hidden = false
+  }
+  const said = find('.over-notice-said')
+  if (said) {
+    said.textContent = why
   }
 }
 

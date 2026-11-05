@@ -184,6 +184,13 @@ func TestAPageWhoseSessionTheSurfaceNoLongerHoldsSaysSoOffersNothingAndStopsTryi
 
 	held.serve(oneDecisionDocument)
 	page.waitFor(`document.querySelector('.state').textContent.includes('` + sessionGone + `')`)
+	page.shortenEveryWaitToReconnect()
+
+	var notice string
+	page.evaluate(`document.querySelector('.over-notice').checkVisibility() ? document.querySelector('.over-notice-said').textContent : ''`, &notice)
+	if !strings.HasPrefix(notice, sessionGone) {
+		t.Errorf("the notice under the title says %q for a session the surface does not hold, want it to say the session is gone", notice)
+	}
 
 	if status := page.statusSays(); status != "Exchange over" {
 		t.Errorf("the status says %q for a session the surface does not hold, want Exchange over", status)
@@ -195,6 +202,7 @@ func TestAPageWhoseSessionTheSurfaceNoLongerHoldsSaysSoOffersNothingAndStopsTryi
 	}
 
 	asked := len(page.streams.all())
+	time.Sleep(2 * time.Second)
 	if streams := len(page.streams.all()); streams != asked {
 		t.Errorf("the page opened %d more streams after it said the session is gone", streams-asked)
 	}
