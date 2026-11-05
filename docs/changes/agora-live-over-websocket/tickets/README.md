@@ -20,4 +20,4 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 92](../../../../agora/docs/adr/0
 | [1.1: The stream over a WebSocket](1.1-the-stream-over-a-websocket.md) | None | done |
 | [1.2: A send that is never silent](1.2-a-send-that-is-never-silent.md) | None | done |
 | [2.1: The page says it lost the surface](2.1-the-page-says-it-lost-the-surface.md) | 1.1 | pending |
-| [2.2: A silent stream is dropped](2.2-a-silent-stream-is-dropped.md) | 1.1 | in progress |
+| [2.2: A silent stream is dropped](2.2-a-silent-stream-is-dropped.md) | 1.1 | done |

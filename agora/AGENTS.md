@@ -117,6 +117,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
   It says `revision`, `closed` and `uncollected` as one text frame each, an event name and its data, and stopping the surface closes every stream it holds.
   Anything a page sends on a stream is ignored and is never a reason to close it.
 - A stream counts as a reader of its session for exactly as long as its socket is open, whichever way it closes, so a session with a page's stream open is not collected for idleness and one whose last stream closed is.
+- The surface pings each stream about every thirty seconds and closes one whose pong does not arrive within ten, both stated once in `agora/surface` beside the other bounds on waiting, so a page that vanished without closing its socket stops counting as a reader and its session is collected after the idle period like any with no reader, and a stream whose page answers stays open for as long as it does.
 - A stream is opened only for an upgrade whose `Origin` names the host and port the request was sent to, or the origin `surface.reached_at` names, and for a session the surface holds, which is answered not found before the upgrade when it does not.
   It carries no token, per ADR 93, and the host check that turns away a host the surface did not bind runs before the origin check.
 - The end of an exchange stops the page offering to answer and not the page listening, so a caller who writes again reaches the page the person is already looking at, and only the test about reloading reloads before it asserts.
