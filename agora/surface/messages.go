@@ -26,7 +26,6 @@ const (
 	surfaceStandsWithNoRecord = "an agora surface of this root stands, and what it is reached with was not written beside it. Stop that surface and run the command again"
 	portIsHeldBySomethingElse = "something is already listening on %s and agora will not take that port from it. Free it, or move the surface with %s in %s or with %s, and run the command again"
 	bodyIsOverTheCeiling      = "what was sent is larger than the %d bytes the surface accepts. Send a smaller document"
-	cannotStream              = "this connection cannot carry a stream, so the page cannot be told when a reply arrives"
 	waitIsNotADuration        = "the wait %q is not a length of time. Give one such as 30m and run the command again"
 
 	mintingTheToken      = "minting the token this session answers on: %w"

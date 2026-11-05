@@ -337,7 +337,7 @@ func TestTheHandoverLoopIsDrivenThroughThePage(t *testing.T) {
 		page.evaluate(chose(finding, option), nil)
 	}
 	pressPastTheConfirmation(page, ".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	answered := driven.polled()
 	if len(answered.Decisions) != len(chosen) {

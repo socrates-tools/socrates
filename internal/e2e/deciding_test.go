@@ -265,7 +265,7 @@ func TestADecisionMadeOnThePageIsRecordedInTheTerminal(t *testing.T) {
 	page.evaluate(chose(asked.ID, 0), nil)
 	page.write(within(asked.ID, ".words-field"), inTheirOwnWords)
 	page.click(".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	answered := driven.polled()
 	if len(answered.Decisions) != 1 {

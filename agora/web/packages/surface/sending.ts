@@ -1,7 +1,7 @@
 import { pressOf, type UiField } from '@agora/ui'
 import { type HeldDecision, blankCards, decisionsHeld, describe, fileItems, filesIn, filesNamed } from './answers'
 import { askBeforeSending, closeConfirmation } from './confirmation'
-import { exchange, exchangeIsOver } from './exchange'
+import { exchange, exchangeIsOver, nothingWasSentForRejection, nothingWasSentForSilence, sendTimeoutMilliseconds } from './exchange'
 import { base, clear, closestTo, find, findAll, say, stand, token } from './page'
 
 interface Sent {
@@ -19,6 +19,8 @@ type Control = HTMLElement & { disabled: boolean }
 
 const receiptFileClasses = 'receipt-file wrap-anywhere'
 const receiptFilesClasses = 'receipt-files flex flex-col gap-0.5 pl-3'
+
+const presses = '.send, .finish'
 
 const readOnlyWhileSent = '.choice, .decline, .words-field, .message-field, .tray, .send, .finish'
 
@@ -83,6 +85,18 @@ function unlockControls(): void {
   })
 }
 
+function setPresses(disabled: boolean): void {
+  findAll<Control>(presses).forEach((press) => {
+    press.disabled = disabled
+  })
+}
+
+function pressAgain(): void {
+  if (!exchange.closed) {
+    setPresses(false)
+  }
+}
+
 function amend(): void {
   hideReceipt()
   exchange.awaitingCollection = false
@@ -131,8 +145,30 @@ function formOf(sent: Sent, parts: Parts): FormData {
   return form
 }
 
+interface Reply {
+  ok: boolean
+  status: number
+  text: string
+}
+
+async function post(sent: Sent, parts: Parts): Promise<Reply | null> {
+  try {
+    const answered = await fetch(`${base()}/answer`, {
+      method: 'POST',
+      headers: { 'x-agora-token': token() },
+      body: formOf(sent, parts),
+      signal: AbortSignal.timeout(sendTimeoutMilliseconds),
+    })
+    return { ok: answered.ok, status: answered.status, text: answered.ok ? '' : await answered.text() }
+  } catch (failure) {
+    const timedOut = failure instanceof DOMException && failure.name === 'TimeoutError'
+    say(timedOut ? nothingWasSentForSilence : nothingWasSentForRejection, 'error')
+    return null
+  }
+}
+
 async function send(ends: boolean): Promise<void> {
-  if (exchange.closed) {
+  if (exchange.closed || exchange.sending) {
     return
   }
 
@@ -153,15 +189,20 @@ async function send(ends: boolean): Promise<void> {
     ends,
   }
 
+  exchange.sending = true
+  setPresses(true)
   say(ends ? 'Finishing.' : 'Sending.')
-  const answered = await fetch(`${base()}/answer`, {
-    method: 'POST',
-    headers: { 'x-agora-token': token() },
-    body: formOf(sent, parts),
-  })
+  const answered = await post(sent, parts)
+  exchange.sending = false
+
+  if (!answered) {
+    pressAgain()
+    return
+  }
 
   if (!answered.ok) {
-    say(`Nothing was sent: ${(await answered.text()).trim() || `the surface answered ${answered.status}`}.`, 'error')
+    pressAgain()
+    say(`Nothing was sent: ${answered.text.trim() || `the surface answered ${answered.status}`}.`, 'error')
     return
   }
 

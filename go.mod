@@ -10,6 +10,7 @@ require (
 	github.com/charmbracelet/x/ansi v0.11.9
 	github.com/chromedp/cdproto v0.158.4
 	github.com/chromedp/chromedp v0.21.0
+	github.com/coder/websocket v1.8.15
 	github.com/creack/pty v1.1.24
 	github.com/google/go-cmp v0.7.0
 	github.com/rogpeppe/go-internal v1.16.0

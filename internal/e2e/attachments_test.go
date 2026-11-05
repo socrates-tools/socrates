@@ -295,7 +295,7 @@ func TestAClosedExchangeDrawsNoTray(t *testing.T) {
 
 	browser.evaluate(chose("c-1", 0), nil)
 	browser.click(".finish")
-	browser.waitFor(`document.querySelector('.send').disabled === true`)
+	browser.waitFor(theSendWentThrough)
 
 	var drawnAfterFinishing []bool
 	browser.evaluate(drawnTrays, &drawnAfterFinishing)

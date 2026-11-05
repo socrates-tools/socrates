@@ -43,7 +43,7 @@ func (s *surfaced) ended(t *testing.T, page *reader) {
 
 	page.evaluate(chose("c-1", 0), nil)
 	page.click(".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	if _, arrived := s.awaiting(5 * time.Second); !arrived {
 		t.Fatal("finishing delivered nothing")
@@ -195,7 +195,7 @@ func TestACallerWhoAsksAgainIsHandedAnAddressThatTakesTheAnswer(t *testing.T) {
 	held, page := read(t, oneDecisionDocument)
 
 	pressPastTheConfirmation(page, ".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	finished, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
@@ -210,7 +210,7 @@ func TestACallerWhoAsksAgainIsHandedAnAddressThatTakesTheAnswer(t *testing.T) {
 
 	asked.evaluate(chose("c-1", 0), nil)
 	asked.click(".finish")
-	asked.waitFor(`document.querySelector('.send').disabled === true`)
+	asked.waitFor(theSendWentThrough)
 
 	answered, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
@@ -252,13 +252,7 @@ func TestAPageServedClosedFollowsWhatComesNext(t *testing.T) {
 
 	answersWhatTheCallerAskedAgain(t, held, page, "a page opened onto an ended exchange the caller then asked again on")
 
-	streams := []string{}
-	for _, reaching := range page.requests.all() {
-		if strings.HasSuffix(reaching, "/live") {
-			streams = append(streams, reaching)
-		}
-	}
-	if len(streams) != 1 {
+	if streams := page.streams.all(); len(streams) != 1 {
 		t.Errorf("the page opened %d streams, and one held open is what reaches it without it reopening one every few seconds: %v", len(streams), streams)
 	}
 }
@@ -292,7 +286,7 @@ func TestAnAnswerChosenBeforeTheEndIsNotCarriedIntoWhatComesNext(t *testing.T) {
 
 	page.evaluate(chose("c-1", 0), nil)
 	page.click(".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 	if _, arrived := held.awaiting(5 * time.Second); !arrived {
 		t.Fatal("finishing delivered nothing")
 	}

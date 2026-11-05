@@ -1,6 +1,10 @@
+import { statusLostTheSurface } from './exchange'
+
 export type Tone = 'quiet' | 'waiting' | 'error' | 'over'
 
 export type Phase = 'open' | 'sent' | 'over'
+
+export const lostStatus = 'lost'
 
 const standing: Record<Phase, string> = {
   open: 'Open',
@@ -66,6 +70,22 @@ export function stand(phase: Phase): void {
     const said = find('.status-said', status)
     if (said) {
       said.textContent = standing[phase]
+    }
+  }
+}
+
+export function phaseStood(): Phase {
+  const phase = find('.composer')?.dataset.phase
+  return phase === 'sent' || phase === 'over' ? phase : 'open'
+}
+
+export function standLost(): void {
+  const status = find('.status')
+  if (status && find('.decision')) {
+    status.dataset.status = lostStatus
+    const said = find('.status-said', status)
+    if (said) {
+      said.textContent = statusLostTheSurface
     }
   }
 }
