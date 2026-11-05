@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	lostSaying     = "Lost the surface"
-	sessionGone    = "The session is gone"
+	lostSaying     = "Lost the connection"
+	disconnected   = "Disconnected"
+	sessionGone    = "This page has expired"
 	reconnectLimit = 15 * time.Second
 )
 
@@ -72,7 +73,7 @@ func (r *reader) loseTheConnection() {
 
 	r.goOffline(true, "http://127.0.0.1:*/*")
 	r.closeEveryStreamTheBrowserHolds()
-	r.waitFor(`document.querySelector('.state').textContent.includes('Lost the surface')`)
+	r.waitFor(`document.querySelector('.state').textContent.includes('` + lostSaying + `')`)
 	r.goOffline(true, "")
 }
 
@@ -88,17 +89,17 @@ func TestAfterStopAnOpenPageSaysItLostTheSurfaceAndIsTryingAgain(t *testing.T) {
 	page.waitForTheStream()
 
 	held.run("stop")
-	page.waitFor(`document.querySelector('.state').textContent.includes('Lost the surface')`)
+	page.waitFor(`document.querySelector('.state').textContent.includes('` + lostSaying + `')`)
 
 	said := page.stateSays()
-	if !strings.Contains(said, "trying again") {
+	if !strings.Contains(said, "Trying to reconnect") {
 		t.Errorf("the page says %q, and it should say it is trying again", said)
 	}
 	if tone := page.stateTone(); tone != "error" {
 		t.Errorf("the page said it lost the surface in the %q tone, want error", tone)
 	}
-	if status := page.statusSays(); status != lostSaying {
-		t.Errorf("the status says %q after the surface stopped, want %q", status, lostSaying)
+	if status := page.statusSays(); status != disconnected {
+		t.Errorf("the status says %q after the surface stopped, want %q", status, disconnected)
 	}
 	var marked string
 	page.evaluate(`document.querySelector('.status').dataset.status`, &marked)
@@ -115,7 +116,7 @@ func TestAPageWhoseSurfaceComesBackWithItsSessionStillHeldReconnectsAndShowsWhat
 	reconnected := len(page.streams.all()) + 1
 
 	page.loseTheConnection()
-	page.waitFor(`document.querySelector('.state').textContent.includes('Lost the surface')`)
+	page.waitFor(`document.querySelector('.state').textContent.includes('` + lostSaying + `')`)
 
 	reachedBefore := len(page.opened.all())
 	held.serveAgain(oneDecisionReply)
@@ -157,7 +158,7 @@ func TestAPageWhoseSurfaceComesBackKeepsSayingWhereASentAnswerStands(t *testing.
 	reconnected := len(page.streams.all()) + 1
 
 	page.loseTheConnection()
-	page.waitFor(`document.querySelector('.status-said').textContent === 'Lost the surface'`)
+	page.waitFor(`document.querySelector('.status-said').textContent === '` + disconnected + `'`)
 	page.regainTheConnection()
 
 	deadline := time.Now().Add(reconnectLimit)
@@ -180,7 +181,7 @@ func TestAPageWhoseSessionTheSurfaceNoLongerHoldsSaysSoOffersNothingAndStopsTryi
 	page.waitForTheStream()
 
 	held.run("stop")
-	page.waitFor(`document.querySelector('.state').textContent.includes('Lost the surface')`)
+	page.waitFor(`document.querySelector('.state').textContent.includes('` + lostSaying + `')`)
 
 	held.serve(oneDecisionDocument)
 	page.waitFor(`document.querySelector('.state').textContent.includes('` + sessionGone + `')`)
