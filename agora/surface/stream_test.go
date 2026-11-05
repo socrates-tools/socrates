@@ -293,6 +293,59 @@ func TestAStreamThatDoesNotAnswerAPingIsClosedAndStopsCountingAsAReader(t *testi
 	}
 }
 
+func TestAStreamThatDoesNotAnswerAPingIsClosedByTheSurface(t *testing.T) {
+	held := servingWith(t, twoDecisions(), 0, surface.Pinging(50*time.Millisecond, 100*time.Millisecond))
+
+	conn, _, err := dialing(held, 5*time.Second, theSurfacesOwnOrigin(held))
+	if err != nil {
+		t.Fatalf("opening a stream onto the surface: %v", err)
+	}
+	t.Cleanup(func() { _ = conn.CloseNow() })
+
+	if !eventually(t, 5*time.Second, nobodyIsReading(held, t)) {
+		t.Fatal("a stream that never answered a ping still counted as a reader of its session")
+	}
+
+	reading, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	for {
+		if _, _, err := conn.Read(reading); err != nil {
+			if reading.Err() != nil {
+				t.Error("a stream that never answered a ping was still open after the surface stopped counting it")
+			}
+			return
+		}
+	}
+}
+
+func TestASessionWhoseOnlyStreamStoppedAnsweringPingsIsCollectedAfterItsIdlePeriod(t *testing.T) {
+	held := servingWith(t, twoDecisions(), 200*time.Millisecond, surface.Pinging(50*time.Millisecond, 100*time.Millisecond))
+
+	conn, _, err := dialing(held, 5*time.Second, theSurfacesOwnOrigin(held))
+	if err != nil {
+		t.Fatalf("opening a stream onto the surface: %v", err)
+	}
+	t.Cleanup(func() { _ = conn.CloseNow() })
+
+	if len(held.server.Holds()) != 1 {
+		t.Fatalf("a session with a stream open was not held: it holds %v", held.server.Holds())
+	}
+	if !eventually(t, 5*time.Second, func() bool { return len(held.server.Holds()) == 0 }) {
+		t.Errorf("a session whose only stream stopped answering pings was not collected: it holds %v", held.server.Holds())
+	}
+}
+
+func TestASessionWhoseStreamKeepsAnsweringPingsIsNotCollectedAcrossSeveralIdlePeriods(t *testing.T) {
+	held := servingWith(t, twoDecisions(), 200*time.Millisecond, surface.Pinging(50*time.Millisecond, 100*time.Millisecond))
+	_, arriving := listening(t, held, theSurfacesOwnOrigin(held))
+	next(t, arriving, 2*time.Second)
+
+	time.Sleep(time.Second)
+	if len(held.server.Holds()) != 1 {
+		t.Errorf("a session whose stream answered every ping was collected: it holds %v", held.server.Holds())
+	}
+}
+
 func TestAStreamThatAnswersPingsKeepsCountingAsAReader(t *testing.T) {
 	held := servingWith(t, twoDecisions(), 0, surface.Pinging(50*time.Millisecond, 100*time.Millisecond))
 	_, arriving := listening(t, held, theSurfacesOwnOrigin(held))
