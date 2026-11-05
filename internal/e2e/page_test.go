@@ -391,7 +391,7 @@ func TestFinishingShowsAReceiptThatOffersNoWayBack(t *testing.T) {
 
 	page.evaluate(chose("c-1", 0), nil)
 	page.click(".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	if _, arrived := held.awaiting(5 * time.Second); !arrived {
 		t.Fatal("finishing delivered nothing")
@@ -478,7 +478,7 @@ func TestEndingClosesTheExchange(t *testing.T) {
 
 	page.evaluate(chose("c-1", 0), nil)
 	page.click(".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	delivered, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
@@ -925,7 +925,7 @@ func TestAnAnnotationOnADecisionThatAskedNothingComesBack(t *testing.T) {
 
 	page.write(within("c-1", ".words-field"), inTheirOwnWords)
 	pressPastTheConfirmation(page, ".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	printed, failures, code := held.poll()
 	if code != exit.NothingAsked {
@@ -1014,7 +1014,7 @@ func TestADecisionWhoseOptionsAllCarryNoCommandIsServedAndRendered(t *testing.T)
 
 	page.evaluate(chose("d-1", 1), nil)
 	page.click(".send")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	printed, failures, code := held.poll()
 	if code != exit.NothingAsked {

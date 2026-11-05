@@ -223,3 +223,5 @@ func TestAnAnswerSentAfterAFailedSendIsDelivered(t *testing.T) {
 		t.Errorf("the message came back as %q, want what was written before the failed send", delivered.Message)
 	}
 }
+
+const theSendWentThrough = `document.querySelector('.send').disabled === true && !document.querySelector('.receipt').hidden`

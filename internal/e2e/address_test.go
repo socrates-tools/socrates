@@ -800,7 +800,7 @@ func TestAPersonAnswersThroughSomethingStandingInFrontOfTheSurface(t *testing.T)
 	page.evaluate(chose("c-1", 0), nil)
 	page.write(within("c-1", ".words-field"), inTheirOwnWords)
 	page.click(".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	answered, failures, code := held.poll()
 	if code != 0 {

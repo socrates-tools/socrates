@@ -41,7 +41,7 @@ func TestAnsweringTheLastOpenQuestionLeavesThePageClosedOnceTheSessionEndsIt(t *
 	page := opening(t, address)
 
 	page.click(".send")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	printed, failures, code := held.poll()
 	if code != exit.NothingAsked {
@@ -100,7 +100,7 @@ func TestEndingADesignRoundEarlyDeliversOnlyWhatWasAnsweredAndClosesTheExchange(
 
 	page.evaluate(`document.querySelector('.decision[data-decision="q1"] .choice[value="0"]').click()`, nil)
 	pressPastTheConfirmation(page, ".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	printed, failures, code := held.poll()
 	if code != exit.NothingAsked {

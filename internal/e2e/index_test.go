@@ -144,7 +144,7 @@ func TestTheHeaderSaysWhereTheExchangeStands(t *testing.T) {
 	page.click(".amend")
 	page.waitFor(`document.querySelector('.receipt').hidden`)
 	page.click(".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	var over standingOf
 	page.evaluate(whereTheExchangeStands, &over)

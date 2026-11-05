@@ -308,7 +308,7 @@ func TestTwoSessionsAreServedAtOnceAndNeitherDisturbsTheOther(t *testing.T) {
 
 	secondPage.evaluate(chose("c-1", 0), nil)
 	secondPage.click(".finish")
-	secondPage.waitFor(`document.querySelector('.send').disabled === true`)
+	secondPage.waitFor(theSendWentThrough)
 
 	delivered, arrived := held.awaitingOn(second, 5*time.Second)
 	if !arrived {

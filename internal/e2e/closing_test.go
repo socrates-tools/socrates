@@ -43,7 +43,7 @@ func (s *surfaced) ended(t *testing.T, page *reader) {
 
 	page.evaluate(chose("c-1", 0), nil)
 	page.click(".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	if _, arrived := s.awaiting(5 * time.Second); !arrived {
 		t.Fatal("finishing delivered nothing")
@@ -195,7 +195,7 @@ func TestACallerWhoAsksAgainIsHandedAnAddressThatTakesTheAnswer(t *testing.T) {
 	held, page := read(t, oneDecisionDocument)
 
 	pressPastTheConfirmation(page, ".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	finished, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
@@ -210,7 +210,7 @@ func TestACallerWhoAsksAgainIsHandedAnAddressThatTakesTheAnswer(t *testing.T) {
 
 	asked.evaluate(chose("c-1", 0), nil)
 	asked.click(".finish")
-	asked.waitFor(`document.querySelector('.send').disabled === true`)
+	asked.waitFor(theSendWentThrough)
 
 	answered, arrived := held.awaiting(5 * time.Second)
 	if !arrived {
@@ -292,7 +292,7 @@ func TestAnAnswerChosenBeforeTheEndIsNotCarriedIntoWhatComesNext(t *testing.T) {
 
 	page.evaluate(chose("c-1", 0), nil)
 	page.click(".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 	if _, arrived := held.awaiting(5 * time.Second); !arrived {
 		t.Fatal("finishing delivered nothing")
 	}

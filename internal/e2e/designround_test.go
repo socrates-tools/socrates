@@ -95,7 +95,7 @@ func TestADesignRoundArrivesChosenAndWhatThePersonAnsweredReachesTheSession(t *t
 
 	page.write(within("q2", ".words-field"), inTheirOwnWordsAboutTheCap)
 	page.click(".finish")
-	page.waitFor(`document.querySelector('.send').disabled === true`)
+	page.waitFor(theSendWentThrough)
 
 	printed, failures, code := held.poll()
 	if code != exit.NothingAsked {
