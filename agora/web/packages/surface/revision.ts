@@ -94,7 +94,7 @@ function regainTheSurface(): void {
 }
 
 function giveUpOnTheSession(): void {
-  closeTheExchange()
+  closeTheExchange(theSessionIsGone)
   say(theSessionIsGone, 'over')
 }
 
