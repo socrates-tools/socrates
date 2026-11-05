@@ -34,23 +34,31 @@ async function take(revision: number): Promise<void> {
   )
 }
 
-export function follow(): void {
-  const live = new EventSource(`${base()}/live`)
-  live.addEventListener('revision', (event) => {
-    const revision = Number(event.data)
+function theStreamAddress(): string {
+  const scheme = location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${scheme}//${location.host}${base()}/live`
+}
+
+function hear(event: string, data: string): void {
+  if (event === 'revision') {
+    const revision = Number(data)
     if (revision > Number(document.body.dataset.revision)) {
       void take(revision)
     }
-  })
-  live.addEventListener('closed', () => {
+  } else if (event === 'closed') {
     closeTheExchange()
     say(exchangeIsOver, 'over')
-  })
-  live.addEventListener('uncollected', (event) => {
-    if (event.data === 'no' && exchange.awaitingCollection) {
-      exchange.awaitingCollection = false
-      offerToAmend(false)
-      say('Collected. The answer has gone.')
-    }
+  } else if (event === 'uncollected' && data === 'no' && exchange.awaitingCollection) {
+    exchange.awaitingCollection = false
+    offerToAmend(false)
+    say('Collected. The answer has gone.')
+  }
+}
+
+export function follow(): void {
+  const live = new WebSocket(theStreamAddress())
+  live.addEventListener('message', (message: MessageEvent<string>) => {
+    const [event = '', data = ''] = message.data.split(' ')
+    hear(event, data)
   })
 }

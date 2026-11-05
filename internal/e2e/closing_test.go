@@ -252,13 +252,7 @@ func TestAPageServedClosedFollowsWhatComesNext(t *testing.T) {
 
 	answersWhatTheCallerAskedAgain(t, held, page, "a page opened onto an ended exchange the caller then asked again on")
 
-	streams := []string{}
-	for _, reaching := range page.requests.all() {
-		if strings.HasSuffix(reaching, "/live") {
-			streams = append(streams, reaching)
-		}
-	}
-	if len(streams) != 1 {
+	if streams := page.streams.all(); len(streams) != 1 {
 		t.Errorf("the page opened %d streams, and one held open is what reaches it without it reopening one every few seconds: %v", len(streams), streams)
 	}
 }
