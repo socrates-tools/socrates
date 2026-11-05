@@ -37,7 +37,10 @@ func (r *reader) holdingAnswers() *heldAnswers {
 			held.mu.Lock()
 			held.paused = append(held.paused, stopped.RequestID)
 			held.mu.Unlock()
-			held.arrived <- struct{}{}
+			select {
+			case held.arrived <- struct{}{}:
+			default:
+			}
 		}
 	}()
 	r.do(sending(fetch.Enable, fetch.EnableParams{Patterns: []*fetch.RequestPattern{{URLPattern: "*/answer"}}}))
@@ -61,6 +64,18 @@ func (h *heldAnswers) awaitTheFirst(t *testing.T) fetch.RequestID {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	return h.paused[0]
+}
+
+func (h *heldAnswers) awaitNoOther(t *testing.T) {
+	t.Helper()
+
+	select {
+	case <-h.arrived:
+	case <-time.After(shortWindow):
+	}
+	if requested := h.count(); requested != 1 {
+		t.Errorf("pressing again while a send was in flight left %d requests held, want the one", requested)
+	}
 }
 
 func (r *reader) refuseTheRequest(held fetch.RequestID) {
@@ -142,9 +157,7 @@ func TestAPressWhileASendIsInFlightDisablesBothPressesAndSendsNothingMore(t *tes
 	page.evaluate(`document.querySelector('form.exchange').requestSubmit()`, nil)
 	page.evaluate(`document.querySelector('.send').click(); document.querySelector('.finish').click(); true`, nil)
 
-	if requested := answers.count(); requested != 1 {
-		t.Errorf("pressing again while a send was in flight left %d requests held, want the one", requested)
-	}
+	answers.awaitNoOther(t)
 	if delivered, arrived := held.awaiting(shortWindow); arrived {
 		t.Errorf("an answer that was never let through reached the caller: %+v", delivered)
 	}
