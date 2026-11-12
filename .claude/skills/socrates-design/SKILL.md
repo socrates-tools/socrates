@@ -32,6 +32,7 @@ A question whose answer depends on one still open belongs to a later round, once
 
 Never interview a person in the terminal.
 Put the round on a page: `socrates agora serve --document ./round.json` prints the loopback address of its page.
+Hand the person that address alone, and never restate in the terminal what the page shows.
 The page is served on this machine and sends nothing beyond it.
 
 The document is one decision per question in the round:
@@ -90,7 +91,7 @@ Copy what a decision rests on into docs/changes/<slug>/ and cite it from the spe
 
 Mint the session once, with the first `socrates agora serve`, so the person is given one address.
 Keep that session for the whole design: serve every later round to the page they already have with `socrates agora serve --session <session>`.
-agora collects a session after 45 minutes with no reader, and no design state lives outside it, so losing one costs an address and no work: serve the accumulated document again and the person is handed a new one to replace it.
+agora collects a session after 45 minutes with no reader: serve the accumulated document again and the person is handed a new address.
 
 ## What was settled
 

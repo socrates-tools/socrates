@@ -262,3 +262,16 @@ func TestTheSkillKeepsThePreambleToOneShortSentence(t *testing.T) {
 		}
 	}
 }
+
+func TestARoundIsHandedOverAsItsAddressAloneWithoutRestatingItInTheTerminal(t *testing.T) {
+	page := sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading)
+
+	for _, said := range []string{
+		"Hand the person that address alone",
+		"never restate in the terminal what the page shows",
+	} {
+		if !strings.Contains(page, said) {
+			t.Errorf("the page section does not say %q, so a session could repeat the round in the terminal while the page already shows it:\n%s", said, page)
+		}
+	}
+}

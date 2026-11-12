@@ -32,7 +32,7 @@ A plan, an issue or a conversation is not a spec: tell the person to run a desig
 The slug comes from the spec's own path, and the tickets go to `docs/changes/<slug>/tickets/`.
 
 Where `docs/changes/<slug>/tickets/` already exists, write nothing and name the folder.
-What it holds may already record work in progress or done, and a person who wants a fresh cut removes it themselves, knowing what its main ticket recorded.
+A person who wants a fresh cut removes it themselves.
 
 ## Slicing
 
@@ -68,6 +68,7 @@ Abandoning a ticket later passes its blockers to the tickets it blocked and rena
 
 Never put a breakdown to a person in the terminal.
 Put it on a page: `socrates agora serve --document ./breakdown.json` prints the loopback address of its page, and `socrates agora poll --session <session>` hands back what the person answered.
+Hand the person that address alone, and never restate in the terminal what the page shows.
 
 The document is one card per proposed ticket, in the order of their waves, each identified by the file name it would be written to:
 

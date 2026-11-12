@@ -253,3 +253,10 @@ func TestATicketNamesWhatItLeavesToTheTicketsBesideIt(t *testing.T) {
 		"A ticket no other ticket could be mistaken for leaves out Left to other tickets",
 	)
 }
+
+func TestTheBreakdownIsHandedOverAsItsAddressAloneWithoutRestatingItInTheTerminal(t *testing.T) {
+	ticketsSaysEach(t, breakdownHeading, "a session could repeat every card in the terminal while the page already shows them",
+		"Hand the person that address alone",
+		"never restate in the terminal what the page shows",
+	)
+}
