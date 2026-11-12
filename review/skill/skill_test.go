@@ -297,3 +297,14 @@ func TestTheSkillSaysSettledBelongsToARunWithNobodyToAskAndNeverBeginsOne(t *tes
 		})
 	}
 }
+
+func TestTheDraftingSubagentStartsFreshRatherThanAsAForkInBothSkills(t *testing.T) {
+	for name, document := range map[string]string{
+		"review":   skill.Document(skillkit.ClaudeCode),
+		"handover": skill.HandoverDocument(skillkit.ClaudeCode),
+	} {
+		if !strings.Contains(document, "a fresh subagent, not a fork of this session") {
+			t.Errorf("the %s skill does not start the drafting subagent fresh, so a fork would carry the finding prose the delegation exists to keep out", name)
+		}
+	}
+}

@@ -21,8 +21,8 @@ const (
 )
 
 var (
-	OverseerCeilings = skillkit.Ceilings{skillkit.ClaudeCode: 11973, skillkit.Codex: 12677}
-	AgentCeilings    = skillkit.Ceilings{skillkit.ClaudeCode: 1700, skillkit.Codex: 1750}
+	OverseerCeilings = skillkit.Ceilings{skillkit.ClaudeCode: 12290, skillkit.Codex: 12995}
+	AgentCeilings    = skillkit.Ceilings{skillkit.ClaudeCode: 1757, skillkit.Codex: 1775}
 )
 
 var Namespaces = map[string]string{"implement": Name, "review": "socrates-review"}

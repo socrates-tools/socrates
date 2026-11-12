@@ -200,7 +200,7 @@ Take it to them, wait for them, and record what they decided in the words they u
 
        socrates review respond --finding f3 --decided --reason "the endpoint stays, because the migration reads it"
 
-Hand the round over as a page whichever of the two it holds, and delegate the drafting of that document to a subagent rather than writing it here.
+Hand the round over as a page whichever of the two it holds, and delegate the drafting of that document to a fresh subagent, not a fork of this session, rather than writing it here.
 Everything you add to this session now is read again on every one of those turns, and what costs you is the finding prose rather than who answers it.
 Give the subagent the run identifier and let it read |socrates review findings --json| itself, so what comes back to you is the document and a sentence.
 Serve that document yourself with |socrates agora serve| and hand the person the address, unless an earlier round of this run already gave them one: a subagent that served it would exit owning the surface you are the one waiting on.
@@ -302,7 +302,7 @@ Judge nothing about whether two findings mean the same thing, and withhold none.
 Say on each card which of the two acts forwarding it would be, reading it from what |socrates review findings --json| said about the finding's location.
 A precise note on a line and a paragraph in one general comment are different acts, and the person is choosing between them.
 
-Delegate the drafting of the document to a subagent rather than writing it here, because everything you add to this session now is read again on every one of those turns.
+Delegate the drafting of the document to a fresh subagent, not a fork of this session, rather than writing it here, because everything you add to this session now is read again on every one of those turns.
 Give it the run identifier and let it read |socrates review findings --json| itself, so what comes back is the document and a sentence.
 Serve that document yourself with |socrates agora serve| and hand over the address: a subagent that served it would exit owning the surface you are waiting on.
 Then wait on |socrates agora poll|.

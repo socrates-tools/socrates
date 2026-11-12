@@ -167,6 +167,13 @@ func TestTheOverseerReadsTheMainTicketTheSpecAndTheADRsBeforeHandingOutAnything(
 	)
 }
 
+func TestTheNotesComeFromAFreshSubagentAndNameTheCommitTheyWereReadAt(t *testing.T) {
+	saysEach(t, startingHeading, "the notes could inherit the overseer's context, and a resumed run could trust notes the landed tickets have overtaken",
+		"have one fresh subagent, not a fork of this session, read the code",
+		"The notes open with the commit they were read at, so a resumed run knows what may have moved since",
+	)
+}
+
 func TestTheOverseerReadsTheSettingsFromConfigAtTheStartOfEveryRun(t *testing.T) {
 	saysEach(t, startingHeading, "a changed cap would hold only after something was reinstalled",
 		"Read the settings with `socrates implement config` at the start of every run",
@@ -266,6 +273,20 @@ func TestTheOverseerReviewsEachDiffAndSendsFeedbackToTheSameImplementerWithNoCap
 		"send feedback to the same implementer",
 		"Set no cap on the exchanges",
 		"hand it to a fresh implementer briefed with what the first one got wrong",
+	)
+}
+
+func TestTheOverseerFindsEveryStandardsFileBeforeItsFirstReview(t *testing.T) {
+	saysEach(t, reviewHeading, "a diff could be held to whichever standards the overseer happened to read",
+		"Before the first review, find every file that says how code is written here",
+		"`AGENTS.md` and `CONTRIBUTING.md` wherever they exist",
+	)
+}
+
+func TestRepeatedFeedbackIsNamedAsACheckWhereMechanicalAndAGuideLineWhereAJudgement(t *testing.T) {
+	saysEach(t, lastReadHeading, "a judgement call no check can catch could be pushed toward a check, or left nowhere",
+		"as a check the repository could run where the mistake is mechanical",
+		"as a line for `.socrates/review-guide.md` where it is a judgement call",
 	)
 }
 
@@ -426,7 +447,7 @@ func TestTheOverseerIsToldToInvokeNoSkill(t *testing.T) {
 
 func TestOneSubagentWritesNotesOutsideTheRepositoryBeforeTheFirstHandOut(t *testing.T) {
 	saysEach(t, startingHeading, "every implementer could explore the same code from nothing and name one thing twice",
-		"Before the first hand-out, have one subagent read the code the change touches and write notes to `<notes>/<slug>.md`",
+		"read the code the change touches and write notes to `<notes>/<slug>.md`",
 		"the names the shared surfaces will use",
 		"`~/.socrates/implement/notes/` by default",
 		"outside the repository",
@@ -475,7 +496,7 @@ func TestTheHandBackMapsEachStoryToItsTicketAndNamesEveryOneWayDoor(t *testing.T
 func TestTheHandBackNamesFeedbackThatRecurredAsACheckWorthWriting(t *testing.T) {
 	saysEach(t, lastReadHeading, "a mistake fed back to implementer after implementer could be forgotten when the run ends",
 		"feedback you sent for the same mistake to more than one implementer",
-		"a check the repository could run instead",
+		"a check the repository could run",
 	)
 }
 

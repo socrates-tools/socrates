@@ -15,8 +15,8 @@ const (
 )
 
 var (
-	Ceilings         = skill.Ceilings{skill.ClaudeCode: 15759, skill.Codex: 16307}
-	HandoverCeilings = skill.Ceilings{skill.ClaudeCode: 17000, skill.Codex: 17549}
+	Ceilings         = skill.Ceilings{skill.ClaudeCode: 15772, skill.Codex: 16320}
+	HandoverCeilings = skill.Ceilings{skill.ClaudeCode: 17009, skill.Codex: 17557}
 )
 
 var Namespaces = map[string]string{

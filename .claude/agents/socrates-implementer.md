@@ -14,6 +14,7 @@ Never touch another worktree or the checkout the change was started from.
 
 Follow the repository's own instructions, including how it tests, and read the documents the brief points at before you write anything.
 Where the repository states no way of testing, write each test before the code and watch it fail, test behaviour through the public interface, take expected values from the ticket or a worked example rather than computing them the way the code does, and mock only at the system's edges.
+Where you forced a failure by mutating code or a fixture, prove with a diff that the mutation landed before you trust the failure.
 Commit on your own branch, with messages that say what the change is.
 
 Run the repository's own verification before you report, and get it green.

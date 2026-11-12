@@ -29,6 +29,12 @@ func TestALookupStillRunningHoldsBackOnlyTheQuestionsDownstreamOfIt(t *testing.T
 	)
 }
 
+func TestALookupStartsAFreshSubagentRatherThanAForkOfTheSession(t *testing.T) {
+	designSaysEach(t, factsHeading, "a lookup could inherit the whole interview and answer from it rather than from the repository",
+		"Start each one fresh rather than as a fork of this session",
+	)
+}
+
 func TestTheGlossaryIsChallengedRatherThanOnlyChecked(t *testing.T) {
 	designSaysEach(t, glossaryHeading, "a fuzzy word or a contradicted claim could reach the spec unchallenged",
 		"Challenge the words rather than only checking them, each on a card of its own",
@@ -55,9 +61,21 @@ func TestACardAsksWhereTheChangeIsTestedPreferringTheHighestExistingSeam(t *test
 	)
 }
 
+func TestEachSeamOfferedSaysWhatATestThereCatchesAndWhatItMisses(t *testing.T) {
+	designSaysEach(t, seamsHeading, "a person could choose a seam by its name without seeing what it trades",
+		"what a test there catches and what it misses",
+	)
+}
+
+func TestAnInterfaceDraftComesFromAFreshSubagentRatherThanAFork(t *testing.T) {
+	designSaysEach(t, seamsHeading, "every draft could carry the session's own leaning and stop really differing",
+		"have fresh subagents, not forks of this session",
+	)
+}
+
 func TestAnInterfaceQuestionOffersDraftsMadeUnderDifferentConstraints(t *testing.T) {
 	designSaysEach(t, seamsHeading, "a card could offer only the first design the session thought of",
-		"have subagents each draft one under a different constraint",
+		"each draft one under a different constraint",
 		"offer the drafts that really differ as the card's options",
 		"The Rejected section is built from those options",
 	)

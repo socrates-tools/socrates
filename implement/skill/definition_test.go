@@ -94,6 +94,7 @@ func TestTheDefinitionStatesTheStandingInstructions(t *testing.T) {
 		"test behaviour through the public interface",
 		"take expected values from the ticket or a worked example rather than computing them the way the code does",
 		"mock only at the system's edges",
+		"Where you forced a failure by mutating code or a fixture, prove with a diff that the mutation landed before you trust the failure",
 	} {
 		if !strings.Contains(document, promise) {
 			t.Errorf("the definition does not say %q", promise)

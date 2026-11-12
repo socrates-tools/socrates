@@ -137,6 +137,7 @@ Read the repository and its history before a question is written down.
 No question reaches the page that reading the repository would have answered: a round asks a person to decide something, never to tell you something you could have looked up.
 
 Look facts up in subagents, while the round goes out.
+Start each one fresh rather than as a fork of this session.
 A lookup still running is an unsettled prerequisite: only the questions downstream of it wait for it, and the rest of the frontier is served now.`
 
 	glossaryHeading = "## Keeping the glossary"
@@ -163,9 +164,10 @@ An entry says what a term is rather than what it does, holds no implementation d
 
 Once a round has settled what the change touches, a card asks where it is tested.
 Propose existing seams before new ones, and the highest seam that can see the behaviour, ideally one.
+Each seam's option says what a test there catches and what it misses.
 What the person chooses goes into the spec's Testing Decisions.
 
-Where a question is the shape of an interface or a module, have subagents each draft one under a different constraint, such as the smallest interface, the most flexible, or the one the commonest caller wants, and offer the drafts that really differ as the card's options.
+Where a question is the shape of an interface or a module, have fresh subagents, not forks of this session, each draft one under a different constraint, such as the smallest interface, the most flexible, or the one the commonest caller wants, and offer the drafts that really differ as the card's options.
 The Rejected section is built from those options.
 
 Where a card cannot settle a question in words, build a prototype that answers that one question.

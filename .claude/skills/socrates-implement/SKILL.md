@@ -40,8 +40,9 @@ Read the settings with `socrates implement config` at the start of every run.
 An implementer's model and effort are not yours to pass, because the `socrates-implementer` agent definition carries them.
 Where `socrates-implementer` is not an agent you can start, tell the person to run `socrates implement skill` and start nothing.
 
-Before the first hand-out, have one subagent read the code the change touches and write notes to `<notes>/<slug>.md`: where things live, the names the shared surfaces will use, and how the repository verifies.
+Before the first hand-out, have one fresh subagent, not a fork of this session, read the code the change touches and write notes to `<notes>/<slug>.md`: where things live, the names the shared surfaces will use, and how the repository verifies.
 `<notes>` is the `notes/` directory beside the file `socrates implement config` prints on its first line, `~/.socrates/implement/notes/` by default, outside the repository.
+The notes open with the commit they were read at, so a resumed run knows what may have moved since.
 You write no notes yourself, and a resumed run reads the notes already there.
 
 ## The default branch
@@ -90,6 +91,7 @@ Brief it with pointers rather than a paraphrase: its worktree, its branch, the c
 
 ## Review
 
+Before the first review, find every file that says how code is written here, and always `AGENTS.md` and `CONTRIBUTING.md` wherever they exist.
 When an implementer reports done, review its diff against the ticket, the spec and the ADRs.
 Read the diff itself rather than taking the report for the work.
 Review it on two counts kept apart: what the ticket, the spec and the ADRs ask, quoting the line it falls short of, and the repository's own standards, citing the rule it breaks.
@@ -165,7 +167,7 @@ Where the review cannot begin or ends escalated or failed, start no further run 
 Then remove every worktree, and tell the person in the terminal that the branch `<type>/<slug>` is ready.
 Beside it, say how the review ended, list every finding still open or the failure the reviewer gave, and list each settled finding with its reason.
 List each user story with the ticket that delivered it, and every one-way door the change walks through, or say so where there is none.
-Name too the feedback you sent for the same mistake to more than one implementer, as a check the repository could run instead.
+Name too the feedback you sent for the same mistake to more than one implementer, as a check the repository could run where the mistake is mechanical, or as a line for `.socrates/review-guide.md` where it is a judgement call.
 Push nothing, open no pull request and post nothing: publishing the change is the person's.
 
 ## Installing elsewhere
