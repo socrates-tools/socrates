@@ -13,6 +13,7 @@ The design skill no longer carries a sentence per settled question into the prea
 It writes one sentence on what the round asks the person to decide, or nothing.
 A fact found since the last round goes in the meaning of the decision it bears on.
 The tickets skill asks its two questions of the breakdown in one sentence, and names a user story no ticket delivers on a card of its own.
+The review skills hold the page to the same line: one sentence of at most 200 characters, or nothing.
 
 ADR 36 put the settled answers in the preamble so a person could read the whole argument without scrolling to it.
 Since ADR 72 the page shows what was settled as a folded block above the open questions, and its navigation links to it.
