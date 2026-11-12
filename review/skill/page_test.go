@@ -54,6 +54,7 @@ func TestTheBarNamesEachWayThePageFailsAPerson(t *testing.T) {
 		{named: "showing what a finding costs where that is what a person sees", stated: []string{"what a person sees", "show them it rather than describing it"}},
 		{named: "a diagram only where a workflow needs one", stated: []string{"diagram only where", "not otherwise"}},
 		{named: "restraint about tokens", stated: []string{"spend tokens"}},
+		{named: "a preamble of one short sentence or none", stated: []string{"preamble", "one sentence", "200 characters", "or nothing"}},
 	} {
 		t.Run(required.named, func(t *testing.T) {
 			for _, stated := range required.stated {

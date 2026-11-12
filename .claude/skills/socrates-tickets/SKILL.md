@@ -81,8 +81,8 @@ Each card states the ticket's title and what it delivers from the user's side, c
 A merge, a split or a different blocker is asked for in the words field of the card concerned, after taking *None of these*, which the page already renders, so never write that option yourself.
 A breakdown answer runs nothing, so no option carries a command, and no card states a severity.
 
-The preamble asks two things of the whole breakdown: whether it is cut too coarse or too fine, and whether every blocker gates the ticket it blocks.
-It also names every user story no card delivers.
+The preamble asks in one sentence whether it is cut too coarse or too fine and whether every blocker gates the ticket it blocks.
+A card of its own offering no options names every user story no ticket delivers.
 
 Mint the session once, with the first `socrates agora serve`, so the person is given one address.
 Keep that session: serve every revision to the page the person already has with `socrates agora serve --session <session>`.

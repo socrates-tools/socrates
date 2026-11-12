@@ -80,6 +80,11 @@ func TestADocumentThatDoesNotValidateIsRefusedBeforeServing(t *testing.T) {
 			broken: func(d *document.Document) { d.Decisions = nil },
 			names:  []string{"decision", "source", "settled", "preamble"},
 		},
+		{
+			named:  "a preamble longer than the page holds under its title",
+			broken: func(d *document.Document) { d.Preamble = strings.Repeat("a", 201) },
+			names:  []string{"preamble", "201", "200"},
+		},
 	} {
 		t.Run(refused.named, func(t *testing.T) {
 			written := whole()
@@ -125,6 +130,15 @@ func TestADocumentHoldingOnlyAPreambleIsRead(t *testing.T) {
 
 	if _, err := document.Read(raw(t, written)); err != nil {
 		t.Fatalf("reading a document holding only a title and a preamble: %v", err)
+	}
+}
+
+func TestAPreambleOfTwoHundredCharactersIsReadHoweverManyBytesTheyTake(t *testing.T) {
+	written := nothingToDecide()
+	written.Preamble = strings.Repeat("é", 200)
+
+	if _, err := document.Read(raw(t, written)); err != nil {
+		t.Fatalf("reading a document whose preamble is 200 characters: %v", err)
 	}
 }
 

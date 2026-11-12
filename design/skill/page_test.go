@@ -246,3 +246,19 @@ func TestThePageSendsNothingBeyondThisMachineAndNoLongerSaysItReachesNowhere(t *
 		t.Errorf("the skill still says the page reaches nowhere beyond this machine, and a drawing may load from three CDNs")
 	}
 }
+
+func TestTheSkillKeepsThePreambleToOneShortSentence(t *testing.T) {
+	// scenario: A round's page opens on a wall of text under its title
+	page := sectionOf(t, skill.Document(skillkit.ClaudeCode), pageHeading)
+
+	for _, said := range []string{
+		"The preamble is the line under the title",
+		"200 characters",
+		"one sentence on what this round asks the person to decide, or nothing",
+		"A fact found since the last round goes in the |meaning| of the decision it bears on",
+	} {
+		if !strings.Contains(page, strings.ReplaceAll(said, "|", "`")) {
+			t.Errorf("the page section does not say %q, so the line under the title could grow every round:\n%s", said, page)
+		}
+	}
+}

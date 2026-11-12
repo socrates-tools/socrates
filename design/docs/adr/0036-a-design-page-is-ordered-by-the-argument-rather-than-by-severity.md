@@ -3,6 +3,7 @@
 - Status: accepted
 - Date: 2026-09-17
 - Part of: socrates-design
+- Amended by: ADR 94, which keeps what was settled out of the preamble now that the page shows it as a folded block
 
 ## Decision
 

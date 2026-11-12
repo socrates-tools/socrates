@@ -41,6 +41,9 @@ The document is one decision per question in the round:
                     "options": [{"label": "...", "meaning": "...", "recommended": true},
                                 {"label": "...", "meaning": "..."}]}]}
 
+The preamble is the line under the title, 200 characters at most: one sentence on what this round asks the person to decide, or nothing.
+A fact found since the last round goes in the `meaning` of the decision it bears on.
+
 Number questions from 1, never 0, as they are first asked: identify each `q<N>` and name it `Question <N>`.
 
 A design answer runs nothing, so no option of it carries a command, and every option of one decision carries the same kind of thing.
@@ -106,10 +109,7 @@ An identifier is either settled or still open: a document naming one in both is 
 A settled answer offers no field of its own.
 A person reopening one names it in the message the page carries for the whole round, and the next round asks it again as a question.
 
-Carry one sentence per settled question into the preamble too, so the argument reads without scrolling past the block below it.
-The preamble is one paragraph on the page, so write it as sentences rather than as lines:
-
-    "preamble": "Question 1: the surface, as agora's own source calls it. Question 2: no round cap, because nothing here spawns a process for one to protect."
+Never restate what was settled in the preamble: the page already shows it.
 
 Identifiers are stable for the life of the design: q2 is q2 from the round it is first asked to the round the spec is written.
 A person reopening something they settled two rounds ago names it.

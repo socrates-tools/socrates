@@ -40,6 +40,7 @@ If the person wants to watch, tell them to run |socrates review watch| in anothe
 - Where a finding is purely technical, show a small example of it going wrong.
 - Where what a finding costs is what a person sees, show them it rather than describing it.
 - Draw a diagram only where a workflow is what makes a finding hard to follow, and not otherwise.
+- Keep the preamble to one sentence of at most 200 characters, or nothing.
 - Spend tokens as though they were the person's.`
 
 	theIllustration = `A decision may also carry one illustration.
@@ -134,7 +135,6 @@ It says what the finding was and what resolved it, and it carries the diff where
      "evidence": [{"patch": "..."}]}
 
 Such a card carries no options, and states no mode either.
-A document giving a mode to a decision that offers nothing is refused before anything is served.
 A control that changes nothing reads as a question the person still has to answer, and tells them something is still expected of them.
 The card still carries the field a person writes in.
 

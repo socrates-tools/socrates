@@ -18,6 +18,8 @@ const (
 
 var modes = []Mode{One, Many}
 
+const preambleCeiling = 200
+
 func Modes() []Mode {
 	return slices.Clone(modes)
 }
@@ -133,6 +135,9 @@ func Validate(read Document) error {
 	}
 	if len(read.Decisions) == 0 && len(read.Source) == 0 && len(read.Settled) == 0 && strings.TrimSpace(read.Preamble) == "" {
 		return errors.New(theDocumentHoldsNothing)
+	}
+	if length := len([]rune(strings.TrimSpace(read.Preamble))); length > preambleCeiling {
+		return fmt.Errorf(preambleTooLong, length, preambleCeiling)
 	}
 
 	cited, err := read.citedByIdentifier()

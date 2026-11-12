@@ -53,6 +53,9 @@ The document is one decision per question in the round:
                     "options": [{"label": "...", "meaning": "...", "recommended": true},
                                 {"label": "...", "meaning": "..."}]}]}
 
+The preamble is the line under the title, 200 characters at most: one sentence on what this round asks the person to decide, or nothing.
+A fact found since the last round goes in the |meaning| of the decision it bears on.
+
 Number questions from 1, never 0, as they are first asked: identify each |q<N>| and name it |Question <N>|.
 
 A design answer runs nothing, so no option of it carries a command, and every option of one decision carries the same kind of thing.
@@ -120,10 +123,7 @@ An identifier is either settled or still open: a document naming one in both is 
 A settled answer offers no field of its own.
 A person reopening one names it in the message the page carries for the whole round, and the next round asks it again as a question.
 
-Carry one sentence per settled question into the preamble too, so the argument reads without scrolling past the block below it.
-The preamble is one paragraph on the page, so write it as sentences rather than as lines:
-
-    "preamble": "Question 1: the surface, as agora's own source calls it. Question 2: no round cap, because nothing here spawns a process for one to protect."
+Never restate what was settled in the preamble: the page already shows it.
 
 Identifiers are stable for the life of the design: q2 is q2 from the round it is first asked to the round the spec is written.
 A person reopening something they settled two rounds ago names it.`
@@ -323,8 +323,8 @@ Each card states the ticket's title and what it delivers from the user's side, c
 A merge, a split or a different blocker is asked for in the words field of the card concerned, after taking *None of these*, which the page already renders, so never write that option yourself.
 A breakdown answer runs nothing, so no option carries a command, and no card states a severity.
 
-The preamble asks two things of the whole breakdown: whether it is cut too coarse or too fine, and whether every blocker gates the ticket it blocks.
-It also names every user story no card delivers.
+The preamble asks in one sentence whether it is cut too coarse or too fine and whether every blocker gates the ticket it blocks.
+A card of its own offering no options names every user story no ticket delivers.
 
 Mint the session once, with the first |socrates agora serve|, so the person is given one address.
 Keep that session: serve every revision to the page the person already has with |socrates agora serve --session <session>|.
