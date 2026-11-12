@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -83,16 +84,18 @@ func TestEveryEventIsDeliveredOnce(t *testing.T) {
 	write(t, store, name, runlog.Event{At: time.Now().UTC(), Kind: "run-started", Subject: name})
 	write(t, store, name, runlog.Event{At: time.Now().UTC(), Kind: "agent-started", Subject: "reviewer"})
 
-	go func() {
+	inTheBackground(t, func() error {
 		time.Sleep(100 * time.Millisecond)
-		write(t, store, name, runlog.Event{At: time.Now().UTC(), Kind: "agent-completed", Subject: "reviewer"})
-		write(t, store, name, runlog.Event{
+		if err := recorded(store, name, 0, runlog.Event{At: time.Now().UTC(), Kind: "agent-completed", Subject: "reviewer"}); err != nil {
+			return err
+		}
+		return recorded(store, name, 0, runlog.Event{
 			At:      time.Now().UTC(),
 			Kind:    "run-ended",
 			Subject: name,
 			Fields:  map[string]any{"state": string(runstate.Escalated), "reason": "one finding for the author"},
 		})
-	}()
+	})
 
 	state, err := following(store, name).Until(context.Background(), follow.Sink{Events: sink.Events})
 	if err != nil {
@@ -131,18 +134,20 @@ func TestARotatedLogIsFollowedFromWhatItKept(t *testing.T) {
 		return nil
 	}}
 
-	go func() {
+	inTheBackground(t, func() error {
 		time.Sleep(100 * time.Millisecond)
 		for position := range 6 {
-			writeWith(t, store, name, ceiling, runlog.Event{At: time.Now().UTC(), Kind: "agent-completed", Subject: "reviewer", Fields: map[string]any{"position": position}})
+			if err := recorded(store, name, ceiling, runlog.Event{At: time.Now().UTC(), Kind: "agent-completed", Subject: "reviewer", Fields: map[string]any{"position": position}}); err != nil {
+				return err
+			}
 		}
-		writeWith(t, store, name, ceiling, runlog.Event{
+		return recorded(store, name, ceiling, runlog.Event{
 			At:      time.Now().UTC(),
 			Kind:    "run-ended",
 			Subject: name,
 			Fields:  map[string]any{"state": string(runstate.Clean), "reason": "nothing blocking"},
 		})
-	}()
+	})
 
 	state, err := following(store, name).Until(context.Background(), sink)
 	if err != nil {
@@ -227,15 +232,15 @@ func TestWatchingImmediatelyAfterStarting(t *testing.T) {
 		return nil
 	}}
 
-	go func() {
+	inTheBackground(t, func() error {
 		time.Sleep(200 * time.Millisecond)
-		write(t, store, name, runlog.Event{
+		return recorded(store, name, 0, runlog.Event{
 			At:      time.Now().UTC(),
 			Kind:    "run-ended",
 			Subject: name,
 			Fields:  map[string]any{"state": string(runstate.Clean), "reason": "nothing blocking"},
 		})
-	}()
+	})
 
 	state, err := following(store, name).Until(context.Background(), sink)
 	if err != nil {
@@ -374,13 +379,32 @@ func hold(t *testing.T, store runstore.Store, name string, events ...runlog.Even
 func writeWith(t *testing.T, store runstore.Store, name string, ceiling int64, event runlog.Event) {
 	t.Helper()
 
+	if err := recorded(store, name, ceiling, event); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func recorded(store runstore.Store, name string, ceiling int64, event runlog.Event) error {
 	writer, err := runlog.Open(filepath.Join(store.Path(name), runlog.FileName), ceiling)
 	if err != nil {
-		t.Fatalf("opening the event log: %v", err)
+		return fmt.Errorf("opening the event log: %w", err)
 	}
 	defer func() { _ = writer.Close() }()
 
 	if err := writer.Record(event); err != nil {
-		t.Fatalf("recording an event: %v", err)
+		return fmt.Errorf("recording an event: %w", err)
 	}
+	return nil
+}
+
+func inTheBackground(t *testing.T, writing func() error) {
+	t.Helper()
+
+	done := make(chan error, 1)
+	go func() { done <- writing() }()
+	t.Cleanup(func() {
+		if err := <-done; err != nil {
+			t.Errorf("writing the event log in the background: %v", err)
+		}
+	})
 }

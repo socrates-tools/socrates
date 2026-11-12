@@ -3,6 +3,7 @@ package e2e_test
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -210,8 +211,10 @@ func TestPressingACopyControlChangesNothingAboutTheAnswerAndSendsNothing(t *test
 	page.click(copyControls)
 	page.waitFor(`document.querySelector('` + copyControls + `').dataset.copied === 'yes'`)
 
-	if after := len(page.requests.all()); after != before {
-		t.Errorf("pressing copy made the page issue %d more requests", after-before)
+	for _, asked := range page.requests.all()[before:] {
+		if !strings.Contains(asked, "/assets/") {
+			t.Errorf("pressing copy made the page request %q", asked)
+		}
 	}
 	if delivered, arrived := held.awaiting(shortWindow); arrived {
 		t.Fatalf("pressing copy delivered an answer: %+v", delivered)

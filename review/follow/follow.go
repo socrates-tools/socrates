@@ -183,17 +183,13 @@ type recorded struct {
 type tail struct {
 	path      string
 	delivered []byte
+	readFile  func(string) ([]byte, error)
 }
 
 func (t *tail) more() ([]runlog.Event, bool, error) {
-	content, exists, err := t.read()
+	held, exists, err := t.whole()
 	if err != nil || !exists {
 		return nil, exists, err
-	}
-
-	held, err := t.parse(content)
-	if err != nil {
-		return nil, true, err
 	}
 
 	fresh := held[t.resume(held):]
@@ -230,8 +226,30 @@ func fromTheLastRotation(held []recorded) int {
 	return 0
 }
 
+func (t *tail) whole() ([]recorded, bool, error) {
+	var unreadable []byte
+	for {
+		content, exists, err := t.read()
+		if err != nil || !exists {
+			return nil, exists, err
+		}
+		held, err := t.parse(content)
+		if err == nil {
+			return held, true, nil
+		}
+		if unreadable != nil && bytes.Equal(content, unreadable) {
+			return nil, true, err
+		}
+		unreadable = content
+	}
+}
+
 func (t *tail) read() ([]byte, bool, error) {
-	content, err := os.ReadFile(t.path)
+	readFile := t.readFile
+	if readFile == nil {
+		readFile = os.ReadFile
+	}
+	content, err := readFile(t.path)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil, false, nil
 	}
