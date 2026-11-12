@@ -1218,7 +1218,7 @@ func TestADecisionIsShownUnderTheNameItsSourceGivesIt(t *testing.T) {
 
 const longPreambleDocument = `{
   "title": "E2E for the task pane and API - round 1, settling the shape of the spec, the words, and the choices the strategy doc left open",
-  "preamble": "Taken as settled from the strategy doc: tests and fakes split by ownership, the API box and HTTP suite in the API repo and Playwright in the clients repo. Front-end auth is a build-time provider behind a flag. The fake model answers by function, recognised from its rendered output schema, with per-test fixtures. All six journeys, in the second phase's order. This round settles the shape of the spec, the words, and a few choices the doc left open, and questions on test-data isolation wait for a code check that is still running.",
+  "preamble": "This round settles the shape of the spec, the words, and the choices the strategy doc left open, while questions on test-data isolation wait for a code check that is still running.",
   "decisions": [
     {
       "id": "c-1",

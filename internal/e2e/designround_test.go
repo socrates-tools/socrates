@@ -43,7 +43,7 @@ const inTheirOwnWordsAboutTheCap = "no cap, because nothing here spawns a proces
 
 const designRoundTwoDocument = `{
   "title": "one question left before the spec is written",
-  "preamble": "Question 1: the surface, matching what agora's own source already calls it. Question 2: no round cap, because nothing here spawns a process for one to protect.",
+  "preamble": "One question left: what the spec is written against.",
   "settled": [
     {"id": "q1", "name": "Question 1", "question": "what should the loopback server be called in the glossary", "chosen": ["the surface"]},
     {"id": "q2", "name": "Question 2", "question": "should a design round carry a cap the way a review round does", "words": "no cap, because nothing here spawns a process for a cap to protect"}
@@ -203,14 +203,6 @@ func TestASecondDesignRoundOpensWithWhatWasSettledAheadOfWhatIsStillOpen(t *test
 	page.evaluate(`document.querySelectorAll('.decision[data-decision="q3"] .choice').length`, &openOptions)
 	if openOptions == 0 {
 		t.Error("the open question in round two offers no options at all")
-	}
-
-	var preamble string
-	page.evaluate(`document.querySelector('.preamble').textContent`, &preamble)
-	for _, said := range []string{"Question 1:", "the surface", "Question 2:", "no round cap"} {
-		if !strings.Contains(preamble, said) {
-			t.Errorf("the preamble does not carry %q, and the argument should read without scrolling past the settled block: %q", said, preamble)
-		}
 	}
 
 	nothingLeftTheMachine(t, address, page.requests.all())

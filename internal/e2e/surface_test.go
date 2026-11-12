@@ -402,6 +402,38 @@ func TestServeRefusesADocumentMarkingTwoOptions(t *testing.T) {
 	}
 }
 
+const recapPreambleDocument = `{
+  "title": "Auto sign-in from the background program (round 2)",
+  "preamble": "Question 1: the record lives in the API repository, under its ticket. Question 2: the team that owns the API builds the change and hands it over. Question 3: any trusted app may get a token, and every one issued is logged without the token itself.",
+  "decisions": [
+    {
+      "id": "q8",
+      "question": "which address does the background program call",
+      "mode": "single-choice",
+      "options": [{"label": "the one each environment answers at"}, {"label": "one address for all of them"}]
+    }
+  ]
+}`
+
+func TestServeRefusesAPreambleThatRestatesEveryEarlierAnswer(t *testing.T) {
+	// scenario: A round's page would open on a wall of text under its title
+	t.Parallel()
+	held := standing(t)
+
+	printed, failures, code := held.reading(recapPreambleDocument, "serve", "--document", "-")
+	if code == exit.NothingAsked {
+		t.Fatalf("a document whose preamble restates every earlier answer was served at %q", printed)
+	}
+	for _, said := range []string{"preamble", "200", "one sentence"} {
+		if !strings.Contains(failures, said) {
+			t.Errorf("refusing a preamble too long for the line under the title does not say %q: %s", said, failures)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(held.surfaceHome(), "surface.json")); err == nil {
+		t.Error("a refused document left a session behind, and it starts no server")
+	}
+}
+
 func TestADocumentWrittenBeforeTheMarkStillServes(t *testing.T) {
 	// scenario: A document that marks nothing is unaffected
 	t.Parallel()

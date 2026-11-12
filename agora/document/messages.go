@@ -5,6 +5,7 @@ const (
 	moreThanOneDocument              = "the document is followed by more content than one document"
 	theDocumentStatesNothingFor      = "the document states no %q, so the page would have nothing to head it with"
 	theDocumentHoldsNothing          = "the document holds no decision, no source entry, no settled answer and no preamble, so the page would hold nothing under its title"
+	preambleTooLong                  = "the preamble is %d characters and the page holds at most %d under its title: say in one sentence what the page asks, and leave out what the cards and what was settled already show"
 	decisionAt                       = "decision %d"
 	decisionNamed                    = "decision %q"
 	noIdentifier                     = "%s carries no identifier, so an answer could not be attached to it"

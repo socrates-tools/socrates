@@ -57,6 +57,7 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - What an operator states about it is read from `~/.socrates/agora/config.yaml`, in agora's own directory under the brand's root, and from no other file, and a file it cannot read or a field the `surface` block does not have is refused, naming the file.
 - A caller writes a document rather than a page, and the name, severity, audience and location come from the source a decision cites.
 - A document may hold no decision, and one holding no decision, no source entry, nothing settled and no preamble is refused.
+- A preamble longer than 200 characters is refused before anything is served, per ADR 94.
 - A decision may carry no options, and such a card states something and offers no control a person could mistake for a choice; one carrying no options and stating a mode is refused.
 - Every entry of the source is rendered ahead of the decisions, in an index beside them that names every decision where there is no source, and both are ordered by the severity the source carries, most severe first, informational last, an unstated severity after all of them, and ties in the order the document listed them.
 - The index counts a decision answered by the rule that decides what is sent, as the person answers it, so a decision whose recommendation arrives chosen arrives counted.

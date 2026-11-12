@@ -222,7 +222,8 @@ func TestTheBreakdownAsksAboutGranularityAndBlockersAndNamesAStoryNoCardDelivers
 		"whether it is cut too coarse or too fine",
 		"whether every blocker gates the ticket it blocks",
 		"the person reads its acceptance criteria, its stories and its blockers",
-		"names every user story no card delivers",
+		"names every user story no ticket delivers",
+		"card of its own offering no options",
 	)
 }
 
