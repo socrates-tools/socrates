@@ -124,12 +124,18 @@ func TestARenamedFileIsNamedByBothItsPathsInTheDiffHeading(t *testing.T) {
 
 func TestAnEmptyPatchRendersNoDiff(t *testing.T) {
 	t.Parallel()
-	_, page := read(t, written(t, oneCacheDocument("single-choice")))
+	_, page := read(t, written(t, withEvidence(
+		sketch{"language": "go", "code": "first()\n"},
+		sketch{"caption": "nothing to show", "patch": "not a patch at all"},
+	)))
 
-	var diffs int
-	page.evaluate(`document.querySelectorAll('.diff').length`, &diffs)
-	if diffs != 0 {
-		t.Errorf("a decision carrying no patch draws %d diffs", diffs)
+	var drawn struct{ Diffs, Blocks int }
+	page.evaluate(`({ Diffs: document.querySelectorAll('.diff').length, Blocks: document.querySelectorAll('.evidence:not(.illustrated)').length })`, &drawn)
+	if drawn.Diffs != 0 {
+		t.Errorf("a patch holding no hunk draws %d diffs", drawn.Diffs)
+	}
+	if drawn.Blocks != 1 {
+		t.Errorf("a code block and a patch holding no hunk draw %d blocks, want only the code block", drawn.Blocks)
 	}
 }
 
