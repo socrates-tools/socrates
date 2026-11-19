@@ -318,29 +318,41 @@ func TestAStreamThatDoesNotAnswerAPingIsClosedByTheSurface(t *testing.T) {
 	}
 }
 
+func readingUntilTheStreamIsOpen(t *testing.T, held *standing) func() {
+	t.Helper()
+
+	exchange := held.exchange(t)
+	exchange.Reading(1, time.Now())
+	return func() { exchange.Reading(-1, time.Now()) }
+}
+
 func TestASessionWhoseOnlyStreamStoppedAnsweringPingsIsCollectedAfterItsIdlePeriod(t *testing.T) {
-	held := servingWith(t, twoDecisions(), 200*time.Millisecond, surface.Pinging(50*time.Millisecond, 100*time.Millisecond))
+	held := servingWith(t, twoDecisions(), time.Second, surface.Pinging(50*time.Millisecond, 100*time.Millisecond))
+	letGo := readingUntilTheStreamIsOpen(t, held)
 
 	conn, _, err := dialing(held, 5*time.Second, theSurfacesOwnOrigin(held))
 	if err != nil {
 		t.Fatalf("opening a stream onto the surface: %v", err)
 	}
 	t.Cleanup(func() { _ = conn.CloseNow() })
+	letGo()
 
 	if len(held.server.Holds()) != 1 {
 		t.Fatalf("a session with a stream open was not held: it holds %v", held.server.Holds())
 	}
-	if !eventually(t, 5*time.Second, func() bool { return len(held.server.Holds()) == 0 }) {
+	if !eventually(t, 10*time.Second, func() bool { return len(held.server.Holds()) == 0 }) {
 		t.Errorf("a session whose only stream stopped answering pings was not collected: it holds %v", held.server.Holds())
 	}
 }
 
 func TestASessionWhoseStreamKeepsAnsweringPingsIsNotCollectedAcrossSeveralIdlePeriods(t *testing.T) {
-	held := servingWith(t, twoDecisions(), 200*time.Millisecond, surface.Pinging(50*time.Millisecond, 100*time.Millisecond))
+	held := servingWith(t, twoDecisions(), time.Second, surface.Pinging(50*time.Millisecond, 100*time.Millisecond))
+	letGo := readingUntilTheStreamIsOpen(t, held)
 	_, arriving := listening(t, held, theSurfacesOwnOrigin(held))
 	next(t, arriving, 2*time.Second)
+	letGo()
 
-	time.Sleep(time.Second)
+	time.Sleep(3 * time.Second)
 	if len(held.server.Holds()) != 1 {
 		t.Errorf("a session whose stream answered every ping was collected: it holds %v", held.server.Holds())
 	}

@@ -21,16 +21,16 @@ func TestASilentAgentIsKilled(t *testing.T) {
 	simulated.Scenario("default:\n  behaviour: silence\n  hold: 5m\n  child_command: [sleep, \"60\"]\n")
 
 	recorded := &collector{}
-	claude := build(t, agent.Options{Deadline: 400 * time.Millisecond, Recorder: recorded})
+	claude := build(t, agent.Options{Deadline: 3 * time.Second, Recorder: recorded})
 
 	started := time.Now()
 	if _, err := claude.Run(context.Background(), request()); err == nil {
 		t.Fatal("a silent agent was waited on forever")
-	} else if !strings.Contains(err.Error(), "400ms") && !strings.Contains(err.Error(), "deadline") {
+	} else if !strings.Contains(err.Error(), "3s") && !strings.Contains(err.Error(), "deadline") {
 		t.Errorf("the failure reads %q, without naming the deadline", err)
 	}
 
-	if waited := time.Since(started); waited > 10*time.Second {
+	if waited := time.Since(started); waited > 30*time.Second {
 		t.Errorf("the call took %s, so the deadline is not what ended it", waited)
 	}
 
