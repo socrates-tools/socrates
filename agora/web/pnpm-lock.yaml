@@ -26,6 +26,9 @@ importers:
       '@agora/ui':
         specifier: workspace:*
         version: link:../ui
+      lit:
+        specifier: ^3.3.3
+        version: 3.3.3
 
   packages/ui:
     dependencies:

@@ -20,7 +20,7 @@ Spec: [../spec.md](../spec.md). Decisions: [ADR 96](../../../../agora/docs/adr/0
 | --- | --- | --- |
 | [1.1-the-document-the-page-fetches](1.1-the-document-the-page-fetches.md) | None | in progress |
 | [1.2-the-wording-check-reads-the-clients-words](1.2-the-wording-check-reads-the-clients-words.md) | None | done |
-| [1.3-the-catalog-drawn-by-the-client](1.3-the-catalog-drawn-by-the-client.md) | None | in progress |
+| [1.3-the-catalog-drawn-by-the-client](1.3-the-catalog-drawn-by-the-client.md) | None | done |
 | [1.4-the-browser-suite-holds-the-page](1.4-the-browser-suite-holds-the-page.md) | None | in progress |
 | [2-the-page-drawn-in-the-browser](2-the-page-drawn-in-the-browser.md) | [1.1-the-document-the-page-fetches](1.1-the-document-the-page-fetches.md), [1.2-the-wording-check-reads-the-clients-words](1.2-the-wording-check-reads-the-clients-words.md), [1.4-the-browser-suite-holds-the-page](1.4-the-browser-suite-holds-the-page.md) | pending |
 | [3-go-writes-no-page-markup](3-go-writes-no-page-markup.md) | [1.3-the-catalog-drawn-by-the-client](1.3-the-catalog-drawn-by-the-client.md), [2-the-page-drawn-in-the-browser](2-the-page-drawn-in-the-browser.md) | pending |

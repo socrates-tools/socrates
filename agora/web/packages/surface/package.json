@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@agora/ui": "workspace:*"
+    "@agora/ui": "workspace:*",
+    "lit": "^3.3.3"
   }
 }
