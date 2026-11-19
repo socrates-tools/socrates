@@ -50,14 +50,24 @@ var TheOtherToolNamedIn = map[string]string{
 	filepath.Join(ToolDirectory("agora"), "render", "audiences_test.go"): "what each of those three audiences is announced as",
 }
 
-type Ignorance struct {
-	Naming []string
-	Stale  []string
+var TheOtherToolNamedInStrings = map[string][]string{
+	filepath.Join(ToolDirectory("agora"), "web", "packages", "surface", "messages.ts"): {
+		"Only a person can decide this. The reviewer will not answer it.",
+		"The session that wrote the change can fix this without you.",
+		"Nothing to decide.",
+	},
 }
 
-func WordsOfTheOtherTool(root string, directories []string, named map[string]string) (Ignorance, error) {
+type Ignorance struct {
+	Naming       []string
+	Stale        []string
+	StaleStrings []string
+}
+
+func WordsOfTheOtherTool(root string, directories []string, named map[string]string, namedStrings map[string][]string) (Ignorance, error) {
 	var read Ignorance
 	naming := map[string]bool{}
+	stated := map[string]map[string]bool{}
 
 	where, err := ModulePath(root)
 	if err != nil {
@@ -96,7 +106,17 @@ func WordsOfTheOtherTool(root string, directories []string, named map[string]str
 			}
 			_, exempt := named[relative]
 
-			for position, line := range strings.Split(string(held), "\n") {
+			text := string(held)
+			if exemptStrings, namesStrings := namedStrings[relative]; namesStrings {
+				masked, found, maskErr := withoutStrings(text, exemptStrings)
+				if maskErr != nil {
+					return fmt.Errorf("reading %s: %w", relative, maskErr)
+				}
+				text = masked
+				stated[relative] = found
+			}
+
+			for position, line := range strings.Split(text, "\n") {
 				vocabulary := drawnRound.ReplaceAllString(line, "")
 				if own != nil {
 					vocabulary = own.ReplaceAllString(vocabulary, "")
@@ -126,9 +146,40 @@ func WordsOfTheOtherTool(root string, directories []string, named map[string]str
 		}
 	}
 
+	for relative, exemptStrings := range namedStrings {
+		for _, exempt := range exemptStrings {
+			if !stated[relative][exempt] {
+				read.StaleStrings = append(read.StaleStrings, fmt.Sprintf("%s: %q", relative, exempt))
+			}
+		}
+	}
+
 	slices.Sort(read.Naming)
 	slices.Sort(read.Stale)
+	slices.Sort(read.StaleStrings)
 	return read, nil
+}
+
+func withoutStrings(text string, exempt []string) (string, map[string]bool, error) {
+	tokens, err := lexTypeScript(text)
+	if err != nil {
+		return "", nil, err
+	}
+
+	found := map[string]bool{}
+	masked := []byte(text)
+	for _, token := range stringsOf(tokens) {
+		if !slices.Contains(exempt, token.Text) {
+			continue
+		}
+		found[token.Text] = true
+		for position := token.Start; position < token.End; position++ {
+			if masked[position] != '\n' {
+				masked[position] = ' '
+			}
+		}
+	}
+	return string(masked), found, nil
 }
 
 func PackagesOutside(root, tool string, listed []string) ([]string, error) {
