@@ -3,7 +3,11 @@ package render
 import "strings"
 
 const (
-	renderingThePage = "rendering the page: %w"
+	renderingThePage  = "rendering the page: %w"
+	renderingTheShell = "rendering the shell: %w"
+
+	shellTitle          = "socrates"
+	pageNeedsJavaScript = "This page needs JavaScript to show what it asks. Turn JavaScript on for this page, then reload it."
 
 	partialDrawnWithNothing = "the partial %s has no data to be drawn with"
 	drawingAPartial         = "drawing the partial %s: %w"

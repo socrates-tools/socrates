@@ -361,13 +361,10 @@ func (s *Server) page(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	one.exchange.Touch(time.Now())
-	read, revision := one.exchange.Document()
 
-	written, err := render.Page(read, render.Frame{
-		Base:     SessionPrefix + request.PathValue("session"),
-		Token:    one.token,
-		Revision: revision,
-		Over:     one.exchange.Over(),
+	written, err := render.Shell(render.ShellFrame{
+		Base:  SessionPrefix + request.PathValue("session"),
+		Token: one.token,
 	})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)

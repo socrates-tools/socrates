@@ -17,22 +17,30 @@ func TestEachSessionIsServedUnderAPathHoldingIt(t *testing.T) {
 		t.Fatalf("opening a second session on a running surface: %v", err)
 	}
 
-	for named, expected := range map[string]string{
-		held.session:  twoDecisions().Title,
-		other.Session: oneOtherDecision().Title,
+	for _, each := range []struct {
+		session, token, title, otherTitle string
+	}{
+		{held.session, held.token, twoDecisions().Title, oneOtherDecision().Title},
+		{other.Session, other.Token, oneOtherDecision().Title, twoDecisions().Title},
 	} {
-		code, page := held.fetch(t, held.at(surface.SessionPrefix+named))
+		code, page := held.fetch(t, held.at(surface.SessionPrefix+each.session))
 		if code != http.StatusOK {
-			t.Fatalf("the page of session %s was answered with %d", named, code)
+			t.Fatalf("the page of session %s was answered with %d", each.session, code)
 		}
-		if !strings.Contains(page, expected) {
-			t.Errorf("the page of session %s does not hold %q", named, expected)
+		if !strings.Contains(page, surface.SessionPrefix+each.session) {
+			t.Errorf("the page of session %s does not hold its own address", each.session)
 		}
-	}
 
-	_, first := held.fetch(t, held.at(surface.SessionPrefix+held.session))
-	if strings.Contains(first, oneOtherDecision().Title) {
-		t.Error("one session's page holds the other session's document")
+		served, said := held.servedTo(t, each.session, each.token)
+		if served != http.StatusOK {
+			t.Fatalf("the document of session %s was answered with %d", each.session, served)
+		}
+		if !strings.Contains(string(said), each.title) {
+			t.Errorf("the document of session %s does not hold %q", each.session, each.title)
+		}
+		if strings.Contains(string(said), each.otherTitle) {
+			t.Errorf("the document of session %s holds the other session's document", each.session)
+		}
 	}
 }
 
@@ -103,8 +111,8 @@ func TestAPageIsReachableWithAndWithoutATrailingSlash(t *testing.T) {
 			t.Errorf("the page at %s was answered with %d", typed, code)
 			continue
 		}
-		if !strings.Contains(page, twoDecisions().Title) {
-			t.Errorf("what %s answered does not hold the page's title %q", typed, twoDecisions().Title)
+		if !strings.Contains(page, surface.SessionPrefix+held.session) {
+			t.Errorf("what %s answered does not hold the address of its session %s", typed, held.session)
 		}
 	}
 }
