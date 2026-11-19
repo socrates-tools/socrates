@@ -87,6 +87,7 @@ None is a matter of care, and the reasoning for each is in `docs/adr/`, or in th
 - `internal/settingsmenu` names no tool: what differs between one tool's menu and another's is carried by the `Definition` a tool hands it.
 - A setting whose written key is not its displayed key carries the segments it is written at, so a `default_branch` row is written under `default_branches.<repository top level>` whatever dots the path holds, and a row whose written key is its displayed key is written there.
 - Every user-facing string lives in its package's `messages.go`, names what the person can do, and carries no em dash.
+- The page's client states its words in `agora/web/packages/surface/messages.ts`, read by the same check: no string there carries an em dash, each string of its exported `refusals` group names what the person can do, and the strings of the three audiences socrates review writes are the only ones exempt from the rule that names no word of review, by value rather than by file.
 
 **The binaries**
 
