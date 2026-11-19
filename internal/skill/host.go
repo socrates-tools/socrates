@@ -23,6 +23,7 @@ type Host struct {
 	Starter         string
 	SkillsDirectory string
 	AgentsDirectory string
+	SkillsCLIAgent  string
 
 	ConfigurationVariable    string
 	SkillsUnderConfiguration bool
@@ -39,6 +40,7 @@ var ClaudeCode = Host{
 	Starter:         "/",
 	SkillsDirectory: filepath.Join(".claude", "skills"),
 	AgentsDirectory: filepath.Join(".claude", "agents"),
+	SkillsCLIAgent:  "claude-code",
 	PersonOnlyField: "disable-model-invocation: true",
 
 	ConfigurationVariable:    "CLAUDE_CONFIG_DIR",
@@ -51,6 +53,7 @@ var Codex = Host{
 	Starter:         "$",
 	SkillsDirectory: filepath.Join(".agents", "skills"),
 	AgentsDirectory: filepath.Join(".codex", "agents"),
+	SkillsCLIAgent:  "codex",
 	PolicyFile:      filepath.Join("agents", "openai.yaml"),
 	Escalation:      escalatesThePage,
 	Delegation:      spawnsAndWaitsForAgents,

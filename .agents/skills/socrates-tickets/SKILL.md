@@ -175,4 +175,4 @@ Say what was written and where, and say that the folder must be committed before
 ## Installing elsewhere
 
 This document installs beside `socrates-design`, under `~/.agents/skills`.
-Write both somewhere else instead with `socrates design skill --host codex --to <directory>`.
+Write all three somewhere else instead with `socrates design skill --host codex --to <directory>`.

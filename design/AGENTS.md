@@ -1,7 +1,7 @@
 # socrates design
 
 `socrates design` is a skill rather than a tool.
-The namespace holds one operation, `socrates design skill`, which installs its two skills: `socrates-design`, which runs the interview, and `socrates-tickets`, which cuts the spec it left into tickets.
+The namespace holds one operation, `socrates design skill`, which installs its three skills: `socrates-design`, which runs the interview, `socrates-tickets`, which cuts the spec it left into tickets, and `socrates-refactor`, which runs an architecture review on a lavish page.
 A design interviews a person over agora and leaves a spec and its decisions behind, and it knows nothing about review or implement.
 
 This file is design's layout and invariants.
@@ -9,8 +9,8 @@ This file is design's layout and invariants.
 
 ## Layout
 
-- `design/command` - the command tree: one operation, `skill`, that installs both skills.
-- `design/skill` - the source of both skills. The design's: the rounds, the page, what was settled, the glossary, the spec, the decisions, when the frontier empties, ending early, and installing elsewhere. The tickets': the spec it starts from, slicing, blockers and waves, the breakdown on a page, writing them, the main ticket, a ticket, and leaving them to be committed.
+- `design/command` - the command tree: one operation, `skill`, that installs all three skills.
+- `design/skill` - the source of all three skills. The design's: the rounds, the page, what was settled, the glossary, the spec, the decisions, when the frontier empties, ending early, and installing elsewhere. The tickets': the spec it starts from, slicing, blockers and waves, the breakdown on a page, writing them, the main ticket, a ticket, and leaving them to be committed. The refactor's: the skills it composes, installing what is missing, running it, and installing elsewhere.
 
 ## Invariants
 
@@ -45,3 +45,10 @@ None is a matter of care, and the reasoning for each is in this directory's `doc
 - Every card carries as markdown evidence the whole file its ticket would be written as, and each ticket is written as exactly the evidence its card carried in the round that came back all kept, so a person approves the acceptance criteria, stories and blockers that are written rather than a summary of them.
 - The breakdown is driven end to end through the real binary: every card arrives with *keep it* chosen, and a card answered in the person's own words reaches the session through `socrates agora poll`. What the binary cannot drive is the tickets themselves, which are the session's to write.
   The skill says to copy each one exactly as `socrates agora poll` handed it back, because agora refuses one restated otherwise, per ADR 59.
+
+**The refactor skill**
+
+- `socrates-refactor` is a third skill of `design/skill`, installed by `socrates design skill` beside the other two, held to a ceiling of its own and to the same gates, per ADR 95.
+- It names every skill it composes and where each comes from, and installs a missing one with `npx -y skills add` for its own host and no other.
+- It reads `improve-codebase-architecture` rather than invoking it, puts the report and the pick of a candidate on a lavish page rather than in the terminal, and names no other socrates skill, per ADR 49.
+- Codex's rendering escalates the installs and the lavish page out of the sandbox, and Claude Code's says nothing of it.

@@ -22,7 +22,7 @@ func TestEachDesignSkillIsInstalledUnderItsOwnName(t *testing.T) {
 				t.Fatalf("installing the skills: %v", err)
 			}
 
-			want := []string{skill.Name, skill.TicketsName}
+			want := []string{skill.Name, skill.TicketsName, skill.RefactorName}
 			var got []string
 			for _, installed := range written {
 				got = append(got, installed.Name)

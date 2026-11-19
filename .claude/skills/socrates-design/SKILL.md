@@ -17,7 +17,7 @@ What it leaves behind:
 
 The interview is put to a person on a page rather than as prose in a terminal:
 
-    socrates design skill          install this skill and socrates-tickets
+    socrates design skill          install every design skill
     socrates agora serve           put a round of questions in front of a person
     socrates agora poll            read what they answered
 

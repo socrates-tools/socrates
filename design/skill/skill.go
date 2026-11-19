@@ -12,8 +12,9 @@ const (
 )
 
 var (
-	Ceilings        = skill.Ceilings{skill.ClaudeCode: 13890, skill.Codex: 14390}
-	TicketsCeilings = skill.Ceilings{skill.ClaudeCode: 9800, skill.Codex: 10017}
+	Ceilings         = skill.Ceilings{skill.ClaudeCode: 13890, skill.Codex: 14390}
+	TicketsCeilings  = skill.Ceilings{skill.ClaudeCode: 9800, skill.Codex: 10017}
+	RefactorCeilings = skill.Ceilings{skill.ClaudeCode: 3600, skill.Codex: 3800}
 )
 
 var Namespaces = map[string]string{
@@ -42,6 +43,7 @@ func For(host skill.Host) []skill.Skill {
 	return []skill.Skill{
 		{Name: Name, Host: host, Document: Document, Ceiling: Ceilings.For(host)},
 		{Name: TicketsName, Host: host, Document: TicketsDocument, Ceiling: TicketsCeilings.For(host)},
+		{Name: RefactorName, Host: host, Document: RefactorDocument, Ceiling: RefactorCeilings.For(host)},
 	}
 }
 

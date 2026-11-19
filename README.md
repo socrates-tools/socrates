@@ -21,6 +21,7 @@ In your coding session, run these skills in order:
 4. `/socrates-review` has an independent reviewer check the change before you push.
 
 Each step works on its own, so you can review any change without a spec.
+`/socrates-refactor` stands apart: it reviews a codebase's architecture on a page you annotate.
 
 ## What it needs
 
@@ -72,6 +73,12 @@ Run `/socrates-implement` once the tickets are committed.
 It builds each ticket in a worktree of its own, reviews it, lands it on a branch such as `feature/<slug>`, and runs your repository's verification after every landing.
 Keep talking to it while it works: it only asks you what code cannot settle.
 Nothing is pushed.
+
+## Refactor
+
+Run `/socrates-refactor` to find where a codebase would gain from deeper modules.
+It runs `improve-codebase-architecture` and shows its report on a `lavish` page you annotate, and installs either skill first where it is missing, which needs `npx`.
+Pick a candidate on the page, and it grills you through it in the terminal.
 
 ## Review
 

@@ -56,7 +56,7 @@ func TestAHostWithADirectoryWritesThatHostsRenderingThereAndNothingElse(t *testi
 
 	written := writtenIn(t, directory)
 	for _, one := range allSkills() {
-		if one.Host != skillkit.Codex || !strings.HasPrefix(one.Name, "socrates-design") && one.Name != "socrates-tickets" {
+		if one.Host != skillkit.Codex || !slices.Contains([]string{"socrates-design", "socrates-tickets", "socrates-refactor"}, one.Name) {
 			continue
 		}
 		if written[filepath.ToSlash(filepath.Join(one.Name, skillkit.FileName))] != one.Rendered() {
@@ -66,8 +66,8 @@ func TestAHostWithADirectoryWritesThatHostsRenderingThereAndNothingElse(t *testi
 			t.Errorf("--host codex --to did not write the policy beside %s", one.Name)
 		}
 	}
-	if len(written) != 4 {
-		t.Errorf("--host codex --to wrote %v, want two skills and a policy beside each", slices.Sorted(maps.Keys(written)))
+	if len(written) != 6 {
+		t.Errorf("--host codex --to wrote %v, want three skills and a policy beside each", slices.Sorted(maps.Keys(written)))
 	}
 	if underHome := writtenUnder(t, session.UserHome); len(underHome) != 0 {
 		t.Errorf("--host codex --to wrote %v under the home", slices.Sorted(maps.Keys(underHome)))
