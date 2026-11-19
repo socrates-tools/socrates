@@ -60,10 +60,12 @@ skill:
 	home=$$(mktemp -d); trap 'rm -rf "$$home"' EXIT; SOCRATES_HOME=$$home go run ./cmd/socrates implement skill --host claude --to .claude/skills --agents-to .claude/agents; SOCRATES_HOME=$$home go run ./cmd/socrates implement skill --host codex --to .agents/skills --agents-to .codex/agents
 
 assets:
+	go run ./agora/cmd/clienttypes
 	cd agora/web && pnpm install --frozen-lockfile && node build.mjs
 
 dev:
 	go build -tags agoradev -ldflags '$(STAMP)' -o $(BINARY) ./cmd/socrates
+	go run ./agora/cmd/clienttypes
 	cd agora/web && pnpm install --frozen-lockfile && node build.mjs --watch
 
 platforms:

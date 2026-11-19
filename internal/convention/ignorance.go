@@ -12,6 +12,7 @@ import (
 
 var SurfaceDirectories = []string{
 	filepath.Join(ToolDirectory("agora"), "command"),
+	filepath.Join(ToolDirectory("agora"), "cmd", "clienttypes"),
 	filepath.Join(ToolDirectory("agora"), "config"),
 	filepath.Join(ToolDirectory("agora"), "assets"),
 	filepath.Join(ToolDirectory("agora"), "document"),
