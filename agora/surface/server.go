@@ -17,7 +17,6 @@ import (
 	"github.com/coder/websocket"
 	"github.com/socrates-tools/socrates/agora/assets"
 	"github.com/socrates-tools/socrates/agora/document"
-	"github.com/socrates-tools/socrates/agora/render"
 	"github.com/socrates-tools/socrates/internal/refusal"
 )
 
@@ -362,7 +361,7 @@ func (s *Server) page(writer http.ResponseWriter, request *http.Request) {
 	}
 	one.exchange.Touch(time.Now())
 
-	written, err := render.Shell(render.ShellFrame{
+	written, err := writeShell(shellFrame{
 		Base:  SessionPrefix + request.PathValue("session"),
 		Token: one.token,
 	})

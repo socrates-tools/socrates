@@ -5,8 +5,6 @@ package surface
 import (
 	"io"
 	"net/http"
-
-	"github.com/socrates-tools/socrates/agora/render"
 )
 
 const CatalogRoute = "/catalog"
@@ -16,7 +14,7 @@ func (s *Server) mountTheCatalog(routed *http.ServeMux) {
 }
 
 func (s *Server) catalog(writer http.ResponseWriter, _ *http.Request) {
-	written, err := render.CatalogShell()
+	written, err := CatalogShell()
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return

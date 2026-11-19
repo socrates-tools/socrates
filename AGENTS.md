@@ -57,6 +57,7 @@ Continuous integration runs that same command on every supported platform, so pa
 `make lint` fails on anything `gofmt` would rewrite, then vets, then runs the analysers `.golangci.yaml` names at the version the `Makefile` pins, so the cheapest gate is the first to fail.
 `make test` drives the surface page with a real browser, so a Chrome or Chromium must be on `PATH` or named by `AGORA_BROWSER`.
 `make skill`, `make assets` and `make platforms` regenerate committed files from their sources, and `make test` fails while a generated file and its source disagree.
+agora's page is drawn by its client in the browser, so a change to the client, to the landing page or to a Go struct that crosses to the page needs Node and `pnpm` for `make assets`, and `make verify` needs neither.
 `make corpus-outcomes` states which outcomes only fixtures reach and never fails for one; rewrite its recorded distribution with `scripts/corpus-outcomes -write` once a move is deliberate.
 `make fixtures-diff` compares the simulator against the recordings and reaches nothing.
 

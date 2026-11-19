@@ -1,6 +1,13 @@
 package surface
 
 const (
+	renderingTheShell        = "rendering the shell: %w"
+	renderingTheCatalogShell = "rendering the catalog's shell: %w"
+
+	shellTitle          = "socrates"
+	catalogTitle        = "Catalog"
+	pageNeedsJavaScript = "This page needs JavaScript to show what it asks. Turn JavaScript on for this page, then reload it."
+
 	surfaceHasNoHomeOfItsOwn = "%s moved a home of the surface's own, and the surface has none: everything it reads and writes is under its own directory in the brand's root, and %s moves that root. Unset %s, set %s instead, and run the command again"
 
 	addressIsNotHostAndPort    = "the address %q is not a host and a port: %s. Give an address such as 127.0.0.1:0 and run the command again"

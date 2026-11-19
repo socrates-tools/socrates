@@ -2,5 +2,5 @@
 
 @source '../**/*.ts';
 @source not '../**/node_modules';
-@source '../../../render/**/*.gohtml';
+@source '../../../surface/*.gohtml';
 @source '../../../../site/index.html';

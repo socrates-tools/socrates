@@ -14,7 +14,6 @@ const here = dirname(fileURLToPath(import.meta.url))
 const bundle = join(here, '..', 'assets', 'bundle')
 const stamp = join(here, '..', 'assets', 'bundle.sum')
 const languages = join(here, '..', 'document', 'languages.json')
-const declared = join(bundle, 'contract.json')
 const surface = join(here, 'packages', 'surface')
 const library = join(here, 'packages', 'ui')
 const tokens = join(library, 'tokens')
@@ -83,7 +82,7 @@ function elementsDeclaredBy(created) {
   return Object.fromEntries(Object.entries(declared).sort(([first], [second]) => first.localeCompare(second)))
 }
 
-const classSourcesOutsideTheClient = [join(here, '..', 'render'), landing]
+const classSourcesOutsideTheClient = [join(here, '..', 'surface', 'shell.gohtml'), landing]
 
 const stamped = ['packages', 'build.mjs', 'tsconfig.json', 'package.json', 'pnpm-lock.yaml', join('..', '..', 'site')]
 
@@ -536,16 +535,15 @@ if (process.argv.includes('--watch')) {
 }
 
 const { compiler, created } = program()
-const elementsWithProperties = elementsDeclaredBy(created)
+const elementsDeclared = elementsDeclaredBy(created)
 const refused = [
   ...typeErrors(created),
   ...sources(created).flatMap(commentsIn),
   ...surfaceImportsInTheLibrary(created),
   ...shadowRootsReachedByTheSurface(created),
   ...primitivesReachingAnother(created),
-  ...elementsDrawnBeyondWhatTheyDeclare(created, elementsWithProperties),
+  ...elementsDrawnBeyondWhatTheyDeclare(created, elementsDeclared),
 ]
-const elements = Object.fromEntries(Object.entries(elementsWithProperties).map(([tag, { attributes, slots }]) => [tag, { attributes, slots }]))
 compiler.close()
 if (refused.length > 0) {
   process.stderr.write(`${refused.join('\n')}\n`)
@@ -582,7 +580,6 @@ const { code: landingCode } = await transform(await compiledStylesheet(landingEn
 writeFileSync(landingStylesheet, landingCode)
 
 const answeredTo = [...new Set(hljs.listLanguages().flatMap((name) => [name, ...(hljs.getLanguage(name).aliases ?? [])]))].sort()
-writeFileSync(declared, JSON.stringify({ elements }, null, 2) + '\n')
 writeFileSync(languages, JSON.stringify(answeredTo, null, 2) + '\n')
 writeFileSync(stamp, sum() + '\n')
 

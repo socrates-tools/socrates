@@ -1,8 +1,9 @@
-package render
+package surface
 
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
 	"html/template"
 )
 
@@ -11,15 +12,15 @@ var catalogShellSource string
 
 var catalogShellPage = template.Must(template.New("catalog-shell").Parse(catalogShellSource))
 
-type catalogShellFrame struct {
+type catalogShellView struct {
 	Title  string
 	Policy string
 }
 
 func CatalogShell() (string, error) {
 	var written bytes.Buffer
-	if err := catalogShellPage.Execute(&written, catalogShellFrame{Title: catalogTitle, Policy: policy}); err != nil {
-		return "", err
+	if err := catalogShellPage.Execute(&written, catalogShellView{Title: catalogTitle, Policy: pagePolicy}); err != nil {
+		return "", fmt.Errorf(renderingTheCatalogShell, err)
 	}
 	return written.String(), nil
 }

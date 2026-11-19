@@ -11,8 +11,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/socrates-tools/socrates/agora/render"
 )
 
 const (
@@ -20,7 +18,7 @@ const (
 
 	FileCeiling   = 20 * mebibyte
 	AnswerCeiling = 100 * mebibyte
-	TrayCeiling   = render.FilesPerTray
+	TrayCeiling   = 10
 
 	answerPart          = "answer"
 	incomingPattern     = "incoming-*"

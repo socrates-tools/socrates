@@ -5,7 +5,6 @@ import (
 	"slices"
 
 	"github.com/socrates-tools/socrates/agora/document"
-	"github.com/socrates-tools/socrates/agora/render"
 )
 
 const DocumentRoute = "/document"
@@ -146,7 +145,7 @@ func illustrationAddressesOf(session string, read document.Document) map[string]
 	addresses := map[string]string{}
 	for _, decision := range read.Decisions {
 		if path := decision.Illustration.Path; path != "" {
-			addresses[decision.ID] = SessionPrefix + session + render.IllustrationRoute + url.PathEscape(decision.ID) + "/" + url.PathEscape(render.BaseName(path))
+			addresses[decision.ID] = SessionPrefix + session + IllustrationRoute + url.PathEscape(decision.ID) + "/" + url.PathEscape(baseName(path))
 		}
 	}
 	return addresses

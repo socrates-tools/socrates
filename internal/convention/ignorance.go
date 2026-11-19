@@ -16,7 +16,6 @@ var SurfaceDirectories = []string{
 	filepath.Join(ToolDirectory("agora"), "config"),
 	filepath.Join(ToolDirectory("agora"), "assets"),
 	filepath.Join(ToolDirectory("agora"), "document"),
-	filepath.Join(ToolDirectory("agora"), "render"),
 	filepath.Join(ToolDirectory("agora"), "surface"),
 	filepath.Join(ToolDirectory("agora"), "web", "packages"),
 }
@@ -45,10 +44,7 @@ var otherToolPatterns = func() []*regexp.Regexp {
 
 var drawnRound = regexp.MustCompile(`(?i)stroke-line(?:cap|join)\s*[:=]\s*["']?round\b`)
 
-var TheOtherToolNamedIn = map[string]string{
-	filepath.Join(ToolDirectory("agora"), "render", "audiences.go"):      "the three audiences socrates review writes, drawn as the design drew them, per ADR 47",
-	filepath.Join(ToolDirectory("agora"), "render", "audiences_test.go"): "what each of those three audiences is announced as",
-}
+var TheOtherToolNamedIn = map[string]string{}
 
 var TheOtherToolNamedInStrings = map[string][]string{
 	filepath.Join(ToolDirectory("agora"), "web", "packages", "surface", "messages.ts"): {

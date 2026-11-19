@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/socrates-tools/socrates/agora/document"
-	"github.com/socrates-tools/socrates/agora/render"
 	"github.com/socrates-tools/socrates/internal/refusal"
 )
 
@@ -101,7 +100,7 @@ func drawingsOf(read document.Document, base string) ([]drawing, error) {
 			return nil, refusal.New(illustrationIsNotAFile, decision.ID, path)
 		}
 
-		entry := render.BaseName(path)
+		entry := baseName(path)
 		files, err := gatherFiles(decision.ID, path, source, entry)
 		if err != nil {
 			return nil, err

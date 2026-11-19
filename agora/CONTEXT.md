@@ -29,4 +29,4 @@ agora knows nothing about what a caller's document is about, beyond the three au
 ## The client
 
 - **primitive**: a generic piece of the page that names nothing in agora's domain, such as a button, a field, a dialog or a code block. Every piece of the page this glossary does not name is a primitive, and every piece it does name is built from primitives. Not a component, and not a widget.
-- **catalog**: every primitive drawn in every state it has, by the same markup the page uses, for the browser suite to drive. Not a page: no document is behind it and nobody answers it.
+- **catalog**: every primitive drawn in every state it has, by the same primitives the page uses, for the browser suite to drive. Not a page: no document is behind it and nobody answers it.

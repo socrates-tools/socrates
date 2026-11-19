@@ -1,4 +1,0 @@
-{{define "ui-choice"}}<ui-choice{{with .Class}} class="{{.}}"{{end}} variant="{{.Variant}}"{{with .Value}} value="{{.}}"{{end}}{{with .Interaction}} data-interaction="{{.}}"{{end}}{{with .Decision}} data-decision="{{.}}"{{end}}{{if .Recommended}} data-recommended="yes"{{end}}{{if .Checked}} checked{{end}}{{if .Disabled}} disabled{{end}}><span slot="label" class="{{.Family}}-label">{{.Label}}</span>
-{{with .Tag}}<span slot="tag" class="{{$.Family}}-mark">{{.}}</span>
-{{end}}{{with .Meaning}}<div slot="meaning" class="{{$.Family}}-meaning">{{.}}</div>
-{{end}}</ui-choice>{{end}}

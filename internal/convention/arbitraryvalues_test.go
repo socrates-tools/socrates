@@ -16,7 +16,7 @@ const scratchTheme = `@import 'tailwindcss' source(none);
 
 @source '../**/*.ts';
 @source not '../**/node_modules';
-@source '../../../render/**/*.gohtml';
+@source '../../../surface/*.gohtml';
 @source '../../../../site/index.html';
 `
 
@@ -26,7 +26,7 @@ func scratchClientRoot(t *testing.T) string {
 	root := t.TempDir()
 	writeNested(t, filepath.Join(root, convention.ClassSourcesStatement), scratchTheme)
 	writeNested(t, filepath.Join(root, "agora", "web", "packages", "ui", "index.ts"), "export {}\n")
-	writeNested(t, filepath.Join(root, "agora", "render", "page.gohtml"), "<html></html>\n")
+	writeNested(t, filepath.Join(root, "agora", "surface", "shell.gohtml"), "<html></html>\n")
 	writeNested(t, filepath.Join(root, "site", "index.html"), "<html></html>\n")
 	return root
 }
@@ -42,7 +42,7 @@ func TestNoClassStringOfTheClientCarriesAnArbitraryValue(t *testing.T) {
 	}
 }
 
-func TestTheClassesAreReadFromTheTypeScriptThePartialsAndTheLandingPage(t *testing.T) {
+func TestTheClassesAreReadFromTheTypeScriptTheShellAndTheLandingPage(t *testing.T) {
 	sources, err := convention.ClassSourcesStated(source.Root(t), convention.ClassSourcesStatement)
 	if err != nil {
 		t.Fatalf("reading where classes are written: %v", err)
@@ -51,7 +51,7 @@ func TestTheClassesAreReadFromTheTypeScriptThePartialsAndTheLandingPage(t *testi
 	hasSuffix := func(suffix string) bool {
 		return slices.ContainsFunc(sources, func(read string) bool { return strings.HasSuffix(read, suffix) })
 	}
-	for _, expected := range []string{".ts", "partials/ui-button.gohtml", "site/index.html"} {
+	for _, expected := range []string{".ts", "surface/shell.gohtml", "site/index.html"} {
 		if !hasSuffix(expected) {
 			t.Errorf("the @source lines of %s reach no %s", filepath.ToSlash(convention.ClassSourcesStatement), expected)
 		}
@@ -63,10 +63,10 @@ func TestTheClassesAreReadFromTheTypeScriptThePartialsAndTheLandingPage(t *testi
 	}
 }
 
-func TestAnArbitraryValueInATypeScriptFileAPartialOrTheLandingPageIsReportedNamingTheFileAndTheLine(t *testing.T) {
+func TestAnArbitraryValueInATypeScriptFileTheShellOrTheLandingPageIsReportedNamingTheFileAndTheLine(t *testing.T) {
 	root := scratchClientRoot(t)
 	writeNested(t, filepath.Join(root, "agora", "web", "packages", "ui", "badge", "badge.ts"), "const clean = 'flex gap-2'\n\nconst loose = 'flex p-[13px]'\n")
-	writeNested(t, filepath.Join(root, "agora", "render", "partials", "ui-card.gohtml"), "<ui-card class=\"flex\">\n  <div class=\"bg-[#fff] p-2\"></div>\n</ui-card>\n")
+	writeNested(t, filepath.Join(root, "agora", "surface", "shell.gohtml"), "<ui-card class=\"flex\">\n  <div class=\"bg-[#fff] p-2\"></div>\n</ui-card>\n")
 	writeNested(t, filepath.Join(root, "site", "index.html"), "<html>\n<body>\n<p class=\"text-[14px]\">hello</p>\n</body>\n</html>\n")
 
 	found, err := convention.ArbitraryValuesWrittenInClasses(root, convention.ClassSourcesStatement)
@@ -79,7 +79,7 @@ func TestAnArbitraryValueInATypeScriptFileAPartialOrTheLandingPageIsReportedNami
 		located = append(located, strings.SplitN(written, " ", 2)[0])
 	}
 	expected := []string{
-		"agora/render/partials/ui-card.gohtml:2",
+		"agora/surface/shell.gohtml:2",
 		"agora/web/packages/ui/badge/badge.ts:3",
 		"site/index.html:3",
 	}
@@ -145,7 +145,7 @@ const mixed = items[count-1]
 const expression = /[a-z-]+/g
 const classes = 'flex gap-2 p-4 md:p-6 hover:bg-accent'
 `)
-	writeNested(t, filepath.Join(root, "agora", "render", "partials", "ui-field.gohtml"), `<ui-field data-x="{{ index .Items 0 }}" class="flex">
+	writeNested(t, filepath.Join(root, "agora", "surface", "shell.gohtml"), `<ui-field data-x="{{ index .Items 0 }}" class="flex">
   {{ range $i, $item := .Items }}{{ index $.Items $i }}{{ end }}
 </ui-field>
 `)

@@ -1,5 +1,0 @@
-{{define "ui-dialog"}}<ui-dialog class="{{.Class}}"{{with .ID}} id="{{.}}"{{end}}{{with .Interaction}} data-interaction="{{.}}"{{end}}>
-<span slot="heading" class="{{.Class}}-heading">{{.Heading}}</span>
-{{with .Body}}<div slot="body">{{fill .}}</div>{{end}}
-{{with .Actions}}<div slot="actions">{{fill .}}</div>{{end}}
-</ui-dialog>{{end}}
