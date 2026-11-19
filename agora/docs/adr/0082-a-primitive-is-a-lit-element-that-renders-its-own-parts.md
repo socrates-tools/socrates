@@ -1,6 +1,6 @@
 # 82. A primitive is a Lit element that renders its own parts, and Go checks the attributes and slots it writes
 
-- Status: accepted
+- Status: accepted, its partials and the contract Go checks them against superseded by ADR 96
 - Date: 2026-10-21
 - Part of: lit-and-tailwind-primitives
 

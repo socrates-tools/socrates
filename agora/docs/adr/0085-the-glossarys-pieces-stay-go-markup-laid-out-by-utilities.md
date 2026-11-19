@@ -1,6 +1,6 @@
 # 85. The glossary's pieces stay Go markup laid out by utilities
 
-- Status: accepted
+- Status: superseded by ADR 96
 - Date: 2026-10-21
 - Part of: lit-and-tailwind-primitives
 
