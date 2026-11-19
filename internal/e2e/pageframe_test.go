@@ -57,7 +57,9 @@ func TestThePageCarriesTheBrandRatherThanTheNameOfTheServer(t *testing.T) {
 
 func TestAnExchangeThatIsOverSaysSoUnderTheTitle(t *testing.T) {
 	t.Parallel()
-	held, page := read(t, twoDecisionDocument)
+	held := standing(t)
+	address := held.serve(twoDecisionDocument)
+	page := opening(t, address)
 
 	const whatTheNoticeIs = `(() => {
   const notice = document.querySelector('.over-notice');
@@ -80,10 +82,10 @@ func TestAnExchangeThatIsOverSaysSoUnderTheTitle(t *testing.T) {
 	}
 
 	held.end(held.opened)
-	page.reload()
+	ended := openingAlongside(t, page, address)
 
 	var over notice
-	page.evaluate(whatTheNoticeIs, &over)
+	ended.evaluate(whatTheNoticeIs, &over)
 	if over.Hidden {
 		t.Error("a page drawn over hides the notice that says so")
 	}
@@ -229,7 +231,8 @@ func TestAPieceKeepsTheClassThatNamesItBesideTheUtilitiesThatLayItOut(t *testing
 func TestThePanelTakesItsLayoutFromThePageAndGivesWayWhenNothingWasSent(t *testing.T) {
 	t.Parallel()
 	held := standing(t)
-	page := opening(t, held.serve(twoDecisionDocument), chromedp.WindowSize(aWindowWideEnoughForThePanel, 900))
+	address := held.serve(twoDecisionDocument)
+	page := opening(t, address, chromedp.WindowSize(aWindowWideEnoughForThePanel, 900))
 
 	var open bool
 	page.evaluate(`document.querySelector('aside.panel').checkVisibility()`, &open)
@@ -238,10 +241,10 @@ func TestThePanelTakesItsLayoutFromThePageAndGivesWayWhenNothingWasSent(t *testi
 	}
 
 	held.end(held.opened)
-	page.reload()
+	ended := openingAlongside(t, page, address)
 
 	var shown bool
-	page.evaluate(`document.querySelector('aside.panel').checkVisibility()`, &shown)
+	ended.evaluate(`document.querySelector('aside.panel').checkVisibility()`, &shown)
 	if shown {
 		t.Error("an exchange that is over with nothing sent shows a panel, and the shell's part takes its layout from the page")
 	}
