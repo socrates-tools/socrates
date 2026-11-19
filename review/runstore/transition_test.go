@@ -120,3 +120,45 @@ func TestAdvanceAndEndRefuseEachOthersStates(t *testing.T) {
 		t.Errorf("a refused transition moved the run to %q", run.State)
 	}
 }
+
+func TestASaveRacingTheEndOfARunNeverWritesItBack(t *testing.T) {
+	for attempt := range 50 {
+		store := New(t.TempDir())
+		run := started(t, store)
+		if err := run.Advance(runstate.Reviewing); err != nil {
+			t.Fatalf("advancing to %s: %v", runstate.Reviewing, err)
+		}
+		if err := store.Save(run); err != nil {
+			t.Fatalf("saving the reviewing run: %v", err)
+		}
+
+		stale := *run
+		ending := *run
+		if err := ending.End(runstate.Cancelled, "the person cancelled it"); err != nil {
+			t.Fatalf("ending as %s: %v", runstate.Cancelled, err)
+		}
+
+		racing := make(chan struct{})
+		saved := make(chan struct{})
+		go func() {
+			defer close(saved)
+			<-racing
+			for range 20 {
+				_ = store.Save(&stale)
+			}
+		}()
+		close(racing)
+		if err := store.Save(&ending); err != nil {
+			t.Fatalf("saving the ended run: %v", err)
+		}
+		<-saved
+
+		loaded, err := store.Load(run.Name)
+		if err != nil {
+			t.Fatalf("reading the run: %v", err)
+		}
+		if loaded.State != runstate.Cancelled {
+			t.Fatalf("on attempt %d the run reads as %q after it was saved as %q, so a save that read it before it ended wrote it back", attempt, loaded.State, runstate.Cancelled)
+		}
+	}
+}

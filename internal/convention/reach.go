@@ -27,6 +27,8 @@ var BuildConstrainedFiles = map[string]string{
 	filepath.Join("agora", "surface", "catalog_dev.go"):       "the route that serves the catalog in the development build",
 	filepath.Join("internal", "process", "process_other.go"):  "the process group on a platform that has no process groups",
 	filepath.Join("internal", "process", "process_unix.go"):   "the process group on a platform that has them",
+	filepath.Join("review", "runstore", "lock_other.go"):      "a run's record saved unlocked on a platform with no flock",
+	filepath.Join("review", "runstore", "lock_unix.go"):       "a run's record locked across reading and writing it where flock exists",
 }
 
 type Scope struct {

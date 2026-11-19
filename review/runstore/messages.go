@@ -27,4 +27,5 @@ const (
 	attachmentIsNotAFile     = "%s is not a file, so it cannot be attached: pass the path of a file"
 	copying                  = "copying %s into the run store: %w"
 	removing                 = "removing %s: %w"
+	locking                  = "locking %s: %w"
 )

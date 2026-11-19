@@ -335,17 +335,19 @@ func (s Store) Save(run *Run) error {
 		return fmt.Errorf(noDirectory, run.Name, s.root, err)
 	}
 
-	stored, err := s.recorded(run.Name)
-	switch {
-	case err == nil:
-		if stored.State.Terminal() && !sameOutcome(stored, run) {
-			return fmt.Errorf(alreadyEndedOnDisk, run.Name, stored.State, run.State)
+	return holdingTheRecord(directory, func() error {
+		stored, err := s.recorded(run.Name)
+		switch {
+		case err == nil:
+			if stored.State.Terminal() && !sameOutcome(stored, run) {
+				return fmt.Errorf(alreadyEndedOnDisk, run.Name, stored.State, run.State)
+			}
+		case !errors.Is(err, fs.ErrNotExist):
+			return err
 		}
-	case !errors.Is(err, fs.ErrNotExist):
-		return err
-	}
 
-	return write(directory, run)
+		return write(directory, run)
+	})
 }
 
 func sameOutcome(stored, incoming *Run) bool {
