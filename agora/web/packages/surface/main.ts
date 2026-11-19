@@ -1,6 +1,7 @@
 import '@agora/ui'
 import { followTheAnswering } from './answers'
 import { followTheAttaching } from './attaching'
+import { drawTheCatalog } from './catalog'
 import { followTheWidth } from './composer'
 import { followTheConfirmation } from './confirmation'
 import { followTheCopying } from './copying'
@@ -13,7 +14,9 @@ import { fillTheSampledTrays } from './sampling'
 import { followTheForm, sendAnyway } from './sending'
 import { settleTheSurface } from './settling'
 
-if (surface()) {
+if (drawTheCatalog()) {
+  fillTheSampledTrays()
+} else if (surface()) {
   followTheWidth()
   followTheForm()
   followTheConfirmation(sendAnyway)
@@ -26,6 +29,4 @@ if (surface()) {
   settleTheSurface()
   askTheDrawingsForTheirHeights()
   follow()
-} else {
-  fillTheSampledTrays()
 }

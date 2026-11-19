@@ -181,8 +181,11 @@ func TestTheDevelopmentBuildServesTheCatalogAtARouteUnderTheSurface(t *testing.T
 	if answered != http.StatusOK {
 		t.Fatalf("the development build answered the catalog route with %d: %s", answered, said)
 	}
-	if !strings.Contains(said, "<ui-dialog") {
-		t.Errorf("the catalog the development build serves draws no dialog: %s", said)
+	if !strings.Contains(said, "/assets/surface.js") {
+		t.Errorf("the catalog the development build serves loads no bundle to draw it: %s", said)
+	}
+	if strings.Contains(said, "<ui-") {
+		t.Errorf("the catalog the development build serves draws a primitive itself, and the bundle draws the catalog: %s", said)
 	}
 }
 

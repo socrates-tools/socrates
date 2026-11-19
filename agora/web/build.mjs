@@ -315,7 +315,7 @@ function primitivesReachingAnother(created) {
   const refusals = []
   for (const file of sources(created)) {
     const inside = relative(library, file.fileName)
-    if (inside.startsWith('..') || isAbsolute(inside) || inside === 'index.ts') {
+    if (inside.startsWith('..') || isAbsolute(inside) || inside === 'index.ts' || inside === 'catalog.ts') {
       continue
     }
     const owner = primitiveFolderOf(file.fileName)
