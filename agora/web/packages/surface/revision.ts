@@ -14,6 +14,9 @@ async function take(): Promise<void> {
   if ('refusal' in fetched || !standing) {
     return
   }
+  if (fetched.page.standing.revision <= Number(document.body.dataset.revision)) {
+    return
+  }
 
   closeConfirmation()
   standing.replaceWith(draw(fetched.page))

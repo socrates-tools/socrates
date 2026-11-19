@@ -26,26 +26,37 @@ export interface Diff {
 
 const absentSide: Side = { kind: 'absent', number: 0, text: '' }
 
-function readHunkHeading(line: string): { heading: string; from: number; to: number } {
+interface HunkHeading {
+  heading: string
+  from: number
+  to: number
+  fromCount: number
+  toCount: number
+}
+
+function readHunkHeading(line: string): HunkHeading {
   const [ranges, ...rest] = line.slice(2).split('@@')
+  const read: HunkHeading = { heading: '', from: 1, to: 1, fromCount: 1, toCount: 1 }
   if (rest.length === 0) {
-    return { heading: '', from: 1, to: 1 }
+    return read
   }
-  let from = 1
-  let to = 1
-  for (const stated of ranges.split(/\s+/).filter(Boolean)) {
-    const start = stated.replace(/^[-+]+/, '').split(',')[0]
+  read.heading = rest.join('@@').trim()
+  for (const stated of (ranges ?? '').split(/\s+/).filter(Boolean)) {
+    const [start = '', count] = stated.replace(/^[-+]+/, '').split(',')
     if (!/^\d+$/.test(start)) {
       continue
     }
+    const counted = count !== undefined && /^\d+$/.test(count) ? Number(count) : 1
     if (stated.startsWith('-')) {
-      from = Number(start)
+      read.from = Number(start)
+      read.fromCount = counted
     }
     if (stated.startsWith('+')) {
-      to = Number(start)
+      read.to = Number(start)
+      read.toCount = counted
     }
   }
-  return { heading: rest.join('@@').trim(), from, to }
+  return read
 }
 
 function pathShown(named: string): string {
@@ -61,6 +72,8 @@ export function readDiff(patch: string): Diff {
   let additions: Side[] = []
   let oldNumber = 0
   let newNumber = 0
+  let oldLeft = 0
+  let newLeft = 0
 
   const flush = (): void => {
     if (!hunk) {
@@ -83,10 +96,11 @@ export function readDiff(patch: string): Diff {
   }
 
   for (const line of patch.split('\n')) {
-    if (line.startsWith('--- ')) {
+    const insideAHunk = hunk !== undefined && (oldLeft > 0 || newLeft > 0)
+    if (!insideAHunk && line.startsWith('--- ')) {
       end()
       from = pathShown(line.slice(4))
-    } else if (line.startsWith('+++ ')) {
+    } else if (!insideAHunk && line.startsWith('+++ ')) {
       end()
       to = pathShown(line.slice(4))
     } else if (line.startsWith('@@')) {
@@ -94,15 +108,21 @@ export function readDiff(patch: string): Diff {
       const read = readHunkHeading(line)
       oldNumber = read.from
       newNumber = read.to
+      oldLeft = read.fromCount
+      newLeft = read.toCount
       hunk = { heading: read.heading, rows: [] }
     } else if (!hunk || line === '' || line.startsWith('\\')) {
       continue
     } else if (line.startsWith('-')) {
+      oldLeft--
       removals.push({ kind: 'removed', number: oldNumber++, text: line.slice(1) })
     } else if (line.startsWith('+')) {
+      newLeft--
       additions.push({ kind: 'added', number: newNumber++, text: line.slice(1) })
     } else {
       flush()
+      oldLeft--
+      newLeft--
       const text = line.startsWith(' ') ? line.slice(1) : line
       hunk.rows.push({
         left: { kind: 'context', number: oldNumber++, text },

@@ -199,3 +199,63 @@ func TestEvidenceIsDrawnBlockAfterBlockInTheOrderWrittenEachUnderItsOwnHeading(t
 		t.Errorf("the headings of the blocks differ from the order and captions written, and a patch with no hunk is left out (-want +got):\n%s", diff)
 	}
 }
+
+type patchedHunk struct {
+	Heading string       `json:"heading"`
+	Rows    []patchedRow `json:"rows"`
+}
+
+func readHunksOf(page *reader) []patchedHunk {
+	page.t.Helper()
+	var hunks []patchedHunk
+	page.evaluate(`(async () => {
+  const block = document.querySelector('.diff ui-diff-block');
+  await block.updateComplete;
+  return block.drawnHunks;
+})()`, &hunks, awaitingThePromise)
+	return hunks
+}
+
+func TestALineOfADiffThatLooksLikeAFileHeaderInsideAHunkIsStillALine(t *testing.T) {
+	// scenario: Removing the SQL comment -- note gives the hunk line --- note, and the diff keeps it as a removed line
+	t.Parallel()
+	_, page := read(t, written(t, withEvidence(sketch{"patch": "--- a/db/notes.sql\n+++ b/db/notes.sql\n@@ -1,3 +1,3 @@\n select 1;\n--- note\n+++ note\n select 2;\n"})))
+
+	want := []patchedHunk{{Rows: []patchedRow{
+		{Left: patchedSide{"context", "1", "select 1;"}, Right: patchedSide{"context", "1", "select 1;"}},
+		{Left: patchedSide{"removed", "2", "-- note"}, Right: patchedSide{"added", "2", "++ note"}},
+		{Left: patchedSide{"context", "3", "select 2;"}, Right: patchedSide{"context", "3", "select 2;"}},
+	}}}
+	if diff := cmp.Diff(want, readHunksOf(page)); diff != "" {
+		t.Errorf("what the patch was read into differs (-want +got):\n%s", diff)
+	}
+
+	var named struct {
+		File  string `json:"file"`
+		Aside string `json:"aside"`
+	}
+	page.evaluate(`({
+  file: document.querySelector('.diff .diff-file').textContent.trim(),
+  aside: document.querySelector('.evidence-aside').textContent.replace(/\s+/g, ' ').trim(),
+})`, &named)
+	if named.File != "db/notes.sql" {
+		t.Errorf("the diff names %q, and the lines inside the hunk are not file headers", named.File)
+	}
+	if named.Aside != "+1 −1" {
+		t.Errorf("the diff says %q of itself, and it adds one line and removes one", named.Aside)
+	}
+}
+
+func TestAHunkHeaderThatOmitsItsCountsStatesOneLineOnEachSide(t *testing.T) {
+	// scenario: A count omitted in a hunk header means one, so the next file's headers still start the next file
+	t.Parallel()
+	_, page := read(t, written(t, withEvidence(sketch{"patch": "--- a/one.sql\n+++ b/one.sql\n@@ -5 +5 @@\n--- note\n+++ note\n--- a/two.sql\n+++ b/two.sql\n@@ -1 +1 @@\n-c\n+d\n"})))
+
+	want := []patchedHunk{
+		{Rows: []patchedRow{{Left: patchedSide{"removed", "5", "-- note"}, Right: patchedSide{"added", "5", "++ note"}}}},
+		{Rows: []patchedRow{{Left: patchedSide{"removed", "1", "c"}, Right: patchedSide{"added", "1", "d"}}}},
+	}
+	if diff := cmp.Diff(want, readHunksOf(page)); diff != "" {
+		t.Errorf("what the patch was read into differs (-want +got):\n%s", diff)
+	}
+}
