@@ -47,6 +47,10 @@ function attributeOf(member) {
   return undefined
 }
 
+function propertyOf(member) {
+  return decoratorCalled(member, 'property') && ts.isIdentifier(member.name) ? member.name.text : undefined
+}
+
 function slotsIn(node) {
   const slots = []
   const visit = (child) => {
@@ -72,7 +76,8 @@ function elementsDeclaredBy(created) {
         continue
       }
       const attributes = node.members.map(attributeOf).filter((attribute) => attribute !== undefined)
-      declared[named.arguments[0].text] = { attributes: [...new Set(attributes)].sort(), slots: [...new Set(slotsIn(node))].sort() }
+      const properties = node.members.map(propertyOf).filter((property) => property !== undefined)
+      declared[named.arguments[0].text] = { attributes: [...new Set(attributes)].sort(), properties: [...new Set(properties)].sort(), slots: [...new Set(slotsIn(node))].sort() }
     }
   }
   return Object.fromEntries(Object.entries(declared).sort(([first], [second]) => first.localeCompare(second)))
@@ -344,6 +349,167 @@ function primitivesReachingAnother(created) {
   return refusals
 }
 
+const attributesOfAnyElement = new Set(['autofocus', 'class', 'dir', 'hidden', 'id', 'inert', 'lang', 'part', 'role', 'slot', 'tabindex', 'title'])
+
+const voidElements = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'])
+
+const aPlaceholder = /\$\{\s*\}/y
+
+function htmlTemplatesIn(file) {
+  const found = []
+  const visit = (node) => {
+    if (ts.isTaggedTemplateExpression(node) && ts.isIdentifier(node.tag) && node.tag.text === 'html') {
+      found.push(node.template)
+    }
+    node.forEachChild(visit)
+  }
+  visit(file)
+  return found
+}
+
+function maskedTemplate(file, template) {
+  const start = template.getStart(file) + 1
+  const text = file.text.slice(start, template.end - 1).split('')
+  if (!ts.isNoSubstitutionTemplateLiteral(template)) {
+    for (const span of template.templateSpans) {
+      for (let at = span.expression.pos; at < span.expression.end; at++) {
+        text[at - start] = ' '
+      }
+    }
+  }
+  return { text: text.join(''), start }
+}
+
+function matchAt(pattern, text, at) {
+  const sticky = new RegExp(pattern.source, 'y')
+  sticky.lastIndex = at
+  return sticky.exec(text)
+}
+
+function attributesAt(text, from) {
+  const attributes = []
+  let cursor = from
+  let selfClosing = false
+  while (cursor < text.length) {
+    cursor += /^\s*/.exec(text.slice(cursor))[0].length
+    if (text.startsWith('/>', cursor)) {
+      selfClosing = true
+      cursor += 2
+      break
+    }
+    if (text[cursor] === '>') {
+      cursor += 1
+      break
+    }
+    const placeholder = matchAt(aPlaceholder, text, cursor)
+    if (placeholder) {
+      cursor += placeholder[0].length
+      continue
+    }
+    const named = matchAt(/[^\s=>/]+/, text, cursor)
+    if (!named) {
+      cursor += 1
+      continue
+    }
+    const attribute = { name: named[0], at: cursor, value: undefined }
+    cursor += named[0].length
+    if (text[cursor] === '=') {
+      cursor += 1
+      const quote = text[cursor]
+      if (quote === '"' || quote === "'") {
+        const close = text.indexOf(quote, cursor + 1)
+        const end = close < 0 ? text.length : close
+        attribute.value = text.slice(cursor + 1, end)
+        cursor = end + 1
+      } else {
+        const unquoted = matchAt(/\$\{\s*\}|[^\s>]+/, text, cursor)
+        attribute.value = unquoted ? unquoted[0] : ''
+        cursor += attribute.value.length
+      }
+    }
+    attributes.push(attribute)
+  }
+  return { attributes, selfClosing, end: cursor }
+}
+
+function tagsIn(text) {
+  const tags = []
+  let at = 0
+  while (at < text.length) {
+    const open = text.indexOf('<', at)
+    if (open < 0) {
+      break
+    }
+    if (text.startsWith('<!--', open)) {
+      const close = text.indexOf('-->', open)
+      at = close < 0 ? text.length : close + 3
+      continue
+    }
+    const closing = text[open + 1] === '/'
+    const named = matchAt(/[A-Za-z][A-Za-z0-9:-]*/, text, open + (closing ? 2 : 1))
+    if (!named) {
+      at = open + 1
+      continue
+    }
+    const name = named[0].toLowerCase()
+    const after = open + (closing ? 2 : 1) + named[0].length
+    if (closing) {
+      tags.push({ name, at: open, closing, attributes: [], selfClosing: false })
+      at = after
+      continue
+    }
+    const read = attributesAt(text, after)
+    tags.push({ name, at: open, closing, attributes: read.attributes, selfClosing: read.selfClosing })
+    at = read.end
+  }
+  return tags
+}
+
+function elementsDrawnBeyondWhatTheyDeclare(created, elements) {
+  const refusals = []
+  for (const file of sources(created)) {
+    for (const template of htmlTemplatesIn(file)) {
+      const { text, start } = maskedTemplate(file, template)
+      const refuse = (at, words) => refusals.push(`${where(file, start + at)} - ${words}`)
+      const open = []
+      for (const tag of tagsIn(text)) {
+        if (tag.closing) {
+          const held = open.lastIndexOf(tag.name)
+          if (held >= 0) {
+            open.length = held
+          }
+          continue
+        }
+        const declared = elements[tag.name]
+        const parent = elements[open.at(-1)]
+        if (tag.name.startsWith('ui-') && !declared) {
+          refuse(tag.at, `the page draws <${tag.name}>, and no element declares that tag`)
+        }
+        for (const attribute of tag.attributes) {
+          const bound = attribute.name.replace(/^[?.@]/, '')
+          const mark = attribute.name.startsWith('.') ? 'property' : 'attribute'
+          if (declared && attribute.name.startsWith('@')) {
+            continue
+          }
+          if (declared && attribute.name.startsWith('.') && !declared.properties.includes(bound)) {
+            refuse(tag.at + attribute.at - tag.at, `the page draws <${tag.name}> with the property "${bound}", and it declares properties ${declared.properties.join(', ') || 'of none'}`)
+          } else if (declared && !attribute.name.startsWith('.') && !attributesOfAnyElement.has(bound.toLowerCase()) && !/^(aria|data)-/.test(bound) && !declared.attributes.includes(bound.toLowerCase())) {
+            refuse(attribute.at, `the page draws <${tag.name}> with the ${mark} "${bound}", and it declares attributes ${declared.attributes.join(', ') || 'of none'}`)
+          }
+          const slotted = attribute.name === 'slot' && attribute.value !== undefined && !/\$\{/.test(attribute.value)
+          if (slotted && parent && !parent.slots.includes(attribute.value)) {
+            refuse(attribute.at, `the page draws <${tag.name}> into the slot "${attribute.value}" of <${open.at(-1)}>, and it declares slots ${parent.slots.map((slot) => `"${slot}"`).join(', ')}`)
+          }
+        }
+        if (!tag.selfClosing && !voidElements.has(tag.name)) {
+          open.push(tag.name)
+        }
+      }
+    }
+  }
+  return refusals
+}
+
 async function compiledStylesheet(entry) {
   const compiler = await compile(readFileSync(entry, 'utf8'), { base: dirname(entry), onDependency: () => {} })
   return compiler.build(new Scanner({ sources: compiler.sources }).scan())
@@ -370,8 +536,16 @@ if (process.argv.includes('--watch')) {
 }
 
 const { compiler, created } = program()
-const refused = [...typeErrors(created), ...sources(created).flatMap(commentsIn), ...surfaceImportsInTheLibrary(created), ...shadowRootsReachedByTheSurface(created), ...primitivesReachingAnother(created)]
-const elements = elementsDeclaredBy(created)
+const elementsWithProperties = elementsDeclaredBy(created)
+const refused = [
+  ...typeErrors(created),
+  ...sources(created).flatMap(commentsIn),
+  ...surfaceImportsInTheLibrary(created),
+  ...shadowRootsReachedByTheSurface(created),
+  ...primitivesReachingAnother(created),
+  ...elementsDrawnBeyondWhatTheyDeclare(created, elementsWithProperties),
+]
+const elements = Object.fromEntries(Object.entries(elementsWithProperties).map(([tag, { attributes, slots }]) => [tag, { attributes, slots }]))
 compiler.close()
 if (refused.length > 0) {
   process.stderr.write(`${refused.join('\n')}\n`)
