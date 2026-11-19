@@ -277,3 +277,157 @@ func TestALabelTheSharedMenuDrawsFromARawStringIsReportedToo(t *testing.T) {
 		t.Errorf("the reported labels differ (-want +got):\n%s", diff)
 	}
 }
+
+const clientModule = "held/messages.ts"
+
+func clientWordingOf(t *testing.T, content string) (Wording, error) {
+	t.Helper()
+
+	root := t.TempDir()
+	write(t, root, clientModule, content)
+	return ClientWording(root, []string{clientModule})
+}
+
+func TestAnEmDashInTheClientsMessagesIsReportedWithTheModuleAndTheLine(t *testing.T) {
+	wording, err := clientWordingOf(t, "export const refusals = {}\nexport const said = {\n  greeting: 'Hello — there',\n}\n")
+	if err != nil {
+		t.Fatalf("reading the fabricated module: %v", err)
+	}
+
+	if diff := cmp.Diff([]string{clientModule + ":3"}, wording.EmDashes); diff != "" {
+		t.Errorf("the reported em dashes differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestAnEmDashWrittenAsAnEscapeInTheClientsMessagesIsReported(t *testing.T) {
+	wording, err := clientWordingOf(t, "export const refusals = {}\nexport const said = \"Hello \\u2014 there\"\nexport const also = 'a \\u{2014} b'\n")
+	if err != nil {
+		t.Fatalf("reading the fabricated module: %v", err)
+	}
+
+	want := []string{clientModule + ":2", clientModule + ":3"}
+	if diff := cmp.Diff(want, wording.EmDashes); diff != "" {
+		t.Errorf("the reported em dashes differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestAnEmDashInATemplateOfTheClientsMessagesIsReported(t *testing.T) {
+	wording, err := clientWordingOf(t, "export const refusals = {}\nexport const said = (n: number) => `${n} sent — waiting`\n")
+	if err != nil {
+		t.Fatalf("reading the fabricated module: %v", err)
+	}
+
+	if diff := cmp.Diff([]string{clientModule + ":2"}, wording.EmDashes); diff != "" {
+		t.Errorf("the reported em dashes differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestAClientsMessageWithNoEmDashIsNotReported(t *testing.T) {
+	wording, err := clientWordingOf(t, "export const refusals = {}\nexport const said = 'Sent - waiting'\n")
+	if err != nil {
+		t.Fatalf("reading the fabricated module: %v", err)
+	}
+
+	if len(wording.EmDashes) != 0 {
+		t.Errorf("a message with no em dash was reported: %v", wording.EmDashes)
+	}
+}
+
+func TestAClientRefusalWithNoNextActionIsReported(t *testing.T) {
+	wording, err := clientWordingOf(t, "export const refusals = {\n  gone: 'The page lost its connection.',\n  sent: \"Sending failed.\",\n  quoted: `Nothing was sent.`,\n}\n")
+	if err != nil {
+		t.Fatalf("reading the fabricated module: %v", err)
+	}
+
+	want := []string{clientModule + ":2", clientModule + ":3", clientModule + ":4"}
+	if diff := cmp.Diff(want, wording.Actionless); diff != "" {
+		t.Errorf("the reported refusals differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestAClientRefusalThatNamesTheNextActionIsNotReported(t *testing.T) {
+	wording, err := clientWordingOf(t, "export const refusals = {\n  gone: 'The page lost its connection. Check it and send again.',\n  'quoted-key': 'Check the page.',\n}\n")
+	if err != nil {
+		t.Fatalf("reading the fabricated module: %v", err)
+	}
+
+	if len(wording.Actionless) != 0 {
+		t.Errorf("a refusal naming what to do next was reported: %v", wording.Actionless)
+	}
+}
+
+func TestAClientRefusalWrittenAsATemplateIsJudgedAsOneMessage(t *testing.T) {
+	wording, err := clientWordingOf(t, "export const refusals = {\n  gone: (n: number) => `${n} files were refused.`,\n  kept: (n: number) => `${n} files were refused. Remove them and send again.`,\n}\n")
+	if err != nil {
+		t.Fatalf("reading the fabricated module: %v", err)
+	}
+
+	if diff := cmp.Diff([]string{clientModule + ":2"}, wording.Actionless); diff != "" {
+		t.Errorf("the reported refusals differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestAClientMessageOutsideTheRefusalsNeedsNoNextAction(t *testing.T) {
+	wording, err := clientWordingOf(t, "export const refusals = {\n  gone: 'Check the connection.',\n}\nexport const said = {\n  open: 'Open',\n  copied: 'Copied',\n}\n")
+	if err != nil {
+		t.Fatalf("reading the fabricated module: %v", err)
+	}
+
+	if len(wording.Actionless) != 0 {
+		t.Errorf("a message that is not a refusal was reported: %v", wording.Actionless)
+	}
+}
+
+func TestARefusalsGroupWithNestedBracesIsReadToItsEnd(t *testing.T) {
+	wording, err := clientWordingOf(t, "export const refusals = {\n  gone: { text: 'Check the connection.' },\n  sent: 'Sending failed.',\n} as const\nexport const said = 'Sending failed.'\n")
+	if err != nil {
+		t.Fatalf("reading the fabricated module: %v", err)
+	}
+
+	if diff := cmp.Diff([]string{clientModule + ":3"}, wording.Actionless); diff != "" {
+		t.Errorf("the reported refusals differ (-want +got):\n%s", diff)
+	}
+}
+
+func TestAClientsMessagesModuleThatIsGoneIsAnError(t *testing.T) {
+	_, err := ClientWording(t.TempDir(), []string{clientModule})
+	if err == nil {
+		t.Fatal("a module that does not exist was read as saying nothing")
+	}
+}
+
+func TestAClientsMessagesModuleWithNoRefusalsGroupIsAnError(t *testing.T) {
+	_, err := clientWordingOf(t, "export const said = 'Open'\n")
+	if err == nil {
+		t.Fatal("a module declaring no refusals group was read as holding no refusals")
+	}
+}
+
+func TestAClientsMessagesModuleWithAnUnfinishedStringIsAnError(t *testing.T) {
+	_, err := clientWordingOf(t, "export const refusals = {}\nexport const said = 'Open\n")
+	if err == nil {
+		t.Fatal("a module with an unterminated string was read")
+	}
+}
+
+func TestTheClientsMessagesCarryNoEmDash(t *testing.T) {
+	wording, err := ClientWording(source.Root(t), ClientMessages)
+	if err != nil {
+		t.Fatalf("reading what the page says: %v", err)
+	}
+
+	for _, dashed := range wording.EmDashes {
+		t.Errorf("%s carries an em dash", dashed)
+	}
+}
+
+func TestAClientRefusalNamesTheNextAction(t *testing.T) {
+	wording, err := ClientWording(source.Root(t), ClientMessages)
+	if err != nil {
+		t.Fatalf("reading what the page says: %v", err)
+	}
+
+	for _, actionless := range wording.Actionless {
+		t.Errorf("%s refuses without naming what the person can do about it", actionless)
+	}
+}

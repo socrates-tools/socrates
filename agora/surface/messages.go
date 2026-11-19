@@ -86,3 +86,14 @@ const (
 	surfaceRefused      = "the surface refused with %d: %s"
 	readingTheAnswer    = "reading what came back: %w"
 )
+
+const (
+	typeScriptUnion             = "export type %s = %s\n"
+	typeScriptUnionJoint        = " | "
+	typeScriptInterfaceOpening  = "export interface %s {\n"
+	typeScriptProperty          = "  %s%s: %s\n"
+	typeScriptRecord            = "Record<string, %s>"
+	typeScriptHasNoKindFor      = "writing the client's type %s.%s: %w"
+	typeScriptKeysAreNotStrings = "the map %s is keyed by something other than a string, and JSON keys are strings. Key it by a string and run the generator again"
+	typeScriptHasNoKindForGo    = "the client's types have no kind for %s. Carry it as a string, a bool, an int, a slice, a map or a struct and run the generator again"
+)

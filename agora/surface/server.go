@@ -276,7 +276,8 @@ func (s *Server) routes() http.Handler {
 	routed.HandleFunc("GET "+SessionPrefix+"{session}/illustrations/{decision}/{file...}", s.illustration)
 	routed.HandleFunc("POST "+SessionPrefix+"{session}/answer", s.guarded(s.answer))
 	routed.HandleFunc("GET "+SessionPrefix+"{session}/answer", s.guarded(s.deliver))
-	routed.HandleFunc("POST "+SessionPrefix+"{session}/document", s.guarded(s.revise))
+	routed.HandleFunc("GET "+SessionPrefix+"{session}"+DocumentRoute, s.guarded(s.serveDocument))
+	routed.HandleFunc("POST "+SessionPrefix+"{session}"+DocumentRoute, s.guarded(s.revise))
 	routed.HandleFunc("POST "+SessionPrefix+"{session}/close", s.guarded(s.close))
 	return s.checkingHost(routed)
 }
@@ -376,6 +377,14 @@ func (s *Server) page(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("content-type", "text/html; charset=utf-8")
 	writer.Header().Set("cache-control", "no-store")
 	_, _ = io.WriteString(writer, written)
+}
+
+func (s *Server) serveDocument(writer http.ResponseWriter, request *http.Request, one *held) {
+	read, revision := one.exchange.Document()
+
+	writer.Header().Set("content-type", "application/json")
+	writer.Header().Set("cache-control", "no-store")
+	_ = json.NewEncoder(writer).Encode(servedOf(request.PathValue("session"), read, revision, one.exchange.Over()))
 }
 
 func (s *Server) asset(writer http.ResponseWriter, request *http.Request) {

@@ -84,6 +84,7 @@ Each of these is checked by a test, so it is cheaper to follow than to argue wit
 - **No em dash**, anywhere: prose, documents, commit messages, emitted strings.
 - **One sentence per line** in long Markdown.
 - **Every user-facing string lives in its package's `messages.go`**, names what the person can do next, and carries no em dash.
+  The page's client keeps its words in `agora/web/packages/surface/messages.ts`: no em dash in any string, and each string of its exported `refusals` group names what the person can do next.
 - **Tests name their scenario.** Prefer a test name containing the specification's scenario text, and use a `// scenario:` marker where the honest name would not.
 - **Test first.** A task is not done until a test named for the scenario failed for the right reason and then passed.
 - **Mutate a guard you rely on.** A check nobody has broken on purpose is a check nobody knows works.

@@ -12,7 +12,7 @@ import (
 )
 
 func TestTheSurfaceKnowsNothingOfTheOtherTool(t *testing.T) {
-	read, err := convention.WordsOfTheOtherTool(source.Root(t), convention.SurfaceDirectories, convention.TheOtherToolNamedIn)
+	read, err := convention.WordsOfTheOtherTool(source.Root(t), convention.SurfaceDirectories, convention.TheOtherToolNamedIn, convention.TheOtherToolNamedInStrings)
 	if err != nil {
 		t.Fatalf("reading what the surface names: %v", err)
 	}
@@ -22,6 +22,9 @@ func TestTheSurfaceKnowsNothingOfTheOtherTool(t *testing.T) {
 	}
 	for _, stale := range read.Stale {
 		t.Errorf("%s is named in convention.TheOtherToolNamedIn and names nothing of the other tool, so the exemption outlived its reason", stale)
+	}
+	for _, stale := range read.StaleStrings {
+		t.Errorf("%s is named in convention.TheOtherToolNamedInStrings and is no longer a string of that file, so the exemption outlived its reason", stale)
 	}
 }
 
@@ -34,7 +37,7 @@ func TestAFileNamedAsNamingTheOtherToolIsExemptAndAStaleOneIsReported(t *testing
 	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, map[string]string{
 		filepath.Join("held", "stated.go"): "what a caller's audience is announced as",
 		filepath.Join("held", "quiet.go"):  "an exemption nothing needs",
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("reading what a fabricated tree names: %v", err)
 	}
@@ -54,7 +57,7 @@ func TestAWordOfTheOtherToolIsReported(t *testing.T) {
 	}
 	write(t, filepath.Join(root, "held", "knowing.go"), "package held\n\nconst said = \"the reviewer read the finding in that run\"\n")
 
-	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil)
+	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil, nil)
 	if err != nil {
 		t.Fatalf("reading what a fabricated tree names: %v", err)
 	}
@@ -73,7 +76,7 @@ func TestAWordOfTheOtherToolInTypeScriptIsReported(t *testing.T) {
 	root := t.TempDir()
 	writeNested(t, filepath.Join(root, "held", "knowing.ts"), "export const said = 'the reviewer read it'\n")
 
-	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil)
+	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil, nil)
 	if err != nil {
 		t.Fatalf("reading what a fabricated tree names: %v", err)
 	}
@@ -96,7 +99,7 @@ func TestALineDrawnRoundIsNotAWordOfTheOtherTool(t *testing.T) {
 	writeNested(t, filepath.Join(root, "held", "drawn.go"), "package held\n\nconst drawn = `<svg stroke-linecap=\"round\" stroke-linejoin=\"round\"></svg>`\n")
 	writeNested(t, filepath.Join(root, "held", "drawn.css"), ".icon {\n  stroke-linecap: round;\n  stroke-linejoin:round;\n}\n\n.said::after {\n  content: 'each round';\n}\n")
 
-	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil)
+	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil, nil)
 	if err != nil {
 		t.Fatalf("reading what a fabricated tree names: %v", err)
 	}
@@ -113,7 +116,7 @@ func TestAnImportOfAnotherToolsPackageIsStillReported(t *testing.T) {
 	writeNested(t, filepath.Join(root, "held", "knowing.go"),
 		"package held\n\nimport (\n\t_ \"example.com/suite/other-tool/document\"\n\t_ \"example.com/suite/other-tool/reviewer\"\n)\n")
 
-	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil)
+	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil, nil)
 	if err != nil {
 		t.Fatalf("reading what a fabricated tree names: %v", err)
 	}
@@ -149,5 +152,105 @@ func TestAPackageOfTheSurfaceNobodyListedIsReported(t *testing.T) {
 
 	if diff := cmp.Diff([]string{filepath.Join("surface", "added")}, unread); diff != "" {
 		t.Errorf("what a package nobody listed reports differs (-want +got):\n%s", diff)
+	}
+}
+
+const audiencesInTheClient = `export const audiences = {
+  'needs a person': { hint: 'Only a person can decide this. The reviewer will not answer it.' },
+  'can be patched': { hint: "The session that wrote the change can fix this without you." },
+  'informational': { hint: ` + "`Nothing to decide.`" + ` },
+}
+`
+
+var audienceHints = []string{
+	"Only a person can decide this. The reviewer will not answer it.",
+	"The session that wrote the change can fix this without you.",
+	"Nothing to decide.",
+}
+
+func TestTheThreeAudiencesNamedByTheExemptionMayNameTheOtherToolInAnyQuoting(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "held", "messages.ts"), audiencesInTheClient)
+
+	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil, map[string][]string{
+		filepath.Join("held", "messages.ts"): audienceHints,
+	})
+	if err != nil {
+		t.Fatalf("reading what a fabricated tree names: %v", err)
+	}
+
+	if len(read.Naming) != 0 || len(read.StaleStrings) != 0 {
+		t.Errorf("the audiences named by the exemption were reported: naming %v, stale %v", read.Naming, read.StaleStrings)
+	}
+}
+
+func TestAnotherStringOfTheFileThatStatesTheAudiencesStillNamesTheOtherTool(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "held", "messages.ts"), audiencesInTheClient+"export const said = 'The reviewer read it.'\nexport const asked = `Is the finding ${said} fixed?`\n")
+
+	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil, map[string][]string{
+		filepath.Join("held", "messages.ts"): audienceHints,
+	})
+	if err != nil {
+		t.Fatalf("reading what a fabricated tree names: %v", err)
+	}
+
+	want := []string{
+		`held/messages.ts:6 names "reviewer"`,
+		`held/messages.ts:7 names "finding"`,
+	}
+	if diff := cmp.Diff(want, read.Naming); diff != "" {
+		t.Errorf("what a file stating the audiences and more reports differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestAnAudienceStringNamedForOneFileIsNotExemptInAnother(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "held", "messages.ts"), audiencesInTheClient)
+	writeNested(t, filepath.Join(root, "held", "other.ts"), "export const hint = 'Only a person can decide this. The reviewer will not answer it.'\n")
+
+	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil, map[string][]string{
+		filepath.Join("held", "messages.ts"): audienceHints,
+	})
+	if err != nil {
+		t.Fatalf("reading what a fabricated tree names: %v", err)
+	}
+
+	want := []string{`held/other.ts:1 names "reviewer"`}
+	if diff := cmp.Diff(want, read.Naming); diff != "" {
+		t.Errorf("what a file the exemption does not name reports differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestAnExemptStringTheFileNoLongerStatesIsReportedStale(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "held", "messages.ts"), "export const audiences = {\n  'informational': { hint: 'Nothing to decide.' },\n}\n")
+
+	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil, map[string][]string{
+		filepath.Join("held", "messages.ts"): {"Nothing to decide.", "The reviewer will not answer it."},
+	})
+	if err != nil {
+		t.Fatalf("reading what a fabricated tree names: %v", err)
+	}
+
+	want := []string{`held/messages.ts: "The reviewer will not answer it."`}
+	if diff := cmp.Diff(want, read.StaleStrings); diff != "" {
+		t.Errorf("what a stale exempt string reports differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestExemptStringsOfAMissingModuleAreReportedStale(t *testing.T) {
+	root := t.TempDir()
+	writeNested(t, filepath.Join(root, "held", "other.ts"), "export const said = 'nothing to decide'\n")
+
+	read, err := convention.WordsOfTheOtherTool(root, []string{"held"}, nil, map[string][]string{
+		filepath.Join("held", "messages.ts"): audienceHints,
+	})
+	if err != nil {
+		t.Fatalf("reading what a fabricated tree names: %v", err)
+	}
+
+	if len(read.StaleStrings) != len(audienceHints) {
+		t.Errorf("the exempt strings of a module that is gone were not all reported stale: %v", read.StaleStrings)
 	}
 }

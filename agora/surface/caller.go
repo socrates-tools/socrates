@@ -84,7 +84,7 @@ func (c *Caller) Await(ctx context.Context, session string, within time.Duration
 }
 
 func (c *Caller) Revise(ctx context.Context, session string, raw []byte, base string) error {
-	return c.post(ctx, session, c.under(session, "/document"), raw, BaseHeader, EncodeBase(base))
+	return c.post(ctx, session, c.under(session, DocumentRoute), raw, BaseHeader, EncodeBase(base))
 }
 
 func (c *Caller) End(ctx context.Context, session string) error {

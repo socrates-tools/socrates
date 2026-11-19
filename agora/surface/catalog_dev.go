@@ -16,7 +16,7 @@ func (s *Server) mountTheCatalog(routed *http.ServeMux) {
 }
 
 func (s *Server) catalog(writer http.ResponseWriter, _ *http.Request) {
-	written, err := render.Catalog()
+	written, err := render.CatalogShell()
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
