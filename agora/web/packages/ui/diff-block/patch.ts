@@ -95,12 +95,22 @@ export function readDiff(patch: string): Diff {
     }
   }
 
-  for (const line of patch.split('\n')) {
+  const lines = patch.replace(/\n+$/, '').split('\n')
+  const startsAFile = (at: number): boolean =>
+    lines[at]?.startsWith('--- ') === true &&
+    lines[at + 1]?.startsWith('+++ ') === true &&
+    lines[at + 2]?.startsWith('@@') === true
+  let headerAwaited = false
+
+  for (const [at, line] of lines.entries()) {
     const insideAHunk = hunk !== undefined && (oldLeft > 0 || newLeft > 0)
-    if (!insideAHunk && line.startsWith('--- ')) {
+    const awaited = headerAwaited
+    headerAwaited = false
+    if ((!insideAHunk || startsAFile(at)) && line.startsWith('--- ')) {
       end()
       from = pathShown(line.slice(4))
-    } else if (!insideAHunk && line.startsWith('+++ ')) {
+      headerAwaited = true
+    } else if ((!insideAHunk || awaited) && line.startsWith('+++ ')) {
       end()
       to = pathShown(line.slice(4))
     } else if (line.startsWith('@@')) {
@@ -111,7 +121,7 @@ export function readDiff(patch: string): Diff {
       oldLeft = read.fromCount
       newLeft = read.toCount
       hunk = { heading: read.heading, rows: [] }
-    } else if (!hunk || line === '' || line.startsWith('\\')) {
+    } else if (!hunk || (line === '' && !insideAHunk) || line.startsWith('\\')) {
       continue
     } else if (line.startsWith('-')) {
       oldLeft--

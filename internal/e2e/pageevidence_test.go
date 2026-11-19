@@ -259,3 +259,32 @@ func TestAHunkHeaderThatOmitsItsCountsStatesOneLineOnEachSide(t *testing.T) {
 		t.Errorf("what the patch was read into differs (-want +got):\n%s", diff)
 	}
 }
+
+func TestAHunkThatOverstatesItsCountsStillEndsWhereTheNextFileBegins(t *testing.T) {
+	// scenario: A hunk stating five lines and holding two is followed by the next file's headers, and the diff reads them as headers
+	t.Parallel()
+	_, page := read(t, written(t, withEvidence(sketch{"patch": "--- a/one.sql\n+++ b/one.sql\n@@ -1,5 +1,5 @@\n-a\n+b\n--- a/two.sql\n+++ b/two.sql\n@@ -1 +1 @@\n-c\n+d\n"})))
+
+	want := []patchedHunk{
+		{Rows: []patchedRow{{Left: patchedSide{"removed", "1", "a"}, Right: patchedSide{"added", "1", "b"}}}},
+		{Rows: []patchedRow{{Left: patchedSide{"removed", "1", "c"}, Right: patchedSide{"added", "1", "d"}}}},
+	}
+	if diff := cmp.Diff(want, readHunksOf(page)); diff != "" {
+		t.Errorf("what the patch was read into differs (-want +got):\n%s", diff)
+	}
+}
+
+func TestAnEmptyLineInsideAHunkIsAnEmptyContextLine(t *testing.T) {
+	// scenario: An editor strips the space from an empty context line, and the diff still counts it as a line of both sides
+	t.Parallel()
+	_, page := read(t, written(t, withEvidence(sketch{"patch": "--- a/notes.txt\n+++ b/notes.txt\n@@ -1,3 +1,3 @@\n first\n\n-a\n+b\n"})))
+
+	want := []patchedHunk{{Rows: []patchedRow{
+		{Left: patchedSide{"context", "1", "first"}, Right: patchedSide{"context", "1", "first"}},
+		{Left: patchedSide{"context", "2", ""}, Right: patchedSide{"context", "2", ""}},
+		{Left: patchedSide{"removed", "3", "a"}, Right: patchedSide{"added", "3", "b"}},
+	}}}
+	if diff := cmp.Diff(want, readHunksOf(page)); diff != "" {
+		t.Errorf("what the patch was read into differs (-want +got):\n%s", diff)
+	}
+}

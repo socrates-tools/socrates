@@ -12,6 +12,9 @@ The page fetches the document Go validated, as the caller wrote it, together wit
 It fetches it the same way on opening and on every revision, so there is one way in.
 Marks, diff rows and layout are worked out in TypeScript, and `agora/render`'s partials, `page.gohtml`, `catalog.gohtml`, `diff.go`, `marks.go` and the contract test that held Go's markup to what each element declares are removed.
 
+The document the page fetches leaves out every option's command and every illustration's local path.
+The page needs neither to draw anything, since an option is drawn from its label and its meaning and an illustration from the address the surface serves it at, and a command or a path on this machine that the page never holds is one no script on it can read.
+
 Go keeps validating a document, and its structs stay the source of the shape that crosses.
 The TypeScript types are generated from them and committed, and `make test` fails while the two disagree.
 
