@@ -121,14 +121,14 @@ func (lexer *typeScriptLexer) quoted(quote byte) error {
 	var text strings.Builder
 	for lexer.at < len(lexer.source) {
 		character := lexer.source[lexer.at]
-		switch {
-		case character == quote:
+		switch character {
+		case quote:
 			lexer.at++
 			lexer.tokens = append(lexer.tokens, typeScriptToken{Kind: stringToken, Text: text.String(), Start: start, End: lexer.at, Line: opened})
 			return nil
-		case character == '\n':
+		case '\n':
 			return fmt.Errorf("line %d: a string is never closed", opened)
-		case character == '\\':
+		case '\\':
 			if err := lexer.escape(&text); err != nil {
 				return err
 			}
