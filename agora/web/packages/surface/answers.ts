@@ -1,7 +1,6 @@
 import type { UiChoice, UiField, UiFileTray, UiProgressBar } from '@agora/ui'
+import { messageName, nothingSaid } from './messages'
 import { cards, clear, closestTo, decisionNamed, find, findAll, nameOf } from './page'
-
-const messageName = 'Message'
 
 export interface HeldDecision {
   id: string
@@ -53,7 +52,7 @@ function saying(card: HTMLElement, positions: number[], words: string, files: Fi
   if (answer.length > 0) {
     return `${nameOf(card)}: ${answer.join(', ')}`
   }
-  return files.length > 0 ? nameOf(card) : `${nameOf(card)}: nothing`
+  return files.length > 0 ? nameOf(card) : `${nameOf(card)}: ${nothingSaid}`
 }
 
 export function fileItems(files: File[], itemClass: string): HTMLElement[] {

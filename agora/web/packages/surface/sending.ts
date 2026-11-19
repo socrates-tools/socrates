@@ -1,7 +1,8 @@
 import { pressOf, type UiField } from '@agora/ui'
 import { type HeldDecision, blankCards, decisionsHeld, describe, fileItems, filesIn, filesNamed } from './answers'
 import { askBeforeSending, closeConfirmation } from './confirmation'
-import { exchange, exchangeIsOver, nothingWasSentForRejection, nothingWasSentForSilence, sendTimeoutMilliseconds } from './exchange'
+import { exchange, sendTimeoutMilliseconds } from './exchange'
+import { exchangeIsOver, finishing, nothingWasSent, refusals, saidToWhoeverAsked, sendingNow, sentAndWaiting, sentToWhoeverAsked, theSurfaceAnswered } from './messages'
 import { base, clear, closestTo, find, findAll, say, stand, token } from './page'
 
 interface Sent {
@@ -52,7 +53,7 @@ function showReceipt(sent: Sent, decisions: HeldDecision[], messageFiles: File[]
 
   const message = find('.receipt-message', held)
   if (message) {
-    message.textContent = sent.message ? `Said to whoever asked: ${sent.message}` : messageFiles.length > 0 ? 'Sent to whoever asked:' : ''
+    message.textContent = sent.message ? saidToWhoeverAsked(sent.message) : messageFiles.length > 0 ? sentToWhoeverAsked : ''
   }
 
   const messageList = find('.receipt-message-files', held)
@@ -166,7 +167,7 @@ async function post(sent: Sent, parts: Parts): Promise<Reply | null> {
     return { ok: answered.ok, status: answered.status, text: answered.ok ? '' : await answered.text() }
   } catch (failure) {
     const timedOut = failure instanceof DOMException && failure.name === 'TimeoutError'
-    say(timedOut ? nothingWasSentForSilence : nothingWasSentForRejection, 'error')
+    say(timedOut ? refusals.nothingWasSentForSilence : refusals.nothingWasSentForRejection, 'error')
     return null
   }
 }
@@ -195,7 +196,7 @@ async function send(ends: boolean): Promise<void> {
 
   exchange.sending = true
   setPresses(true)
-  say(ends ? 'Finishing.' : 'Sending.')
+  say(ends ? finishing : sendingNow)
   const answered = await post(sent, parts)
   exchange.sending = false
 
@@ -206,7 +207,7 @@ async function send(ends: boolean): Promise<void> {
 
   if (!answered.ok) {
     pressAgain()
-    say(`Nothing was sent: ${answered.text.trim() || `the surface answered ${answered.status}`}.`, 'error')
+    say(nothingWasSent(answered.text.trim() || theSurfaceAnswered(answered.status)), 'error')
     return
   }
 
@@ -220,7 +221,7 @@ async function send(ends: boolean): Promise<void> {
   lockForSending()
   exchange.awaitingCollection = true
   stand('sent')
-  say('Sent. Waiting for a reply on this page.', 'waiting')
+  say(sentAndWaiting, 'waiting')
 }
 
 export function sendAnyway(): void {

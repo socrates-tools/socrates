@@ -61,12 +61,12 @@ func TestASessionIsMintedAndTheAddressHoldsIt(t *testing.T) {
 		t.Fatal("agora serve printed an address holding no session")
 	}
 
-	code, page := fetched(t, address)
+	code, _ := fetched(t, address)
 	if code != http.StatusOK {
 		t.Fatalf("the page at the address agora serve printed answered with %d", code)
 	}
-	if !strings.Contains(page, "should the cache be read before the lock is taken") {
-		t.Errorf("the page at the address agora serve printed is not the document that was served:\n%s", page)
+	if !opening(t, address).says("should the cache be read before the lock is taken") {
+		t.Error("the page at the address agora serve printed does not draw the document that was served")
 	}
 }
 
@@ -164,11 +164,11 @@ func TestANewDocumentReachesTheSessionItNamedAndNoOther(t *testing.T) {
 
 	held.serveOnto(second, oneDecisionReply)
 
-	if _, page := fetched(t, secondAddress); !strings.Contains(page, "one thing left") {
-		t.Errorf("the page a new document was written to did not take it up:\n%s", page)
+	if !opening(t, secondAddress).says("one thing left") {
+		t.Error("the page a new document was written to did not take it up")
 	}
-	if _, page := fetched(t, firstAddress); strings.Contains(page, "one thing left") {
-		t.Errorf("a document written to one session reached the other:\n%s", page)
+	if opening(t, firstAddress).says("one thing left") {
+		t.Error("a document written to one session reached the other")
 	}
 }
 

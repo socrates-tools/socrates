@@ -136,6 +136,16 @@ func openingNothingToAnswer(t *testing.T, address string, options ...chromedp.Ex
 func openingFor(t *testing.T, address, ready, painted string, options ...chromedp.ExecAllocatorOption) *reader {
 	t.Helper()
 
+	held := browsing(t, ready, painted, options...)
+	held.do(chromedp.Navigate(address), chromedp.WaitReady(chromedp.CSS("body")))
+	held.drawn()
+	held.settled()
+	return held
+}
+
+func browsing(t *testing.T, ready, painted string, options ...chromedp.ExecAllocatorOption) *reader {
+	t.Helper()
+
 	profile, err := os.MkdirTemp("/tmp", "ag")
 	if err != nil {
 		t.Fatalf("making somewhere short for the browser to keep its profile: %v", err)
@@ -169,11 +179,7 @@ func openingFor(t *testing.T, address, ready, painted string, options ...chromed
 	held.do(
 		sending(network.Enable, network.EnableParams{}),
 		sending(log.Enable, cdp.Empty{}),
-		chromedp.Navigate(address),
-		chromedp.WaitReady(chromedp.CSS("body")),
-		chromedp.WaitReady(chromedp.CSS(ready)),
 	)
-	held.settled()
 	return held
 }
 
@@ -189,8 +195,8 @@ func openingAlongside(t *testing.T, first *reader, address string) *reader {
 		sending(log.Enable, cdp.Empty{}),
 		chromedp.Navigate(address),
 		chromedp.WaitReady(chromedp.CSS("body")),
-		chromedp.WaitReady(chromedp.CSS(first.ready)),
 	)
+	held.drawn()
 	held.settled()
 	return held
 }
@@ -268,6 +274,12 @@ func (r *reader) do(actions ...chromedp.Action[chromedp.Void]) {
 	}
 }
 
+func (r *reader) drawn() {
+	r.t.Helper()
+	r.waitFor("!!document.querySelector('" + r.ready + "')")
+	r.evaluate(`new Promise((settled) => requestAnimationFrame(() => requestAnimationFrame(() => document.fonts.ready.then(settled))))`, nil, awaitingThePromise)
+}
+
 func (r *reader) settled() {
 	r.t.Helper()
 	r.waitFor("!!document.querySelector('" + r.painted + "') && !!window.getComputedStyle(document.body).backgroundColor")
@@ -279,8 +291,8 @@ func (r *reader) reload() {
 	r.do(
 		chromedp.Reload(),
 		chromedp.WaitReady(chromedp.CSS("body")),
-		chromedp.WaitReady(chromedp.CSS(r.ready)),
 	)
+	r.drawn()
 	r.settled()
 }
 
@@ -341,6 +353,14 @@ func (r *reader) waitFor(expression string) {
 	if _, err := chromedp.Run(r.context, chromedp.Poll[bool](expression)); err != nil {
 		r.t.Fatalf("waiting for %s: %v", expression, err)
 	}
+}
+
+func (r *reader) says(words string) bool {
+	r.t.Helper()
+
+	var held bool
+	r.evaluate(`document.querySelector('.surface').textContent.includes(`+jsonOf(r.t, words)+`)`, &held)
+	return held
 }
 
 func (r *reader) screenshot() []byte {

@@ -1,4 +1,5 @@
 import { UiDialog } from '@agora/ui'
+import { confirmationHeading } from './messages'
 import { cards, clear, closestTo, decisionNamed, find, firstControlOf, nameOf } from './page'
 
 export interface Raising {
@@ -55,7 +56,7 @@ export function askBeforeSending(blank: HTMLElement[], press: HTMLElement | null
   }
   raisedBy = { press, ends }
 
-  held.headed(`Send with ${blank.length} of ${cards().length} left blank?`)
+  held.headed(confirmationHeading(blank.length, cards().length))
 
   const list = find('.confirmation-decisions', held)
   if (list) {

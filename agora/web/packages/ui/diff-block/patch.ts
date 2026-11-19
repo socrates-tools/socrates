@@ -16,6 +16,14 @@ export interface Hunk {
   rows: Row[]
 }
 
+export interface Diff {
+  from: string
+  to: string
+  hunks: Hunk[]
+  added: number
+  removed: number
+}
+
 const absentSide: Side = { kind: 'absent', number: 0, text: '' }
 
 function readHunkHeading(line: string): { heading: string; from: number; to: number } {
@@ -40,7 +48,13 @@ function readHunkHeading(line: string): { heading: string; from: number; to: num
   return { heading: rest.join('@@').trim(), from, to }
 }
 
-export function readPatch(patch: string): Hunk[] {
+function pathShown(named: string): string {
+  return named.replace(/^[ab]\//, '')
+}
+
+export function readDiff(patch: string): Diff {
+  let from = ''
+  let to = ''
   const hunks: Hunk[] = []
   let hunk: Hunk | undefined
   let removals: Side[] = []
@@ -69,8 +83,12 @@ export function readPatch(patch: string): Hunk[] {
   }
 
   for (const line of patch.split('\n')) {
-    if (line.startsWith('--- ') || line.startsWith('+++ ')) {
+    if (line.startsWith('--- ')) {
       end()
+      from = pathShown(line.slice(4))
+    } else if (line.startsWith('+++ ')) {
+      end()
+      to = pathShown(line.slice(4))
     } else if (line.startsWith('@@')) {
       end()
       const read = readHunkHeading(line)
@@ -93,5 +111,16 @@ export function readPatch(patch: string): Hunk[] {
     }
   }
   end()
-  return hunks
+  const rows = hunks.flatMap((read) => read.rows)
+  return {
+    from,
+    to,
+    hunks,
+    added: rows.filter((row) => row.right.kind === 'added').length,
+    removed: rows.filter((row) => row.left.kind === 'removed').length,
+  }
+}
+
+export function readPatch(patch: string): Hunk[] {
+  return readDiff(patch).hunks
 }

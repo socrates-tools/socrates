@@ -1,4 +1,4 @@
-import { statusLostTheSurface } from './exchange'
+import { statusLostTheSurface, statusOpen, statusOver, statusSent } from './messages'
 
 export type Tone = 'quiet' | 'waiting' | 'error' | 'over'
 
@@ -7,9 +7,9 @@ export type Phase = 'open' | 'sent' | 'over'
 export const lostStatus = 'lost'
 
 const standing: Record<Phase, string> = {
-  open: 'Open',
-  sent: 'Sent, waiting for a reply',
-  over: 'Exchange over',
+  open: statusOpen,
+  sent: statusSent,
+  over: statusOver,
 }
 
 export function find<E extends Element = HTMLElement>(selector: string, within: ParentNode = document): E | null {

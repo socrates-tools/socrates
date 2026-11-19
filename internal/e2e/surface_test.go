@@ -299,15 +299,11 @@ func TestServeReturnsBeforeThePersonHasReadAnything(t *testing.T) {
 	}
 	defer func() { _ = answered.Body.Close() }()
 
-	page, err := io.ReadAll(answered.Body)
-	if err != nil {
-		t.Fatalf("reading the page: %v", err)
-	}
 	if answered.StatusCode != http.StatusOK {
 		t.Fatalf("the page at the printed address answered with %d", answered.StatusCode)
 	}
-	if !strings.Contains(string(page), "should the cache be read before the lock is taken") {
-		t.Errorf("the page at the printed address is not the document that was served:\n%s", page)
+	if !opening(t, address).says("should the cache be read before the lock is taken") {
+		t.Error("the page at the printed address does not draw the document that was served")
 	}
 }
 
@@ -323,16 +319,13 @@ func TestADocumentWithNothingToDecideIsServed(t *testing.T) {
 	}
 	defer func() { _ = answered.Body.Close() }()
 
-	page, err := io.ReadAll(answered.Body)
-	if err != nil {
-		t.Fatalf("reading the page: %v", err)
-	}
 	if answered.StatusCode != http.StatusOK {
 		t.Fatalf("a document holding no decision was served with %d", answered.StatusCode)
 	}
+	drawn := openingNothingToAnswer(t, address)
 	for _, held := range []string{"nothing to settle", "what follows is what was seen"} {
-		if !strings.Contains(string(page), held) {
-			t.Errorf("the page does not carry %q, and it renders what the document holds:\n%s", held, page)
+		if !drawn.says(held) {
+			t.Errorf("the page does not draw %q, and it draws what the document holds", held)
 		}
 	}
 }
@@ -447,21 +440,21 @@ func TestADocumentWrittenBeforeTheMarkStillServes(t *testing.T) {
 	}
 	defer func() { _ = answered.Body.Close() }()
 
-	page, err := io.ReadAll(answered.Body)
-	if err != nil {
-		t.Fatalf("reading the page: %v", err)
-	}
 	if answered.StatusCode != http.StatusOK {
 		t.Fatalf("a document that marks nothing was served with %d", answered.StatusCode)
 	}
-	if strings.Contains(string(page), "option-mark") || strings.Contains(string(page), "data-recommended") {
-		t.Errorf("the page marks an option, and the document marked none:\n%s", page)
+
+	drawn := opening(t, address)
+	var marked bool
+	drawn.evaluate(`!!document.querySelector('.option-mark, [data-recommended]')`, &marked)
+	if marked {
+		t.Error("the page marks an option, and the document marked none")
 	}
 
-	first := strings.Index(string(page), "take the lock first")
-	second := strings.Index(string(page), "leave it")
-	if first < 0 || second < 0 || first > second {
-		t.Errorf("the options are not read in the order the document listed them: %d then %d", first, second)
+	var labels []string
+	drawn.evaluate(`Array.from(document.querySelectorAll('.decision .option .option-label'), (label) => label.textContent)`, &labels)
+	if want := []string{"take the lock first", "leave it"}; !slices.Equal(labels, want) {
+		t.Errorf("the options are drawn as %q, and the document listed them as %q", labels, want)
 	}
 }
 

@@ -1,35 +1,29 @@
 import { closeConfirmation } from './confirmation'
-import { exchange, exchangeIsOver, lostTheSurface, reconnectFirstMilliseconds, reconnectLongestMilliseconds, theSessionIsGone } from './exchange'
+import { draw } from './drawing'
+import { exchange, reconnectFirstMilliseconds, reconnectLongestMilliseconds } from './exchange'
+import { fetchThePage, showTheStanding } from './fetching'
+import { aReplyArrived, collected, exchangeIsOver, lostTheSurface, refusals } from './messages'
 import { type Tone, base, find, phaseStood, say, stand, standLost, surface, token } from './page'
 import { closeTheExchange, offerToAmend } from './sending'
 import { settleTheSurface } from './settling'
 import { hideTheTip } from './tooltip'
 
-async function take(revision: number): Promise<void> {
-  const answered = await fetch(base(), { headers: { 'x-agora-token': token() } })
-  if (!answered.ok) {
-    return
-  }
-
-  const written = await answered.text()
-  const read = new DOMParser().parseFromString(written, 'text/html')
-  const replacing = find('.surface', read)
+async function take(): Promise<void> {
+  const fetched = await fetchThePage()
   const standing = surface()
-  if (!replacing || !standing) {
+  if ('refusal' in fetched || !standing) {
     return
   }
 
   closeConfirmation()
-  standing.replaceWith(replacing)
-  document.body.dataset.revision = String(revision)
-  document.body.dataset.over = read.body.dataset.over
-  document.title = read.title
+  standing.replaceWith(draw(fetched.page))
+  showTheStanding(fetched.page)
   exchange.awaitingCollection = false
 
   hideTheTip()
   settleTheSurface()
   say(
-    exchange.closed ? exchangeIsOver : 'A reply arrived, and this page is showing it.',
+    exchange.closed ? exchangeIsOver : aReplyArrived,
     exchange.closed ? 'over' : 'quiet',
   )
 }
@@ -43,7 +37,7 @@ function hear(event: string, data: string): void {
   if (event === 'revision') {
     const revision = Number(data)
     if (revision > Number(document.body.dataset.revision)) {
-      void take(revision)
+      void take()
     }
   } else if (event === 'closed') {
     closeTheExchange()
@@ -51,7 +45,7 @@ function hear(event: string, data: string): void {
   } else if (event === 'uncollected' && data === 'no' && exchange.awaitingCollection) {
     exchange.awaitingCollection = false
     offerToAmend(false)
-    say('Collected. The answer has gone.')
+    say(collected)
   }
 }
 
@@ -94,8 +88,8 @@ function regainTheSurface(): void {
 }
 
 function giveUpOnTheSession(): void {
-  closeTheExchange(theSessionIsGone)
-  say(theSessionIsGone, 'over')
+  closeTheExchange(refusals.theSessionIsGone)
+  say(refusals.theSessionIsGone, 'over')
 }
 
 export function follow(): void {

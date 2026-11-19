@@ -3,7 +3,6 @@ package e2e_test
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -88,14 +87,11 @@ func TestASurfaceOfAnotherBuildHoldingNoSessionIsReplacedByTheBuildThatRanServe(
 		t.Errorf("what the surface is reached with is still %+v, so nothing was started in place of the replaced surface", now)
 	}
 
-	page, err := http.Get(printed)
-	if err != nil {
-		t.Fatalf("opening the page agora serve printed: %v", err)
+	if code, _ := fetched(t, printed); code != http.StatusOK {
+		t.Errorf("the page agora serve printed was answered with %d", code)
 	}
-	defer func() { _ = page.Body.Close() }()
-	body, _ := io.ReadAll(page.Body)
-	if page.StatusCode != http.StatusOK || !strings.Contains(string(body), "nothing to settle") {
-		t.Errorf("the page agora serve printed was answered with %d and does not hold the document served: %s", page.StatusCode, body)
+	if !openingNothingToAnswer(t, printed).says("nothing to settle") {
+		t.Error("the page agora serve printed does not draw the document served")
 	}
 }
 

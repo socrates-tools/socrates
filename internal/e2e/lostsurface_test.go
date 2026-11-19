@@ -57,8 +57,9 @@ func (r *reader) keepingItsStreams() {
 	r.do(
 		sending(cdppage.AddScriptToEvaluateOnNewDocument, cdppage.AddScriptToEvaluateOnNewDocumentParams{Source: keepEveryStreamOpened}),
 		chromedp.Navigate(address),
-		chromedp.WaitReady(chromedp.CSS(r.ready)),
+		chromedp.WaitReady(chromedp.CSS("body")),
 	)
+	r.drawn()
 	r.settled()
 	r.waitFor(`window.streamsOpened.length > 0 && window.streamsOpened.every((stream) => stream.readyState === WebSocket.OPEN)`)
 }
