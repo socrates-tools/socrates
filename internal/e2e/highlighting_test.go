@@ -3,6 +3,7 @@ package e2e_test
 import (
 	"encoding/json"
 	"slices"
+	"strconv"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -157,7 +158,7 @@ const patchInAnAliasDocument = `{
 }`
 
 func TestEveryLanguageThePageHighlightsIsHighlightedByACodeBlockNamingIt(t *testing.T) {
-	// scenario: A code block naming any language or alias the page highlights is highlighted, none is left plain
+	// scenario: A block naming any language or alias the page highlights is highlighted, or drawn as formatted text where it names markdown, none is left plain
 	t.Parallel()
 	var blocks []map[string]string
 	for _, named := range document.Languages() {
@@ -169,7 +170,7 @@ func TestEveryLanguageThePageHighlightsIsHighlightedByACodeBlockNamingIt(t *test
 	}
 	held := standing(t)
 	page := opening(t, held.serve(evidenceDocument(string(evidence))))
-	page.waitFor(highlightedCodeBlocks(len(blocks)))
+	page.waitFor(`Array.from(document.querySelectorAll('.evidence.code ui-code-block')).filter((block) => block.highlighted).length + Array.from(document.querySelectorAll('.evidence.markdown ui-markdown-block')).filter((block) => block.drawnBlocks.length > 0).length === ` + strconv.Itoa(len(blocks)))
 
 	var plain []string
 	page.evaluate(`Array.from(document.querySelectorAll('.evidence.code ui-code-block')).filter((block) => !block.highlighted).map((block) => block.language)`, &plain)

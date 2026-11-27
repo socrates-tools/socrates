@@ -74,28 +74,17 @@ func TestNoCodeBlockScrollsSidewaysAtANarrowWindowOrAWideOne(t *testing.T) {
 	}
 }
 
-func TestMarkdownEvidenceStillWrapsAtTheWidthOfItsCard(t *testing.T) {
+func TestMarkdownEvidenceWrapsAtTheWidthOfItsCard(t *testing.T) {
 	t.Parallel()
 	prose := strings.Repeat("a ticket sentence that is long enough to need wrapping ", 6)
-	evidence, err := json.Marshal([]map[string]string{{"language": "markdown", "code": "# a ticket\n\n- [ ] " + prose + "\n"}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	document := `{"title": "one thing", "decisions": [{"id": "c-1", "question": "keep it", "mode": "single-choice",
- "options": [{"label": "keep it", "meaning": "as cut"}], "evidence": ` + string(evidence) + `}]}`
-	page := openingAt(t, document, 500, 900)
-	page.waitFor(highlightedCodeBlocks(1))
+	unbroken := strings.Repeat("unbroken", 30)
+	page := openingAt(t, markdownDocument(t, "# a ticket\n\n- [ ] "+prose+"\n\n"+unbroken+"\n\n```\n"+unbroken+"\n```\n"), 500, 900)
+	page.waitFor(markdownBlocksDrawn(1))
 
 	var scrolling int
-	page.evaluate(sidewaysScrolling, &scrolling)
+	page.evaluate(`Array.from(document.querySelectorAll('.evidence.markdown ui-markdown-block')).filter((held) => held.scrollWidth > held.clientWidth + 1).length`, &scrolling)
 	if scrolling != 0 {
 		t.Error("markdown evidence scrolls sideways rather than wrapping at the width of its card")
-	}
-
-	var rows [][]float64
-	page.evaluate(columnsOfEachRowOfEachSourceLine, &rows)
-	if len(rows) < 3 || len(rows[2]) < 2 {
-		t.Errorf("a long markdown line is not drawn on more than one row: %v", rows)
 	}
 }
 

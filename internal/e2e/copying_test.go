@@ -78,9 +78,13 @@ func jsonOf(t *testing.T, value string) string {
 	return string(encoded)
 }
 
-const copyControls = `.evidence.code ui-copy.copy`
+const copyControls = `.evidence.code ui-copy.copy, .evidence.markdown ui-copy.copy`
 
-func TestEveryCodeBlockOffersACopyControlAndASplitDiffOffersNone(t *testing.T) {
+func copyingEvidenceDrawn() string {
+	return highlightedCodeBlocks(1) + ` && ` + markdownBlocksDrawn(1)
+}
+
+func TestEveryCodeBlockAndMarkdownBlockOffersACopyControlAndASplitDiffOffersNone(t *testing.T) {
 	t.Parallel()
 	_, page := read(t, copyingDocument(t))
 
@@ -91,17 +95,17 @@ func TestEveryCodeBlockOffersACopyControlAndASplitDiffOffersNone(t *testing.T) {
 		InDiffs  int `json:"inDiffs"`
 	}
 	page.evaluate(`({
-  code: document.querySelectorAll('.evidence.code').length,
-  controls: document.querySelectorAll('.evidence.code > .evidence-heading ui-copy.copy').length,
+  code: document.querySelectorAll('.evidence.code, .evidence.markdown').length,
+  controls: document.querySelectorAll('.evidence.code > .evidence-heading ui-copy.copy, .evidence.markdown > .evidence-heading ui-copy.copy').length,
   diffs: document.querySelectorAll('.evidence.diff').length,
   inDiffs: document.querySelectorAll('.evidence.diff ui-copy.copy').length,
 })`, &counts)
 
 	if counts.Code != 2 || counts.Diffs != 1 {
-		t.Fatalf("the page shows %d code blocks and %d split diffs, want 2 and 1", counts.Code, counts.Diffs)
+		t.Fatalf("the page shows %d code and markdown blocks and %d split diffs, want 2 and 1", counts.Code, counts.Diffs)
 	}
 	if counts.Controls != counts.Code {
-		t.Errorf("%d of %d code blocks show a copy control in their heading", counts.Controls, counts.Code)
+		t.Errorf("%d of %d code and markdown blocks show a copy control in their heading", counts.Controls, counts.Code)
 	}
 	if counts.InDiffs != 0 {
 		t.Errorf("a split diff shows %d copy controls, want none", counts.InDiffs)
@@ -112,7 +116,7 @@ func TestPressingACopyControlPutsTheBlocksCodeOnTheClipboardExactlyAsTheDocument
 	t.Parallel()
 	_, page := read(t, copyingDocument(t))
 	page.mayCopy()
-	page.waitFor(highlightedCodeBlocks(2))
+	page.waitFor(copyingEvidenceDrawn())
 
 	for position, want := range []string{indentedGo, aMarkdownNote} {
 		page.clipboardHolds("something else entirely")

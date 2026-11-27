@@ -44,6 +44,26 @@ const copyText = 'Copy this exactly\n\tas it was written, with a trailing space 
 const language = 'go'
 const unknownLanguage = 'klingon'
 const patch = '--- a/limit.go\n+++ b/limit.go\n@@ -1,3 +1,4 @@ func Limit\n func Limit() int {\n-\treturn 2\n+\t// the limit, raised\n+\treturn 3\n }\n'
+const markdownTicket = `# 2.1: Parse the ticket
+
+## What to build
+
+A **ticket** is read from \`docs/changes\`, and its *blockers* are [named](https://example.com).
+
+## Acceptance criteria
+
+- [x] The ticket is read.
+- [ ] Its blockers are named, ${'and a criterion long enough to wrap '.repeat(4)}
+
+| Ticket | Blocked by |
+| --- | --- |
+| 2.1 | 1.1 |
+
+\`\`\`go
+func Parse() {}
+\`\`\`
+`
+const markdownWithMarkup = 'A line holding <script>alert(1)</script> and <b>bold</b> as typed.\n'
 const longLine = `fmt.Println("${'a line wider than its block '.repeat(14)}")`
 
 const closeClasses = 'catalog-action cursor-pointer rounded-dialog border border-rule bg-surface-card px-4 py-2 text-fg-1'
@@ -298,6 +318,10 @@ export const catalogued: Readonly<Record<string, readonly CatalogState[]>> = {
     drawn('full', 'a file tray holding as many files as it takes', () => fileTray('full', false)),
     drawn('refusing', 'a file tray refusing a file past its ceiling', () => fileTray('refusing', false)),
     drawn('disabled', 'a file tray that cannot be changed', () => fileTray('image-and-text', true)),
+  ],
+  'ui-markdown-block': [
+    drawn('ticket', 'a ticket with headings, a task list, a table and a fence', () => html`<ui-markdown-block>${markdownTicket}</ui-markdown-block>`),
+    drawn('raw-markup', 'markup written in the text, shown as the words it is', () => html`<ui-markdown-block>${markdownWithMarkup}</ui-markdown-block>`),
   ],
   'ui-overline': [
     toned('words alone', () => html`<ui-overline>An overline</ui-overline>`),

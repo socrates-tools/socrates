@@ -36,6 +36,7 @@ const twoCaptionedBlocks = `[
 const aBlockOfEachKind = `[
   {"caption": "as a prop", "language": "go", "code": "func Select(options []Option) {}\n"},
   {"language": "python", "code": "def select(children): pass\n"},
+  {"caption": "the ticket", "language": "md", "code": "# 2.1: parse\n"},
   {"caption": "the lock", "patch": "--- a/internal/cache/write.go\n+++ b/internal/cache/write.go\n@@ -1,1 +1,1 @@\n-a\n+b\n"},
   {"patch": "--- a/internal/cache/read.go\n+++ b/internal/cache/read.go\n@@ -1,1 +1,1 @@\n-a\n+b\n"}
 ]`
@@ -65,6 +66,7 @@ func TestEachBlockHeadingShowsItsCaptionBesideItsLanguageOrItsFile(t *testing.T)
 	want := []string{
 		"as a prop go",
 		"python",
+		"the ticket md",
 		"the lock internal/cache/write.go",
 		"internal/cache/read.go",
 	}
@@ -134,10 +136,12 @@ func TestAnExampleTheTicketsSkillShowsIsServedAndShowsTheTicketsFile(t *testing.
 
 	_, page := read(t, shown[1])
 
-	var ticket string
-	page.evaluate(`document.querySelector('.decision[data-decision="2.1-parse"] .evidence.code ui-code-block').statedText()`, &ticket)
-	if !strings.Contains(ticket, "# 2.1:") || !strings.Contains(ticket, "## What to build") {
-		t.Errorf("the card the tickets skill shows does not show its ticket's file: %q", ticket)
+	page.waitFor(markdownBlocksDrawn(1))
+
+	var drawn []drawnMarkdownBlock
+	page.evaluate(`document.querySelector('.decision[data-decision="2.1-parse"] .evidence.markdown ui-markdown-block').drawnBlocks`, &drawn)
+	if len(drawn) < 2 || drawn[0].Kind != "h1" || !strings.HasPrefix(drawn[0].Text, "2.1:") || drawn[1].Kind != "h2" || drawn[1].Text != "What to build" {
+		t.Errorf("the card the tickets skill shows does not draw its ticket's file as headings: %+v", drawn)
 	}
 }
 
@@ -184,7 +188,7 @@ func TestEveryBlockOfEvidencePaintsTheSameBackgroundAsTheCardItSitsOn(t *testing
 	}
 	page.evaluate(`({
   card: getComputedStyle(document.querySelector('.decision')).backgroundColor,
-  blocks: Array.from(document.querySelectorAll('.evidence:not(.illustrated)')).map((held) => getComputedStyle(held.querySelector('ui-code-block, ui-diff-block')).backgroundColor),
+  blocks: Array.from(document.querySelectorAll('.evidence:not(.illustrated)')).map((held) => getComputedStyle(held.querySelector('ui-code-block, ui-markdown-block, ui-diff-block')).backgroundColor),
 })`, &painted)
 
 	for position, block := range painted.Blocks {

@@ -3,6 +3,7 @@
 - Status: accepted
 - Date: 2026-10-20
 - Part of: evidence-as-a-list
+- Amended by: ADR 98, which draws a block whose language is Markdown as formatted text rather than as source
 
 ## Decision
 

@@ -1,4 +1,5 @@
 import { html, nothing, render, type TemplateResult } from 'lit'
+import { isMarkdown } from '@agora/ui'
 import { ifDefined } from 'lit/directives/if-defined.js'
 import type { Served } from './document.generated'
 import type { Mark } from './marks'
@@ -224,8 +225,18 @@ function codeEvidence(block: ReadBlock): TemplateResult {
     </div>`
 }
 
+function markdownEvidence(block: ReadBlock): TemplateResult {
+  return html`<div class="evidence markdown min-w-0 overflow-hidden rounded-md border border-rule bg-surface-card">
+      <div class="evidence-heading flex min-h-8 items-center justify-between gap-4 border-b border-rule bg-surface-evidence-heading px-3 font-mono text-micro text-fg-2"><span class="evidence-label min-w-0 truncate">${evidenceLabel(block, block.language)}</span><ui-copy class="copy" data-interaction="viewing" label=${copyLabel} hint=${copyHint} copied-title=${copiedWord} failed-title=${notCopied}></ui-copy></div>
+      <ui-markdown-block>${block.code}</ui-markdown-block>
+    </div>`
+}
+
 function evidence(block: ReadBlock): TemplateResult {
-  return block.diff === null ? codeEvidence(block) : diffEvidence({ ...block, diff: block.diff })
+  if (block.diff !== null) {
+    return diffEvidence({ ...block, diff: block.diff })
+  }
+  return isMarkdown(block.language) && block.code !== '' ? markdownEvidence(block) : codeEvidence(block)
 }
 
 function illustration(source: string, title: string): TemplateResult {

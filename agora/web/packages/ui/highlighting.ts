@@ -62,3 +62,7 @@ export function highlightedIn(text: string, language: string): string | undefine
 export function highlightedWhateverItIs(text: string): string {
   return hljs.highlightAuto(text).value
 }
+
+export function isMarkdown(language: string): boolean {
+  return language !== '' && hljs.getLanguage(language) !== undefined && hljs.getLanguage(language) === hljs.getLanguage('markdown')
+}

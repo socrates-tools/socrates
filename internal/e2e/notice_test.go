@@ -42,6 +42,16 @@ var licenceOfABundledLibrary = map[string][]string{
 		"Permission is hereby granted, free of charge, to any person obtaining a copy",
 		`THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND`,
 	},
+	"marked": {
+		"MIT License",
+		"Copyright (c) 2018+, MarkedJS (https://github.com/markedjs/)",
+		"Copyright (c) 2011-2018, Christopher Jeffrey (https://github.com/chjj/)",
+		"Permission is hereby granted, free of charge, to any person obtaining a copy",
+		`THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND`,
+		"Copyright © 2004, John Gruber",
+		"Redistribution and use in source and binary forms, with or without",
+		`This software is provided by the copyright holders and contributors "as is"`,
+	},
 	"highlight.js": {
 		"BSD 3-Clause License",
 		"Copyright (c) 2006, Ivan Sagalaev.",
